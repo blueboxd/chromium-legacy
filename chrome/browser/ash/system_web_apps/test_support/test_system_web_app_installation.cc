@@ -140,7 +140,7 @@ std::vector<int> UnittestingSystemAppDelegate::GetAdditionalSearchTerms()
 bool UnittestingSystemAppDelegate::ShouldShowInLauncher() const {
   return show_in_launcher_;
 }
-bool UnittestingSystemAppDelegate::ShouldShowInSearch() const {
+bool UnittestingSystemAppDelegate::ShouldShowInSearchAndShelf() const {
   return show_in_search_;
 }
 bool UnittestingSystemAppDelegate::ShouldHandleFileOpenIntents() const {
@@ -239,7 +239,7 @@ void UnittestingSystemAppDelegate::SetAdditionalSearchTerms(
 void UnittestingSystemAppDelegate::SetShouldShowInLauncher(bool value) {
   show_in_launcher_ = value;
 }
-void UnittestingSystemAppDelegate::SetShouldShowInSearch(bool value) {
+void UnittestingSystemAppDelegate::SetShouldShowInSearchAndShelf(bool value) {
   show_in_search_ = value;
 }
 void UnittestingSystemAppDelegate::SetShouldHandleFileOpenIntents(bool value) {
@@ -464,6 +464,21 @@ TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
 
 // static
 std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppLaunchWithUrl() {
+  std::unique_ptr<UnittestingSystemAppDelegate> delegate =
+      std::make_unique<UnittestingSystemAppDelegate>(
+          SystemWebAppType::MEDIA, "Test",
+          GURL("chrome://test-system-app/pwa.html"),
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
+
+  delegate->SetShouldShowInLauncher(false);
+
+  return base::WrapUnique(
+      new TestSystemWebAppInstallation(std::move(delegate)));
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
 TestSystemWebAppInstallation::SetUpAppNotShownInLauncher() {
   std::unique_ptr<UnittestingSystemAppDelegate> delegate =
       std::make_unique<UnittestingSystemAppDelegate>(
@@ -485,7 +500,7 @@ TestSystemWebAppInstallation::SetUpAppNotShownInSearch() {
           SystemWebAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
           base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
-  delegate->SetShouldShowInSearch(false);
+  delegate->SetShouldShowInSearchAndShelf(false);
 
   return base::WrapUnique(
       new TestSystemWebAppInstallation(std::move(delegate)));
@@ -850,7 +865,7 @@ TestSystemWebAppInstallation::CreateWebAppProvider(Profile* profile) {
   auto provider = std::make_unique<web_app::FakeWebAppProvider>(profile);
   provider->SetWebAppUiManager(
       std::make_unique<web_app::WebAppUiManagerImpl>(profile));
-  provider->Start();
+  provider->StartWithSubsystems();
 
   return provider;
 }

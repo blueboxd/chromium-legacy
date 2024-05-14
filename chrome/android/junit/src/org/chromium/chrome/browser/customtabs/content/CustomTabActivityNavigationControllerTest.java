@@ -27,6 +27,9 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.base.test.util.Features.JUnitProcessor;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHandler;
@@ -37,9 +40,6 @@ import org.chromium.chrome.browser.customtabs.shadows.ShadowExternalNavigationDe
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.chrome.test.util.browser.Features.JUnitProcessor;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.url.GURL;
 
@@ -86,7 +86,7 @@ public class CustomTabActivityNavigationControllerTest {
                                 MinimizeAppAndCloseTabType.MINIMIZE_APP)
                         .expectIntRecord(
                                 BackPressManager.getHistogramForTesting(),
-                                BackPressManager.getHistogramValueForTesting(
+                                BackPressManager.getHistogramValue(
                                         BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB))
                         .build();
         when(mTabController.onlyOneTabRemaining()).thenReturn(true);
@@ -133,7 +133,7 @@ public class CustomTabActivityNavigationControllerTest {
                                 MinimizeAppAndCloseTabType.CLOSE_TAB)
                         .expectIntRecord(
                                 BackPressManager.getHistogramForTesting(),
-                                BackPressManager.getHistogramValueForTesting(
+                                BackPressManager.getHistogramValue(
                                         BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB))
                         .build();
         doAnswer(
@@ -186,7 +186,7 @@ public class CustomTabActivityNavigationControllerTest {
                                 MinimizeAppAndCloseTabType.CLOSE_TAB)
                         .expectIntRecord(
                                 BackPressManager.getHistogramForTesting(),
-                                BackPressManager.getHistogramValueForTesting(
+                                BackPressManager.getHistogramValue(
                                         BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB))
                         .build();
 

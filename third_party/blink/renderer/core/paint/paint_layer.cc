@@ -145,24 +145,14 @@ inline PhysicalRect PhysicalVisualOverflowRectAllowingUnset(
   return layout_object.VisualOverflowRect();
 }
 
-PaintLayer* SlowContainingLayer(const PaintLayer* ancestor,
-                                bool* skipped_ancestor,
-                                LayoutObject* layout_object) {
+PaintLayer* SlowContainingLayer(LayoutObject& layout_object) {
   // This is a universal approach to find the containing layer, but it is
   // slower.
-  absl::optional<LayoutObject::AncestorSkipInfo> skip_info;
-  if (skipped_ancestor)
-    skip_info.emplace(&ancestor->GetLayoutObject());
-  while (auto* container = layout_object->Container(
-             skipped_ancestor ? &*skip_info : nullptr)) {
-    if (skipped_ancestor) {
-      if (skip_info->AncestorSkipped())
-        *skipped_ancestor = true;
-      skip_info.emplace(&ancestor->GetLayoutObject());
-    }
+  auto* container = layout_object.Container(nullptr);
+  while (container) {
     if (container->HasLayer())
       return To<LayoutBoxModelObject>(container)->Layer();
-    layout_object = container;
+    container = container->Container(nullptr);
   }
   return nullptr;
 }
@@ -536,14 +526,7 @@ void PaintLayer::UpdateScrollingAfterLayout() {
   }
 }
 
-PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
-                                        bool* skipped_ancestor) const {
-  // If we have specified an ancestor, surely the caller needs to know whether
-  // we skipped it.
-  DCHECK(!ancestor || skipped_ancestor);
-  if (skipped_ancestor)
-    *skipped_ancestor = false;
-
+PaintLayer* PaintLayer::ContainingLayer() const {
   LayoutObject& layout_object = GetLayoutObject();
   if (layout_object.IsOutOfFlowPositioned()) {
     // In NG, the containing block chain goes directly from a column spanner to
@@ -553,7 +536,7 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
     // path for OOFs inside an NG spanner. However, doing so for all OOF
     // descendants of a multicol container is reasonable enough.
     if (layout_object.IsInsideFlowThread())
-      return SlowContainingLayer(ancestor, skipped_ancestor, &layout_object);
+      return SlowContainingLayer(layout_object);
     auto can_contain_this_layer =
         layout_object.IsFixedPositioned()
             ? &LayoutObject::CanContainFixedPositionObjects
@@ -561,8 +544,6 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
 
     PaintLayer* curr = Parent();
     while (curr && !((&curr->GetLayoutObject())->*can_contain_this_layer)()) {
-      if (skipped_ancestor && curr == ancestor)
-        *skipped_ancestor = true;
       curr = curr->Parent();
     }
     return curr;
@@ -577,7 +558,7 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
       !layout_object.IsColumnSpanAll())
     return Parent();
 
-  return SlowContainingLayer(ancestor, skipped_ancestor, &layout_object);
+  return SlowContainingLayer(layout_object);
 }
 
 PaintLayer* PaintLayer::CompositingContainer() const {
@@ -1282,7 +1263,7 @@ PaintLayer* PaintLayer::HitTestLayer(
   }
 
   HitTestingTransformState* local_transform_state = nullptr;
-  STACK_UNINITIALIZED absl::optional<HitTestingTransformState> storage;
+  STACK_UNINITIALIZED std::optional<HitTestingTransformState> storage;
 
   if (applied_transform) {
     // We computed the correct state in the caller (above code), so just
@@ -1616,7 +1597,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
   // been flattened (losing z) by our container.
   gfx::PointF local_point = new_transform_state.MappedPoint();
   PhysicalRect bounds_of_mapped_area = new_transform_state.BoundsOfMappedArea();
-  absl::optional<HitTestLocation> new_location;
+  std::optional<HitTestLocation> new_location;
   if (recursion_data.location.IsRectBasedTest())
     new_location.emplace(local_point, new_transform_state.MappedQuad());
   else
@@ -1815,18 +1796,10 @@ gfx::RectF PaintLayer::FilterReferenceBox() const {
 
 gfx::RectF PaintLayer::BackdropFilterReferenceBox() const {
   if (const auto* layout_inline = DynamicTo<LayoutInline>(GetLayoutObject())) {
-    return RuntimeEnabledFeatures::ReferenceBoxNoPixelSnappingEnabled()
-               ? gfx::RectF(
-                     gfx::SizeF(layout_inline->PhysicalLinesBoundingBox().size))
-               : gfx::RectF(
-                     ToEnclosingRect(layout_inline->PhysicalLinesBoundingBox())
-                         .size());
+    return gfx::RectF(
+        gfx::SizeF(layout_inline->PhysicalLinesBoundingBox().size));
   }
-
-  const auto* layout_box = GetLayoutBox();
-  return RuntimeEnabledFeatures::ReferenceBoxNoPixelSnappingEnabled()
-             ? gfx::RectF(layout_box->PhysicalBorderBoxRect())
-             : gfx::RectF(layout_box->DeprecatedPixelSnappedBorderBoxRect());
+  return gfx::RectF(GetLayoutBox()->PhysicalBorderBoxRect());
 }
 
 gfx::RRectF PaintLayer::BackdropFilterBounds() const {

@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -25,16 +26,19 @@ namespace privacy_sandbox {
 class PrivacySandboxAttestationsBrowserTest
     : public MixinBasedInProcessBrowserTest {
  public:
-  PrivacySandboxAttestationsBrowserTest() = default;
+  PrivacySandboxAttestationsBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kPrivacySandboxAttestationSentinel);
+  }
+
+  void SetUp() override {
+    MixinBasedInProcessBrowserTest::SetUp();
+    ASSERT_TRUE(DeleteInstalledComponent());
+  }
 
   void TearDown() override {
-    // Delete the privacy sandbox attestations installation directory.
-    base::FilePath component_updater_dir;
-    base::PathService::Get(component_updater::DIR_COMPONENT_USER,
-                           &component_updater_dir);
-
-    ASSERT_TRUE(base::DeletePathRecursively(
-        Installer::GetInstalledDirectory(component_updater_dir)));
+    MixinBasedInProcessBrowserTest::TearDown();
+    ASSERT_TRUE(DeleteInstalledComponent());
   }
 
  protected:
@@ -42,8 +46,20 @@ class PrivacySandboxAttestationsBrowserTest
       component_updater::PrivacySandboxAttestationsComponentInstallerPolicy;
 
  private:
+  bool DeleteInstalledComponent() {
+    // Delete the privacy sandbox attestations installation directory.
+    base::FilePath component_updater_dir;
+    base::PathService::Get(component_updater::DIR_COMPONENT_USER,
+                           &component_updater_dir);
+
+    return base::DeletePathRecursively(
+        Installer::GetInstalledDirectory(component_updater_dir));
+  }
+
   PrivacySandboxAttestationsMixin privacy_sandbox_attestations_mixin_{
       &mixin_host_};
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(

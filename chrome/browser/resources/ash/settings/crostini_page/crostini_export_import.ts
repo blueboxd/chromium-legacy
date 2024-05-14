@@ -8,17 +8,19 @@
  * Crostini.
  */
 
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import './crostini_import_confirmation_dialog.js';
 import '../settings_shared.css.js';
 
-import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
 import {RouteObserverMixin} from '../common/route_observer_mixin.js';
+import {PrefsState} from '../common/types.js';
 import {ContainerInfo, GuestId} from '../guest_os/guest_os_browser_proxy.js';
 import {equalContainerId} from '../guest_os/guest_os_container_select.js';
+import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, routes} from '../router.js';
 
@@ -40,6 +42,11 @@ export class SettingsCrostiniExportImportElement extends
 
   static get properties() {
     return {
+      prefs: {
+        type: Object,
+        notify: true,
+      },
+
       showImportConfirmationDialog_: {
         type: Boolean,
         value: false,
@@ -123,6 +130,7 @@ export class SettingsCrostiniExportImportElement extends
     };
   }
 
+  prefs: PrefsState;
   private allContainers_: ContainerInfo[];
   private browserProxy_: CrostiniBrowserProxy;
   private defaultVmName_: string;
@@ -179,6 +187,7 @@ export class SettingsCrostiniExportImportElement extends
 
   private onExportClick_(): void {
     this.browserProxy_.exportCrostiniContainer(this.exportContainerId_);
+    recordSettingChange(Setting.kBackupLinuxAppsAndFiles);
   }
 
   private onImportClick_(): void {

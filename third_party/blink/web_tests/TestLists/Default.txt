@@ -263,7 +263,6 @@ external/wpt/mediasession/playbackstate.html
 external/wpt/mediasession/setactionhandler.html
 external/wpt/navigation-timing/nav2_test_instance_accessible_from_the_start.html
 external/wpt/navigation-timing/test_navigation_redirectCount_none.html
-external/wpt/orientation-event/motion/add-listener-from-callback.https.html
 external/wpt/orientation-event/orientation/create-event.https.html
 external/wpt/orientation-event/motion/optional-event-properties.https.html
 external/wpt/pointerevents/pointerevent_touch-action-illegal.html
@@ -368,7 +367,6 @@ fast/autoresize/basic.html
 fast/autoresize/turn-off-autoresize.html
 fast/backgrounds/background-clip-text.html
 fast/backgrounds/background-fill-zero-area-crash.html
-fast/backgrounds/background-shorthand-after-set-backgroundSize.html
 fast/backgrounds/size/parsing-background-size-values.html
 fast/beacon/beacon-basic.html
 fast/block/basic/018.html

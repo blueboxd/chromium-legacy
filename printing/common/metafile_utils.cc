@@ -4,8 +4,10 @@
 
 #include "printing/common/metafile_utils.h"
 
+#include <string_view>
+#include <variant>
+
 #include "base/check.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "printing/buildflags/buildflags.h"
@@ -26,8 +28,6 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
-
-#include <variant>
 
 namespace {
 
@@ -221,7 +221,8 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
 namespace printing {
 
 sk_sp<SkDocument> MakePdfDocument(
-    base::StringPiece creator,
+    std::string_view creator,
+    std::string_view title,
     const ui::AXTreeUpdate& accessibility_tree,
     GeneratePdfDocumentOutline generate_document_outline,
     SkWStream* stream) {
@@ -229,11 +230,9 @@ sk_sp<SkDocument> MakePdfDocument(
   SkPDF::DateTime now = TimeToSkTime(base::Time::Now());
   metadata.fCreation = now;
   metadata.fModified = now;
-  // TODO(crbug.com/691162): Switch to SkString's string_view constructor when
-  // possible.
-  metadata.fCreator = creator.empty()
-                          ? SkString("Chromium")
-                          : SkString(creator.data(), creator.size());
+  metadata.fCreator =
+      creator.empty() ? SkString("Chromium") : SkString(creator);
+  metadata.fTitle = SkString(title);
   metadata.fRasterDPI = 300.0f;
 
   SkPDF::StructureElementNode tag_root = {};
@@ -336,6 +335,11 @@ sk_sp<SkData> SerializeRasterImage(SkImage* img, void*) {
   if (!img) {
     return nullptr;
   }
+  // Skip the encoding step if the image is already encoded
+  if (sk_sp<SkData> data = img->refEncodedData()) {
+    return data;
+  }
+
   // TODO(crbug.com/1486503) Convert texture-backed images to raster
   // *before* they get this far if possible.
   if (img->isTextureBacked()) {
@@ -347,6 +351,7 @@ sk_sp<SkData> SerializeRasterImage(SkImage* img, void*) {
 
 sk_sp<SkImage> DeserializeRasterImage(const void* bytes, size_t length, void*) {
   auto data = SkData::MakeWithoutCopy(bytes, length);
+  //TODO(b/40045064): Explicitly decode other supported codecs
   auto codec = SkPngDecoder::Decode(data, nullptr);
   if (codec) {
     return std::get<0>(codec->getImage());

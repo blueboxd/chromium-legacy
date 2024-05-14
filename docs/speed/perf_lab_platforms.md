@@ -8,10 +8,8 @@
 
 ### Android
 
- * [android-go-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go-perf): Android O (gobo).
  * [android-go-wembley-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go-wembley-perf): Android U.
  * [android-go-wembley_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go-wembley_webview-perf): Android U.
- * [android-go_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go_webview-perf): Android OPM1.171019.021 (gobo).
  * [android-pixel2-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2-perf): Android OPM1.171019.021.
  * [android-pixel2-perf-calibration](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2-perf-calibration): Android OPM1.171019.021.
  * [android-pixel2_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_webview-perf): Android OPM1.171019.021.
@@ -45,12 +43,12 @@
  * [win-10-perf](https://ci.chromium.org/p/chrome/builders/ci/win-10-perf): Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM, Intel Kaby Lake HD Graphics 630.
  * [win-10_amd_laptop-perf](https://ci.chromium.org/p/chrome/builders/ci/win-10_amd_laptop-perf): Windows 10 Laptop with AMD chipset..
  * [win-10_laptop_low_end-perf](https://ci.chromium.org/p/chrome/builders/ci/win-10_laptop_low_end-perf): Low end windows 10 HP laptops. HD Graphics 5500, x86-64-i3-5005U, SSD, 4GB RAM..
+ * [win-11-perf](https://ci.chromium.org/p/chrome/builders/ci/win-11-perf): Windows Dell PowerEdge R350.
 
 ## Pinpoint-Only Platforms
 
 ### Android
 
- * android-go-perf-pgo: Android O (gobo).
  * android-new-pixel-perf: Android T.
  * android-new-pixel-perf-pgo: Android T.
  * android-new-pixel-pro-perf: Android T.
@@ -75,6 +73,7 @@
  * win-10-perf-pgo: Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM, Intel Kaby Lake HD Graphics 630.
  * win-10_amd_laptop-perf-pgo: Windows 10 Laptop with AMD chipset..
  * win-10_laptop_low_end-perf-pgo: Low end windows 10 HP laptops. HD Graphics 5500, x86-64-i3-5005U, SSD, 4GB RAM..
+ * win-11-perf-pgo: Windows Dell PowerEdge R350.
 
 ## FYI Platforms
 

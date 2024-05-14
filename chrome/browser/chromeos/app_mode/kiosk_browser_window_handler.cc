@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/check_deref.h"
+#include "base/functional/function_ref.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_policies.h"
@@ -52,11 +53,20 @@ std::string GetUrlOfActiveTab(const Browser* browser) {
   return active_tab ? active_tab->GetVisibleURL().spec() : std::string();
 }
 
-void CloseAllBrowserWindows() {
-  for (auto* browser : CHECK_DEREF(BrowserList::GetInstance())) {
-    LOG(WARNING) << "kiosk: Closing unexpected browser window with url: "
-                 << GetUrlOfActiveTab(browser);
-    browser->window()->Close();
+void CloseBrowser(Browser* browser) {
+  // Note we don't use `browser.window().Close()` because it can fail if a
+  // user drags the window.
+  browser->tab_strip_model()->CloseAllTabs();
+}
+
+void CloseBrowserWindowsIf(base::FunctionRef<bool(const Browser&)> filter) {
+  for (Browser* browser : CHECK_DEREF(BrowserList::GetInstance())) {
+    if (filter(*browser)) {
+      LOG(WARNING) << "kiosk: Closing unexpected browser window with url "
+                   << GetUrlOfActiveTab(browser) << " of app "
+                   << browser->app_name();
+      CloseBrowser(browser);
+    }
   }
 }
 
@@ -66,7 +76,7 @@ const char kKioskNewBrowserWindowHistogram[] = "Kiosk.NewBrowserWindow";
 
 KioskBrowserWindowHandler::KioskBrowserWindowHandler(
     Profile* profile,
-    const absl::optional<std::string>& web_app_name,
+    const std::optional<std::string>& web_app_name,
     base::RepeatingCallback<void(bool is_closing)>
         on_browser_window_added_callback,
     base::OnceClosure shutdown_kiosk_browser_session_callback)
@@ -91,11 +101,8 @@ KioskBrowserWindowHandler::KioskBrowserWindowHandler(
                          weak_ptr_factory_.GetWeakPtr()));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  if (!web_app_name.has_value()) {
-    // If this is ChromeApp kiosk, close all preexisting browser windows to
-    // avoid potential kiosk escapes.
-    CloseAllBrowserWindows();
-  }
+  CloseAllUnexpectedBrowserWindows();
+
   BrowserList::AddObserver(this);
 }
 
@@ -130,7 +137,7 @@ void KioskBrowserWindowHandler::HandleNewBrowserWindow(Browser* browser) {
         KioskBrowserWindowType::kClosedAshBrowserWithLacrosEnabled);
     LOG(WARNING) << "Tried to open ash browser-window during lacros-kiosk"
                  << ", url=" << url_string;
-    browser->window()->Close();
+    CloseBrowser(browser);
     on_browser_window_added_callback_.Run(/*is_closing=*/true);
     return;
   }
@@ -168,7 +175,7 @@ void KioskBrowserWindowHandler::HandleNewBrowserWindow(Browser* browser) {
                                 KioskBrowserWindowType::kClosedRegularBrowser);
   LOG(WARNING) << "Force close browser opened in kiosk session"
                << ", url=" << url_string;
-  browser->window()->Close();
+  CloseBrowser(browser);
   on_browser_window_added_callback_.Run(/*is_closing=*/true);
 }
 
@@ -178,7 +185,7 @@ void KioskBrowserWindowHandler::HandleNewSettingsWindow(
   if (settings_browser_) {
     // If another settings browser exist, navigate to `url_string` in the
     // existing browser.
-    browser->window()->Close();
+    CloseBrowser(browser);
     // Navigate in the existing browser.
     NavigateParams nav_params(
         settings_browser_, GURL(url_string),
@@ -193,7 +200,7 @@ void KioskBrowserWindowHandler::HandleNewSettingsWindow(
   if (!app_browser) {
     // If this browser is not an app browser, create a new app browser if none
     // yet exists.
-    browser->window()->Close();
+    CloseBrowser(browser);
     // Create a new app browser.
     NavigateParams nav_params(
         profile_, GURL(url_string),
@@ -213,6 +220,16 @@ void KioskBrowserWindowHandler::HandleNewSettingsWindow(
   // TODO(crbug.com/1015383): Figure out how to do it more cleanly.
   browser->window()->Restore();
   browser->window()->Maximize();
+}
+
+void KioskBrowserWindowHandler::CloseAllUnexpectedBrowserWindows() {
+  CloseBrowserWindowsIf([&web_app_name =
+                             web_app_name_](const Browser& browser) {
+    // Do not close the main web app window (if any).
+    bool is_web_app = web_app_name.has_value();
+    bool is_web_app_window = is_web_app && (browser.app_name() == web_app_name);
+    return !is_web_app_window;
+  });
 }
 
 void KioskBrowserWindowHandler::OnBrowserAdded(Browser* browser) {
@@ -236,7 +253,7 @@ void KioskBrowserWindowHandler::OnBrowserRemoved(Browser* browser) {
              IsOnlySettingsBrowserRemainOpen()) {
     // Only `settings_browser_` is opened and there are no app browsers anymore.
     // So we should close `settings_browser_` and it will end the kiosk session.
-    settings_browser_->window()->Close();
+    CloseBrowser(settings_browser_);
   }
 }
 

@@ -975,8 +975,6 @@ class LocalPasswordSetupScreenTester extends ScreenElementApi {
     this.firstInput = new TextFieldApi(this.passwordInput, '#firstInput');
     this.confirmInput = new TextFieldApi(this.passwordInput, '#confirmInput');
     this.nextButton = new PolymerElementApi(this, '#nextButton');
-    this.doneDialog = new PolymerElementApi(this, '#doneDialog');
-    this.doneButton = new PolymerElementApi(this, '#doneButton');
   }
 
   /** @return {boolean} */
@@ -994,14 +992,29 @@ class LocalPasswordSetupScreenTester extends ScreenElementApi {
       });
     });
   }
+}
+
+class PasswordFactorSuccessScreenTester extends ScreenElementApi {
+  constructor() {
+    super('factor-setup-success');
+    this.doneButton = new PolymerElementApi(this, '#doneButton');
+    this.nextButton = new PolymerElementApi(this, '#nextButton');
+  }
 
   /** @return {boolean} */
   isDone() {
-    return this.doneDialog.isVisible();
+    return this.isVisible() &&
+        (this.doneButton.isVisible() || this.nextButton.isVisible());
   }
 
   clickDone() {
-    this.doneButton.click();
+    if (this.doneButton.isVisible()) {
+      this.doneButton.click();
+      return;
+    }
+    if (this.nextButton.isVisible()) {
+      this.nextButton.click();
+    }
   }
 }
 
@@ -1009,6 +1022,11 @@ class GaiaInfoScreenTester extends ScreenElementApi {
   constructor() {
     super('gaia-info');
     this.nextButton = new PolymerElementApi(this, '#nextButton');
+  }
+
+  /** @override */
+  shouldSkip() {
+    return loadTimeData.getBoolean('testapi_shouldSkipGaiaInfoScreen');
   }
 }
 
@@ -1039,6 +1057,11 @@ class ChoobeScreenTester extends ScreenElementApi {
         this.choobeScreensList, '#cr-button-theme-selection');
   }
 
+  /** @override */
+  shouldSkip() {
+    return loadTimeData.getBoolean('testapi_shouldSkipChoobe');
+  }
+
   isReadyForTesting() {
     return this.isVisible();
   }
@@ -1060,22 +1083,22 @@ class ChoobeScreenTester extends ScreenElementApi {
   }
 
   isTouchpadScrollScreenVisible() {
-    return this.touchpadScrollScreenButton.element() &&
+    return this.touchpadScrollScreenButton.element() != null &&
         this.touchpadScrollScreenButton.isVisible();
   }
 
   isDrivePinningScreenVisible() {
-    return this.drivePinningScreenButton.element() &&
+    return this.drivePinningScreenButton.element() != null &&
         this.drivePinningScreenButton.isVisible();
   }
 
   isDisplaySizeScreenVisible() {
-    return this.displaySizeScreenButton.element() &&
+    return this.displaySizeScreenButton.element() != null &&
         this.displaySizeScreenButton.isVisible();
   }
 
   isThemeSelectionScreenVisible() {
-    return this.themeSelectionScreenButton.element() &&
+    return this.themeSelectionScreenButton.element() != null &&
         this.themeSelectionScreenButton.isVisible();
   }
 
@@ -1165,6 +1188,25 @@ class ChoobeDisplaySizeTester extends ScreenElementApi {
   }
 }
 
+class HWDataCollectionScreenTester extends ScreenElementApi {
+  constructor() {
+    super('hw-data-collection');
+    this.nextButton = new PolymerElementApi(this, '#acceptButton');
+  }
+
+  /** @override */
+  shouldSkip() {
+    return loadTimeData.getBoolean('testapi_shouldSkipHwDataCollection');
+  }
+
+  isReadyForTesting() {
+    return this.isVisible();
+  }
+
+  clickNext() {
+    this.nextButton.click();
+  }
+}
 
 export class OobeApiProvider {
   constructor() {
@@ -1193,12 +1235,14 @@ export class OobeApiProvider {
       SmartPrivacyProtectionScreen: new SmartPrivacyProtectionScreenTester(),
       CryptohomeRecoverySetupScreen: new CryptohomeRecoverySetupScreenTester(),
       LocalPasswordSetupScreen: new LocalPasswordSetupScreenTester(),
+      PasswordFactorSuccessScreen: new PasswordFactorSuccessScreenTester(),
       GaiaInfoScreen: new GaiaInfoScreenTester(),
       ConsumerUpdateScreen: new ConsumerUpdateScreenTester(),
       ChoobeScreen: new ChoobeScreenTester(),
       ChoobeDrivePinningScreen: new ChoobeDrivePinningScreenTester(),
       ChoobeTouchpadScrollScreen: new ChoobeTouchpadScrollScreenTester(),
       ChoobeDisplaySizeScreen: new ChoobeDisplaySizeTester(),
+      HWDataCollectionScreen: new HWDataCollectionScreenTester(),
     };
 
     this.loginWithPin = function(username, pin) {

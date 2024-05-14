@@ -134,7 +134,7 @@ def JavaTypeToCForDeclaration(java_type):
   c_type = java_type.to_cpp()
   if java_type.is_primitive():
     return c_type
-  return f'const base::android::JavaParamRef<{c_type}>&'
+  return f'const jni_zero::JavaParamRef<{c_type}>&'
 
 
 def JavaTypeToCForCalledByNativeParam(java_type):
@@ -144,14 +144,14 @@ def JavaTypeToCForCalledByNativeParam(java_type):
     if c_type == 'jint':
       return 'JniIntWrapper'
     return c_type
-  return f'const base::android::JavaRef<{c_type}>&'
+  return f'const jni_zero::JavaRef<{c_type}>&'
 
 
 def _GetJNIFirstParam(native, for_declaration):
   c_type = 'jclass' if native.static else 'jobject'
 
   if for_declaration:
-    c_type = f'const base::android::JavaParamRef<{c_type}>&'
+    c_type = f'const jni_zero::JavaParamRef<{c_type}>&'
   return [c_type + ' jcaller']
 
 
@@ -164,10 +164,13 @@ def _GetParamsInDeclaration(native):
   Returns:
     A string containing the params.
   """
-  ret = [
-      JavaTypeToCForDeclaration(p.java_type) + ' ' + p.name
-      for p in native.params
-  ]
+  ret = []
+  for p in native.params:
+    converted_type = p.java_type.converted_type()
+    if converted_type:
+      ret.append(f'{converted_type}&& {p.name}')
+    else:
+      ret.append(JavaTypeToCForDeclaration(p.java_type) + ' ' + p.name)
   if not native.static:
     ret = _GetJNIFirstParam(native, True) + ret
   return ret
@@ -440,7 +443,7 @@ const char kClassPath_${JAVA_CLASS}[] = \
 #ifndef ${JAVA_CLASS}_clazz_defined
 #define ${JAVA_CLASS}_clazz_defined
 inline jclass ${JAVA_CLASS}_clazz(JNIEnv* env) {
-  return base::android::LazyGetClass(env, kClassPath_${JAVA_CLASS}, \
+  return jni_zero::LazyGetClass(env, kClassPath_${JAVA_CLASS}, \
 ${MAYBE_SPLIT_NAME_ARG}&g_${JAVA_CLASS}_clazz);
 }
 #endif
@@ -521,6 +524,14 @@ ${INCLUDES}
 // Step 1: Forward declarations.
 $CLASS_PATH_DEFINITIONS
 
+namespace jni_zero {
+
+// Forward declare used conversion functions to avoid a compiler warning that
+// triggers if a conversion specialization exists within the including .cc file.
+${CONVERSION_FUNCTION_DECLARATIONS}
+}  // namespace jni_zero
+
+
 // Step 2: Constants (optional).
 
 $CONSTANT_FIELDS\
@@ -531,13 +542,22 @@ $METHOD_STUBS
 #endif  // ${HEADER_GUARD}
 """)
     values = {
-        'SCRIPT_NAME': GetScriptName(),
-        'FULLY_QUALIFIED_CLASS': self.java_class.full_name_with_slashes,
-        'CLASS_PATH_DEFINITIONS': self.GetClassPathDefinitionsString(),
-        'CONSTANT_FIELDS': self.GetConstantFieldsString(),
-        'METHOD_STUBS': self.GetMethodStubsString(),
-        'HEADER_GUARD': self.header_guard,
-        'INCLUDES': self.GetIncludesString(),
+        'SCRIPT_NAME':
+        GetScriptName(),
+        'FULLY_QUALIFIED_CLASS':
+        self.java_class.full_name_with_slashes,
+        'CLASS_PATH_DEFINITIONS':
+        self.GetClassPathDefinitionsString(),
+        'CONVERSION_FUNCTION_DECLARATIONS':
+        self.GetConversionFunctionDeclarationsString(),
+        'CONSTANT_FIELDS':
+        self.GetConstantFieldsString(),
+        'METHOD_STUBS':
+        self.GetMethodStubsString(),
+        'HEADER_GUARD':
+        self.header_guard,
+        'INCLUDES':
+        self.GetIncludesString(),
     }
     open_namespace = self.GetOpenNamespaceString()
     if open_namespace:
@@ -610,13 +630,64 @@ $METHOD_STUBS
     ])
 
   def GetJavaParamRefForCall(self, c_type, name):
-    return Template(
-        'base::android::JavaParamRef<${TYPE}>(env, ${NAME})').substitute({
-            'TYPE':
-            c_type,
-            'NAME':
-            name,
+    return Template('jni_zero::JavaParamRef<${TYPE}>(env, ${NAME})').substitute(
+        {
+            'TYPE': c_type,
+            'NAME': name,
         })
+
+  def GetConversionFunctionDeclarationsString(self):
+    """Returns the specialized conversion method declarations."""
+    conversion_pairs = set()
+    for native in self.natives:
+      for param in native.params:
+        if param.java_type.converted_type():
+          original_type = param.java_type.to_cpp()
+          if original_type != 'jobjectArray':
+            conversion_pairs.add(
+                (original_type, param.java_type.converted_type()))
+    declarations = []
+    for fromtype, totype in conversion_pairs:
+      declarations.append(
+          f'template<> {totype} ConvertType<{totype}>(JNIEnv*, const JavaRef<{fromtype}>&);'
+      )
+    return '\n'.join(declarations)
+
+  def GetConvertedParamName(self, name):
+    return name + '_converted'
+
+  def GetConversionCallString(self, param):
+    template = Template(
+        '${VARIABLE_TYPE} ${CONVERTED_NAME} = '
+        'jni_zero::ConvertType<${CONVERTED_TYPE}>(env, ${ORIGINAL_NAME});')
+    maybe_template_specialization = ''
+    if param.java_type.is_array_type():
+      template = Template(
+          '${VARIABLE_TYPE} ${CONVERTED_NAME} = '
+          'jni_zero::ConvertArray<${CONVERTED_TYPE}>::Convert${MAYBE_TEMPLATE_SPECIALIZATION}(env, ${ORIGINAL_NAME});'
+      )
+      if param.java_type.non_array_full_name_with_slashes == 'java/lang/String':
+        maybe_template_specialization = '<jstring>'
+    original_type = param.java_type.to_cpp()
+    original_name = param.name
+    variable_type = f'{param.java_type.converted_type()}'
+    if not param.java_type.is_primitive():
+      original_name = self.GetJavaParamRefForCall(original_type, original_name)
+    ret = template.substitute({
+        'VARIABLE_TYPE':
+        variable_type,
+        'CONVERTED_TYPE':
+        param.java_type.converted_type(),
+        'CONVERTED_NAME':
+        self.GetConvertedParamName(param.name),
+        'ORIGINAL_NAME':
+        original_name,
+        'ORIGINAL_TYPE':
+        original_type,
+        'MAYBE_TEMPLATE_SPECIALIZATION':
+        maybe_template_specialization,
+    })
+    return ret
 
   def GetImplementationMethodName(self, native):
     return 'JNI_%s_%s' % (self.java_class.name, native.cpp_name)
@@ -631,9 +702,13 @@ $METHOD_STUBS
     if not native.static:
       # Add jcaller param.
       params_in_call.append(self.GetJavaParamRefForCall('jobject', 'jcaller'))
-
+    conversion_calls = []
     for p in params:
-      if p.java_type.is_primitive():
+      if p.java_type.converted_type():
+        params_in_call.append(
+            f'std::move({self.GetConvertedParamName(p.name)})')
+        conversion_calls.append(self.GetConversionCallString(p))
+      elif p.java_type.is_primitive():
         params_in_call.append(p.name)
       else:
         c_type = p.java_type.to_cpp()
@@ -647,8 +722,7 @@ $METHOD_STUBS
     post_call = ''
     if not native.return_type.is_primitive():
       post_call = '.Release()'
-      return_declaration = ('base::android::ScopedJavaLocalRef<' + return_type +
-                            '>')
+      return_declaration = ('jni_zero::ScopedJavaLocalRef<' + return_type + '>')
 
     values = {
         'RETURN': return_type,
@@ -659,6 +733,7 @@ $METHOD_STUBS
         'PARAMS_IN_STUB': GetParamsInStub(native),
         'PARAMS_IN_CALL': params_in_call,
         'POST_CALL': post_call,
+        'CONVERSION_CALLS': '\n  '.join(conversion_calls),
         'STUB_NAME': self.helper.GetStubName(native),
     }
 
@@ -678,6 +753,7 @@ JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
     ${PARAMS_IN_STUB}) {
   ${P0_TYPE}* native = reinterpret_cast<${P0_TYPE}*>(${PARAM0_NAME});
   CHECK_NATIVE_PTR(env, jcaller, native, "${NAME}"${OPTIONAL_ERROR_RETURN});
+  ${CONVERSION_CALLS}
   return native->${NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
@@ -690,6 +766,7 @@ static ${RETURN_DECLARATION} ${IMPL_METHOD_NAME}(JNIEnv* env${PARAMS});
 JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
     JNIEnv* env,
     ${PARAMS_IN_STUB}) {
+  ${CONVERSION_CALLS}
   return ${IMPL_METHOD_NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
@@ -712,8 +789,7 @@ JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
       first_param_in_declaration = ''
       first_param_in_call = 'clazz'
     else:
-      first_param_in_declaration = (
-          ', const base::android::JavaRef<jobject>& obj')
+      first_param_in_declaration = (', const jni_zero::JavaRef<jobject>& obj')
       first_param_in_call = 'obj.obj()'
     params_in_declaration = self.GetCalledByNativeParamsInDeclaration(
         called_by_native)
@@ -750,8 +826,7 @@ JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
       if return_type.is_primitive():
         return_clause = 'return ret;'
       else:
-        return_type_str = (
-            f'base::android::ScopedJavaLocalRef<{return_type_str}>')
+        return_type_str = (f'jni_zero::ScopedJavaLocalRef<{return_type_str}>')
         return_clause = f'return {return_type_str}(env, ret);'
     sig = called_by_native.signature
     jni_descriptor = sig.to_descriptor()
@@ -796,9 +871,9 @@ ${FUNCTION_HEADER}
   CHECK_CLAZZ(env, ${FIRST_PARAM_IN_CALL},
       ${JAVA_CLASS}_clazz(env)${OPTIONAL_ERROR_RETURN});
 
-  jni_generator::JniJavaCallContext${CHECK_EXCEPTION} call_context;
+  jni_zero::JniJavaCallContext${CHECK_EXCEPTION} call_context;
   call_context.Init<
-      base::android::MethodID::TYPE_${METHOD_ID_TYPE}>(
+      jni_zero::MethodID::TYPE_${METHOD_ID_TYPE}>(
           env,
           clazz,
           "${JNI_NAME}",

@@ -53,11 +53,12 @@
 #endif
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #endif
 
 #include "partition_alloc/partition_alloc_base/posix/eintr_wrapper.h"
@@ -73,8 +74,8 @@ void WriteToStderr(const char* data, size_t length) {
   size_t bytes_written = 0;
   int rv;
   while (bytes_written < length) {
-    rv = PA_HANDLE_EINTR(
-        write(STDERR_FILENO, data + bytes_written, length - bytes_written));
+    rv = WrapEINTR(write)(STDERR_FILENO, data + bytes_written,
+                          length - bytes_written);
     if (rv < 0) {
       // Give up, nothing we can do now.
       break;

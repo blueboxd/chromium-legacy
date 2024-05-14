@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
 
+#include <optional>
 #include <vector>
 
 #include "base/files/file_util.h"
@@ -36,7 +37,6 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/mojom/themes.mojom.h"
 #include "ui/base/ui_base_features.h"
@@ -136,9 +136,8 @@ base::Time GetReferenceTime() {
 class NtpCustomBackgroundServiceTest : public testing::Test {
  public:
   NtpCustomBackgroundServiceTest()
-      : profile_(MakeTestingProfile(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_))),
+      : profile_(
+            MakeTestingProfile(test_url_loader_factory_.GetSafeWeakWrapper())),
         mock_theme_service_(static_cast<MockThemeService*>(
             ThemeServiceFactory::GetForProfile(profile_.get()))),
         mock_ntp_background_service_(static_cast<MockNtpBackgroundService*>(
@@ -176,12 +175,12 @@ class NtpCustomBackgroundServiceTest : public testing::Test {
  protected:
   // NOTE: The initialization order of these members matters.
   content::BrowserTaskEnvironment task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestingProfile> profile_;
   base::SimpleTestClock clock_;
   MockNtpCustomBackgroundServiceObserver observer_;
   raw_ptr<MockThemeService> mock_theme_service_;
   raw_ptr<MockNtpBackgroundService> mock_ntp_background_service_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<NtpCustomBackgroundService> custom_background_service_;
 };
@@ -698,6 +697,10 @@ TEST_F(NtpCustomBackgroundServiceTest, ConfirmBackgroundChanges) {
 }
 
 TEST_F(NtpCustomBackgroundServiceTest, TestUpdateCustomBackgroundColor) {
+  // TODO (crbug/1520873): Fix and re-enable or remove if no longer relevant.
+  if (features::IsChromeRefresh2023()) {
+    GTEST_SKIP();
+  }
   // Turn on Color Extraction feature.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -1058,7 +1061,7 @@ TEST_F(NtpCustomBackgroundServiceTest, SetBackgroundToLocalResourceWithId) {
       profile().GetTestingPrefService();
 
   base::Token token = base::Token::CreateRandom();
-  custom_background_service_->SetBackgroundToLocalResourceWithId(token);
+  custom_background_service_->SetBackgroundToLocalResourceWithId(token, true);
   task_environment_.RunUntilIdle();
 
   // Check that local background image was set.
@@ -1072,6 +1075,8 @@ TEST_F(NtpCustomBackgroundServiceTest, SetBackgroundToLocalResourceWithId) {
       pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
   EXPECT_EQ(pref_service->GetString(prefs::kNtpCustomBackgroundLocalToDeviceId),
             token.ToString());
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpCustomBackgroundInspiration));
   EXPECT_TRUE(custom_background_service_->IsCustomBackgroundSet());
   EXPECT_EQ(true, custom_background->is_uploaded_image);
+  EXPECT_TRUE(custom_background->is_inspiration_image);
 }

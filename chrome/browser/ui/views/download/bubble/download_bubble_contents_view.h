@@ -35,14 +35,14 @@ class BubbleDialogDelegate;
 // before possibly being switched to the security view.
 class DownloadBubbleContentsView : public views::View,
                                    public DownloadBubbleSecurityView::Delegate {
+  METADATA_HEADER(DownloadBubbleContentsView, views::View)
+
  public:
   // Types of pages that this view can show.
   enum class Page {
     kPrimary,
     kSecurity,
   };
-
-  METADATA_HEADER(DownloadBubbleContentsView);
 
   DownloadBubbleContentsView(
       base::WeakPtr<Browser> browser,
@@ -116,6 +116,12 @@ class DownloadBubbleContentsView : public views::View,
   std::unique_ptr<DownloadBubbleContentsViewInfo> info_;
 
   base::WeakPtr<DownloadBubbleUIController> bubble_controller_;
+  base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler_;
+
+  // TODO(crbug.com/1346369): The delegate should outlive the views.
+  // Currently, the delegate is deleted in OnNativeWidetDestroyed(),
+  // invalidating this pointer before this view is destroyed.
+  raw_ptr<views::BubbleDialogDelegate, DanglingUntriaged> bubble_delegate_;
 
   // May be a DownloadBubblePartialView or a DownloadDialogView (main view).
   raw_ptr<DownloadBubblePrimaryView> primary_view_ = nullptr;

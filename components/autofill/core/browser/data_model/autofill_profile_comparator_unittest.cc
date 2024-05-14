@@ -34,14 +34,10 @@ using autofill::ADDRESS_HOME_SORTING_CODE;
 using autofill::ADDRESS_HOME_STATE;
 using autofill::ADDRESS_HOME_STREET_ADDRESS;
 using autofill::ADDRESS_HOME_ZIP;
-using autofill::BIRTHDATE_4_DIGIT_YEAR;
-using autofill::BIRTHDATE_DAY;
-using autofill::BIRTHDATE_MONTH;
 using autofill::COMPANY_NAME;
 using autofill::EMAIL_ADDRESS;
 using autofill::NAME_FIRST;
 using autofill::NAME_FULL;
-using autofill::NAME_HONORIFIC_PREFIX;
 using autofill::NAME_LAST;
 using autofill::NAME_MIDDLE;
 using autofill::PHONE_HOME_CITY_AND_NUMBER;
@@ -55,12 +51,11 @@ using autofill::Address;
 using autofill::AutofillClock;
 using autofill::AutofillProfile;
 using autofill::AutofillType;
-using autofill::Birthdate;
 using autofill::CompanyInfo;
 using autofill::EmailInfo;
+using autofill::FieldType;
 using autofill::NameInfo;
 using autofill::PhoneNumber;
-using autofill::ServerFieldType;
 using autofill::i18n_model_definition::kLegacyHierarchyCountryCode;
 
 namespace {
@@ -78,7 +73,6 @@ class AutofillProfileComparatorTest : public testing::Test {
     using Super::CompareTokens;
     using Super::GetNamePartVariants;
     using Super::HaveMergeableAddresses;
-    using Super::HaveMergeableBirthdates;
     using Super::HaveMergeableCompanyNames;
     using Super::HaveMergeableEmailAddresses;
     using Super::HaveMergeableNames;
@@ -187,19 +181,9 @@ class AutofillProfileComparatorTest : public testing::Test {
     return profile;
   }
 
-  AutofillProfile CreateProfileWithBirthdate(const char* day,
-                                             const char* month,
-                                             const char* year) {
-    AutofillProfile profile(kLegacyHierarchyCountryCode);
-    profile.SetRawInfo(BIRTHDATE_DAY, base::UTF8ToUTF16(day));
-    profile.SetRawInfo(BIRTHDATE_MONTH, base::UTF8ToUTF16(month));
-    profile.SetRawInfo(BIRTHDATE_4_DIGIT_YEAR, base::UTF8ToUTF16(year));
-    return profile;
-  }
-
   AutofillProfile CopyAndModify(
       const AutofillProfile& profile,
-      const std::vector<std::pair<ServerFieldType, const char16_t*>>& updates) {
+      const std::vector<std::pair<FieldType, const char16_t*>>& updates) {
     AutofillProfile new_profile = profile;
     for (const auto& [field_type, value] : updates) {
       new_profile.SetRawInfo(field_type, value);
@@ -690,26 +674,6 @@ TEST_F(AutofillProfileComparatorTest, HaveMergeableAddresses) {
   EXPECT_FALSE(comparator_.HaveMergeableAddresses(p1, differentSortingCode));
 }
 
-TEST_F(AutofillProfileComparatorTest, HaveMergeableBirthdates) {
-  // Birthdates are mergeable if the components are either equal or one of them
-  // is empty.
-  AutofillProfile p1 = CreateProfileWithBirthdate("14", "", "1997");
-  AutofillProfile p2 = CreateProfileWithBirthdate("", "3", "1997");
-  AutofillProfile p3 = CreateProfileWithBirthdate("15", "4", "1997");
-
-  EXPECT_TRUE(comparator_.HaveMergeableBirthdates(p1, p1));
-  EXPECT_TRUE(comparator_.HaveMergeableBirthdates(p1, p2));
-  EXPECT_FALSE(comparator_.HaveMergeableBirthdates(p1, p3));
-
-  EXPECT_TRUE(comparator_.HaveMergeableBirthdates(p2, p1));
-  EXPECT_TRUE(comparator_.HaveMergeableBirthdates(p2, p2));
-  EXPECT_FALSE(comparator_.HaveMergeableBirthdates(p2, p3));
-
-  EXPECT_FALSE(comparator_.HaveMergeableBirthdates(p3, p1));
-  EXPECT_FALSE(comparator_.HaveMergeableBirthdates(p3, p2));
-  EXPECT_TRUE(comparator_.HaveMergeableBirthdates(p3, p3));
-}
-
 TEST_F(AutofillProfileComparatorTest, AreMergeable) {
   AutofillProfile p(AddressCountryCode("US"));
   autofill::test::SetProfileInfo(&p, "Marion", "Mitchell", "Morrison",
@@ -1193,22 +1157,6 @@ TEST_F(AutofillProfileComparatorTest,
   MergeAddressesAndExpect(p2, p1, expected);
 }
 
-TEST_F(AutofillProfileComparatorTest, MergeBirthdates) {
-  AutofillProfile profile1 = CreateProfileWithBirthdate("14", "", "1997");
-  AutofillProfile profile2 = CreateProfileWithBirthdate("", "3", "1997");
-
-  Birthdate expected;
-  expected.SetRawInfo(BIRTHDATE_DAY, u"14");
-  expected.SetRawInfo(BIRTHDATE_MONTH, u"3");
-  expected.SetRawInfo(BIRTHDATE_4_DIGIT_YEAR, u"1997");
-
-  Birthdate actual;
-  EXPECT_TRUE(comparator_.MergeBirthdates(profile1, profile2, actual));
-  for (ServerFieldType component : Birthdate::GetRawComponents()) {
-    EXPECT_EQ(expected.GetRawInfo(component), actual.GetRawInfo(component));
-  }
-}
-
 TEST_F(AutofillProfileComparatorTest, MergeLandmarkAndBetweenStreetsAndAdmin2) {
   AutofillProfile empty(kLegacyHierarchyCountryCode);
   AutofillProfile profile2(kLegacyHierarchyCountryCode);
@@ -1275,7 +1223,7 @@ TEST_F(AutofillProfileComparatorTest,
           existing_profile, existing_profile, kLocale));
 
   // Test for most settings visible types that a change is correctly recognized.
-  for (ServerFieldType changed_type :
+  for (FieldType changed_type :
        {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
         ADDRESS_HOME_ZIP, ADDRESS_HOME_ADMIN_LEVEL2, EMAIL_ADDRESS,
         PHONE_HOME_WHOLE_NUMBER}) {
@@ -1349,7 +1297,7 @@ TEST_F(AutofillProfileComparatorTest, GetProfileDifferenceMap) {
           .empty());
 
   // But there should be difference in ADDRESS_HOME_ZIP type.
-  base::flat_map<ServerFieldType, std::pair<std::u16string, std::u16string>>
+  base::flat_map<FieldType, std::pair<std::u16string, std::u16string>>
       expected_difference;
   expected_difference.insert({ADDRESS_HOME_ZIP, {u"zip", u"another_zip"}});
 
@@ -1408,7 +1356,7 @@ TEST_F(AutofillProfileComparatorTest, GetSettingsVisibleProfileDifferenceMap) {
 
   // Change the zip code of the second profile and test the difference.
   second_existing_profile.SetRawInfo(ADDRESS_HOME_ZIP, u"another_zip");
-  base::flat_map<ServerFieldType, std::pair<std::u16string, std::u16string>>
+  base::flat_map<FieldType, std::pair<std::u16string, std::u16string>>
       expected_difference;
   expected_difference.insert({ADDRESS_HOME_ZIP, {u"zip", u"another_zip"}});
   EXPECT_EQ(AutofillProfileComparator::GetSettingsVisibleProfileDifferenceMap(

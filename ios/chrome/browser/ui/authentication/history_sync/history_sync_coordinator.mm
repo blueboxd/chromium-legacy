@@ -4,9 +4,12 @@
 
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_coordinator.h"
 
+#import "base/feature_list.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "components/signin/public/base/signin_metrics.h"
+#import "components/signin/public/base/signin_switches.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
@@ -35,7 +38,7 @@
   // History view controller.
   HistorySyncViewController* _viewController;
   // Pref service.
-  PrefService* _prefService;
+  raw_ptr<PrefService> _prefService;
   // `YES` if coordinator used during the first run.
   BOOL _firstRun;
   // `YES` if the user's email should be shown in the footer text.
@@ -164,6 +167,12 @@
 
   _viewController = [[HistorySyncViewController alloc] init];
   _viewController.delegate = self;
+
+  // TODO(b/318349283): This property will also be based on the capability
+  // CanShowHistorySyncOptInsWithoutMinorModeRestrictions.
+  _viewController.useEquallyWeightedButtons = base::FeatureList::IsEnabled(
+      switches::kMinorModeRestrictionsForHistorySyncOptIn);
+
   ChromeAccountManagerService* chromeAccountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
   signin::IdentityManager* identityManager =
@@ -178,7 +187,7 @@
   _mediator.delegate = self;
   if (_firstRun) {
     _viewController.modalInPresentation = YES;
-    base::UmaHistogramEnumeration("FirstRun.Stage",
+    base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,
                                   first_run::kHistorySyncScreenStart);
   }
   base::RecordAction(base::UserMetricsAction("Signin_HistorySync_Started"));
@@ -235,7 +244,8 @@
   base::RecordAction(base::UserMetricsAction("Signin_HistorySync_Completed"));
   if (_firstRun) {
     base::UmaHistogramEnumeration(
-        "FirstRun.Stage", first_run::kHistorySyncScreenCompletionWithSync);
+        first_run::kFirstRunStageHistogram,
+        first_run::kHistorySyncScreenCompletionWithSync);
   }
   base::UmaHistogramEnumeration("Signin.HistorySyncOptIn.Completed",
                                 _accessPoint,
@@ -250,7 +260,8 @@
   base::RecordAction(base::UserMetricsAction("Signin_HistorySync_Declined"));
   if (_firstRun) {
     base::UmaHistogramEnumeration(
-        "FirstRun.Stage", first_run::kHistorySyncScreenCompletionWithoutSync);
+        first_run::kFirstRunStageHistogram,
+        first_run::kHistorySyncScreenCompletionWithoutSync);
   }
   base::UmaHistogramEnumeration("Signin.HistorySyncOptIn.Declined",
                                 _accessPoint,

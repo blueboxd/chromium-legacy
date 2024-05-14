@@ -144,7 +144,8 @@ class HttpsLatencyRoutineTest : public ::testing::Test {
     test_profile_ = profile_manager_.CreateTestingProfile(kFakeTestProfile);
 
     // Set up routine with fakes.
-    https_latency_routine_ = std::make_unique<HttpsLatencyRoutine>();
+    https_latency_routine_ = std::make_unique<HttpsLatencyRoutine>(
+        mojom::RoutineCallSource::kDiagnosticsUI);
     https_latency_routine_->set_network_context_getter(base::BindRepeating(
         &HttpsLatencyRoutineTest::GetNetworkContext, base::Unretained(this)));
     https_latency_routine_->set_http_request_manager_getter(
@@ -172,8 +173,7 @@ class HttpsLatencyRoutineTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   session_manager::SessionManager session_manager_;
   std::unique_ptr<FakeNetworkContext> fake_network_context_;
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh>
-      test_profile_;  // Unowned
+  raw_ptr<Profile, DanglingUntriaged> test_profile_;  // Unowned
   TestingProfileManager profile_manager_;
   std::unique_ptr<HttpsLatencyRoutine> https_latency_routine_;
   base::WeakPtrFactory<HttpsLatencyRoutineTest> weak_factory_{this};

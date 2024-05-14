@@ -383,18 +383,24 @@ void SimpleMenuModel::SetElementIdentifierAt(size_t index,
   items_[ValidateItemIndex(index)].unique_id = unique_id;
 }
 
+void SimpleMenuModel::SetExecuteCallbackAt(
+    size_t index,
+    base::RepeatingCallback<void(int)> callback) {
+  items_[ValidateItemIndex(index)].on_execute_callback = callback;
+}
+
 void SimpleMenuModel::Clear() {
   items_.clear();
   MenuItemsChanged();
 }
 
-absl::optional<size_t> SimpleMenuModel::GetIndexOfCommandId(
+std::optional<size_t> SimpleMenuModel::GetIndexOfCommandId(
     int command_id) const {
   for (auto i = items_.begin(); i != items_.end(); ++i) {
     if (i->command_id == command_id)
       return static_cast<size_t>(std::distance(items_.begin(), i));
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -532,8 +538,18 @@ void SimpleMenuModel::ActivatedAt(size_t index) {
 }
 
 void SimpleMenuModel::ActivatedAt(size_t index, int event_flags) {
-  if (delegate_)
-    delegate_->ExecuteCommand(GetCommandIdAt(index), event_flags);
+  if (!delegate_) {
+    return;
+  }
+  // The delegate might be destroyed after executing the command. Hence the
+  // callback is temporarily copied. The delegate destruction is tested in
+  // MenuControllerTest.OwningDelegate.
+  const base::RepeatingCallback<void(int)> on_execute_callback =
+      items_[ValidateItemIndex(index)].on_execute_callback;
+  delegate_->ExecuteCommand(GetCommandIdAt(index), event_flags);
+  if (on_execute_callback) {
+    on_execute_callback.Run(event_flags);
+  }
 }
 
 MenuModel* SimpleMenuModel::GetSubmenuModelAt(size_t index) const {

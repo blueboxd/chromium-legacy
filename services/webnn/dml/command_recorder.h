@@ -7,12 +7,13 @@
 
 #include <DirectML.h>
 #include <wrl.h>
+
+#include <optional>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace webnn::dml {
 
@@ -33,6 +34,10 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) CommandRecorder final {
   ~CommandRecorder();
   CommandRecorder(const CommandRecorder&) = delete;
   CommandRecorder& operator=(const CommandRecorder&) = delete;
+
+  // Indicates whether the underlying D3D12 device supports UMA (Unified Memory
+  // Architecture).
+  bool IsUMA() const;
 
   IDMLDevice* GetDMLDevice() const;
 
@@ -55,6 +60,13 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) CommandRecorder final {
   // delete this command recorder that ensures to release the references of all
   // recorded commands and their resources.
   HRESULT Open();
+
+  // Close the command list.
+  HRESULT Close();
+  // Submit the command list for execution and reference all resources required
+  // by this execution.
+  HRESULT Execute();
+  // This method will call the above `Close()` and `Execute()` methods.
   HRESULT CloseAndExecute();
 
   void ResourceBarrier(base::span<const D3D12_RESOURCE_BARRIER> barriers);
@@ -89,8 +101,8 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) CommandRecorder final {
   // until the operator initialization has completed on the GPU.
   HRESULT InitializeOperator(
       IDMLCompiledOperator* compiled_operator,
-      const absl::optional<DML_BINDING_DESC>& input_array_binding,
-      const absl::optional<DML_BINDING_DESC>& persistent_resource_binding);
+      const std::optional<DML_BINDING_DESC>& input_array_binding,
+      const std::optional<DML_BINDING_DESC>& persistent_resource_binding);
 
   // Execute a compiled DirectML operator after it is initialized. The caller is
   // allowed to call this method multiple times to record operator executions
@@ -122,8 +134,8 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) CommandRecorder final {
       ComPtr<ID3D12DescriptorHeap> descriptor_heap,
       base::span<const DML_BINDING_DESC> input_bindings,
       base::span<const DML_BINDING_DESC> output_bindings,
-      const absl::optional<DML_BINDING_DESC>& persistent_resource_binding,
-      const absl::optional<DML_BINDING_DESC>& temporary_resource_binding);
+      const std::optional<DML_BINDING_DESC>& persistent_resource_binding,
+      const std::optional<DML_BINDING_DESC>& temporary_resource_binding);
 
   // Create a resource with `size` bytes in
   // D3D12_RESOURCE_STATE_UNORDERED_ACCESS state from the default heap of the
@@ -146,6 +158,24 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) CommandRecorder final {
                                const wchar_t* name_for_debugging,
                                ComPtr<ID3D12Resource>& resource);
 
+  // Create a resource with `size` bytes in
+  // D3D12_RESOURCE_STATE_UNORDERED_ACCESS state and from a custom heap with CPU
+  // memory pool (D3D12_MEMORY_POOL_L0) optimized for CPU uploading data to GPU.
+  // This type of buffer should only be created for GPU with UMA (Unified Memory
+  // Architecture).
+  HRESULT CreateCustomUploadBuffer(uint64_t size,
+                                   const wchar_t* name_for_debugging,
+                                   ComPtr<ID3D12Resource>& resource);
+
+  // Create a resource with `size` bytes in
+  // D3D12_RESOURCE_STATE_UNORDERED_ACCESS state and from a custom heap with CPU
+  // memory pool (D3D12_MEMORY_POOL_L0) optimized for CPU reading data back from
+  // GPU. This type of buffer should only be created for GPU with UMA (Unified
+  // Memory Architecture).
+  HRESULT CreateCustomReadbackBuffer(uint64_t size,
+                                     const wchar_t* name_for_debugging,
+                                     ComPtr<ID3D12Resource>& resource);
+
   // Create a descriptor heap with D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV type,
   // D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE flag and large enough for the
   // number of descriptors.
@@ -154,10 +184,14 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) CommandRecorder final {
                                ComPtr<ID3D12DescriptorHeap>& descriptor_heap);
 
  private:
-  CommandRecorder(scoped_refptr<CommandQueue> command_queue,
+  CommandRecorder(bool is_uma,
+                  scoped_refptr<CommandQueue> command_queue,
                   ComPtr<IDMLDevice> dml_device,
                   ComPtr<ID3D12CommandAllocator> command_allocator,
                   ComPtr<IDMLCommandRecorder> command_recorder);
+
+  // Store the info of D3D12_FEATURE_DATA_ARCHITECTURE.
+  const bool is_uma_ = false;
 
   bool is_open_ = false;
   // The first call to `CloseAndExecute()` sets the first submitted fence value.

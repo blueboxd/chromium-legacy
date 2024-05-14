@@ -6,11 +6,11 @@
 #define COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_PACKAGE_ID_H_
 
 #include <iosfwd>
+#include <optional>
 #include <string>
+#include <string_view>
 
-#include "base/strings/string_piece.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
 
@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(APP_TYPES) PackageId {
   // Creates a Package ID from App Type and opaque package identifier.
   // `app_type` must be a supported type (Web or ARC), and `identifier` must be
   // a non-empty string.
-  PackageId(AppType app_type, base::StringPiece identifier);
+  PackageId(AppType app_type, std::string_view identifier);
 
   PackageId(const PackageId&);
   PackageId& operator=(const PackageId&);
@@ -44,9 +44,9 @@ class COMPONENT_EXPORT(APP_TYPES) PackageId {
   bool operator!=(const PackageId&) const;
 
   // Parses a package ID from the canonical string format. Returns
-  // absl::nullopt if parsing failed.
-  static absl::optional<PackageId> FromString(
-      base::StringPiece package_id_string);
+  // std::nullopt if parsing failed.
+  static std::optional<PackageId> FromString(
+      std::string_view package_id_string);
 
   // Returns the package ID formatted in canonical string form.
   std::string ToString() const;

@@ -126,6 +126,9 @@ class FeaturePromoLifecycleTest : public testing::Test {
       case PromoSubtype::kLegalNotice:
         name = "LegalNotice.";
         break;
+      case PromoSubtype::kActionableAlert:
+        name = "ActionableAlert.";
+        break;
       case PromoSubtype::kNormal:
         break;
     }
@@ -158,7 +161,7 @@ class FeaturePromoLifecycleTest : public testing::Test {
         "UserEducation.MessageShown.Type",
         static_cast<int>(lifecycle->promo_type()), shown_count);
     histogram_tester_.ExpectBucketCount(
-        "UserEducation.MessageShown.SubType",
+        "UserEducation.MessageShown.Subtype",
         static_cast<int>(lifecycle->promo_subtype()), shown_count);
   }
 
@@ -321,6 +324,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::Values(PromoType::kTutorial),
                      testing::Values(PromoSubtype::kNormal,
                                      PromoSubtype::kPerApp,
+                                     PromoSubtype::kActionableAlert,
                                      PromoSubtype::kLegalNotice),
                      testing::Values(CloseReason::kDismiss,
                                      CloseReason::kSnooze,
@@ -403,6 +407,7 @@ INSTANTIATE_TEST_SUITE_P(
                                      PromoType::kCustomAction),
                      testing::Values(PromoSubtype::kNormal,
                                      PromoSubtype::kPerApp,
+                                     PromoSubtype::kActionableAlert,
                                      PromoSubtype::kLegalNotice)),
     (ParamToString<PromoType, PromoSubtype>));
 
@@ -417,12 +422,7 @@ TEST_P(FeaturePromoLifecycleTypesTest, BlockDismissedIPH) {
   EXPECT_CALL(tracker_, Dismissed);
   lifecycle->OnPromoEnded(CloseReason::kDismiss);
   lifecycle = CreateLifecycle(kTestIPHFeature);
-  const auto expect_can_show = (promo_subtype() == PromoSubtype::kNormal &&
-                                (promo_type() == PromoType::kLegacy ||
-                                 promo_type() == PromoType::kToast))
-                                   ? FeaturePromoResult::Success()
-                                   : FeaturePromoResult::kPermanentlyDismissed;
-  EXPECT_EQ(expect_can_show, lifecycle->CanShow());
+  EXPECT_EQ(FeaturePromoResult::kPermanentlyDismissed, lifecycle->CanShow());
   storage_service_.Reset(kTestIPHFeature);
   lifecycle = CreateLifecycle(kTestIPHFeature);
   EXPECT_TRUE(lifecycle->CanShow());

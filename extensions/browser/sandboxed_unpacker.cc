@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -43,6 +44,7 @@
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_resource_path_normalizer.h"
 #include "extensions/common/extension_utility_types.h"
@@ -375,7 +377,7 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   Unzip(link_free_crx_path, unzipped_dir);
 }
 
-void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
+void SandboxedUnpacker::StartWithDirectory(const ExtensionId& extension_id,
                                            const std::string& public_key,
                                            const base::FilePath& directory) {
   // We assume that we are started on the thread that the client wants us
@@ -824,7 +826,7 @@ data_decoder::mojom::JsonParser* SandboxedUnpacker::GetJsonParserPtr() {
   return io_thread_state_->GetJsonParserPtr(this);
 }
 
-void SandboxedUnpacker::ReportUnpackExtensionFailed(base::StringPiece error) {
+void SandboxedUnpacker::ReportUnpackExtensionFailed(std::string_view error) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   ReportFailure(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED,
                 l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,

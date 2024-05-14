@@ -23,7 +23,6 @@ mojom("cros_camera_common") {
 
   # ChromeOS is still heavily reliant on legacy bindings.
   generate_legacy_js_bindings = true
-  use_typescript_sources = true
 }
 
 mojom("cros_camera") {
@@ -48,4 +47,9 @@ mojom("jpeg_accelerator") {
   sources = [ "jpeg_accelerator.mojom" ]
 
   deps = [ "//components/chromeos_camera/common" ]
+}
+
+mojom("system_event_monitor") {
+  sources = [ "system_event_monitor.mojom" ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

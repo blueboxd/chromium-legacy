@@ -53,7 +53,7 @@ class DocumentScanAshTest : public testing::Test {
     const user_manager::User* user =
         fake_user_manager_->AddUserWithAffiliationAndTypeAndProfile(
             account_id,
-            /*is_affiliated=*/false, user_manager::USER_TYPE_REGULAR,
+            /*is_affiliated=*/false, user_manager::UserType::kRegular,
             &profile_);
     fake_user_manager_->UserLoggedIn(account_id, user->username_hash(),
                                      /*browser_restart=*/false,
@@ -553,7 +553,7 @@ TEST_F(DocumentScanAshTest, GetOptionGroups_FeatureDisabled) {
             EXPECT_EQ(response->scanner_handle, "scanner-handle");
             EXPECT_EQ(response->result,
                       mojom::ScannerOperationResult::kUnsupported);
-            EXPECT_FALSE(response->options.has_value());
+            EXPECT_FALSE(response->groups.has_value());
           }));
   run_loop.Run();
 }
@@ -569,7 +569,7 @@ TEST_F(DocumentScanAshTest, GetOptionGroups_BadResponse) {
             EXPECT_EQ(response->scanner_handle, "scanner-handle");
             EXPECT_EQ(response->result,
                       mojom::ScannerOperationResult::kInternalError);
-            EXPECT_FALSE(response->options.has_value());
+            EXPECT_FALSE(response->groups.has_value());
           }));
   run_loop.Run();
 }
@@ -598,10 +598,10 @@ TEST_F(DocumentScanAshTest, GetOptionGroups_GoodResponse) {
             EXPECT_EQ(response->scanner_handle, "scanner-handle");
             EXPECT_EQ(response->result,
                       mojom::ScannerOperationResult::kSuccess);
-            EXPECT_TRUE(response->options.has_value());
-            ASSERT_EQ(response->options.value().size(), 1U);
-            EXPECT_EQ(response->options.value()[0]->title, "group-title");
-            EXPECT_THAT(response->options.value()[0]->members,
+            EXPECT_TRUE(response->groups.has_value());
+            ASSERT_EQ(response->groups.value().size(), 1U);
+            EXPECT_EQ(response->groups.value()[0]->title, "group-title");
+            EXPECT_THAT(response->groups.value()[0]->members,
                         ElementsAre("group-member"));
           }));
   run_loop.Run();

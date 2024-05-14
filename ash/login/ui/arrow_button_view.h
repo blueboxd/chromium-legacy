@@ -24,9 +24,9 @@ namespace ash {
 // This will be used by LoginPublicAccountUserView and expanded public account
 // view.
 class ASH_EXPORT ArrowButtonView : public LoginButton {
- public:
-  METADATA_HEADER(ArrowButtonView);
+  METADATA_HEADER(ArrowButtonView, LoginButton)
 
+ public:
   ArrowButtonView(PressedCallback callback, int size);
   ArrowButtonView(const ArrowButtonView&) = delete;
   ArrowButtonView& operator=(const ArrowButtonView&) = delete;
@@ -65,7 +65,7 @@ class ASH_EXPORT ArrowButtonView : public LoginButton {
     void AnimationProgressed(const gfx::Animation* animation) override;
 
    private:
-    const raw_ptr<ArrowButtonView, ExperimentalAsh> owner_;
+    const raw_ptr<ArrowButtonView> owner_;
   };
 
   LoadingAnimationDelegate loading_animation_delegate_{this};

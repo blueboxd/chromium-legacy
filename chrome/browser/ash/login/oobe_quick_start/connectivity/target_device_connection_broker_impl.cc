@@ -91,8 +91,7 @@ std::vector<uint8_t> GetEndpointInfoDisplayNameBytes(
 std::vector<uint8_t> Base64EncodeOmitPadding(
     const std::vector<uint8_t>& bytes) {
   std::string input(bytes.begin(), bytes.end());
-  std::string output;
-  base::Base64Encode(input, &output);
+  std::string output = base::Base64Encode(input);
 
   // Strip padding characters from end.
   const size_t last_non_padding_pos =
@@ -128,13 +127,13 @@ TargetDeviceConnectionBrokerImpl::BluetoothAdapterFactoryWrapper*
         bluetooth_adapter_factory_wrapper_for_testing_ = nullptr;
 
 TargetDeviceConnectionBrokerImpl::TargetDeviceConnectionBrokerImpl(
-    SessionContext session_context,
+    SessionContext* session_context,
     QuickStartConnectivityService* quick_start_connectivity_service,
     std::unique_ptr<Connection::Factory> connection_factory)
     : session_context_(session_context),
       quick_start_connectivity_service_(quick_start_connectivity_service),
       connection_factory_(std::move(connection_factory)) {
-  is_resume_after_update_ = session_context_.is_resume_after_update();
+  is_resume_after_update_ = session_context_->is_resume_after_update();
   GetBluetoothAdapter();
 }
 
@@ -221,8 +220,8 @@ void TargetDeviceConnectionBrokerImpl::StartAdvertising(
 void TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising(
     ResultCallback callback) {
   QS_LOG(INFO) << "Starting Fast Pair advertising with advertising id "
-               << session_context_.advertising_id() << " ("
-               << session_context_.advertising_id().GetDisplayCode() << ")";
+               << session_context_->advertising_id() << " ("
+               << session_context_->advertising_id().GetDisplayCode() << ")";
 
   fast_pair_advertiser_ =
       FastPairAdvertiser::Factory::Create(bluetooth_adapter_);
@@ -236,7 +235,7 @@ void TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising(
       base::BindOnce(
           &TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingError,
           weak_ptr_factory_.GetWeakPtr(), std::move(failure_callback)),
-      session_context_.advertising_id(), use_pin_authentication_);
+      session_context_->advertising_id(), use_pin_authentication_);
 }
 
 void TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingSuccess(
@@ -270,7 +269,7 @@ void TargetDeviceConnectionBrokerImpl::StopAdvertising(
 }
 
 std::string TargetDeviceConnectionBrokerImpl::GetAdvertisingIdDisplayCode() {
-  return session_context_.advertising_id().GetDisplayCode();
+  return session_context_->advertising_id().GetDisplayCode();
 }
 
 void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
@@ -292,9 +291,9 @@ void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
 //   - Pad with zeros to 60 bytes. Extra space reserved for futureproofing.
 std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo()
     const {
-  std::string advertising_id = session_context_.advertising_id().ToString();
+  std::string advertising_id = session_context_->advertising_id().ToString();
   std::vector<uint8_t> display_name_bytes =
-      GetEndpointInfoDisplayNameBytes(session_context_.advertising_id());
+      GetEndpointInfoDisplayNameBytes(session_context_->advertising_id());
   uint8_t verification_style = use_pin_authentication_
                                    ? kEndpointInfoVerificationStyleDigits
                                    : kEndpointInfoVerificationStyleOutOfBand;

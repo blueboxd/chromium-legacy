@@ -4,15 +4,61 @@
 
 import {assert} from 'chrome://resources/js/assert.js';
 
+import type {Crostini} from '../../background/js/crostini.js';
+import type {ProgressCenter} from '../../background/js/progress_center.js';
+import type {VolumeManager} from '../../background/js/volume_manager.js';
+import {crInjectTypeAndInit} from '../../common/js/cr_ui.js';
+import type {FilesAppEntry} from '../../common/js/files_app_entry_types.js';
+import type {FilesAppState} from '../../common/js/files_app_state.js';
 import {recordEnum} from '../../common/js/metrics.js';
-import type {HideEvent, ShowEvent} from '../../definitions/context_menu_handler_events.js';
-import type {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
+import type {DialogType} from '../../state/state.js';
 
-import {constants} from './constants.js';
-import {BrowserBackCommand, ConfigureCommand, CutCopyCommand, DefaultTaskCommand, DeleteCommand, DlpRestrictionDetailsCommand, DriveBuyMoreSpaceCommand, DriveGoToDriveCommand, DriveSyncSettingsCommand, EmptyTrashCommand, EraseDeviceCommand, ExtractAllCommand, FilesSettingsCommand, FocusActionBarCommand, FormatCommand, GetInfoCommand, GoToFileLocationCommand, GuestOsManagingSharingCommand, GuestOsManagingSharingGearCommand, GuestOsShareCommand, InspectConsoleCommand, InspectElementCommand, InspectNormalCommand, InvokeSharesheetCommand, ManageInDriveCommand, ManageMirrorsyncCommand, NewFolderCommand, NewWindowCommand, OpenGearMenuCommand, OpenWithCommand, PasteCommand, PasteIntoCurrentFolderCommand, PasteIntoFolderCommand, PinFolderCommand, RefreshCommand, RenameCommand, RestoreFromTrashCommand, SearchCommand, SelectAllCommand, SendFeedbackCommand, SetWallpaperCommand, ShareCommand, ShowProvidersSubmenuCommand, SortByDateCommand, SortByNameCommand, SortBySizeCommand, SortByTypeCommand, ToggleHiddenAndroidFoldersCommand, ToggleHiddenFilesCommand, ToggleHoldingSpaceCommand, TogglePinnedCommand, UnmountCommand, UnpinFolderCommand, VolumeHelpCommand, VolumeStorageCommand, VolumeSwitchCommand, ZipSelectionCommand, ZoomInCommand, ZoomOutCommand, ZoomResetCommand} from './file_manager_commands.js';
+import type {ActionsController} from './actions_controller.js';
+import {DEFAULT_BRUSCHETTA_VM, DEFAULT_CROSTINI_VM, PLUGIN_VM} from './constants.js';
+import type {FileFilter} from './directory_contents.js';
+import type {DirectoryModel} from './directory_model.js';
+import type {DirectoryTreeNamingController} from './directory_tree_naming_controller.js';
+import {BrowserBackCommand, ConfigureCommand, CutCopyCommand, DefaultTaskCommand, DeleteCommand, DlpRestrictionDetailsCommand, DriveBuyMoreSpaceCommand, DriveGoToDriveCommand, DriveSyncSettingsCommand, EmptyTrashCommand, EraseDeviceCommand, ExtractAllCommand, FilesSettingsCommand, FocusActionBarCommand, FormatCommand, GetInfoCommand, GoToFileLocationCommand, GuestOsManagingSharingCommand, GuestOsManagingSharingGearCommand, GuestOsShareCommand, InspectConsoleCommand, InspectElementCommand, InspectNormalCommand, InvokeSharesheetCommand, ManageInDriveCommand, ManageMirrorsyncCommand, NewFolderCommand, NewWindowCommand, OpenGearMenuCommand, OpenWithCommand, PasteCommand, PasteIntoCurrentFolderCommand, PasteIntoFolderCommand, PinFolderCommand, RefreshCommand, RenameCommand, RestoreFromTrashCommand, SearchCommand, SelectAllCommand, SendFeedbackCommand, SetWallpaperCommand, ShowProvidersSubmenuCommand, SortByDateCommand, SortByNameCommand, SortBySizeCommand, SortByTypeCommand, ToggleHiddenAndroidFoldersCommand, ToggleHiddenFilesCommand, ToggleHoldingSpaceCommand, TogglePinnedCommand, UnmountCommand, UnpinFolderCommand, VolumeHelpCommand, VolumeStorageCommand, VolumeSwitchCommand, ZipSelectionCommand, ZoomInCommand, ZoomOutCommand, ZoomResetCommand} from './file_manager_commands.js';
 import {shouldIgnoreEvents} from './file_manager_commands_util.js';
-import {CanExecuteEvent, Command, CommandEvent} from './ui/command.js';
-import {contextMenuHandler} from './ui/context_menu_handler.js';
+import type {FileSelection, FileSelectionHandler} from './file_selection.js';
+import type {FileTransferController} from './file_transfer_controller.js';
+import type {MetadataModel} from './metadata/metadata_model.js';
+import type {NamingController} from './naming_controller.js';
+import type {ProvidersModel} from './providers_model.js';
+import type {SpinnerController} from './spinner_controller.js';
+import type {TaskController} from './task_controller.js';
+import {CanExecuteEvent, Command, type CommandEvent} from './ui/command.js';
+import {contextMenuHandler, type HideEvent, type ShowEvent} from './ui/context_menu_handler.js';
+import type {FileManagerUI} from './ui/file_manager_ui.js';
+
+/**
+ * Interface on which `CommandHandler` depends.
+ */
+export interface CommandHandlerDeps {
+  actionsController: ActionsController;
+  dialogType: DialogType;
+  directoryModel: DirectoryModel;
+  directoryTreeNamingController: DirectoryTreeNamingController;
+  document: Document;
+  fileFilter: FileFilter;
+  fileTransferController: FileTransferController|null;
+  selectionHandler: FileSelectionHandler;
+  namingController: NamingController;
+  progressCenter: ProgressCenter;
+  providersModel: ProvidersModel;
+  spinnerController: SpinnerController;
+  taskController: TaskController;
+  ui: FileManagerUI;
+  volumeManager: VolumeManager;
+  metadataModel: MetadataModel;
+  crostini: Crostini;
+  guestMode: boolean;
+  trashEnabled: boolean;
+
+  getCurrentDirectoryEntry(): DirectoryEntry|FilesAppEntry|null|undefined;
+  getSelection(): FileSelection;
+  launchFileManager(appState?: FilesAppState): void;
+}
 
 /**
  * Name of a command (for UMA).
@@ -75,7 +121,6 @@ const FilesCommands = {
   'pin-folder': new PinFolderCommand(),
   'manage-mirrorsync': new ManageMirrorsyncCommand(),
   'manage-in-drive': new ManageInDriveCommand(),
-  'share': new ShareCommand(),
   'zip-selection': new ZipSelectionCommand(),
   'extract-all': new ExtractAllCommand(),
   'toggle-pinned': new TogglePinnedCommand(),
@@ -127,34 +172,32 @@ const FilesCommands = {
   'volume-switch-8': new VolumeSwitchCommand(8),
   'volume-switch-9': new VolumeSwitchCommand(9),
   'share-with-linux': new GuestOsShareCommand(
-      constants.DEFAULT_CROSTINI_VM, 'CROSTINI', crostiniSettings,
+      DEFAULT_CROSTINI_VM, 'CROSTINI', crostiniSettings,
       MenuCommandsForUma.MANAGE_LINUX_SHARING_TOAST,
       MenuCommandsForUma.SHARE_WITH_LINUX),
   'share-with-plugin-vm': new GuestOsShareCommand(
-      constants.PLUGIN_VM, 'PLUGIN_VM', pluginVmSettings,
+      PLUGIN_VM, 'PLUGIN_VM', pluginVmSettings,
       MenuCommandsForUma.MANAGE_PLUGIN_VM_SHARING_TOAST,
       MenuCommandsForUma.SHARE_WITH_PLUGIN_VM),
   'share-with-bruschetta': new GuestOsShareCommand(
-      constants.DEFAULT_BRUSCHETTA_VM, 'BRUSCHETTA', bruschettaSettings,
+      DEFAULT_BRUSCHETTA_VM, 'BRUSCHETTA', bruschettaSettings,
       MenuCommandsForUma.MANAGE_BRUSCHETTA_SHARING_TOAST,
       MenuCommandsForUma.SHARE_WITH_BRUSCHETTA),
   'manage-linux-sharing-gear': new GuestOsManagingSharingGearCommand(
-      constants.DEFAULT_CROSTINI_VM, crostiniSettings,
+      DEFAULT_CROSTINI_VM, crostiniSettings,
       MenuCommandsForUma.MANAGE_LINUX_SHARING),
   'manage-plugin-vm-sharing-gear': new GuestOsManagingSharingGearCommand(
-      constants.PLUGIN_VM, pluginVmSettings,
-      MenuCommandsForUma.MANAGE_PLUGIN_VM_SHARING),
+      PLUGIN_VM, pluginVmSettings, MenuCommandsForUma.MANAGE_PLUGIN_VM_SHARING),
   'manage-bruschetta-sharing-gear': new GuestOsManagingSharingGearCommand(
-      constants.DEFAULT_BRUSCHETTA_VM, bruschettaSettings,
+      DEFAULT_BRUSCHETTA_VM, bruschettaSettings,
       MenuCommandsForUma.MANAGE_BRUSCHETTA_SHARING),
   'manage-linux-sharing': new GuestOsManagingSharingCommand(
-      constants.DEFAULT_CROSTINI_VM, crostiniSettings,
+      DEFAULT_CROSTINI_VM, crostiniSettings,
       MenuCommandsForUma.MANAGE_LINUX_SHARING),
   'manage-plugin-vm-sharing': new GuestOsManagingSharingCommand(
-      constants.PLUGIN_VM, pluginVmSettings,
-      MenuCommandsForUma.MANAGE_PLUGIN_VM_SHARING),
+      PLUGIN_VM, pluginVmSettings, MenuCommandsForUma.MANAGE_PLUGIN_VM_SHARING),
   'manage-bruschetta-sharing': new GuestOsManagingSharingCommand(
-      constants.DEFAULT_BRUSCHETTA_VM, bruschettaSettings,
+      DEFAULT_BRUSCHETTA_VM, bruschettaSettings,
       MenuCommandsForUma.MANAGE_BRUSCHETTA_SHARING),
 };
 
@@ -183,9 +226,7 @@ export class CommandHandler {
         this.fileManager_.document.querySelectorAll<Command>('command');
 
     for (const command of commands) {
-      if (Command.decorate) {
-        Command.decorate(command);
-      }
+      crInjectTypeAndInit(command, Command);
       this.commands_[command.id] = command;
     }
 
@@ -196,9 +237,9 @@ export class CommandHandler {
         'canExecute', this.onCanExecute_.bind(this) as EventListener);
 
     contextMenuHandler.addEventListener(
-        'show', this.onContextMenuShow_.bind(this) as EventListener);
+        'show', this.onContextMenuShow_.bind(this));
     contextMenuHandler.addEventListener(
-        'hide', this.onContextMenuHide_.bind(this) as EventListener);
+        'hide', this.onContextMenuHide_.bind(this));
   }
 
   private onContextMenuShow_(event: ShowEvent) {

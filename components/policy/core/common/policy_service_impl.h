@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
@@ -36,7 +37,8 @@ class POLICY_EXPORT PolicyServiceImpl
     : public PolicyService,
       public ConfigurationPolicyProvider::Observer {
  public:
-  using Providers = std::vector<ConfigurationPolicyProvider*>;
+  using Providers =
+      std::vector<raw_ptr<ConfigurationPolicyProvider, VectorExperimental>>;
   using Migrators = std::vector<std::unique_ptr<PolicyMigrator>>;
 
   // Creates a new PolicyServiceImpl with the list of
@@ -163,7 +165,8 @@ class POLICY_EXPORT PolicyServiceImpl
 
   // Set of providers that have a pending update that was triggered by a
   // call to RefreshPolicies().
-  std::set<ConfigurationPolicyProvider*> refresh_pending_;
+  std::set<raw_ptr<ConfigurationPolicyProvider, SetExperimental>>
+      refresh_pending_;
 
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.
@@ -179,7 +182,8 @@ class POLICY_EXPORT PolicyServiceImpl
   // Note that this is intentionally a set - if multiple updates from the same
   // provider come in faster than they can be processed, they should only
   // trigger one notification to |provider_update_observers_|.
-  std::set<ConfigurationPolicyProvider*> provider_update_pending_;
+  std::set<raw_ptr<ConfigurationPolicyProvider, SetExperimental>>
+      provider_update_pending_;
 
   // If this is true, IsInitializationComplete should be returning false for all
   // policy domains because the owner of this PolicyService is delaying the

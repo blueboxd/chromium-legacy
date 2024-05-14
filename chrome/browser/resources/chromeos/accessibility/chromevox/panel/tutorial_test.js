@@ -13,24 +13,6 @@ ChromeVoxTutorialTest = class extends ChromeVoxPanelTestBase {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
-
-    await Promise.all([
-      // Alphabetical based on file path.
-      importModule(
-          'ChromeVoxRange', '/chromevox/background/chromevox_range.js'),
-      importModule(
-          'BackgroundKeyboardHandler',
-          '/chromevox/background/input/keyboard_handler.js'),
-      importModule(
-          'CommandHandlerInterface',
-          '/chromevox/background/input/command_handler_interface.js'),
-      importModule('EarconId', '/chromevox/common/earcon_id.js'),
-      importModule(
-          ['PanelCommand', 'PanelCommandType'],
-          '/chromevox/common/panel_command.js'),
-      importModule('KeyCode', '/common/key_code.js'),
-    ]);
-
     globalThis.Gesture = chrome.accessibilityPrivate.Gesture;
   }
 
@@ -101,7 +83,8 @@ ChromeVoxTutorialTest = class extends ChromeVoxPanelTestBase {
   }
 };
 
-AX_TEST_F('ChromeVoxTutorialTest', 'BasicTest', async function() {
+// TODO(crbug.com/1501314): Flaky on ChromeOS.
+AX_TEST_F('ChromeVoxTutorialTest', 'DISABLED_BasicTest', async function() {
   const mockFeedback = this.createMockFeedback();
   const root = await this.runWithLoadedTree(this.simpleDoc);
   await this.launchAndWaitForTutorial();

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.jank_tracker.JankTracker;
@@ -73,6 +74,7 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     private final JankTracker mJankTracker;
     private final Supplier<Toolbar> mToolbarSupplier;
     private final HomeSurfaceTracker mHomeSurfaceTracker;
+    private final ObservableSupplier<Integer> mTabStripHeightSupplier;
 
     private NativePageFactory mNativePageFactory;
 
@@ -99,7 +101,8 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
             JankTracker jankTracker,
             Supplier<Toolbar> toolbarSupplier,
             @Nullable HomeSurfaceTracker homeSurfaceTracker,
-            ObservableSupplier<TabContentManager> tabContentManagerSupplier) {
+            ObservableSupplier<TabContentManager> tabContentManagerSupplier,
+            @NonNull ObservableSupplier<Integer> tabStripHeightSupplier) {
         mActivity = activity;
         mAppBrowserControlsVisibilityDelegate = appBrowserControlsVisibilityDelegate;
         mShareDelegateSupplier = shareDelegateSupplier;
@@ -123,6 +126,7 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
         mToolbarSupplier = toolbarSupplier;
         mHomeSurfaceTracker = homeSurfaceTracker;
         mTabContentManagerSupplier = tabContentManagerSupplier;
+        mTabStripHeightSupplier = tabStripHeightSupplier;
     }
 
     @Override
@@ -149,11 +153,13 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     public ContextMenuPopulatorFactory createContextMenuPopulatorFactory(Tab tab) {
         return new ChromeContextMenuPopulatorFactory(
                 new TabContextMenuItemDelegate(
+                        mActivity,
                         tab,
                         mTabModelSelectorSupplier.get(),
                         mEphemeralTabCoordinatorSupplier,
                         mContextMenuCopyLinkObserver,
-                        mSnackbarManagerSupplier),
+                        mSnackbarManagerSupplier,
+                        () -> mBottomSheetController),
                 mShareDelegateSupplier,
                 ChromeContextMenuPopulator.ContextMenuMode.NORMAL,
                 ExternalAuthUtils.getInstance());
@@ -183,7 +189,8 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
                             mJankTracker,
                             mToolbarSupplier,
                             mHomeSurfaceTracker,
-                            mTabContentManagerSupplier);
+                            mTabContentManagerSupplier,
+                            mTabStripHeightSupplier);
         }
         return mNativePageFactory.createNativePage(url, candidatePage, tab);
     }

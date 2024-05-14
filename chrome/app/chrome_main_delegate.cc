@@ -153,8 +153,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "components/crash/core/app/breakpad_linux.h"
-#include "ui/gfx/linux/gbm_util.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -235,6 +233,7 @@
 #include "chromeos/startup/browser_postlogin_params.h"  // nogncheck
 #include "chromeos/startup/startup.h"                   // nogncheck
 #include "chromeos/startup/startup_switches.h"          // nogncheck
+#include "components/crash/core/app/client_upload_info.h"
 #include "content/public/browser/zygote_host/zygote_host_linux.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -459,6 +458,15 @@ void RedirectLacrosLogging() {
   }
 }
 
+// When prelaunching Lacros at login screen, the initialization of Crashpad
+// relies on the consent preferences of Ash. After login, we can rely on
+// the user-specific preferences. This function updates the user consent
+// preferences from the default location (the user's cryptohome).
+void SetCrashpadUploadConsentPostLogin() {
+  crash_reporter::SetUploadConsent(
+      crash_reporter::GetClientCollectStatsConsent());
+}
+
 void AddFeatureFlagsToCommandLine(
     const chromeos::BrowserParamsProxy& init_params) {
   base::ScopedAddFeatureFlags flags(base::CommandLine::ForCurrentProcess());
@@ -494,13 +502,40 @@ void SetUpProfilingShutdownHandler() {
 
 #endif  // BUILDFLAG(IS_POSIX)
 
+// Returns true if the browser will exit before feature list initialization
+// happens in the browser process.
+bool WillExitBeforeBrowserFeatureListInitialization() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-absl::optional<int> HandlePackExtensionSwitches(
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Note: empty value for --process-type indicates its the browser process.
+  CHECK_EQ("", command_line->GetSwitchValueASCII(switches::kProcessType))
+      << "This should only be invoked in the browser process.";
+
+  if (command_line->HasSwitch(switches::kPackExtension)) {
+    // --pack-extension results in immediately packing the extension and
+    // exiting, and happens before the feature list is initialized.
+    return true;
+  }
+#endif
+
+  return false;
+}
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+std::optional<int> HandlePackExtensionSwitches(
     const base::CommandLine& command_line) {
   // If the command line specifies --pack-extension, attempt the pack extension
   // startup action and exit.
   if (!command_line.HasSwitch(switches::kPackExtension))
-    return absl::nullopt;
+    return std::nullopt;
+
+  // This happens before the default flow for FeatureList initialization, but
+  // packing an extension can depend on different base::Features. Thus, we
+  // should have always created a stub FeatureList by this point.
+  // See https://crbug.com/1506254.
+  CHECK(WillExitBeforeBrowserFeatureListInitialization());
+  CHECK(base::FeatureList::GetInstance());
 
   // Ensure there is an instance of ResourceBundle that is initialized for
   // localized string resource accesses.
@@ -520,7 +555,7 @@ absl::optional<int> HandlePackExtensionSwitches(
 #endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-absl::optional<int> AcquireProcessSingleton(
+std::optional<int> AcquireProcessSingleton(
     const base::FilePath& user_data_dir) {
   // Take the Chrome process singleton lock. The process can become the
   // Browser process if it succeed to take the lock. Otherwise, the
@@ -560,7 +595,7 @@ absl::optional<int> AcquireProcessSingleton(
       return chrome::RESULT_CODE_PROFILE_IN_USE;
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 #endif
 
@@ -652,6 +687,43 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 #endif  // BUILDFLAG(IS_WIN)
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// If Lacros was prelaunched at login screen, this method blocks waiting
+// for the user to login. It can be called before or after the Zygotes
+// have been forked.
+void MaybeBlockAtLoginScreen(bool after_zygotes_fork) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+
+  if (process_type.empty() && chromeos::IsLaunchedWithPostLoginParams()) {
+    // NOTE: When prelaunching Lacros, this is as far as Lacros's initialization
+    // will go at the login screen. The browser process will block here.
+    //
+    // IMPORTANT NOTE: If your code requires access to post-login parameters
+    // (which are only known after login), please place them *after* this call.
+    chromeos::BrowserParamsProxy::WaitForLogin();
+
+    // NOTE: When launching Lacros at login screen, after this point,
+    // the user should have logged in. The cryptohome is now accessible.
+    if (chrome::ProcessNeedsProfileDir(process_type)) {
+      InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
+    }
+
+    // Redirect logs from system directory to cryptohome.
+    RedirectLacrosLogging();
+
+    // If Lacros blocked after forking the zygotes, Crashpad has
+    // already been initialized, but we need to update the upload
+    // consent based on the user's preferences.
+    if (after_zygotes_fork) {
+      // Update upload consent to reflect the user's preference.
+      SetCrashpadUploadConsentPostLogin();
+    }
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if !BUILDFLAG(IS_ANDROID)
 void InitLogging(const std::string& process_type) {
@@ -749,23 +821,14 @@ ChromeMainDelegate::~ChromeMainDelegate() {
 ChromeMainDelegate::~ChromeMainDelegate() = default;
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
+std::optional<int> ChromeMainDelegate::PostEarlyInitialization(
     InvokedIn invoked_in) {
   DUMP_WILL_BE_CHECK(base::ThreadPoolInstance::Get());
   const auto* invoked_in_browser =
       absl::get_if<InvokedInBrowserProcess>(&invoked_in);
   if (!invoked_in_browser) {
-#if BUILDFLAG(IS_CHROMEOS)
-    // At this point, the base::FeatureList has been initialized and the process
-    // should still be single threaded. Additionally, minigbm shouldn't have
-    // been used yet by this process. Therefore, it's a good time to ensure the
-    // Intel media compression environment flag for minigbm is correctly set
-    // (it's possible this environment variable wasn't inherited from the
-    // browser process).
-    ui::EnsureIntelMediaCompressionEnvVarIsSet();
-#endif  // BUILDFLAG(IS_CHROMEOS)
     CommonEarlyInitialization(invoked_in);
-    return absl::nullopt;
+    return std::nullopt;
   }
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
@@ -847,6 +910,14 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLacrosForkZygotesAtLoginScreen)) {
+    // If prelaunched at login screen, block waiting for the user to login.
+    MaybeBlockAtLoginScreen(/*after_zygotes_fork=*/true);
+  }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Set Lacros's default paths.
   const auto& init_params = *chromeos::BrowserParamsProxy::Get();
   chrome::SetLacrosDefaultPathsFromInitParams(init_params.DefaultPaths().get());
@@ -863,14 +934,6 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
       chrome_content_browser_client_->startup_data()
           ->chrome_feature_list_creator();
   chrome_feature_list_creator->CreateFeatureList();
-
-#if BUILDFLAG(IS_CHROMEOS)
-  // At this point, the base::FeatureList has been initialized and the process
-  // should still be single threaded. Additionally, minigbm shouldn't have been
-  // used yet by this process. Therefore, it's a good time to ensure the Intel
-  // media compression environment flag for minigbm is correctly set.
-  ui::EnsureIntelMediaCompressionEnvVarIsSet();
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
   content::InitializeMojoCore();
 
@@ -971,13 +1034,21 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   // startup.
   RequestUnwindPrerequisitesInstallation(chrome::GetChannel());
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
-  // In the browser process Chrome creates the FeatureList, so content should
-  // not.
-  return absl::holds_alternative<InvokedInChildProcess>(invoked_in);
+  // The //content layer is always responsible for creating the FeatureList in
+  // child processes.
+  if (absl::holds_alternative<InvokedInChildProcess>(invoked_in)) {
+    return true;
+  }
+
+  // Otherwise, normally the browser process in Chrome is responsible for
+  // creating the FeatureList. The exception to this is if the browser will
+  // perform some operation and then early-exit. In this case, we allow the
+  // //content layer to create the FeatureList.
+  return WillExitBeforeBrowserFeatureListInitialization();
 }
 
 bool ChromeMainDelegate::ShouldInitializeMojo(InvokedIn invoked_in) {
@@ -1042,8 +1113,19 @@ void ChromeMainDelegate::CommonEarlyInitialization(InvokedIn invoked_in) {
                          return invoked_in_child.is_zygote_child;
                        }},
       invoked_in);
-  base::HangWatcher::InitializeOnMainThread(
-      hang_watcher_process_type, /*is_zygote_child=*/is_zygote_child);
+
+  const bool emit_crashes =
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN)
+      chrome::GetChannel() == version_info::Channel::CANARY ||
+      chrome::GetChannel() == version_info::Channel::DEV;
+#else
+      false;
+#endif
+
+  base::HangWatcher::InitializeOnMainThread(hang_watcher_process_type,
+                                            /*is_zygote_child=*/is_zygote_child,
+                                            emit_crashes);
 
   base::InitializeCpuReductionExperiment();
   base::sequence_manager::internal::SequenceManagerImpl::InitializeFeatures();
@@ -1115,7 +1197,7 @@ void ChromeMainDelegate::SetupTracing() {
           std::move(tracing_factory), unwinder_type);
 }
 
-absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
+std::optional<int> ChromeMainDelegate::BasicStartupComplete() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::BootTimesRecorder::Get()->SaveChromeMainStats();
 #endif
@@ -1182,12 +1264,6 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
 
 #if BUILDFLAG(IS_WIN)
   v8_crashpad_support::SetUp();
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-  if (!crash_reporter::IsCrashpadEnabled()) {
-    breakpad::SetFirstChanceExceptionHandler(v8::TryHandleWebAssemblyTrapPosix);
-  }
 #endif
 
 #if BUILDFLAG(IS_POSIX)
@@ -1326,12 +1402,10 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
       // Recovery has failed somehow, so we exit.
       return recovery_exit_code;
     }
-  } else {  // Not running diagnostics or recovery.
-    diagnostics::DiagnosticsController::GetInstance()->RecordRegularStartup();
   }
 #endif
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -1403,22 +1477,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
   crash_reporter::InitializeCrashKeys();
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (process_type.empty() && chromeos::IsLaunchedWithPostLoginParams()) {
-    // NOTE: When prelaunching Lacros, this is as far as Lacros's initialization
-    // will go at the login screen. The browser process will block here.
-    //
-    // IMPORTANT NOTE: If your code requires access to post-login parameters
-    // (which are only known after login), please place them *after* this call.
-    chromeos::BrowserParamsProxy::WaitForLogin();
-
-    // NOTE: When launching Lacros at login screen, after this point,
-    // the user should have logged in. The cryptohome is now accessible.
-    if (chrome::ProcessNeedsProfileDir(process_type)) {
-      InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
-    }
-
-    // Redirect logs from system directory to cryptohome.
-    RedirectLacrosLogging();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLacrosForkZygotesAtLoginScreen)) {
+    // If prelaunched at login screen, block waiting for the user to login.
+    MaybeBlockAtLoginScreen(/*after_zygotes_fork=*/false);
   }
 #endif
 
@@ -1660,14 +1722,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
     } else {
       base::android::InitJavaExceptionReporterForChildProcess();
     }
-#elif BUILDFLAG(IS_CHROMEOS)
-    if (crash_reporter::IsCrashpadEnabled()) {
-      crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
-      crash_reporter::SetFirstChanceExceptionHandler(
-          v8::TryHandleWebAssemblyTrapPosix);
-    } else {
-      breakpad::InitCrashReporter(process_type);
-    }
 #else
     crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
     crash_reporter::SetFirstChanceExceptionHandler(
@@ -1816,19 +1870,9 @@ void ChromeMainDelegate::ZygoteForked() {
       base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
-#if BUILDFLAG(IS_CHROMEOS)
-  if (crash_reporter::IsCrashpadEnabled()) {
-    crash_reporter::InitializeCrashpad(false, process_type);
-    crash_reporter::SetFirstChanceExceptionHandler(
-        v8::TryHandleWebAssemblyTrapPosix);
-  } else {
-    breakpad::InitCrashReporter(process_type);
-  }
-#else
   crash_reporter::InitializeCrashpad(false, process_type);
   crash_reporter::SetFirstChanceExceptionHandler(
       v8::TryHandleWebAssemblyTrapPosix);
-#endif
 
   // Reset the command line for the newly spawned process.
   crash_keys::SetCrashKeysFromCommandLine(*command_line);
@@ -1863,16 +1907,15 @@ ChromeMainDelegate::CreateContentUtilityClient() {
   return chrome_content_utility_client_.get();
 }
 
-absl::optional<int> ChromeMainDelegate::PreBrowserMain() {
-  absl::optional<int> exit_code =
-      content::ContentMainDelegate::PreBrowserMain();
+std::optional<int> ChromeMainDelegate::PreBrowserMain() {
+  std::optional<int> exit_code = content::ContentMainDelegate::PreBrowserMain();
   if (exit_code.has_value())
     return exit_code;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  absl::optional<int> pack_extension_exit_code =
+  std::optional<int> pack_extension_exit_code =
       HandlePackExtensionSwitches(command_line);
   if (pack_extension_exit_code.has_value())
     return pack_extension_exit_code;  // Got a --pack-extension switch; exit.
@@ -1918,7 +1961,7 @@ absl::optional<int> ChromeMainDelegate::PreBrowserMain() {
 #endif
 
   // Do not interrupt startup.
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void ChromeMainDelegate::InitializeMemorySystem() {

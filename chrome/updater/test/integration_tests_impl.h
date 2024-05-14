@@ -58,7 +58,8 @@ struct AppUpdateExpectation {
                        const int error_code = static_cast<int>(
                            UpdateService::Result::kUpdateCanceled),
                        const int event_type = /*EVENT_UPDATE_COMPLETE=*/3,
-                       const std::string& custom_app_response = {});
+                       const std::string& custom_app_response = {},
+                       const std::string& response_status = {});
   AppUpdateExpectation(const AppUpdateExpectation&);
   ~AppUpdateExpectation();
 
@@ -77,6 +78,7 @@ struct AppUpdateExpectation {
   const int error_code;
   const int event_type;
   const std::string custom_app_response;
+  const std::string response_status;
 };
 
 // Returns the path to the updater installer program (in the build output
@@ -143,9 +145,10 @@ void Install(UpdaterScope scope);
 // Installs the updater and an app via the command line.
 void InstallUpdaterAndApp(UpdaterScope scope,
                           const std::string& app_id,
-                          const bool is_silent_install,
+                          bool is_silent_install,
                           const std::string& tag,
-                          const std::string& child_window_text_to_find);
+                          const std::string& child_window_text_to_find,
+                          bool always_launch_cmd);
 
 // Expects that the updater is installed on the system and the specified
 // version is active.
@@ -280,7 +283,8 @@ void ExpectLegacyUpdate3WebSucceeds(
     const std::string& app_id,
     AppBundleWebCreateMode app_bundle_web_create_mode,
     int expected_final_state,
-    int expected_error_code);
+    int expected_error_code,
+    bool cancel_when_downloading);
 void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope);
 void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
                                        const std::string& app_id,
@@ -305,7 +309,7 @@ int CountDirectoryFiles(const base::FilePath& dir);
 
 void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server);
 
-void ExpectUninstallPing(UpdaterScope scope, ScopedServer* test_server);
+void ExpectPing(UpdaterScope scope, ScopedServer* test_server, int event_type);
 
 void ExpectUpdateCheckRequest(UpdaterScope scope, ScopedServer* test_server);
 
@@ -365,7 +369,8 @@ void CloseInstallCompleteDialog(const std::wstring& child_window_text_to_find);
 #if BUILDFLAG(IS_MAC)
 void PrivilegedHelperInstall(UpdaterScope scope);
 void DeleteLegacyUpdater(UpdaterScope scope);
-#endif  // BUILDFLAG(IS_WIN)
+void ExpectPrepareToRunBundleSuccess(const base::FilePath& bundle_path);
+#endif  // BUILDFLAG(IS_MAC)
 
 void ExpectLegacyUpdaterMigrated(UpdaterScope scope);
 

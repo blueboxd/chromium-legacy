@@ -40,7 +40,7 @@ class MockMojoMediaStreamDispatcherHost
   void CancelRequest(int32_t request_id) override;
   void StopStreamDevice(
       const WTF::String& device_id,
-      const absl::optional<base::UnguessableToken>& session_id) override;
+      const std::optional<base::UnguessableToken>& session_id) override;
   void OpenDevice(int32_t request_id,
                   const WTF::String& device_id,
                   mojom::blink::MediaStreamType type,
@@ -48,7 +48,7 @@ class MockMojoMediaStreamDispatcherHost
 
   MOCK_METHOD1(CloseDevice, void(const WTF::String&));
   MOCK_METHOD3(SetCapturingLinkSecured,
-               void(const absl::optional<base::UnguessableToken>&,
+               void(const std::optional<base::UnguessableToken>&,
                     mojom::blink::MediaStreamType,
                     bool));
   MOCK_METHOD1(OnStreamStarted, void(const WTF::String&));
@@ -56,13 +56,15 @@ class MockMojoMediaStreamDispatcherHost
                void(const base::UnguessableToken&,
                     const base::UnguessableToken&,
                     KeepDeviceAliveForTransferCallback));
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   MOCK_METHOD3(SendWheel,
                void(const base::UnguessableToken&,
                     mojom::blink::CapturedWheelActionPtr,
                     SendWheelCallback));
-  MOCK_METHOD2(GetZoomLevel,
-               void(const base::UnguessableToken&, GetZoomLevelCallback));
+  MOCK_METHOD3(SetZoomLevel,
+               void(const base::UnguessableToken&,
+                    int32_t,
+                    SetZoomLevelCallback));
   MOCK_METHOD2(FocusCapturedSurface, void(const WTF::String&, bool));
   MOCK_METHOD5(ApplySubCaptureTarget,
                void(const base::UnguessableToken&,

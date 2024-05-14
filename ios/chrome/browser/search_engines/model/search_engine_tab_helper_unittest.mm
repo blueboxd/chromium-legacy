@@ -12,7 +12,7 @@
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/search_engines/template_url_service.h"
-#import "ios/chrome/browser/favicon/favicon_service_factory.h"
+#import "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -120,7 +120,7 @@ TEST_F(SearchEngineTabHelperTest, AddTemplateURLByOpenSearch) {
   GURL osdd_url = server_.GetURL(kOpenSearchXmlFilePath);
 
   // Record the original TemplateURLs in TemplateURLService.
-  std::vector<TemplateURL*> old_urls =
+  std::vector<raw_ptr<TemplateURL, VectorExperimental>> old_urls =
       template_url_service()->GetTemplateURLs();
 
   // Load an empty page, and send a message of openSearchUrl from Js.
@@ -169,7 +169,7 @@ TEST_F(SearchEngineTabHelperTest, AddTemplateURLBySearchableURL) {
                        server_.GetURL(kPonyHtmlFilePath).spec().c_str()];
 
   // Record the original TemplateURLs in TemplateURLService.
-  std::vector<TemplateURL*> old_urls =
+  std::vector<raw_ptr<TemplateURL, VectorExperimental>> old_urls =
       template_url_service()->GetTemplateURLs();
 
   // Load an empty page, and send a message of openSearchUrl from Js.
@@ -256,7 +256,7 @@ TEST_F(SearchEngineTabHelperIncognitoTest,
   GURL osdd_url = server_.GetURL(kOpenSearchXmlFilePath);
 
   // Record the original TemplateURLs in TemplateURLService.
-  std::vector<TemplateURL*> old_urls =
+  std::vector<raw_ptr<TemplateURL, VectorExperimental>> old_urls =
       template_url_service()->GetTemplateURLs();
 
   // Load an empty page, and send a message of openSearchUrl from Js.
@@ -288,7 +288,7 @@ TEST_F(SearchEngineTabHelperIncognitoTest,
                        server_.GetURL(kPonyHtmlFilePath).spec().c_str()];
 
   // Record the original TemplateURLs in TemplateURLService.
-  std::vector<TemplateURL*> old_urls =
+  std::vector<raw_ptr<TemplateURL, VectorExperimental>> old_urls =
       template_url_service()->GetTemplateURLs();
 
   // Load an empty page, and send a message of openSearchUrl from Js.

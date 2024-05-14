@@ -27,21 +27,15 @@
 
 namespace {
 
-constexpr int kDialogWidth = 512;
 constexpr int kM1DialogWidth = 600;
-constexpr int kDefaultConsentDialogHeight = 569;
-constexpr int kDefaultNoticeDialogHeight = 494;
+constexpr int kDefaultDialogHeight = 494;
 constexpr int kMinRequiredDialogHeight = 100;
-constexpr int kMinRequiredDialogWidth = 400;
 
 GURL GetDialogURL(PrivacySandboxService::PromptType prompt_type) {
   GURL base_url = GURL(chrome::kChromeUIPrivacySandboxDialogURL);
   GURL combined_dialog_url =
       base_url.Resolve(chrome::kChromeUIPrivacySandboxDialogCombinedPath);
   switch (prompt_type) {
-    case PrivacySandboxService::PromptType::kConsent:
-    case PrivacySandboxService::PromptType::kNotice:
-      return base_url;
     case PrivacySandboxService::PromptType::kM1Consent:
       return combined_dialog_url;
     case PrivacySandboxService::PromptType::kM1NoticeROW:
@@ -58,9 +52,6 @@ GURL GetDialogURL(PrivacySandboxService::PromptType prompt_type) {
 
 int GetDialogWidth(PrivacySandboxService::PromptType prompt_type) {
   switch (prompt_type) {
-    case PrivacySandboxService::PromptType::kConsent:
-    case PrivacySandboxService::PromptType::kNotice:
-      return kDialogWidth;
     case PrivacySandboxService::PromptType::kM1Consent:
     case PrivacySandboxService::PromptType::kM1NoticeROW:
     case PrivacySandboxService::PromptType::kM1NoticeEEA:
@@ -109,14 +100,6 @@ bool CanWindowHeightFitPrivacySandboxPrompt(Browser* browser) {
   return max_dialog_height >= kMinRequiredDialogHeight;
 }
 
-bool CanWindowWidthFitPrivacySandboxPrompt(Browser* browser) {
-  const int max_dialog_width = browser->window()
-                                   ->GetWebContentsModalDialogHost()
-                                   ->GetMaximumDialogSize()
-                                   .width();
-  return max_dialog_width >= kMinRequiredDialogWidth;
-}
-
 // static
 void ShowPrivacySandboxDialog(Browser* browser,
                               PrivacySandboxService::PromptType prompt_type) {
@@ -161,10 +144,8 @@ PrivacySandboxDialogView::PrivacySandboxDialogView(
                             .width();
   const int width = views::LayoutProvider::Get()->GetSnappedDialogWidth(
       GetDialogWidth(prompt_type));
-  const int height = prompt_type == PrivacySandboxService::PromptType::kConsent
-                         ? kDefaultConsentDialogHeight
-                         : kDefaultNoticeDialogHeight;
-  web_view_->SetPreferredSize(gfx::Size(std::min(width, max_width), height));
+  web_view_->SetPreferredSize(
+      gfx::Size(std::min(width, max_width), kDefaultDialogHeight));
 
   PrivacySandboxDialogUI* web_ui = web_view_->GetWebContents()
                                        ->GetWebUI()
@@ -224,5 +205,10 @@ void PrivacySandboxDialogView::OpenPrivacySandboxAdMeasurementSettings() {
   chrome::ShowPrivacySandboxAdMeasurementSettings(browser_);
 }
 
-BEGIN_METADATA(PrivacySandboxDialogView, views::View)
+content::WebContents* PrivacySandboxDialogView::GetWebContentsForTesting() {
+  CHECK(web_view_);
+  return web_view_->GetWebContents();
+}
+
+BEGIN_METADATA(PrivacySandboxDialogView)
 END_METADATA

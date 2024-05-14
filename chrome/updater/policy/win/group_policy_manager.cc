@@ -35,8 +35,9 @@ namespace {
 struct ScopedHCriticalPolicySectionTraits {
   static HANDLE InvalidValue() { return nullptr; }
   static void Free(HANDLE handle) {
-    if (handle != InvalidValue())
+    if (handle != InvalidValue()) {
       ::LeaveCriticalPolicySection(handle);
+    }
   }
 };
 
@@ -122,11 +123,6 @@ GroupPolicyManager::GroupPolicyManager(
           base::IsManagedOrEnterpriseDevice())) {}
 
 GroupPolicyManager::~GroupPolicyManager() = default;
-
-bool GroupPolicyManager::CloudPolicyOverridesPlatformPolicy() const {
-  return GetIntegerPolicy("CloudPolicyOverridesPlatformPolicy").value_or(0) !=
-         0;
-}
 
 bool GroupPolicyManager::HasActiveDevicePolicies() const {
   return is_managed_device_ && PolicyManager::HasActiveDevicePolicies();

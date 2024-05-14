@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/sms/sms_fetcher_impl.h"
@@ -68,7 +69,7 @@ class SmsBrowserTest : public ContentBrowserTest {
     if (entries.empty())
       FAIL() << "No WebOTPServiceOutcome was recorded";
 
-    for (const auto* const entry : entries) {
+    for (const ukm::mojom::UkmEntry* const entry : entries) {
       const int64_t* metric = ukm_recorder()->GetEntryMetric(entry, "Outcome");
       if (metric && *metric == static_cast<int>(outcome)) {
         SUCCEED();
@@ -85,7 +86,7 @@ class SmsBrowserTest : public ContentBrowserTest {
     if (entries.empty())
       FAIL() << "No WebOTPServiceOutcome was recorded";
 
-    for (const auto* const entry : entries) {
+    for (const ukm::mojom::UkmEntry* const entry : entries) {
       const int64_t* metric = ukm_recorder()->GetEntryMetric(entry, "Outcome");
       if (metric && *metric == static_cast<int>(outcome)) {
         bool actual_cross_origin =
@@ -104,7 +105,7 @@ class SmsBrowserTest : public ContentBrowserTest {
 
     ASSERT_FALSE(entries.empty());
 
-    for (const auto* const entry : entries) {
+    for (const ukm::mojom::UkmEntry* const entry : entries) {
       if (ukm_recorder()->GetEntryMetric(entry, metric_name)) {
         SUCCEED();
         return;
@@ -127,7 +128,7 @@ class SmsBrowserTest : public ContentBrowserTest {
 
     ASSERT_FALSE(entries.empty());
 
-    for (const auto* const entry : entries) {
+    for (const ukm::mojom::UkmEntry* const entry : entries) {
       const int64_t* metric =
           ukm_recorder()->GetEntryMetric(entry, "SmsParsingStatus");
       if (metric && *metric == status) {
@@ -209,7 +210,13 @@ class SmsBrowserTest : public ContentBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
+// TODO(crbug.com/1514411): Flaky on Win Debug
+#if BUILDFLAG(IS_WIN) && !defined(NDEBUG)
+#define MAYBE_Receive DISABLED_Receive
+#else
+#define MAYBE_Receive Receive
+#endif
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, MAYBE_Receive) {
   base::HistogramTester histogram_tester;
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -626,7 +633,13 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
   ExpectOutcomeUKM(url2, blink::WebOTPServiceOutcome::kSuccess);
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
+// TODO(crbug.com/1514411): Flaky on Win Debug
+#if BUILDFLAG(IS_WIN) && !defined(NDEBUG)
+#define MAYBE_SmsReceivedAfterTabIsClosed DISABLED_SmsReceivedAfterTabIsClosed
+#else
+#define MAYBE_SmsReceivedAfterTabIsClosed SmsReceivedAfterTabIsClosed
+#endif
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, MAYBE_SmsReceivedAfterTabIsClosed) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -738,13 +751,13 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsFetcherUAF) {
       }));
 
   service->Receive(base::BindLambdaForTesting(
-      [](SmsStatus status, const absl::optional<std::string>& otp) {
+      [](SmsStatus status, const std::optional<std::string>& otp) {
         EXPECT_EQ(SmsStatus::kSuccess, status);
         EXPECT_EQ("ABC234", otp);
       }));
 
   service2->Receive(base::BindLambdaForTesting(
-      [&navigate](SmsStatus status, const absl::optional<std::string>& otp) {
+      [&navigate](SmsStatus status, const std::optional<std::string>& otp) {
         EXPECT_EQ(SmsStatus::kSuccess, status);
         EXPECT_EQ("DEF567", otp);
         navigate.Quit();

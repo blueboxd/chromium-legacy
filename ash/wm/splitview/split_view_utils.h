@@ -102,7 +102,7 @@ class ASH_EXPORT WindowTransformAnimationObserver
   void OnWindowDestroying(aura::Window* window) override;
 
  private:
-  const raw_ptr<aura::Window, ExperimentalAsh> window_;
+  const raw_ptr<aura::Window> window_;
 
   WindowTransformAnimationObserver(const WindowTransformAnimationObserver&) =
       delete;
@@ -126,6 +126,19 @@ void DoSplitviewClipRectAnimation(
     SplitviewAnimationType type,
     const gfx::Rect& target_clip_rect,
     std::unique_ptr<ui::ImplicitAnimationObserver> animation_observer);
+
+// Returns whether `window`'s state type is actually in the left or top position
+// based on whether the display is in primary screen orientation.
+// TODO(sophiewen): Consolidate with `IsPhysicalLeftOrTop(SnapPostiion)`.
+bool IsPhysicalLeftOrTop(aura::Window* window);
+
+// Returns the length of the window according to the screen orientation.
+int GetWindowLength(aura::Window* window, bool horizontal);
+
+// Transforms `window` based on whether it is the primary or secondary window
+// and its distance from `divider_position` during split view resizing.
+void SetWindowTransformDuringResizing(aura::Window* window,
+                                      int divider_position);
 
 // Restores split view and overview based on the current split view's state.
 // If |refresh_snapped_windows| is true, it will update the left and right
@@ -174,8 +187,6 @@ GetSnapPosition(aura::Window* root_window,
                 int horizontal_edge_inset,
                 int vertical_edge_inset);
 
-bool IsInTabletMode();
-
 // The return values of these two functions together indicate what actual
 // positions correspond to |PRIMARY| and |SECONDARY|:
 // |IsLayoutHorizontal|  |IsLayoutPrimary|    |PRIMARY|           |SECONDARY|
@@ -209,6 +220,24 @@ int GetDividerPositionUpperLimit(aura::Window* root_window);
 // Returns the minimum length of the window according to the screen orientation.
 int GetMinimumWindowLength(aura::Window* window, bool horizontal);
 
+// Returns the target divider position for `root_window` for `snap_ratio` at
+// `snap_position`. If `account_for_divider_width` is true, it will subtract the
+// split view divider width.
+int CalculateDividerPosition(SnapPosition snap_position,
+                             aura::Window* root_window,
+                             float snap_ratio,
+                             bool account_for_divider_width);
+
+// Returns the divider position, the origin of where `window` is divided on the
+// work area. This will be the window length if it is physically left or top, or
+// the work area length - window length if it is physically right or bottom. If
+// `account_for_divider_width` is true, it will also subtract
+// `kSplitviewDividerShortSideLength / 2` from the window length if is
+// physically left or top, or add `kSplitviewDividerShortSideLength / 2` to the
+// window length if it is physically right or bottom.
+int GetEquivalentDividerPosition(aura::Window* window,
+                                 bool account_for_divider_width);
+
 // Returns the bounds of a snapped window at `snap_position`, where
 // `divider_position` is the end of the primary window width, `divider_width` is
 // the width of the split view divider if any exists, and
@@ -216,10 +245,33 @@ int GetMinimumWindowLength(aura::Window* window, bool horizontal);
 // bounds based on the window's minimum size.
 gfx::Rect CalculateSnappedWindowBoundsInScreen(
     SnapPosition snap_position,
+    aura::Window* root_window,
     aura::Window* window_for_minimum_size,
     int divider_position,
     int divider_width,
     bool is_resizing_with_divider);
+
+// Returns the opposite snap type of a snapped `window`. This will be
+// `kPrimarySnapped` if `window` is `kSecondarySnapped`, or `kSecondarySnapped`
+// if `window` is `kPrimarySnapped`.
+chromeos::WindowStateType GetOppositeSnapType(aura::Window* window);
+
+// Returns true if `snap_action_source` can be start faster split screen set up.
+ASH_EXPORT bool CanSnapActionSourceStartFasterSplitView(
+    WindowSnapActionSource snap_action_source);
+
+// Returns true if the given `window` can be considered as the candidate for
+// faster split screen set up. Returns false otherwise. `snap_action_source` is
+// used to filter out some unwanted snap sources.
+bool ShouldConsiderWindowForFasterSplitView(
+    aura::Window* window,
+    WindowSnapActionSource snap_action_source);
+
+// Returns true if `SplitViewOverviewSession` is allowed to start when the given
+// `window` is snapped with given `snap_action_source`. Returns false otherwise.
+bool CanStartSplitViewOverviewSessionInClamshell(
+    aura::Window* window,
+    WindowSnapActionSource snap_action_source);
 
 // Returns true if the snap group is enabled in clamshell mode. The
 // `split_view_divider_` will show to indicate that the two windows are in a
@@ -229,11 +281,6 @@ bool IsSnapGroupEnabledInClamshellMode();
 // Gets the expected window component for a window in split view, depending on
 // current screen orientation for resizing purpose.
 int GetWindowComponentForResize(aura::Window* window);
-
-// Returns the widget init params needed to create the widget.
-views::Widget::InitParams CreateWidgetInitParams(
-    aura::Window* parent_window,
-    const std::string& widget_name);
 
 // Builds the full histogram that records whether the window layout completes on
 // `SplitViewOverviewSession` exit. The full histogram is shown in the example
@@ -251,6 +298,13 @@ ASH_EXPORT std::string BuildWindowLayoutCompleteOnSessionExitHistogram();
 // |------------prefix----------|-snap_action_source-|-root_word-|--ui_mode--|
 // "Ash.SplitViewOverviewSession.DragWindowEdgeToSnap.ExitPoint.ClamshellMode".
 ASH_EXPORT std::string BuildSplitViewOverviewExitPointHistogramName(
+    WindowSnapActionSource snap_action_source);
+
+// Builds the full histogram that records the pref value when a window is
+// snapped.
+// |----------prefix---------|-snap_action_source-|
+// "Ash.SnapWindowSuggestions.DragWindowEdgeToSnap".
+ASH_EXPORT std::string BuildSnapWindowSuggestionsHistogramName(
     WindowSnapActionSource snap_action_source);
 
 }  // namespace ash

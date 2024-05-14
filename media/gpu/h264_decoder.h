@@ -119,15 +119,16 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // for the NALU type byte, is encrypted. |data| represents the encrypted
     // ranges which will include any SEI NALUs along with the encrypted slice
     // NALU. |subsamples| specifies what is encrypted and should have just a
-    // single clear byte for each and the rest is encrypted. |sps_nalu_data|
-    // and |pps_nalu_data| are the SPS and PPS NALUs respectively.
-    // |slice_header_out| should have its fields filled in upon successful
+    // single clear byte for each and the rest is encrypted. |secure_handle| is
+    // used on ARM to store the secure buffer reference to parse the header
+    // from. |slice_header_out| should have its fields filled in upon successful
     // return. Returns kOk if successful, kFail if there are errors, or
     // kTryAgain if the accelerator needs additional data before being able to
     // proceed.
     virtual Status ParseEncryptedSliceHeader(
         const std::vector<base::span<const uint8_t>>& data,
         const std::vector<SubsampleEntry>& subsamples,
+        uint64_t secure_handle,
         H264SliceHeader* slice_header_out);
 
     // Submit one slice for the current frame, passing the current |pps| and
@@ -207,7 +208,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   uint8_t GetBitDepth() const override;
   VideoChromaSampling GetChromaSampling() const override;
   VideoColorSpace GetVideoColorSpace() const override;
-  absl::optional<gfx::HDRMetadata> GetHDRMetadata() const override;
+  std::optional<gfx::HDRMetadata> GetHDRMetadata() const override;
   size_t GetRequiredNumOfPictures() const override;
   size_t GetNumReferenceFrames() const override;
 
@@ -415,12 +416,12 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   std::vector<base::span<const uint8_t>> prior_cencv1_nalus_;
   std::vector<SubsampleEntry> prior_cencv1_subsamples_;
 
-  // These are absl::nullopt unless get recovery point SEI message after Reset.
+  // These are std::nullopt unless get recovery point SEI message after Reset.
   // A frame_num of the frame at output order that is correct in content.
-  absl::optional<int> recovery_frame_num_;
+  std::optional<int> recovery_frame_num_;
   // A value in the recovery point SEI message to compute |recovery_frame_num_|
   // later.
-  absl::optional<int> recovery_frame_cnt_;
+  std::optional<int> recovery_frame_cnt_;
 
   // Output picture size.
   gfx::Size pic_size_;
@@ -436,7 +437,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   // Video picture color space of input bitstream.
   VideoColorSpace picture_color_space_;
   // HDR metadata in the bitstream.
-  absl::optional<gfx::HDRMetadata> hdr_metadata_;
+  std::optional<gfx::HDRMetadata> hdr_metadata_;
 
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;

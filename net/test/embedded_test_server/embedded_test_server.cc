@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -52,7 +53,6 @@
 #include "net/test/revocation_builder.h"
 #include "net/test/test_data_directory.h"
 #include "net/third_party/quiche/src/quiche/spdy/core/spdy_frame_builder.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/pki/extended_key_usage.h"
 #include "url/origin.h"
 
@@ -515,12 +515,17 @@ bool EmbeddedTestServer::GenerateCertAndKey() {
     leaf->SetCaIssuersAndOCSPUrls(leaf_ca_issuers_urls, leaf_ocsp_urls);
   }
 
-  if (cert_config_.intermediate == IntermediateType::kByAIA) {
+  if (cert_config_.intermediate == IntermediateType::kByAIA ||
+      cert_config_.intermediate == IntermediateType::kMissing) {
     // Server certificate chain does not include the intermediate.
     x509_cert_ = leaf->GetX509Certificate();
   } else {
     // Server certificate chain will include the intermediate, if there is one.
     x509_cert_ = leaf->GetX509CertificateChain();
+  }
+
+  if (intermediate) {
+    intermediate_ = intermediate->GetX509Certificate();
   }
 
   private_key_ = bssl::UpRef(leaf->GetKey());
@@ -713,7 +718,7 @@ GURL EmbeddedTestServer::GetURL(base::StringPiece hostname,
 }
 
 url::Origin EmbeddedTestServer::GetOrigin(
-    const absl::optional<std::string>& hostname) const {
+    const std::optional<std::string>& hostname) const {
   if (hostname)
     return url::Origin::Create(GetURL(*hostname, "/"));
   return url::Origin::Create(base_url_);
@@ -759,6 +764,13 @@ void EmbeddedTestServer::SetSSLConfig(
 void EmbeddedTestServer::SetSSLConfig(
     const ServerCertificateConfig& cert_config) {
   SetSSLConfigInternal(CERT_AUTO, &cert_config, SSLServerConfig());
+}
+
+void EmbeddedTestServer::SetCertHostnames(std::vector<std::string> hostnames) {
+  ServerCertificateConfig cert_config;
+  cert_config.dns_names = std::move(hostnames);
+  cert_config.ip_addresses = {net::IPAddress::IPv4Localhost()};
+  SetSSLConfig(cert_config);
 }
 
 bool EmbeddedTestServer::ResetSSLConfigOnIOThread(
@@ -827,6 +839,12 @@ scoped_refptr<X509Certificate> EmbeddedTestServer::GetCertificate() {
     CHECK(InitializeCertAndKeyFromFile());
   }
   return x509_cert_;
+}
+
+scoped_refptr<X509Certificate> EmbeddedTestServer::GetGeneratedIntermediate() {
+  DCHECK(is_using_ssl_);
+  DCHECK(!UsingStaticCert());
+  return intermediate_;
 }
 
 void EmbeddedTestServer::ServeFilesFromDirectory(

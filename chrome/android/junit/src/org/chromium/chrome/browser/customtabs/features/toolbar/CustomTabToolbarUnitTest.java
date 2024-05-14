@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -59,8 +59,12 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.customtabs.CustomTabFeatureOverridesManager;
 import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedFeatureUtils;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.SimpleHandleStrategy;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar.CustomTabLocationBar;
@@ -77,9 +81,6 @@ import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult;
 import org.chromium.chrome.browser.toolbar.top.NavigationPopup.HistoryDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarSnapshotDifference;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet.OfflineDownloader;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.content_settings.CookieBlocking3pcdStatus;
 import org.chromium.components.content_settings.CookieControlsBreakageConfidenceLevel;
 import org.chromium.components.content_settings.CookieControlsStatus;
@@ -125,6 +126,7 @@ public class CustomTabToolbarUnitTest {
     @Mock View mParentView;
     @Mock WindowAndroid mWindowAndroid;
     private @Mock PageInfoIPHController mPageInfoIPHController;
+    @Mock private CustomTabFeatureOverridesManager mFeatureOverridesManager;
 
     private Activity mActivity;
     private CustomTabToolbar mToolbar;
@@ -160,6 +162,10 @@ public class CustomTabToolbarUnitTest {
                 mHistoryDelegate,
                 mPartnerHomepageEnabledSupplier,
                 mOfflineDownloader);
+
+        when(mFeatureOverridesManager.isFeatureEnabled(anyString())).thenReturn(null);
+        mToolbar.setFeatureOverridesManager(mFeatureOverridesManager);
+
         mLocationBar =
                 (CustomTabLocationBar)
                         mToolbar.createLocationBar(
@@ -211,17 +217,6 @@ public class CustomTabToolbarUnitTest {
 
     @Test
     public void testToolbarBrandingDelegateImpl_EmptyToBranding() {
-        mLocationBar.setIconTransitionEnabled(true);
-        doTestToolbarBrandingDelegateImpl_EmptyToBranding(true);
-    }
-
-    @Test
-    public void testToolbarBrandingDelegateImpl_EmptyToBranding_DisableTransition() {
-        mLocationBar.setIconTransitionEnabled(false);
-        doTestToolbarBrandingDelegateImpl_EmptyToBranding(false);
-    }
-
-    private void doTestToolbarBrandingDelegateImpl_EmptyToBranding(boolean animateIconTransition) {
         assertUrlAndTitleVisible(/* titleVisible= */ false, /* urlVisible= */ true);
         mLocationBar.showEmptyLocationBar();
         assertUrlAndTitleVisible(/* titleVisible= */ false, /* urlVisible= */ false);
@@ -233,7 +228,7 @@ public class CustomTabToolbarUnitTest {
 
         mLocationBar.showBrandingLocationBar();
         assertUrlAndTitleVisible(/* titleVisible= */ false, /* urlVisible= */ true);
-        verify(mAnimationDelegate).updateSecurityButton(anyInt(), eq(animateIconTransition));
+        verify(mAnimationDelegate).updateSecurityButton(anyInt());
         assertBrandingTextShowingOnUrlBar();
 
         // Attempt to update title and URL to show Title only - should be ignored during branding.
@@ -388,7 +383,7 @@ public class CustomTabToolbarUnitTest {
     public void testMinimizeButtonEnabled() {
         when(mTab.getWindowAndroid()).thenReturn(mWindowAndroid);
         when(mWindowAndroid.getActivity()).thenReturn(new WeakReference<Activity>(mActivity));
-        MinimizedFeatureUtils.setMinimizeCustomTabAvailableForTesting(true);
+        MinimizedFeatureUtils.setDeviceEligibleForMinimizedCustomTabForTesting(true);
         setup();
         LinearLayout closeMinimizeLayout = mToolbar.findViewById(R.id.close_minimize_layout);
         var minimizeButton = (ImageButton) mToolbar.findViewById(R.id.custom_tabs_minimize_button);
@@ -451,7 +446,7 @@ public class CustomTabToolbarUnitTest {
     public void testMinimizeButtonEnabled_MultiWindowMode() {
         when(mTab.getWindowAndroid()).thenReturn(mWindowAndroid);
         when(mWindowAndroid.getActivity()).thenReturn(new WeakReference<Activity>(mActivity));
-        MinimizedFeatureUtils.setMinimizeCustomTabAvailableForTesting(true);
+        MinimizedFeatureUtils.setDeviceEligibleForMinimizedCustomTabForTesting(true);
         setup();
         // Not in multi-window, show minimize button.
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(false);
@@ -467,7 +462,7 @@ public class CustomTabToolbarUnitTest {
                 View.VISIBLE,
                 closeMinimizeLayout.getChildAt(1).getVisibility());
 
-        MinimizedFeatureUtils.setMinimizeCustomTabAvailableForTesting(true);
+        MinimizedFeatureUtils.setDeviceEligibleForMinimizedCustomTabForTesting(true);
         setup();
         // In multi-window, hide minimize button visibility.
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
@@ -520,25 +515,25 @@ public class CustomTabToolbarUnitTest {
 
     @Test
     public void testCookieControlsIcon_animateOnPageStoppedLoadingWithHighBreakageConfidence() {
-        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt(), anyBoolean());
+        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt());
 
         mLocationBar.onBreakageConfidenceLevelChanged(CookieControlsBreakageConfidenceLevel.HIGH);
-        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt(), anyBoolean());
+        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt());
         verify(mPageInfoIPHController, never()).showCookieControlsIPH(anyInt(), anyInt());
 
         mLocationBar.onPageLoadStopped();
-        verify(mAnimationDelegate, times(1)).updateSecurityButton(R.drawable.ic_eye_crossed, true);
+        verify(mAnimationDelegate, times(1)).updateSecurityButton(R.drawable.ic_eye_crossed);
         verify(mPageInfoIPHController, times(1)).showCookieControlsIPH(anyInt(), anyInt());
 
         mLocationBar.onBreakageConfidenceLevelChanged(CookieControlsBreakageConfidenceLevel.LOW);
         mLocationBar.onPageLoadStopped();
-        verify(mAnimationDelegate, times(1)).updateSecurityButton(R.drawable.ic_eye_crossed, true);
+        verify(mAnimationDelegate, times(1)).updateSecurityButton(R.drawable.ic_eye_crossed);
         verify(mPageInfoIPHController, times(1)).showCookieControlsIPH(anyInt(), anyInt());
     }
 
     @Test
     public void testCookieControlsIcon_trackingProtectionsEnabled_cookieBlockingEnabled() {
-        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt(), anyBoolean());
+        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt());
 
         mLocationBar.onBreakageConfidenceLevelChanged(CookieControlsBreakageConfidenceLevel.HIGH);
         mLocationBar.onStatusChanged(
@@ -555,7 +550,7 @@ public class CustomTabToolbarUnitTest {
 
     @Test
     public void testCookieControlsIcon_trackingProtectionsEnabled_cookieBlockingDisabled() {
-        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt(), anyBoolean());
+        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt());
 
         mLocationBar.onBreakageConfidenceLevelChanged(CookieControlsBreakageConfidenceLevel.HIGH);
         mLocationBar.onStatusChanged(
@@ -572,7 +567,7 @@ public class CustomTabToolbarUnitTest {
 
     @Test
     public void testCookieControlsIcon_trackingProtectionDisabled_cookieBlockingEnabled() {
-        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt(), anyBoolean());
+        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt());
 
         mLocationBar.onBreakageConfidenceLevelChanged(CookieControlsBreakageConfidenceLevel.HIGH);
         mLocationBar.onStatusChanged(

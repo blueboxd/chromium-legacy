@@ -12,6 +12,8 @@ source_set("model") {
     "url_loading_browser_agent.mm",
     "url_loading_notifier_browser_agent.h",
     "url_loading_notifier_browser_agent.mm",
+    "url_loading_observer.h",
+    "url_loading_observer.mm",
     "url_loading_observer_bridge.h",
     "url_loading_observer_bridge.mm",
     "url_loading_params.h",
@@ -29,7 +31,7 @@ source_set("model") {
     "//ios/chrome/browser/crash_report/model:model_internal",
     "//ios/chrome/browser/feature_engagement/model",
     "//ios/chrome/browser/ntp/model:util",
-    "//ios/chrome/browser/policy:policy_util",
+    "//ios/chrome/browser/policy/model:policy_util",
     "//ios/chrome/browser/prerender/model",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
@@ -86,6 +88,7 @@ source_set("unit_tests") {
   sources = [
     "image_search_param_generator_unittest.mm",
     "url_loading_browser_agent_unittest.mm",
+    "url_loading_observer_bridge_unittest.mm",
   ]
   deps = [
     ":model",

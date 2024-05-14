@@ -9,6 +9,18 @@
 
 namespace apps {
 
+// Do not modify existing strings, they are used by metrics.
+std::ostream& operator<<(std::ostream& out, AppInstallSurface surface) {
+  switch (surface) {
+    case AppInstallSurface::kAppInstallNavigationThrottle:
+      return out << "AppInstallNavigationThrottle";
+    case AppInstallSurface::kAppPreloadServiceOem:
+      return out << "AppPreloadServiceOem";
+    case AppInstallSurface::kAppPreloadServiceDefault:
+      return out << "AppPreloadServiceDefault";
+  }
+}
+
 std::ostream& operator<<(std::ostream& out, const AppInstallIcon& icon) {
   out << "AppInstallIcon{";
   out << "url: " << icon.url;
@@ -33,7 +45,6 @@ WebAppInstallData::~WebAppInstallData() = default;
 
 std::ostream& operator<<(std::ostream& out, const WebAppInstallData& data) {
   out << "WebAppInstallData{";
-  out << "manifest_id: " << data.manifest_id;
   out << ", original_manifest_url: " << data.original_manifest_url;
   out << ", proxied_manifest_url: " << data.proxied_manifest_url;
   out << ", document_url: " << data.document_url;

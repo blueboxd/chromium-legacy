@@ -14,7 +14,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,8 +28,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.JUnitTestGURLs;
@@ -64,8 +63,7 @@ public class ScreenshotShareSheetMediatorUnitTest {
                 Runnable deleteRunnable,
                 Runnable saveRunnable,
                 WindowAndroid windowAndroid,
-                ChromeOptionShareCallback chromeOptionShareCallback,
-                Callback<Runnable> installCallback) {
+                ChromeOptionShareCallback chromeOptionShareCallback) {
             super(
                     context,
                     propertyModel,
@@ -73,8 +71,7 @@ public class ScreenshotShareSheetMediatorUnitTest {
                     saveRunnable,
                     windowAndroid,
                     JUnitTestGURLs.EXAMPLE_URL.getSpec(),
-                    chromeOptionShareCallback,
-                    installCallback);
+                    chromeOptionShareCallback);
         }
 
         @Override
@@ -111,8 +108,7 @@ public class ScreenshotShareSheetMediatorUnitTest {
                         mDeleteRunnable,
                         mSaveRunnable,
                         mWindowAndroid,
-                        mShareCallback,
-                        mInstallRunnable);
+                        mShareCallback);
     }
 
     @Test
@@ -157,21 +153,4 @@ public class ScreenshotShareSheetMediatorUnitTest {
                         "Sharing.ScreenshotFallback.Action",
                         ScreenshotShareSheetMetrics.ScreenshotShareSheetAction.SHARE));
     }
-
-    @Test
-    public void onClickInstall() {
-        Callback<Integer> callback =
-                mModel.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER);
-        callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.INSTALL);
-
-        verify(mInstallRunnable).onResult(any());
-        Assert.assertEquals(
-                1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "Sharing.ScreenshotFallback.Action",
-                        ScreenshotShareSheetMetrics.ScreenshotShareSheetAction.EDIT));
-    }
-
-    @After
-    public void tearDown() {}
 }

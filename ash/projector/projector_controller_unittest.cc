@@ -189,15 +189,13 @@ class ProjectorControllerTest : public AshTestBase {
     CrasAudioHandler::Get()->SetActiveInputNodes({kInternalMic->id});
   }
 
-  raw_ptr<MockProjectorUiController, DanglingUntriaged | ExperimentalAsh>
-      mock_ui_controller_ = nullptr;
-  raw_ptr<MockProjectorMetadataController, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<MockProjectorUiController, DanglingUntriaged> mock_ui_controller_ =
+      nullptr;
+  raw_ptr<MockProjectorMetadataController, DanglingUntriaged>
       mock_metadata_controller_ = nullptr;
-  raw_ptr<ProjectorMetadataControllerForTest,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<ProjectorMetadataControllerForTest, DanglingUntriaged>
       metadata_controller_;
-  raw_ptr<ProjectorControllerImpl, DanglingUntriaged | ExperimentalAsh>
-      controller_;
+  raw_ptr<ProjectorControllerImpl, DanglingUntriaged> controller_;
   MockProjectorClient mock_client_;
   base::HistogramTester histogram_tester_;
   base::ScopedTempDir temp_dir_;
@@ -397,6 +395,8 @@ class ProjectorOnDlpRestrictionCheckedAtVideoEndTest
 };
 
 TEST_P(ProjectorOnDlpRestrictionCheckedAtVideoEndTest, WrapUpRecordingOnce) {
+  // TODO(b/321064048): Clean up tests when ProjectorV2 is fully launched.
+  scoped_feature_list_.InitAndDisableFeature(ash::features::kProjectorV2);
   bool wrap_up_by_speech_stopped;
   bool transcript_end_timed_out;
   switch (std::get<0>(GetParam())) {
@@ -543,6 +543,8 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Bool()));
 
 TEST_F(ProjectorControllerTest, NoTranscriptsTest) {
+  // TODO(b/321064048): Clean up tests when ProjectorV2 is fully launched.
+  scoped_feature_list_.InitAndDisableFeature(ash::features::kProjectorV2);
   InitializeRealMetadataController();
   metadata_controller_->OnRecordingStarted();
 
@@ -567,6 +569,8 @@ TEST_F(ProjectorControllerTest, NoTranscriptsTest) {
 }
 
 TEST_F(ProjectorControllerTest, TranscriptsTest) {
+  // TODO(b/321064048): Clean up tests when ProjectorV2 is fully launched.
+  scoped_feature_list_.InitAndDisableFeature(ash::features::kProjectorV2);
   InitializeRealMetadataController();
   metadata_controller_->OnRecordingStarted();
 
@@ -596,7 +600,6 @@ TEST_F(ProjectorControllerTest, TranscriptsTest) {
 }
 
 TEST_F(ProjectorControllerTest, V2TranscriptsTest) {
-  scoped_feature_list_.InitAndEnableFeature(ash::features::kProjectorV2);
   InitializeRealMetadataController();
   metadata_controller_->OnRecordingStarted();
 
@@ -638,6 +641,8 @@ TEST_F(ProjectorControllerTest, OnDriveMountFailed) {
 }
 
 TEST_F(ProjectorControllerTest, SuppressDriveNotification) {
+  // TODO(b/321064048): Clean up tests when ProjectorV2 is fully launched.
+  scoped_feature_list_.InitAndDisableFeature(ash::features::kProjectorV2);
   ON_CALL(mock_client_, IsDriveFsMounted())
       .WillByDefault(testing::Return(true));
 

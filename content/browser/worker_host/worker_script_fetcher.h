@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_FETCHER_H_
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_FETCHER_H_
 
+#include <optional>
+
 #include "base/functional/callback.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/content_export.h"
@@ -17,7 +19,6 @@
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -131,6 +132,8 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
       ukm::SourceId worker_source_id,
       DevToolsAgentHostImpl* devtools_agent_host,
       const base::UnguessableToken& devtools_worker_token,
+      bool require_cross_site_request_for_cookies,
+      bool has_storage_access,
       CompletionCallback callback);
 
   // Creates a loader factory bundle. Must be called on the UI thread. For
@@ -170,7 +173,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   // - `completion_status` is not nullptr.
   using CreateAndStartCallback = base::OnceCallback<void(
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      absl::optional<SubresourceLoaderParams> subresource_loader_params,
+      SubresourceLoaderParams subresource_loader_params,
       const network::URLLoaderCompletionStatus* completion_status)>;
 
   WorkerScriptFetcher(
@@ -202,6 +205,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
       ukm::SourceId worker_source_id,
       DevToolsAgentHostImpl* devtools_agent_host,
       const base::UnguessableToken& devtools_worker_token,
+      bool require_cross_site_request_for_cookies,
       WorkerScriptFetcher::CompletionCallback callback);
 
   void Start(std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles);
@@ -211,7 +215,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr head,
       mojo::ScopedDataPipeConsumerHandle body,
-      absl::optional<mojo_base::BigBuffer> cached_metadata) override;
+      std::optional<mojo_base::BigBuffer> cached_metadata) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
@@ -234,7 +238,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
 
   blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params_;
-  absl::optional<SubresourceLoaderParams> subresource_loader_params_;
+  SubresourceLoaderParams subresource_loader_params_;
 
   std::vector<net::RedirectInfo> redirect_infos_;
   std::vector<network::mojom::URLResponseHeadPtr> redirect_response_heads_;

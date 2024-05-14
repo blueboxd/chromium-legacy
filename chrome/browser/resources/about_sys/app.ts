@@ -10,8 +10,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
-import {BrowserProxyImpl, SystemLog} from './browser_proxy.js';
-import {LogEntryElement} from './log_entry.js';
+import type {SystemLog} from './browser_proxy.js';
+import {BrowserProxyImpl} from './browser_proxy.js';
+import type {LogEntryElement} from './log_entry.js';
 import {parseSystemLog} from './log_parser.js';
 
 // Limit file size to 10 MiB to prevent hanging on accidental upload.
@@ -50,8 +51,17 @@ export class SystemAppElement extends PolymerElement {
 
   private eventTracker_: EventTracker = new EventTracker();
 
+  // <if expr="chromeos_ash">
+  private isLacrosEnabled_: boolean;
+  // </if>
+
   override async connectedCallback() {
     super.connectedCallback();
+
+    // <if expr="chromeos_ash">
+    this.isLacrosEnabled_ =
+        await BrowserProxyImpl.getInstance().isLacrosEnabled();
+    // </if>
 
     this.loading_ = true;
     this.logs_ = await BrowserProxyImpl.getInstance().requestSystemInfo();
@@ -131,6 +141,24 @@ export class SystemAppElement extends PolymerElement {
   private showImportError_(fileName: string) {
     this.$.status.textContent = loadTimeData.getStringF('parseError', fileName);
   }
+
+  // <if expr="chromeos_ash">
+  private onOsLinkContainerClick_(event: MouseEvent) {
+    this.handleOsLinkContainerClick_(event);
+  }
+  private onOsLinkContainerAuxClick_(event: MouseEvent) {
+    // Make middle-clicks have the same effects as Ctrl+clicks
+    if (event.button === 1) {
+      this.handleOsLinkContainerClick_(event);
+    }
+  }
+  private handleOsLinkContainerClick_(event: MouseEvent) {
+    if (event.target instanceof Element && event.target.id === 'osLinkHref') {
+      event.preventDefault();
+      BrowserProxyImpl.getInstance().openLacrosSystemPage();
+    }
+  }
+  // </if>
 }
 
 declare global {

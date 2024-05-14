@@ -21,6 +21,22 @@ namespace recording {
 
 class RgbVideoFrame;
 
+// Encapsulates a created color `quantizer` from the given `rgb_video_frame`,
+// the extracted `color_palette` from it, and the `duration` spent on the whole
+// operation (building the quantizer and extracting the palette), which is
+// calculated based on the given `start_time`.
+struct QuantizerPaletteData {
+  QuantizerPaletteData(const RgbVideoFrame& rgb_video_frame,
+                       base::TimeTicks start_time);
+  QuantizerPaletteData(QuantizerPaletteData&&);
+  QuantizerPaletteData& operator=(QuantizerPaletteData&&);
+  ~QuantizerPaletteData();
+
+  OctreeColorQuantizer quantizer;
+  ColorTable color_palette;
+  base::TimeDelta duration;
+};
+
 // Encapsulates encoding video frames into an animated GIF and writes the
 // encoded output to a file that it creates at the given `gif_file_path`. An
 // instance of this object can only be interacted with via a
@@ -74,6 +90,7 @@ class GifEncoder : public RecordingEncoder {
   void InitializeVideoEncoder(
       const media::VideoEncoder::Options& video_encoder_options) override;
   void EncodeVideo(scoped_refptr<media::VideoFrame> frame) override;
+  void EncodeRgbVideo(RgbVideoFrame rgb_video_frame) override;
   EncodeAudioCallback GetEncodeAudioCallback() override;
   void FlushAndFinalize(base::OnceClosure on_done) override;
 
@@ -112,14 +129,15 @@ class GifEncoder : public RecordingEncoder {
   // implementation.
   void WriteColorPalette(uint8_t color_bit_depth);
 
-  // Moves the given `new_color_quantizer` into `color_quantizer_` and extracts
-  // a new color palette from it into `color_palette_`.
-  void SetQuantizer(OctreeColorQuantizer&& new_color_quantizer);
+  // Moves the quantizer and its extracted color palette from the given
+  // `quantizer_data` into `color_quantizer_` and `color_palette_` respectively.
+  void SetQuantizer(QuantizerPaletteData&& quantizer_data);
 
   // The thread pool task runner on which the color palettes are built every
-  // `kMinNumberOfFramesBetweenPaletteRebuilds` frames except for the very first
-  // frame (in which case, the palette is built synchronously on the same
-  // sequence of the encoder).
+  // `min_num_frames_before_palette_rebuild_` frames except for the very first
+  // frame, or when `min_num_frames_before_palette_rebuild_` is `1` (in which
+  // case, the palette is built synchronously on the same sequence of the
+  // encoder).
   // This is needed because building a new color palette is a costly operation.
   // If we do it on the same sequence of the encoder, we will block it for a
   // long time, resulting in video frames backing up, and filling the in-flight
@@ -130,6 +148,16 @@ class GifEncoder : public RecordingEncoder {
 
   // The number of frames received so far.
   size_t frame_count_ = 0;
+
+  // The minimum number of frames that must be received before a new color
+  // palette can be rebuilt. This value is dynamic and is calculated every time
+  // a new color palette is built taking into account the duration of the
+  // operation. The value is directly proportional with how long it took to
+  // build the most recent color palette on this device (i.e. the longer it
+  // takes, the larger the number of frames we should wait before building a new
+  // one). We clamp it to a value between 1, and
+  // `kMaxNumFramesWithStaleColorPalette`. See `SetQuantizer()`.
+  int min_num_frames_before_palette_rebuild_ = 1;
 
   // The presentation time of the most recent video frame prior to the one being
   // encoded at the moment.

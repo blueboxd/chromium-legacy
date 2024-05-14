@@ -82,7 +82,9 @@ MetricsServicesManager::GetOnRendererUnresponsiveCb() {
 
 std::unique_ptr<const variations::EntropyProviders>
 MetricsServicesManager::CreateEntropyProvidersForTesting() {
-  return client_->GetMetricsStateManager()->CreateEntropyProviders();
+  // Setting enable_limited_entropy_mode=true to maximize code coverage.
+  return client_->GetMetricsStateManager()->CreateEntropyProviders(
+      /*enable_limited_entropy_mode=*/true);
 }
 
 metrics::MetricsServiceClient*
@@ -102,7 +104,7 @@ void MetricsServicesManager::UpdatePermissions(bool current_may_record,
                                                bool current_consent_given,
                                                bool current_may_upload) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // If the user has opted out of metrics, delete local UKM and SM state.
+  // If the user has opted out of metrics, delete local UKM state.
   // TODO(crbug.com/1445075): Investigate if UMA needs purging logic.
   if (consent_given_ && !current_consent_given) {
     ukm::UkmService* ukm = GetUkmService();
@@ -110,7 +112,13 @@ void MetricsServicesManager::UpdatePermissions(bool current_may_record,
       ukm->Purge();
       ukm->ResetClientState(ukm::ResetReason::kUpdatePermissions);
     }
+  }
 
+  // If the user has opted out of metrics, purge Structured Metrics if consent
+  // is not granted. On ChromeOS, SM will record specific events when consent is
+  // unknown during primarily OOBE; but these events need to be purged once
+  // consent is confirmed. This feature shouldn't be used on other platforms.
+  if (!current_consent_given) {
     metrics::structured::StructuredMetricsService* sm_service =
         GetStructuredMetricsService();
     if (sm_service) {

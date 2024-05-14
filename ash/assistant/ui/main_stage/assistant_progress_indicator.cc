@@ -78,10 +78,6 @@ AssistantProgressIndicator::AssistantProgressIndicator() {
 
 AssistantProgressIndicator::~AssistantProgressIndicator() = default;
 
-const char* AssistantProgressIndicator::GetClassName() const {
-  return "AssistantProgressIndicator";
-}
-
 gfx::Size AssistantProgressIndicator::CalculatePreferredSize() const {
   const int preferred_width = views::View::CalculatePreferredSize().width();
   return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
@@ -118,8 +114,9 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
 
   if (!is_drawn_) {
     // Stop all animations.
-    for (auto* child : children())
+    for (views::View* child : children()) {
       child->layer()->GetAnimator()->StopAnimating();
+    }
     return;
   }
 
@@ -140,7 +137,7 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
     return;
 
   base::TimeDelta start_offset;
-  for (auto* child : children()) {
+  for (views::View* child : children()) {
     if (!start_offset.is_zero()) {
       // Schedule the animations to start after an offset.
       child->layer()->GetAnimator()->SchedulePauseForProperties(

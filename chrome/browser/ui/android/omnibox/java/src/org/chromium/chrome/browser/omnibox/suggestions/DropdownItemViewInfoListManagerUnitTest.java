@@ -26,12 +26,11 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
-import org.chromium.chrome.browser.omnibox.test.R;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -266,156 +265,5 @@ public class DropdownItemViewInfoListManagerUnitTest {
                         .get(3)
                         .model
                         .get(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED));
-    }
-
-    @Test
-    public void suggestionsListSpacing_activeOmnibox_smallestMargins() {
-        OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.setForTesting(true);
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX.setForTesting(true);
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.setForTesting(true);
-
-        mManager = new DropdownItemViewInfoListManager(mSuggestionModels, mContext);
-        mManager.onNativeInitialized();
-
-        int suggestionListTopMargin = 0;
-        int groupBottomSpacing =
-                mContext.getResources()
-                        .getDimensionPixelSize(
-                                R.dimen.omnibox_suggestion_group_vertical_smallest_margin);
-        int postHeaderTopSpacing =
-                mContext.getResources()
-                        .getDimensionPixelSize(R.dimen.omnibox_suggestion_group_vertical_margin);
-        int suggestionVerticalSpacing = 0;
-
-        List<DropdownItemViewInfo> list =
-                Arrays.asList(
-                        new DropdownItemViewInfo(
-                                mBasicSuggestionProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_1_NO_HEADER),
-                        new DropdownItemViewInfo(
-                                mHeaderProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_2_WITH_HEADER),
-                        new DropdownItemViewInfo(
-                                mBasicSuggestionProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_2_WITH_HEADER),
-                        new DropdownItemViewInfo(
-                                mBasicSuggestionProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_2_WITH_HEADER));
-
-        mManager.setSourceViewInfoList(list);
-        verifyModelEquals(list);
-
-        //
-        // ******************** <--- very first one, active Omnibox small margin.
-        // * basic suggestion *
-        // ******************** <--- last one in a group, group margin.
-        //                      <--- no background, no margin
-        //  header suggestion
-        //                      <--- no background, no margin
-        // ******************** <--- first one in a group after a header, larger group margin.
-        // * basic suggestion *
-        // ******************** <--- normal bottom, no margin.
-        // ******************** <--- normal top, suggestion margin.
-        // * basic suggestion *
-        // ******************** <--- very last one, no margin.
-        //
-        Assert.assertEquals(
-                suggestionListTopMargin,
-                mSuggestionModels.get(0).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                groupBottomSpacing,
-                mSuggestionModels.get(0).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
-        Assert.assertEquals(
-                0, mSuggestionModels.get(1).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                0, mSuggestionModels.get(1).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
-        Assert.assertEquals(
-                postHeaderTopSpacing,
-                mSuggestionModels.get(2).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                suggestionVerticalSpacing,
-                mSuggestionModels.get(2).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
-        Assert.assertEquals(
-                suggestionVerticalSpacing,
-                mSuggestionModels.get(3).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                0, mSuggestionModels.get(3).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
-    }
-
-    @Test
-    public void suggestionsListSpacing_SRO_shouldNoTopMargin() {
-        OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.setForTesting(true);
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX.setForTesting(true);
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN.setForTesting(true);
-
-        int groupTopSpacing =
-                mContext.getResources()
-                        .getDimensionPixelSize(R.dimen.omnibox_suggestion_group_vertical_margin);
-        int groupBottomSpacing =
-                mContext.getResources()
-                        .getDimensionPixelSize(
-                                R.dimen.omnibox_suggestion_group_vertical_smallest_margin);
-        int suggestionVerticalSpacing = 0;
-
-        List<DropdownItemViewInfo> list =
-                Arrays.asList(
-                        new DropdownItemViewInfo(
-                                mEditUrlSuggestionProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_1_NO_HEADER),
-                        new DropdownItemViewInfo(
-                                mHeaderProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_2_WITH_HEADER),
-                        new DropdownItemViewInfo(
-                                mBasicSuggestionProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_2_WITH_HEADER),
-                        new DropdownItemViewInfo(
-                                mBasicSuggestionProcessor,
-                                new PropertyModel(SuggestionCommonProperties.ALL_KEYS),
-                                SECTION_2_WITH_HEADER));
-
-        mManager.setSourceViewInfoList(list);
-        verifyModelEquals(list);
-
-        //
-        // ******************** <--- very first one, no margin.
-        // * basic suggestion *
-        // ******************** <--- last one in a group, group margin.
-        //                      <--- no background, no margin
-        //  header suggestion
-        //                      <--- no background, no margin
-        // ******************** <--- first one in a group, group margin.
-        // * basic suggestion *
-        // ******************** <--- normal bottom, no margin.
-        // ******************** <--- normal top, suggestion margin.
-        // * basic suggestion *
-        // ******************** <--- very last one, no margin.
-        //
-        Assert.assertEquals(
-                0, mSuggestionModels.get(0).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                groupBottomSpacing,
-                mSuggestionModels.get(0).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
-        Assert.assertEquals(
-                0, mSuggestionModels.get(1).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                0, mSuggestionModels.get(1).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
-        Assert.assertEquals(
-                groupTopSpacing,
-                mSuggestionModels.get(2).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                suggestionVerticalSpacing,
-                mSuggestionModels.get(2).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
-        Assert.assertEquals(
-                suggestionVerticalSpacing,
-                mSuggestionModels.get(3).model.get(DropdownCommonProperties.TOP_MARGIN));
-        Assert.assertEquals(
-                0, mSuggestionModels.get(3).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
     }
 }

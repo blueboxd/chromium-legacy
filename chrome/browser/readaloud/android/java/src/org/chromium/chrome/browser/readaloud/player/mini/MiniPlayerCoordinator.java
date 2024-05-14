@@ -9,6 +9,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewStub;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
@@ -22,6 +23,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** Coordinator responsible for Read Aloud mini player lifecycle. */
 public class MiniPlayerCoordinator {
+    private static ViewStub sViewStubForTesting;
     private final PropertyModelChangeProcessor<PropertyModel, MiniPlayerLayout, PropertyKey>
             mPlayerModelChangeProcessor;
     private final PropertyModelChangeProcessor<
@@ -44,7 +46,7 @@ public class MiniPlayerCoordinator {
             Context context,
             PropertyModel sharedModel,
             BrowserControlsSizer browserControlsSizer,
-            LayoutManager layoutManager) {
+            @Nullable LayoutManager layoutManager) {
         this(
                 sharedModel,
                 new MiniPlayerMediator(browserControlsSizer),
@@ -54,7 +56,10 @@ public class MiniPlayerCoordinator {
     }
 
     private static MiniPlayerLayout inflateLayout(Activity activity, Context context) {
-        ViewStub stub = activity.findViewById(R.id.readaloud_mini_player_stub);
+        ViewStub stub =
+                sViewStubForTesting != null
+                        ? sViewStubForTesting
+                        : activity.findViewById(R.id.readaloud_mini_player_stub);
         assert stub != null;
         stub.setLayoutResource(R.layout.readaloud_mini_player_layout);
         stub.setLayoutInflater(LayoutInflater.from(context));
@@ -67,13 +72,15 @@ public class MiniPlayerCoordinator {
             MiniPlayerMediator mediator,
             MiniPlayerLayout layout,
             ReadAloudMiniPlayerSceneLayer sceneLayer,
-            LayoutManager layoutManager) {
+            @Nullable LayoutManager layoutManager) {
         mMediator = mediator;
         mLayout = layout;
         assert layout != null;
         mSceneLayer = sceneLayer;
         sceneLayer.setIsVisible(true);
-        layoutManager.addSceneOverlay(sceneLayer);
+        if (layoutManager != null) {
+            layoutManager.addSceneOverlay(sceneLayer);
+        }
 
         mPlayerModelChangeProcessor =
                 PropertyModelChangeProcessor.create(
@@ -113,5 +120,9 @@ public class MiniPlayerCoordinator {
      */
     public void dismiss(boolean animate) {
         mMediator.dismiss(animate);
+    }
+
+    public static void setViewStubForTesting(ViewStub stub) {
+        sViewStubForTesting = stub;
     }
 }

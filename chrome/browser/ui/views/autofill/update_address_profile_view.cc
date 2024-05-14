@@ -36,9 +36,9 @@ namespace {
 constexpr int kIconSize = 16;
 constexpr int kValuesLabelWidth = 190;
 
-const gfx::VectorIcon& GetVectorIconForType(ServerFieldType type) {
+const gfx::VectorIcon& GetVectorIconForType(FieldType type) {
   switch (type) {
-    case NAME_FULL_WITH_HONORIFIC_PREFIX:
+    case NAME_FULL:
       return kAccountCircleIcon;
     case ADDRESS_HOME_ADDRESS:
       return vector_icons::kLocationOnIcon;
@@ -273,6 +273,8 @@ UpdateAddressProfileView::UpdateAddressProfileView(
     SetFootnoteView(
         views::Builder<views::Label>()
             .SetText(footer_message)
+            .SetTextContext(views::style::CONTEXT_BUBBLE_FOOTER)
+            .SetTextStyle(views::style::STYLE_SECONDARY)
             .SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT)
             .SetMultiLine(true)
             .Build());

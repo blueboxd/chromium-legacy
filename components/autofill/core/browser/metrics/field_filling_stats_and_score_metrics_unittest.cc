@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/metrics/field_filling_stats_and_score_metrics.h"
 
+#include <string_view>
+
 #include "base/test/metrics/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_granular_filling_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -20,9 +22,10 @@ FillFieldLogEvent GetFillFieldLogEventWithFillingMethod(
       .fill_event_id = GetNextFillEventId(),
       .had_value_before_filling = ToOptionalBoolean(false),
       .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
-      .was_autofilled = ToOptionalBoolean(true),
+      .was_autofilled_before_security_policy = ToOptionalBoolean(true),
       .had_value_after_filling = ToOptionalBoolean(true),
-      .filling_method = filling_method};
+      .filling_method = filling_method,
+      .filling_prevented_by_iframe_security_policy = OptionalBoolean::kFalse};
 }
 
 std::vector<test::FieldDescription> GetTestFormDataFields(
@@ -69,7 +72,7 @@ std::vector<test::FieldDescription> GetTestFormDataFields(
 // `histogram_name_suffix`. The histogram bucket count defaults to 1.
 void ExpectFieldFillingStatsUniqueSample(
     const base::HistogramTester& histogram_tester,
-    base::StringPiece histogram_name_suffix,
+    std::string_view histogram_name_suffix,
     int sample) {
   histogram_tester.ExpectUniqueSample(
       base::StrCat({"Autofill.FieldFillingStats.", histogram_name_suffix}),
@@ -109,7 +112,7 @@ class AutofillFieldFillingStatsAndScoreMetricsTest
     form_data_ =
         GetAndAddSeenForm({.description_for_logging = "FieldFillingStats",
                            .fields = fields,
-                           .unique_renderer_id = test::MakeFormRendererId(),
+                           .renderer_id = test::MakeFormRendererId(),
                            .main_frame_origin = url::Origin::Create(
                                autofill_client_->form_origin())});
     return form_data_;

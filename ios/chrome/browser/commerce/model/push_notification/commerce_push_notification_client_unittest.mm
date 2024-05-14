@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/commerce/model/push_notification/commerce_push_notification_client.h"
 
 #import "base/base64.h"
+#import "base/memory/raw_ptr.h"
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
@@ -17,12 +18,16 @@
 #import "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #import "components/commerce/core/proto/price_tracking.pb.h"
 #import "components/commerce/core/test_utils.h"
+#import "components/optimization_guide/core/hints_manager.h"
+#import "components/optimization_guide/core/optimization_guide_features.h"
 #import "components/optimization_guide/proto/push_notification.pb.h"
 #import "components/session_proto_db/session_proto_db.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/model/session_proto_db_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
+#import "ios/chrome/browser/optimization_guide/model/optimization_guide_service.h"
+#import "ios/chrome/browser/optimization_guide/model/optimization_guide_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
@@ -42,6 +47,7 @@ constexpr char kBookmarkFoundHistogramName[] =
     "Commerce.PriceTracking.Untrack.BookmarkFound";
 std::string kBookmarkTitle = "My product title";
 uint64_t kClusterId = 12345L;
+constexpr char kPayloadValue[] = "value";
 NSString* kSerializedPayloadKey = @"op";
 NSString* kVisitSiteActionId = @"visit_site";
 NSString* kVisitSiteTitle = @"Visit site";
@@ -81,8 +87,7 @@ NSDictionary* SerializeOptGuideCommercePayload() {
   any.SerializeToString(&serialized_any);
 
   // Base 64 encoding
-  std::string serialized_any_escaped;
-  base::Base64Encode(serialized_any, &serialized_any_escaped);
+  std::string serialized_any_escaped = base::Base64Encode(serialized_any);
 
   NSDictionary* user_info = @{
     kSerializedPayloadKey : base::SysUTF8ToNSString(serialized_any_escaped)
@@ -126,6 +131,17 @@ const bookmarks::BookmarkNode* PrepareSubscription(
 
 }  // namespace
 
+class MockDelegate
+    : public optimization_guide::PushNotificationManager::Delegate {
+ public:
+  MOCK_METHOD(void,
+              RemoveFetchedEntriesByHintKeys,
+              (base::OnceClosure,
+               optimization_guide::proto::KeyRepresentation,
+               (const base::flat_set<std::string>&)),
+              (override));
+};
+
 class CommercePushNotificationClientTest : public PlatformTest {
  public:
   CommercePushNotificationClientTest() {}
@@ -150,6 +166,9 @@ class CommercePushNotificationClientTest : public PlatformTest {
         SessionProtoDBFactory<
             commerce_subscription_db::CommerceSubscriptionContentProto>::
             GetDefaultFactory());
+    builder.AddTestingFactory(
+        OptimizationGuideServiceFactory::GetInstance(),
+        OptimizationGuideServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = builder.Build();
     browser_list_ =
         BrowserListFactory::GetForBrowserState(chrome_browser_state_.get());
@@ -183,6 +202,8 @@ class CommercePushNotificationClientTest : public PlatformTest {
 
   Browser* GetBrowser() { return browser_.get(); }
 
+  ChromeBrowserState* GetBrowserState() { return chrome_browser_state_.get(); }
+
   Browser* GetBackgroundBrowser() { return background_browser_.get(); }
 
   void HandleNotificationInteraction(
@@ -193,7 +214,7 @@ class CommercePushNotificationClientTest : public PlatformTest {
         action_identifier, user_info, on_complete_for_testing);
   }
 
-  std::vector<const std::string>& GetUrlsDelayedForLoading() {
+  std::vector<GURL>& GetUrlsDelayedForLoading() {
     return commerce_push_notification_client_.urls_delayed_for_loading_;
   }
 
@@ -206,19 +227,101 @@ class CommercePushNotificationClientTest : public PlatformTest {
         .GetSceneLevelForegroundActiveBrowser();
   }
 
+  void SetLastUsedChromeBrowserStateForTesting(
+      CommercePushNotificationClient& push_notification_client) {
+    push_notification_client.SetLastUsedChromeBrowserStateForTesting(
+        chrome_browser_state_.get());
+  }
+
  protected:
   web::WebTaskEnvironment task_environment_;
   CommercePushNotificationClient commerce_push_notification_client_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<Browser> background_browser_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  BrowserList* browser_list_;
-  bookmarks::BookmarkModel* bookmark_model_;
-  commerce::MockShoppingService* shopping_service_;
+  raw_ptr<BrowserList> browser_list_;
+  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  raw_ptr<commerce::MockShoppingService> shopping_service_;
   SceneState* scene_state_foreground_;
   SceneState* scene_state_background_;
   AppState* app_state_;
 };
+
+TEST_F(CommercePushNotificationClientTest, TestParsing) {
+  optimization_guide::proto::Any any;
+  optimization_guide::proto::HintNotificationPayload hint_notification_payload;
+  hint_notification_payload.set_hint_key(kHintKey);
+  hint_notification_payload.set_optimization_type(
+      optimization_guide::proto::NOSCRIPT);
+  hint_notification_payload.set_key_representation(
+      optimization_guide::proto::HOST);
+  optimization_guide::proto::Any* payload =
+      hint_notification_payload.mutable_payload();
+  payload->set_type_url(kHintKey);
+  payload->set_value(kPayloadValue);
+
+  std::string serialized_hint_notification_payload;
+  hint_notification_payload.SerializeToString(
+      &serialized_hint_notification_payload);
+  any.set_value(serialized_hint_notification_payload.c_str());
+
+  std::string serialized_any;
+  any.SerializeToString(&serialized_any);
+  std::string serialized_any_escaped = base::Base64Encode(serialized_any);
+
+  std::unique_ptr<optimization_guide::proto::HintNotificationPayload> parsed =
+      CommercePushNotificationClient::ParseHintNotificationPayload(
+          base::SysUTF8ToNSString(serialized_any_escaped));
+  EXPECT_EQ(kHintKey, parsed->hint_key());
+  EXPECT_EQ(optimization_guide::proto::NOSCRIPT, parsed->optimization_type());
+  EXPECT_EQ(optimization_guide::proto::HOST, parsed->key_representation());
+  EXPECT_EQ(kHintKey, parsed->payload().type_url());
+  EXPECT_EQ(kPayloadValue, parsed->payload().value());
+}
+
+TEST_F(CommercePushNotificationClientTest, TestHintKeyRemovedUponNotification) {
+  MockDelegate mock_delegate;
+  OptimizationGuideService* optimization_guide_service =
+      OptimizationGuideServiceFactory::GetForBrowserState(GetBrowserState());
+  optimization_guide_service->GetHintsManager()
+      ->push_notification_manager()
+      ->SetDelegate(&mock_delegate);
+
+  optimization_guide::proto::Any any;
+  optimization_guide::proto::HintNotificationPayload hint_notification_payload;
+  hint_notification_payload.set_hint_key(kHintKey);
+  hint_notification_payload.set_key_representation(
+      optimization_guide::proto::HOST);
+  hint_notification_payload.set_optimization_type(
+      optimization_guide::proto::NOSCRIPT);
+
+  optimization_guide::proto::Any* payload =
+      hint_notification_payload.mutable_payload();
+  payload->set_type_url(kHintKey);
+  payload->set_value(kPayloadValue);
+
+  std::string serialized_hint_notification_payload;
+  hint_notification_payload.SerializeToString(
+      &serialized_hint_notification_payload);
+  any.set_value(serialized_hint_notification_payload.c_str());
+
+  std::string serialized_any;
+  any.SerializeToString(&serialized_any);
+  std::string serialized_any_escaped = base::Base64Encode(serialized_any);
+
+  NSDictionary* dict = @{
+    kSerializedPayloadKey : base::SysUTF8ToNSString(serialized_any_escaped)
+  };
+
+  CommercePushNotificationClient push_notification_client;
+  SetLastUsedChromeBrowserStateForTesting(push_notification_client);
+
+  EXPECT_CALL(mock_delegate,
+              RemoveFetchedEntriesByHintKeys(
+                  testing::_, testing::Eq(optimization_guide::proto::HOST),
+                  testing::ElementsAreArray({kHintKey})));
+  push_notification_client.HandleNotificationReception(dict);
+}
 
 TEST_F(CommercePushNotificationClientTest, TestNotificationInteraction) {
   NSDictionary* user_info = SerializeOptGuideCommercePayload();

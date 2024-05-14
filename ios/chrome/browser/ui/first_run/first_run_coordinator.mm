@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/feature_list.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
@@ -58,7 +59,8 @@
 - (void)start {
   [self presentScreen:[self.screenProvider nextScreenType]];
   void (^completion)(void) = ^{
-    base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kStart);
+    base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,
+                                  first_run::kStart);
   };
   [self.navigationController setNavigationBarHidden:YES animated:NO];
   [self.baseViewController presentViewController:self.navigationController
@@ -72,15 +74,24 @@
   if (self.completed) {
     __weak __typeof(self) weakSelf = self;
     completion = ^{
-      base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kComplete);
+      base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,
+                                    first_run::kComplete);
       WriteFirstRunSentinel();
       [weakSelf.delegate didFinishPresentingScreens];
     };
   }
-
-  [self.childCoordinator stop];
-  self.childCoordinator = nil;
-
+  if (self.childCoordinator) {
+    // If the child coordinator is not nil, then the FRE is stopped because
+    // Chrome is being shutdown.
+    InterruptibleChromeCoordinator* interruptibleChildCoordinator =
+        base::apple::ObjCCast<InterruptibleChromeCoordinator>(
+            self.childCoordinator);
+    [interruptibleChildCoordinator
+        interruptWithAction:SigninCoordinatorInterrupt::UIShutdownNoDismiss
+                 completion:completion];
+    [self.childCoordinator stop];
+    self.childCoordinator = nil;
+  }
   [self.baseViewController dismissViewControllerAnimated:YES
                                               completion:completion];
   _navigationController = nil;
@@ -93,12 +104,6 @@
   [self.childCoordinator stop];
   self.childCoordinator = nil;
   [self presentScreen:[self.screenProvider nextScreenType]];
-}
-
-- (void)skipAllScreens {
-  [self.childCoordinator stop];
-  self.childCoordinator = nil;
-  [self willFinishPresentingScreens];
 }
 
 #pragma mark - Helper

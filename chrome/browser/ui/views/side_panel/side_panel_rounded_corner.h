@@ -17,12 +17,13 @@ class Canvas;
 // Draws background akin to the toolbar used for a rounded corner from the
 // SidePanel to the page content.
 class SidePanelRoundedCorner : public views::View {
+  METADATA_HEADER(SidePanelRoundedCorner, views::View)
+
  public:
-  METADATA_HEADER(SidePanelRoundedCorner);
   explicit SidePanelRoundedCorner(BrowserView* browser_view);
 
  private:
-  void Layout() override;
+  void Layout(PassKey) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
 

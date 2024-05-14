@@ -44,6 +44,10 @@
 #include "components/account_id/account_id.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/flags/android/chrome_feature_list.h"
+#endif
+
 using safe_browsing::FileTypePolicies;
 
 namespace {
@@ -705,27 +709,20 @@ TEST(DownloadPrefsTest, ManagedPromptForDownload) {
   EXPECT_FALSE(prefs.PromptForDownload());
 }
 
-#else  // !is_android
-// Verifies the returned value of PromptForDuplicateFile().
-// TODO(chlily): Clean up this test/pref. We no longer plan to implement this.
-TEST(DownloadPrefsTest, PromptForDuplicateFile) {
+// Verifies the returned value of PromptForDownload()
+// when prefs::kPromptForDownload is managed by enterprise policy,
+TEST(DownloadPrefsTest, AutoOpenPdfEnabled) {
   content::BrowserTaskEnvironment task_environment;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome::android::kOpenDownloadDialog);
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
-  // Duplicate prompt disabled.
-  profile.GetPrefs()->SetBoolean(prefs::kDownloadDuplicateFilePromptEnabled,
-                                 false);
-  EXPECT_FALSE(prefs.PromptForDuplicateFile());
+  EXPECT_FALSE(prefs.IsAutoOpenPdfEnabled());
 
-  // Duplicate prompt enabled.
-  profile.GetPrefs()->SetBoolean(prefs::kDownloadDuplicateFilePromptEnabled,
-                                 true);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  EXPECT_FALSE(prefs.PromptForDuplicateFile());
-#else
-  EXPECT_TRUE(prefs.PromptForDuplicateFile());
-#endif
+  profile.GetPrefs()->SetBoolean(prefs::kAutoOpenPdfEnabled, true);
+  EXPECT_TRUE(prefs.IsAutoOpenPdfEnabled());
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

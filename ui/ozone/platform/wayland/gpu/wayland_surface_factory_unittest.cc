@@ -238,7 +238,7 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
             gfx::RectF(window_->GetBoundsInPixels()), {}, false,
             gfx::Rect(window_->applied_state().size_px), 1.0f,
             gfx::OverlayPriorityHint::kNone, gfx::RRectF(),
-            gfx::ColorSpace::CreateSRGB(), absl::nullopt));
+            gfx::ColorSpace::CreateSRGB(), std::nullopt));
   }
 
   uint32_t surface_id_ = 0;
@@ -349,7 +349,7 @@ TEST_P(WaylandSurfaceFactoryTest,
     // pending requests that we need to execute.
     auto params_vector = server->zwp_linux_dmabuf_v1()->buffer_params();
     ASSERT_EQ(params_vector.size(), 2u);
-    for (auto* mock_params : params_vector) {
+    for (wl::TestZwpLinuxBufferParamsV1* mock_params : params_vector) {
       zwp_linux_buffer_params_v1_send_created(mock_params->resource(),
                                               mock_params->buffer_resource());
     }
@@ -449,7 +449,7 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     auto params_vector = server->zwp_linux_dmabuf_v1()->buffer_params();
     ASSERT_EQ(params_vector.size(), 1u);
-    for (auto* mock_params : params_vector) {
+    for (wl::TestZwpLinuxBufferParamsV1* mock_params : params_vector) {
       zwp_linux_buffer_params_v1_send_created(mock_params->resource(),
                                               mock_params->buffer_resource());
     }
@@ -538,7 +538,7 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     auto params_vector = server->zwp_linux_dmabuf_v1()->buffer_params();
     ASSERT_EQ(params_vector.size(), 1u);
-    for (auto* mock_params : params_vector) {
+    for (wl::TestZwpLinuxBufferParamsV1* mock_params : params_vector) {
       zwp_linux_buffer_params_v1_send_created(mock_params->resource(),
                                               mock_params->buffer_resource());
     }
@@ -714,7 +714,7 @@ TEST_P(WaylandSurfaceFactoryTest,
     // first commit.
     auto params_vector = server->zwp_linux_dmabuf_v1()->buffer_params();
     ASSERT_EQ(params_vector.size(), 3u);
-    for (auto* param : params_vector) {
+    for (wl::TestZwpLinuxBufferParamsV1* param : params_vector) {
       zwp_linux_buffer_params_v1_send_created(param->resource(),
                                               param->buffer_resource());
     }
@@ -834,7 +834,7 @@ TEST_P(WaylandSurfaceFactoryTest,
     // 2 more buffers are to be created.
     auto params_vector = server->zwp_linux_dmabuf_v1()->buffer_params();
     ASSERT_EQ(params_vector.size(), 2u);
-    for (auto* param : params_vector) {
+    for (wl::TestZwpLinuxBufferParamsV1* param : params_vector) {
       zwp_linux_buffer_params_v1_send_created(param->resource(),
                                               param->buffer_resource());
     }
@@ -1374,10 +1374,11 @@ TEST_P(WaylandSurfaceFactoryCompositorV3, SurfaceDamageTest) {
     presenter->ScheduleOverlayPlane(
         fake_overlay_image[0]->GetNativePixmap(), nullptr,
         gfx::OverlayPlaneData(
-            INT32_MIN, gfx::OverlayTransform::OVERLAY_TRANSFORM_ROTATE_270,
+            INT32_MIN,
+            gfx::OverlayTransform::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_270,
             gfx::RectF(window_->GetBoundsInPixels()), crop_uv, false,
             surface_damage_rect, 1.0f, gfx::OverlayPriorityHint::kNone,
-            gfx::RRectF(), gfx::ColorSpace::CreateSRGB(), absl::nullopt));
+            gfx::RRectF(), gfx::ColorSpace::CreateSRGB(), std::nullopt));
 
     std::vector<scoped_refptr<OverlayImageHolder>> overlay_images;
     overlay_images.push_back(fake_overlay_image[0]);

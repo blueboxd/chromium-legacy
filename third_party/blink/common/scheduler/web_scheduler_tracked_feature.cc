@@ -134,6 +134,10 @@ FeatureNames FeatureToNames(WebSchedulerTrackedFeature feature) {
       return {"WebSerial", "Serial port open"};
     case WebSchedulerTrackedFeature::kSmartCard:
       return {"SmartCard", "SmartCardContext used"};
+    case WebSchedulerTrackedFeature::kLiveMediaStreamTrack:
+      return {"LiveMediaStreamTrack", "page has live MediaStreamTrack"};
+    case WebSchedulerTrackedFeature::kUnloadHandler:
+      return {"UnloadHandler", "page contains unload handler"};
   }
   return {};
 }
@@ -168,12 +172,12 @@ std::string FeatureToShortString(WebSchedulerTrackedFeature feature) {
   return FeatureToNames(feature).short_name;
 }
 
-absl::optional<WebSchedulerTrackedFeature> StringToFeature(
+std::optional<WebSchedulerTrackedFeature> StringToFeature(
     const std::string& str) {
   auto map = ShortStringToFeatureMap();
   auto it = map.find(str);
   if (it == map.end()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return it->second;
 }

@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,9 +39,9 @@ class ProfileTokenQualityTest : public testing::Test {
 
   // Creates a form and registers it with the `bam_` as-if it had the given
   // `types` as predictions.
-  FormData GetFormWithTypes(const std::vector<ServerFieldType>& types) {
+  FormData GetFormWithTypes(const std::vector<FieldType>& types) {
     test::FormDescription form_description;
-    for (ServerFieldType type : types) {
+    for (FieldType type : types) {
       form_description.fields.emplace_back(type);
     }
     FormData form_data = test::GetFormData(form_description);
@@ -58,7 +57,7 @@ class ProfileTokenQualityTest : public testing::Test {
     FormFieldData& field = form.fields[field_index];
     field.value = std::move(new_value);
     bam_.OnTextFieldDidChange(form, field, gfx::RectF(),
-                              AutofillTickClock::NowTicks());
+                              base::TimeTicks::Now());
   }
 
   // Fills the `form` with the `profile`, as-if autofilling was triggered from
@@ -221,6 +220,24 @@ TEST_F(ProfileTokenQualityTest, AddObservationsForFilledForm_SameField) {
               UnorderedElementsAre(ObservationType::kAccepted));
 }
 
+// Tests that when the type of a field changes between filling and submission,
+// observations are collected for the type the field had when it was filled.
+TEST_F(ProfileTokenQualityTest, AddObservationsForFilledForm_DynamicChange) {
+  AutofillProfile profile = test::GetFullProfile();
+  pdm_.AddProfile(profile);
+  ProfileTokenQuality& quality = profile.token_quality();
+
+  FormData form = GetFormWithTypes({NAME_FIRST});
+  FillForm(form, profile);
+
+  FormStructure* form_structure = bam_.FindCachedFormById(form.global_id());
+  form_structure->field(0)->SetTypeTo(AutofillType(NAME_LAST));
+  EXPECT_TRUE(
+      quality.AddObservationsForFilledForm(*form_structure, form, pdm_));
+  EXPECT_THAT(quality.GetObservationTypesForFieldType(NAME_FIRST),
+              UnorderedElementsAre(ObservationType::kAccepted));
+}
+
 // Tests that `SaveObservationsForFilledFormForAllSubmittedProfiles()` collects
 // observations for all profiles that were used to fill the form.
 TEST_F(ProfileTokenQualityTest,
@@ -264,7 +281,7 @@ TEST_F(ProfileTokenQualityTest,
 // containing fields of the the given `form_types`, the
 // `expected_number_of_observations` are collected.
 struct DropObservationTest {
-  std::vector<ServerFieldType> form_types;
+  std::vector<FieldType> form_types;
   int expected_number_of_observations;
 };
 
@@ -285,7 +302,7 @@ TEST_P(ProfileTokenQualityObservationDroppingTest,
   EXPECT_TRUE(quality.AddObservationsForFilledForm(
       *bam_.FindCachedFormById(form.global_id()), form, pdm_));
   EXPECT_EQ(test.expected_number_of_observations,
-            base::ranges::count_if(test.form_types, [&](ServerFieldType type) {
+            base::ranges::count_if(test.form_types, [&](FieldType type) {
               return !quality.GetObservationTypesForFieldType(type).empty();
             }));
 }
@@ -305,7 +322,7 @@ INSTANTIATE_TEST_SUITE_P(
         // Large form: Expect that four observations are dropped, such that
         // the limit of eight observations are collected.
         DropObservationTest{
-            {NAME_FIRST, NAME_LAST_FIRST, NAME_LAST_SECOND, COMPANY_NAME,
+            {NAME_FIRST, NAME_MIDDLE, NAME_LAST, COMPANY_NAME,
              ADDRESS_HOME_STREET_NAME, ADDRESS_HOME_HOUSE_NUMBER,
              ADDRESS_HOME_CITY, ADDRESS_HOME_ZIP, ADDRESS_HOME_STATE,
              ADDRESS_HOME_COUNTRY, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER},

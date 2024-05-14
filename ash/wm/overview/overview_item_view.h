@@ -29,9 +29,9 @@ class OverviewItem;
 // and handles events. It hosts a mirror view if the window is minimized.
 class ASH_EXPORT OverviewItemView : public WindowMiniView,
                                     public OverviewFocusableView {
- public:
-  METADATA_HEADER(OverviewItemView);
+  METADATA_HEADER(OverviewItemView, WindowMiniView)
 
+ public:
   // If `show_preview` is true, this class will contain a child view which
   // mirrors `window`.
   OverviewItemView(OverviewItem* overview_item,
@@ -101,7 +101,7 @@ class ASH_EXPORT OverviewItemView : public WindowMiniView,
   // `this`.
   raw_ptr<EventHandlerDelegate> event_handler_delegate_;
 
-  raw_ptr<CloseButton, ExperimentalAsh> close_button_;
+  raw_ptr<CloseButton> close_button_;
 };
 
 }  // namespace ash

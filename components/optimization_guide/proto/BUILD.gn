@@ -27,6 +27,7 @@ proto_library("optimization_guide_proto") {
     "model_quality_metadata.proto",
     "model_quality_service.proto",
     "models.proto",
+    "on_device_base_model_metadata.proto",
     "on_device_tail_suggest_model_metadata.proto",
     "page_entities_metadata.proto",
     "page_entities_model_metadata.proto",
@@ -34,6 +35,8 @@ proto_library("optimization_guide_proto") {
     "page_topics_override_list.proto",
     "push_notification.proto",
     "salient_image_metadata.proto",
+    "string_value.proto",
+    "text_safety_model_metadata.proto",
     "visual_search_model_metadata.proto",
   ]
 
@@ -66,5 +69,15 @@ proto_library("compose_proto_descriptor") {
   generate_cc = false
   generate_python = false
   generate_descriptor = "compose.descriptor"
+  proto_deps = [ ":optimization_guide_proto" ]
+}
+
+proto_library("string_value_proto_descriptor") {
+  proto_in_dir = "//"
+  proto_out_dir = "components/optimization_guide/proto"
+  sources = [ "string_value.proto" ]
+  generate_cc = false
+  generate_python = false
+  generate_descriptor = "string_value.descriptor"
   proto_deps = [ ":optimization_guide_proto" ]
 }

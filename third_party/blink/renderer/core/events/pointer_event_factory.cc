@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/events/pointer_event_util.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -605,8 +606,8 @@ PointerId PointerEventFactory::AddOrUpdateIdAndActiveButtons(
   pointer_id_to_attributes_.insert(
       mapped_id,
       PointerAttributes(p, is_active_buttons, hovering, unique_touch_event_id,
-                        /* last_position */ absl::nullopt,
-                        /* last_rawupdate_position */ absl::nullopt));
+                        /* last_position */ std::nullopt,
+                        /* last_rawupdate_position */ std::nullopt));
   return mapped_id;
 }
 
@@ -762,6 +763,9 @@ int32_t PointerEventFactory::GetBlinkDeviceId(
   if (result.is_new_entry) {
     result.stored_value->value = current_device_id_++;
   }
+  TRACE_EVENT_INSTANT1("event", "PointerEventFactory::GetBlinkDeviceId",
+                       TRACE_EVENT_SCOPE_THREAD, "id",
+                       result.stored_value->value);
   return result.stored_value->value;
 }
 

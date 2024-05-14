@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
@@ -20,9 +21,9 @@ class ActionView;
 
 // ActionLabel shows text mapping hint for each action.
 class ActionLabel : public views::LabelButton {
+  METADATA_HEADER(ActionLabel, views::LabelButton)
  public:
-  METADATA_HEADER(ActionLabel);
-  static std::vector<ActionLabel*> Show(
+  static std::vector<raw_ptr<ActionLabel, VectorExperimental>> Show(
       views::View* parent,
       ActionType action_type,
       const InputElement& input_element,

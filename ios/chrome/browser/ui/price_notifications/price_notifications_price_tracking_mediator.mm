@@ -5,10 +5,12 @@
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_price_tracking_mediator.h"
 
 #import "base/feature_list.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
+#import "components/commerce/core/commerce_constants.h"
 #import "components/commerce/core/price_tracking_utils.h"
 #import "components/commerce/core/shopping_service.h"
 #import "components/image_fetcher/core/image_data_fetcher.h"
@@ -52,7 +54,7 @@ using PriceNotificationItems =
   // The service responsible for fetching a product's image data.
   std::unique_ptr<image_fetcher::ImageDataFetcher> _imageFetcher;
   // Only used if ReplaceSyncPromosWithSignInPromos is not enabled.
-  bookmarks::BookmarkModel* _localOrSyncableBookmarkModel;
+  raw_ptr<bookmarks::BookmarkModel> _localOrSyncableBookmarkModel;
 }
 // The service responsible for interacting with commerce's price data
 // infrastructure.
@@ -229,8 +231,9 @@ using PriceNotificationItems =
       [self createPriceNotificationTableViewItem:NO
                                  fromProductInfo:productInfo
                                            atURL:URL];
-  self.shoppingService->IsClusterIdTrackedByUser(
-      productInfo->product_cluster_id.value(),
+  self.shoppingService->IsSubscribed(
+      commerce::BuildUserSubscriptionForClusterId(
+          productInfo->product_cluster_id.value()),
       base::BindOnce(^(bool isTracked) {
         [weakSelf.consumer setTrackableItem:item currentlyTracking:isTracked];
       }));

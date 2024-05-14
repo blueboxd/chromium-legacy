@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 
+#include <string_view>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/strings/string_piece.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
@@ -32,6 +33,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "components/variations/active_field_trials.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test.h"
 #include "net/base/url_util.h"
@@ -335,6 +337,15 @@ class DemoSessionLoginTest : public LoginManagerTest,
     }
   }
 
+  void OpenBrowserAndInstallSystemAppForActiveProfile() {
+    login_manager_mixin_.WaitForActiveSession();
+    SystemWebAppManager::GetForTest(ProfileManager::GetActiveUserProfile())
+        ->InstallSystemAppsForTesting();
+    ui_test_utils::BrowserChangeObserver browser_opened(
+        nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+    browser_opened.Wait();
+  }
+
   base::FilePath growth_campaigns_mounted_path() {
     return growth_campaigns_mounted_path_;
   }
@@ -354,20 +365,17 @@ IN_PROC_BROWSER_TEST_F(DemoSessionLoginTest, SessionStartup) {
   login_manager_mixin_.WaitForActiveSession();
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSessionLoginTest, DemoSWALaunchesOnSessionStartup) {
+// TODO(b/1513575): Flaky.
+IN_PROC_BROWSER_TEST_F(DemoSessionLoginTest,
+                       DISABLED_DemoSWALaunchesOnSessionStartup) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
 
-  login_manager_mixin_.WaitForActiveSession();
-  auto* profile = ProfileManager::GetActiveUserProfile();
-  SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
-  ui_test_utils::BrowserChangeObserver browser_opened(
-      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
-  browser_opened.Wait();
+  OpenBrowserAndInstallSystemAppForActiveProfile();
 
   // Verify that Demo Mode App is opened.
-  Browser* app_browser =
-      FindSystemWebAppBrowser(profile, SystemWebAppType::DEMO_MODE,
-                              Browser::TYPE_APP, GURL(kDemoModeAppUrl));
+  Browser* app_browser = FindSystemWebAppBrowser(
+      ProfileManager::GetActiveUserProfile(), SystemWebAppType::DEMO_MODE,
+      Browser::TYPE_APP, GURL(kDemoModeAppUrl));
   ASSERT_TRUE(app_browser);
   content::WebContents* tab =
       app_browser->tab_strip_model()->GetActiveWebContents();
@@ -395,7 +403,7 @@ class DemoSessionLoginWithGrowthCampaignTest : public DemoSessionLoginTest {
         {});
   }
 
-  void CreateTestCampaignsFile(base::StringPiece data) {
+  void CreateTestCampaignsFile(std::string_view data) {
     auto campaigns_mounted_path = growth_campaigns_mounted_path();
     CHECK(base::CreateDirectory(campaigns_mounted_path));
 
@@ -408,36 +416,30 @@ class DemoSessionLoginWithGrowthCampaignTest : public DemoSessionLoginTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// TODO(b/318756868): Re-enable flaky test.
 IN_PROC_BROWSER_TEST_F(DemoSessionLoginWithGrowthCampaignTest,
-                       DemoSWALaunchesOnSessionStartupWithPayload) {
+                       DISABLED_DemoSWALaunchesOnSessionStartupWithPayload) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
 
   CreateTestCampaignsFile(R"({
-      "reactiveCampaigns": {
-        "0": [
-          {
-            "id": 3,
-            "targetings": [],
-            "payload": {
-              "demoModeApp": {
-                "attractionLoop": {
-                  "videoSrcLang1": "/asset/peripherals_lang1.mp4",
-                  "videoSrcLang2": "/asset/peripherals_lang2.mp4"
-                }
-              }
+    "0": [
+      {
+        "id": 3,
+        "studyId":1,
+        "targetings": [],
+        "payload": {
+          "demoModeApp": {
+            "attractionLoop": {
+              "videoSrcLang1": "/asset/peripherals_lang1.mp4",
+              "videoSrcLang2": "/asset/peripherals_lang2.mp4"
             }
           }
-        ]
-      },
-      "proactiveCampaigns": {}
+        }
+      }
+    ]
   })");
 
-  login_manager_mixin_.WaitForActiveSession();
-  auto* profile = ProfileManager::GetActiveUserProfile();
-  SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
-  ui_test_utils::BrowserChangeObserver browser_opened(
-      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
-  browser_opened.Wait();
+  OpenBrowserAndInstallSystemAppForActiveProfile();
 
   // Verify that Demo Mode App is opened with payload
   auto base_url = GURL(kDemoModeAppUrl);
@@ -446,7 +448,8 @@ IN_PROC_BROWSER_TEST_F(DemoSessionLoginWithGrowthCampaignTest,
       R"("videoSrcLang2":"/asset/peripherals_lang2.mp4"}})";
   auto url = net::AppendQueryParameter(base_url, /*name=*/"model", param_value);
   Browser* app_browser = FindSystemWebAppBrowser(
-      profile, SystemWebAppType::DEMO_MODE, Browser::TYPE_APP, url);
+      ProfileManager::GetActiveUserProfile(), SystemWebAppType::DEMO_MODE,
+      Browser::TYPE_APP, url);
   ASSERT_TRUE(app_browser);
 
   content::WebContents* tab =
@@ -454,97 +457,136 @@ IN_PROC_BROWSER_TEST_F(DemoSessionLoginWithGrowthCampaignTest,
   ASSERT_TRUE(tab);
   EXPECT_EQ(tab->GetController().GetVisibleEntry()->GetPageType(),
             content::PAGE_TYPE_NORMAL);
+  EXPECT_TRUE(
+      variations::IsInSyntheticTrialGroup("CrOSGrowthStudy1", "CampaignId3"));
 }
 
+// TODO(crbug.com/1513575): Flaky.
 IN_PROC_BROWSER_TEST_F(DemoSessionLoginWithGrowthCampaignTest,
-                       DemoSWALaunchesOnSessionStartupWithoutPayload) {
+                       DISABLED_DemoSWALaunchesOnSessionStartupWithoutPayload) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
 
   CreateTestCampaignsFile(R"({
-      "reactiveCampaigns": {
-        "0": [
-          {
-            "id": 3,
-            "targetings": [],
-            "payload": {}
-          }
-        ]
-      },
-      "proactiveCampaigns": {}
+    "0": [
+      {
+        "id": 3,
+        "targetings": [],
+        "payload": {}
+      }
+    ]
   })");
 
-  login_manager_mixin_.WaitForActiveSession();
-  auto* profile = ProfileManager::GetActiveUserProfile();
-  SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
-  ui_test_utils::BrowserChangeObserver browser_opened(
-      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
-  browser_opened.Wait();
+  OpenBrowserAndInstallSystemAppForActiveProfile();
 
   // Verify that Demo Mode App is opened without payload.
   auto base_url = GURL(kDemoModeAppUrl);
   Browser* app_browser = FindSystemWebAppBrowser(
-      profile, SystemWebAppType::DEMO_MODE, Browser::TYPE_APP, base_url);
+      ProfileManager::GetActiveUserProfile(), SystemWebAppType::DEMO_MODE,
+      Browser::TYPE_APP, base_url);
   ASSERT_TRUE(app_browser);
   content::WebContents* tab =
       app_browser->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
   EXPECT_EQ(tab->GetController().GetVisibleEntry()->GetPageType(),
             content::PAGE_TYPE_NORMAL);
+
+  // False because campaign not used.
+  EXPECT_FALSE(variations::HasSyntheticTrial("CrOSGrowthStudy"));
 }
 
+// TODO(b/318756868): Re-enable flaky test.
 IN_PROC_BROWSER_TEST_F(DemoSessionLoginWithGrowthCampaignTest,
-                       DemoSWALaunchesOnSessionStartupMismatch) {
+                       DISABLED_DemoSWALaunchesOnSessionStartupMismatch) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
 
   CreateTestCampaignsFile(R"({
-      "reactiveCampaigns": {
-        "0": [
+    "0": [
+      {
+        "id": 3,
+        "studyId":1,
+        "targetings": [
           {
-            "id": 3,
-            "targetings": [
-              {
-                "demoMode": {
-                  "retailers": ["bby", "bestbuy", "bbt"],
-                  "storeIds": ["2", "4", "6"],
-                  "countries": ["US"],
-                  "capability": {
-                    "isCloudGamingDevice": true,
-                    "isFeatureAwareDevice": true
-                  }
-                }
-              }
-            ],
-            "payload": {
-              "demoModeApp": {
-                "attractionLoop": {
-                  "videoSrcLang1": "/asset/peripherals_lang1.mp4",
-                  "videoSrcLang2": "/asset/peripherals_lang2.mp4"
-                }
+            "demoMode": {
+              "retailers": ["bby", "bestbuy", "bbt"],
+              "storeIds": ["2", "4", "6"],
+              "countries": ["US"],
+              "capability": {
+                "isCloudGamingDevice": true,
+                "isFeatureAwareDevice": true
               }
             }
           }
-        ]
-      },
-      "proactiveCampaigns": {}
+        ],
+        "payload": {
+          "demoModeApp": {
+            "attractionLoop": {
+              "videoSrcLang1": "/asset/peripherals_lang1.mp4",
+              "videoSrcLang2": "/asset/peripherals_lang2.mp4"
+            }
+          }
+        }
+      }
+    ]
   })");
 
-  login_manager_mixin_.WaitForActiveSession();
-  auto* profile = ProfileManager::GetActiveUserProfile();
-  SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
-  ui_test_utils::BrowserChangeObserver browser_opened(
-      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
-  browser_opened.Wait();
+  OpenBrowserAndInstallSystemAppForActiveProfile();
 
   // Verify that Demo Mode App is opened without payload.
   auto base_url = GURL(kDemoModeAppUrl);
   Browser* app_browser = FindSystemWebAppBrowser(
-      profile, SystemWebAppType::DEMO_MODE, Browser::TYPE_APP, base_url);
+      ProfileManager::GetActiveUserProfile(), SystemWebAppType::DEMO_MODE,
+      Browser::TYPE_APP, base_url);
   ASSERT_TRUE(app_browser);
   content::WebContents* tab =
       app_browser->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
   EXPECT_EQ(tab->GetController().GetVisibleEntry()->GetPageType(),
             content::PAGE_TYPE_NORMAL);
+  EXPECT_FALSE(variations::HasSyntheticTrial("CrOSGrowthStudy1"));
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSessionLoginWithGrowthCampaignTest,
+                       // TODO(crbug.com/1516799): Re-enable this test
+                       DISABLED_DemoSWACampaignNoStudyId) {
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+
+  CreateTestCampaignsFile(R"({
+    "0": [
+      {
+        "id": 3,
+        "targetings": [],
+        "payload": {
+          "demoModeApp": {
+            "attractionLoop": {
+              "videoSrcLang1": "/asset/peripherals_lang1.mp4",
+              "videoSrcLang2": "/asset/peripherals_lang2.mp4"
+            }
+          }
+        }
+      }
+    ]
+  })");
+
+  OpenBrowserAndInstallSystemAppForActiveProfile();
+
+  // Verify that Demo Mode App is opened with payload
+  auto base_url = GURL(kDemoModeAppUrl);
+  auto* param_value =
+      R"({"attractionLoop":{"videoSrcLang1":"/asset/peripherals_lang1.mp4",)"
+      R"("videoSrcLang2":"/asset/peripherals_lang2.mp4"}})";
+  auto url = net::AppendQueryParameter(base_url, /*name=*/"model", param_value);
+  Browser* app_browser = FindSystemWebAppBrowser(
+      ProfileManager::GetActiveUserProfile(), SystemWebAppType::DEMO_MODE,
+      Browser::TYPE_APP, url);
+  ASSERT_TRUE(app_browser);
+
+  content::WebContents* tab =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+  EXPECT_EQ(tab->GetController().GetVisibleEntry()->GetPageType(),
+            content::PAGE_TYPE_NORMAL);
+  EXPECT_TRUE(
+      variations::IsInSyntheticTrialGroup("CrOSGrowthStudy", "CampaignId3"));
 }
 
 }  // namespace

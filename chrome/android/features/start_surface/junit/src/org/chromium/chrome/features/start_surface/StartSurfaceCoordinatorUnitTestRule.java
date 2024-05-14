@@ -32,6 +32,7 @@ import org.chromium.base.jank_tracker.PlaceholderJankTracker;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.back_press.BackPressManager;
@@ -67,7 +68,6 @@ import org.chromium.chrome.browser.tasks.tab_management.TabGridDialogView;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelperJni;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
@@ -267,6 +267,9 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
         when(voiceRecognitionHandler.isVoiceSearchEnabled()).thenReturn(true);
         mIncognitoReauthControllerSupplier.set(Mockito.mock(IncognitoReauthController.class));
 
+        var tabStripHeightSupplier = new ObservableSupplierImpl<Integer>();
+        tabStripHeightSupplier.set(0);
+
         mCoordinator =
                 new StartSurfaceCoordinator(
                         mActivity,
@@ -295,7 +298,8 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
                         new BackPressManager(),
                         mIncognitoReauthControllerSupplier,
                         null,
-                        mProfileSupplier);
+                        mProfileSupplier,
+                        tabStripHeightSupplier);
 
         Assert.assertFalse(LibraryLoader.getInstance().isLoaded());
         when(mLibraryLoader.isInitialized()).thenReturn(true);

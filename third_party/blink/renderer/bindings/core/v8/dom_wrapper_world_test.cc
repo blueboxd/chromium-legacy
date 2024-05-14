@@ -26,7 +26,8 @@ namespace {
 
 void WorkerThreadFunc(
     WorkerBackingThread* thread,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+    CrossThreadOnceClosure quit_closure) {
   thread->InitializeOnBackingThread(
       WorkerBackingThreadStartupData::CreateDefault());
 
@@ -37,10 +38,10 @@ void WorkerThreadFunc(
   EXPECT_TRUE(initial_worlds.empty());
 
   // Create worlds on the worker thread and verify them.
-  auto worker_world1 =
-      DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker);
-  auto worker_world2 =
-      DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker);
+  auto worker_world1 = DOMWrapperWorld::Create(
+      isolate, DOMWrapperWorld::WorldType::kWorkerOrWorklet);
+  auto worker_world2 = DOMWrapperWorld::Create(
+      isolate, DOMWrapperWorld::WorldType::kWorkerOrWorklet);
   Vector<scoped_refptr<DOMWrapperWorld>> worlds;
   DOMWrapperWorld::AllWorldsInIsolate(isolate, worlds);
   EXPECT_EQ(worlds.size(), initial_worlds.size() + 2);
@@ -54,7 +55,7 @@ void WorkerThreadFunc(
 
   thread->ShutdownOnBackingThread();
   PostCrossThreadTask(*main_thread_task_runner, FROM_HERE,
-                      CrossThreadBindOnce(&test::ExitRunLoop));
+                      CrossThreadBindOnce(std::move(quit_closure)));
 }
 
 TEST(DOMWrapperWorldTest, Basic) {
@@ -94,15 +95,15 @@ TEST(DOMWrapperWorldTest, Basic) {
   worlds.clear();
 
   // Worker worlds
-  auto worker_world1 =
-      DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker);
-  auto worker_world2 =
-      DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker);
-  auto worker_world3 =
-      DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker);
-  EXPECT_TRUE(worker_world1->IsWorkerWorld());
-  EXPECT_TRUE(worker_world2->IsWorkerWorld());
-  EXPECT_TRUE(worker_world3->IsWorkerWorld());
+  auto worker_world1 = DOMWrapperWorld::Create(
+      isolate, DOMWrapperWorld::WorldType::kWorkerOrWorklet);
+  auto worker_world2 = DOMWrapperWorld::Create(
+      isolate, DOMWrapperWorld::WorldType::kWorkerOrWorklet);
+  auto worker_world3 = DOMWrapperWorld::Create(
+      isolate, DOMWrapperWorld::WorldType::kWorkerOrWorklet);
+  EXPECT_TRUE(worker_world1->IsWorkerOrWorkletWorld());
+  EXPECT_TRUE(worker_world2->IsWorkerOrWorkletWorld());
+  EXPECT_TRUE(worker_world3->IsWorkerOrWorkletWorld());
   HashSet<int32_t> worker_world_ids;
   EXPECT_TRUE(
       worker_world_ids.insert(worker_world1->GetWorldId()).is_new_entry);
@@ -123,7 +124,7 @@ TEST(DOMWrapperWorldTest, Basic) {
   DOMWrapperWorld::AllWorldsInIsolate(isolate, worlds);
   EXPECT_EQ(worlds.size(), initial_worlds.size());
   worlds.clear();
-
+  base::RunLoop loop;
   // Start a worker thread and create worlds on that.
   std::unique_ptr<WorkerBackingThread> thread =
       std::make_unique<WorkerBackingThread>(
@@ -131,11 +132,13 @@ TEST(DOMWrapperWorldTest, Basic) {
               .SetThreadNameForTest("DOMWrapperWorld test thread"));
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-  PostCrossThreadTask(*thread->BackingThread().GetTaskRunner(), FROM_HERE,
-                      CrossThreadBindOnce(&WorkerThreadFunc,
-                                          CrossThreadUnretained(thread.get()),
-                                          std::move(main_thread_task_runner)));
-  test::EnterRunLoop();
+  PostCrossThreadTask(
+      *thread->BackingThread().GetTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(&WorkerThreadFunc,
+                          CrossThreadUnretained(thread.get()),
+                          std::move(main_thread_task_runner),
+                          CrossThreadOnceClosure(loop.QuitClosure())));
+  loop.Run();
 
   // Worlds on the worker thread should not be visible from the main thread.
   DOMWrapperWorld::AllWorldsInIsolate(isolate, worlds);

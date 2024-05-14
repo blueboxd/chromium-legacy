@@ -275,7 +275,7 @@ class TestObserver final : public NetworkStateHandlerObserver {
   }
 
  private:
-  raw_ptr<NetworkStateHandler, ExperimentalAsh> handler_;
+  raw_ptr<NetworkStateHandler> handler_;
   size_t active_network_change_count_ = 0;
   size_t default_network_change_count_ = 0;
   size_t portal_state_change_count_ = 0;
@@ -469,17 +469,10 @@ class NetworkStateHandlerTest : public testing::Test {
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestObserver> test_observer_;
   FakeStubCellularNetworksProvider fake_stub_cellular_networks_provider_;
-  raw_ptr<ShillDeviceClient::TestInterface, DanglingUntriaged | ExperimentalAsh>
-      device_test_;
-  raw_ptr<ShillManagerClient::TestInterface,
-          DanglingUntriaged | ExperimentalAsh>
-      manager_test_;
-  raw_ptr<ShillProfileClient::TestInterface,
-          DanglingUntriaged | ExperimentalAsh>
-      profile_test_;
-  raw_ptr<ShillServiceClient::TestInterface,
-          DanglingUntriaged | ExperimentalAsh>
-      service_test_;
+  raw_ptr<ShillDeviceClient::TestInterface, DanglingUntriaged> device_test_;
+  raw_ptr<ShillManagerClient::TestInterface, DanglingUntriaged> manager_test_;
+  raw_ptr<ShillProfileClient::TestInterface, DanglingUntriaged> profile_test_;
+  raw_ptr<ShillServiceClient::TestInterface, DanglingUntriaged> service_test_;
 };
 
 TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
@@ -1972,9 +1965,6 @@ TEST_F(NetworkStateHandlerTest, SetNetworkChromePortalState) {
   service_test_->SetServiceProperty(kShillManagerClientStubDefaultWifi,
                                     shill::kStateProperty,
                                     base::Value(shill::kStatePortalSuspected));
-  service_test_->SetServiceProperty(
-      kShillManagerClientStubDefaultWifi,
-      shill::kPortalDetectionFailedStatusCodeProperty, base::Value(300));
   base::RunLoop().RunUntilIdle();
 
   const NetworkState* network = network_state_handler_->GetNetworkState(
@@ -2002,8 +1992,6 @@ TEST_F(NetworkStateHandlerTest, SetNetworkChromePortalState) {
   EXPECT_THAT(histogram_tester.GetAllSamples("Network.CaptivePortalResult"),
               ElementsAre(base::Bucket(
                   NetworkState::PortalState::kPortalSuspected, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("Network.CaptivePortalStatusCode"),
-              ElementsAre(base::Bucket(300, 1)));
 }
 
 TEST_F(NetworkStateHandlerTest, PortalStateChanged) {

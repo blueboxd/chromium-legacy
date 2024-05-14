@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter_observer_bridge.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/search_engines/model/search_engines_util.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
@@ -373,6 +373,10 @@
   self.webContentAreaShowingOverlay = NO;
 }
 
+- (void)overlayPresenterDestroyed:(OverlayPresenter*)presenter {
+  self.webContentAreaOverlayPresenter = nullptr;
+}
+
 #pragma mark - Private
 
 /// Returns a menu for the `navigationItems`.
@@ -385,14 +389,9 @@
     if ([self shouldUseIncognitoNTPResourcesForURL:navigationItem
                                                        ->GetVirtualURL()]) {
       title = l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_INCOGNITO_TAB);
-      if (@available(iOS 15, *)) {
-        image =
-            SymbolWithPalette(CustomSymbolWithPointSize(
-                                  kIncognitoSymbol, kInfobarSymbolPointSize),
-                              @[ UIColor.whiteColor ]);
-      } else {
-        image = [UIImage imageNamed:@"incognito_badge_ios14"];
-      }
+      image = SymbolWithPalette(
+          CustomSymbolWithPointSize(kIncognitoSymbol, kInfobarSymbolPointSize),
+          @[ UIColor.whiteColor ]);
     } else {
       title = base::SysUTF16ToNSString(navigationItem->GetTitleForDisplay());
       const gfx::Image& gfxImage = navigationItem->GetFaviconStatus().image;

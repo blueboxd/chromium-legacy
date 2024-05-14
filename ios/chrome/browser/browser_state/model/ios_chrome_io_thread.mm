@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/browser_state/model/ios_chrome_io_thread.h"
 
 #import "components/variations/net/variations_http_headers.h"
-#import "ios/chrome/browser/net/ios_chrome_network_delegate.h"
+#import "ios/chrome/browser/net/model/ios_chrome_network_delegate.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/init/network_context_owner.h"
 #import "ios/web/public/thread/web_task_traits.h"
@@ -48,7 +48,7 @@ IOSChromeIOThread::GetSharedURLLoaderFactory() {
     auto url_loader_factory_params =
         network::mojom::URLLoaderFactoryParams::New();
     url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
-    url_loader_factory_params->is_corb_enabled = false;
+    url_loader_factory_params->is_orb_enabled = false;
     url_loader_factory_params->is_trusted = true;
     GetSystemNetworkContext()->CreateURLLoaderFactory(
         url_loader_factory_.BindNewPipeAndPassReceiver(),

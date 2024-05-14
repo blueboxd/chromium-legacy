@@ -7,6 +7,7 @@
 #import <memory>
 
 #import "base/feature_list.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
@@ -76,7 +77,6 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-    case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
     case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN:
     case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
@@ -109,12 +109,16 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_DRIVE_IOS:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TIPS_NOTIFICATION:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return false;
   }
@@ -156,7 +160,6 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-    case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
     case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN:
     case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
@@ -191,12 +194,16 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_DRIVE_IOS:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TIPS_NOTIFICATION:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -240,7 +247,6 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-    case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
     case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN:
     case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
@@ -275,12 +281,16 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_DRIVE_IOS:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TIPS_NOTIFICATION:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -324,7 +334,6 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-    case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
     case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN:
     case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
@@ -359,12 +368,16 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_DRIVE_IOS:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TIPS_NOTIFICATION:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -395,7 +408,6 @@ const char* DisplayedCountPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-    case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
     case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN:
     case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
@@ -432,12 +444,16 @@ const char* DisplayedCountPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_DRIVE_IOS:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TIPS_NOTIFICATION:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -466,7 +482,6 @@ const char* AlreadySeenSigninViewPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
     case signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-    case signin_metrics::AccessPoint::ACCESS_POINT_CLOUD_PRINT:
     case signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN:
     case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
@@ -503,15 +518,46 @@ const char* AlreadySeenSigninViewPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_DRIVE_IOS:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TIPS_NOTIFICATION:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
+}
+
+// Returns AlreadySeen preference key string for `access_point` and
+// `promo_action`.
+const char* AlreadySeenSigninViewPreferenceKey(
+    signin_metrics::AccessPoint access_point,
+    SigninPromoAction promo_action) {
+  const char* pref_key = nullptr;
+  switch (promo_action) {
+    case SigninPromoAction::kReviewAccountSettings: {
+      if (access_point ==
+          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER) {
+        pref_key = prefs::kIosBookmarkSettingsPromoAlreadySeen;
+      } else if (access_point ==
+                 signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST) {
+        pref_key = prefs::kIosReadingListSettingsPromoAlreadySeen;
+      }
+      break;
+    }
+    case SigninPromoAction::kSync:
+    case SigninPromoAction::kSigninSheet:
+    case SigninPromoAction::kInstantSignin:
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
+      pref_key = AlreadySeenSigninViewPreferenceKey(access_point);
+      break;
+  }
+  return pref_key;
 }
 
 // See documentation of displayedIdentity property.
@@ -575,7 +621,7 @@ id<SystemIdentity> GetDisplayedIdentity(
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
       _accountManagerServiceObserver;
   // Sync service.
-  syncer::SyncService* _syncService;
+  raw_ptr<syncer::SyncService> _syncService;
   // Observer for changes to the sync state.
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
 }
@@ -583,6 +629,8 @@ id<SystemIdentity> GetDisplayedIdentity(
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   // Bookmarks
   registry->RegisterBooleanPref(prefs::kIosBookmarkPromoAlreadySeen, false);
+  registry->RegisterBooleanPref(prefs::kIosBookmarkSettingsPromoAlreadySeen,
+                                false);
   registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
                                 0);
   // NTP Feed
@@ -591,12 +639,16 @@ id<SystemIdentity> GetDisplayedIdentity(
                                 0);
   // Reading List
   registry->RegisterBooleanPref(prefs::kIosReadingListPromoAlreadySeen, false);
+  registry->RegisterBooleanPref(prefs::kIosReadingListSettingsPromoAlreadySeen,
+                                false);
   registry->RegisterIntegerPref(prefs::kIosReadingListSigninPromoDisplayedCount,
                                 0);
 }
 
 + (BOOL)shouldDisplaySigninPromoViewWithAccessPoint:
             (signin_metrics::AccessPoint)accessPoint
+                                  signinPromoAction:
+                                      (SigninPromoAction)signinPromoAction
                               authenticationService:
                                   (AuthenticationService*)authenticationService
                                         prefService:(PrefService*)prefService {
@@ -621,19 +673,21 @@ id<SystemIdentity> GetDisplayedIdentity(
     return YES;
   }
 
-  // Checks if the user has exceeded the max impression count.
-  const int maxDisplayedCount =
-      accessPoint ==
-              signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO
-          ? FeedSyncPromoAutodismissCount()
-          : kAutomaticSigninPromoViewDismissCount;
-  const char* displayedCountPreferenceKey =
-      DisplayedCountPreferenceKey(accessPoint);
-  const int displayedCount =
-      prefService ? prefService->GetInteger(displayedCountPreferenceKey)
-                  : INT_MAX;
-  if (displayedCount >= maxDisplayedCount) {
-    return NO;
+  if (signinPromoAction != SigninPromoAction::kReviewAccountSettings) {
+    // Checks if the user has exceeded the max impression count.
+    const int maxDisplayedCount =
+        accessPoint ==
+                signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO
+            ? FeedSyncPromoAutodismissCount()
+            : kAutomaticSigninPromoViewDismissCount;
+    const char* displayedCountPreferenceKey =
+        DisplayedCountPreferenceKey(accessPoint);
+    const int displayedCount =
+        prefService ? prefService->GetInteger(displayedCountPreferenceKey)
+                    : INT_MAX;
+    if (displayedCount >= maxDisplayedCount) {
+      return NO;
+    }
   }
 
   // For the top-of-feed promo, the user must have engaged with a feed first.
@@ -647,7 +701,7 @@ id<SystemIdentity> GetDisplayedIdentity(
 
   // Checks if user has already acknowledged or dismissed the promo.
   const char* alreadySeenSigninViewPreferenceKey =
-      AlreadySeenSigninViewPreferenceKey(accessPoint);
+      AlreadySeenSigninViewPreferenceKey(accessPoint, signinPromoAction);
   if (alreadySeenSigninViewPreferenceKey && prefService &&
       prefService->GetBoolean(alreadySeenSigninViewPreferenceKey)) {
     return NO;
@@ -705,7 +759,8 @@ id<SystemIdentity> GetDisplayedIdentity(
 
 - (SigninPromoViewConfigurator*)createConfigurator {
   BOOL hasCloseButton =
-      AlreadySeenSigninViewPreferenceKey(self.accessPoint) != nullptr;
+      AlreadySeenSigninViewPreferenceKey(self.accessPoint,
+                                         self.signinPromoAction) != nullptr;
   if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     if (!self.displayedIdentity) {
       // TODO(crbug.com/1227708): The default identity should already be known
@@ -778,6 +833,25 @@ id<SystemIdentity> GetDisplayedIdentity(
     self.signinPromoViewState = SigninPromoViewState::kUnused;
   }
   self.signinPromoViewVisible = YES;
+  switch (self.signinPromoAction) {
+    case SigninPromoAction::kReviewAccountSettings:
+      if (self.accessPoint ==
+          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER) {
+        base::RecordAction(base::UserMetricsAction(
+            "ReviewAccountSettings_Impression_FromBookmarkManager"));
+      } else if (self.accessPoint ==
+                 signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST) {
+        base::RecordAction(base::UserMetricsAction(
+            "ReviewAccountSettings_Impression_FromReadingListManager"));
+      }
+      // This action should not contribute to the DisplayedCount pref.
+      return;
+    case SigninPromoAction::kSync:
+    case SigninPromoAction::kSigninSheet:
+    case SigninPromoAction::kInstantSignin:
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
+      break;
+  }
   signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
       self.accessPoint);
   const char* displayedCountPreferenceKey =
@@ -992,6 +1066,15 @@ id<SystemIdentity> GetDisplayedIdentity(
   if (wasNeverVisible)
     return;
 
+  switch (self.signinPromoAction) {
+    case SigninPromoAction::kReviewAccountSettings:
+      return;
+    case SigninPromoAction::kSync:
+    case SigninPromoAction::kSigninSheet:
+    case SigninPromoAction::kInstantSignin:
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
+      break;
+  }
   // If the sign-in promo view has been used at least once, it should not be
   // counted as dismissed (even if the sign-in has been canceled).
   const char* displayedCountPreferenceKey =
@@ -1002,7 +1085,7 @@ id<SystemIdentity> GetDisplayedIdentity(
   // If the sign-in view is removed when the user is authenticated, then the
   // sign-in for sync has been done by another view, and this mediator cannot be
   // counted as being dismissed.
-  // TODO(crbug.com/1462858): Once new sync opt-ins are deprecated this usage
+  // TODO(crbug.com/40067025): Once new sync opt-ins are deprecated this usage
   // of kSync will become obsolete. Delete this code after phase 2.
   if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSync))
     return;
@@ -1117,7 +1200,15 @@ id<SystemIdentity> GetDisplayedIdentity(
                                        PROMO_ACTION_WITH_DEFAULT];
       return;
     case SigninPromoAction::kReviewAccountSettings:
-      // TODO(crbug.com/1459255): Record metrics for this promo action.
+      if (self.accessPoint ==
+          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER) {
+        base::RecordAction(base::UserMetricsAction(
+            "ReviewAccountSettings_Tapped_FromBookmarkManager"));
+      } else if (self.accessPoint ==
+                 signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST) {
+        base::RecordAction(base::UserMetricsAction(
+            "ReviewAccountSettings_Tapped_FromReadingListManager"));
+      }
       [self showAccountSettings];
       return;
   }
@@ -1174,18 +1265,32 @@ id<SystemIdentity> GetDisplayedIdentity(
   base::RecordAction(base::UserMetricsAction("Signin_Promo_Close"));
   self.signinPromoViewState = SigninPromoViewState::kClosed;
   const char* alreadySeenSigninViewPreferenceKey =
-      AlreadySeenSigninViewPreferenceKey(self.accessPoint);
+      AlreadySeenSigninViewPreferenceKey(self.accessPoint,
+                                         self.signinPromoAction);
   DCHECK(alreadySeenSigninViewPreferenceKey)
       << base::SysNSStringToUTF8([self description]);
   self.prefService->SetBoolean(alreadySeenSigninViewPreferenceKey, true);
-  const char* displayedCountPreferenceKey =
-      DisplayedCountPreferenceKey(self.accessPoint);
-  if (displayedCountPreferenceKey) {
-    int displayedCount =
-        self.prefService->GetInteger(displayedCountPreferenceKey);
-    RecordImpressionsTilXButtonHistogramForAccessPoint(self.accessPoint,
-                                                       displayedCount);
+
+  switch (self.signinPromoAction) {
+    case SigninPromoAction::kReviewAccountSettings:
+      // This promo action should not contribute to the displayed count of the
+      // sign-in actions.
+      break;
+    case SigninPromoAction::kSync:
+    case SigninPromoAction::kSigninSheet:
+    case SigninPromoAction::kInstantSignin:
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
+      const char* displayedCountPreferenceKey =
+          DisplayedCountPreferenceKey(self.accessPoint);
+      if (displayedCountPreferenceKey) {
+        int displayedCount =
+            self.prefService->GetInteger(displayedCountPreferenceKey);
+        RecordImpressionsTilXButtonHistogramForAccessPoint(self.accessPoint,
+                                                           displayedCount);
+        break;
+      }
   }
+
   if ([self.consumer respondsToSelector:@selector
                      (signinPromoViewMediatorCloseButtonWasTapped:)]) {
     [self.consumer signinPromoViewMediatorCloseButtonWasTapped:self];

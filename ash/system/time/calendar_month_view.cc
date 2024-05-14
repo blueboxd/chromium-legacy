@@ -348,7 +348,8 @@ void CalendarDateCellView::PaintButtonContents(gfx::Canvas* canvas) {
 }
 
 void CalendarDateCellView::OnDateCellActivated(const ui::Event& event) {
-  if (grayed_out_ || !calendar_utils::ShouldFetchEvents()) {
+  if (grayed_out_ || !calendar_utils::ShouldFetchEvents() ||
+      !calendar_view_controller_->is_date_cell_clickable()) {
     return;
   }
 
@@ -448,7 +449,7 @@ CalendarMonthView::CalendarMonthView(
                   current_date_exploded);
     ++safe_index;
     if (safe_index == calendar_utils::kDateInOneWeek) {
-      NOTREACHED()
+      DUMP_WILL_BE_NOTREACHED_NORETURN()
           << "Should not render more than 7 days as the grayed out cells.";
       break;
     }
@@ -579,19 +580,19 @@ void CalendarMonthView::OnEventsFetched(
 }
 
 void CalendarMonthView::EnableFocus() {
-  for (auto* cell : children()) {
+  for (views::View* cell : children()) {
     static_cast<CalendarDateCellView*>(cell)->EnableFocus();
   }
 }
 
 void CalendarMonthView::DisableFocus() {
-  for (auto* cell : children()) {
+  for (views::View* cell : children()) {
     static_cast<CalendarDateCellView*>(cell)->DisableFocus();
   }
 }
 
 void CalendarMonthView::UpdateIsFetchedAndRepaint(bool updated_is_fetched) {
-  for (auto* cell : children()) {
+  for (views::View* cell : children()) {
     static_cast<CalendarDateCellView*>(cell)->UpdateFetchStatus(
         updated_is_fetched);
   }
@@ -621,7 +622,7 @@ void CalendarMonthView::FetchEvents(const base::Time& month) {
   calendar_model_->FetchEvents(month);
 }
 
-BEGIN_METADATA(CalendarDateCellView, views::View)
+BEGIN_METADATA(CalendarDateCellView)
 END_METADATA
 
 }  // namespace ash

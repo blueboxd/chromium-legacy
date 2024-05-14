@@ -19,6 +19,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.FrameLayout;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
@@ -48,6 +49,7 @@ public class TasksView extends CoordinatorLayoutForPointer {
     private FrameLayout mCardTabSwitcherContainer;
     private AppBarLayout mHeaderView;
     private ViewGroup mMvTilesContainerLayout;
+    @Nullable private ViewGroup mHomeModulesLayout;
     private SearchBoxCoordinator mSearchBoxCoordinator;
     private IncognitoDescriptionView mIncognitoDescriptionView;
     private View.OnClickListener mIncognitoDescriptionLearnMoreListener;
@@ -88,6 +90,7 @@ public class TasksView extends CoordinatorLayoutForPointer {
         mCardTabSwitcherContainer = (FrameLayout) findViewById(R.id.tab_switcher_module_container);
         mMvTilesContainerLayout = findViewById(R.id.mv_tiles_container);
         mSearchBoxCoordinator = new SearchBoxCoordinator(getContext(), this);
+        mHomeModulesLayout = findViewById(R.id.home_modules_recycler_view);
 
         mHeaderView = (AppBarLayout) findViewById(R.id.task_surface_header);
 
@@ -140,7 +143,12 @@ public class TasksView extends CoordinatorLayoutForPointer {
         mMvTilesContainerLayout.setVisibility(visibility);
     }
 
-    /** Set the visibility of the Most Visited Tiles. */
+    /** Set the visibility of the Magic stack. */
+    void setMagicStackVisibility(int visibility) {
+        mHomeModulesLayout.setVisibility(visibility);
+    }
+
+    /** Set the visibility of the Query Tiles. */
     void setQueryTilesVisibility(int visibility) {
         findViewById(R.id.query_tiles_container).setVisibility(visibility);
     }
@@ -335,27 +343,6 @@ public class TasksView extends CoordinatorLayoutForPointer {
      */
     void setMVTilesContainerTopMargin(int topMargin) {
         MarginLayoutParams params = (MarginLayoutParams) mMvTilesContainerLayout.getLayoutParams();
-        params.topMargin = topMargin;
-    }
-
-    /**
-     * Set the left and right margin for the mv tiles container.
-     * @param margin The left and right margin to set.
-     */
-    void setMVTilesContainerLeftAndRightMargin(int margin) {
-        MarginLayoutParams params = (MarginLayoutParams) mMvTilesContainerLayout.getLayoutParams();
-        params.leftMargin = margin;
-        params.rightMargin = margin;
-    }
-
-    /**
-     * Set the top margin for the single tab card.
-     * @param topMargin The top margin to set.
-     */
-    void setSingleTabTopMargin(int topMargin) {
-        MarginLayoutParams params =
-                (MarginLayoutParams)
-                        mHeaderView.findViewById(R.id.single_tab_view).getLayoutParams();
         params.topMargin = topMargin;
     }
 

@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/chromeos/cros_color_overrides.css.js';
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/ash/common/cr_elements/cros_color_overrides.css.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './strings.m.js';
 
 import {assert} from 'chrome://resources/ash/common/assert.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './scan_done_section.html.js';
-import {FileType} from './scanning.mojom-webui.js';
 import {ScanCompleteAction} from './scanning_app_types.js';
 import {ScanningBrowserProxyImpl} from './scanning_browser_proxy.js';
 
@@ -52,11 +51,6 @@ export class ScanDoneSectionElement extends ScanDoneSectionElementBase {
 
       fileSavedTextContent: String,
 
-      showEditButton: {
-        type: Boolean,
-        computed: 'computeShowEditButton(selectedFileType)',
-      },
-
       editButtonLabel: String,
     };
   }
@@ -70,7 +64,6 @@ export class ScanDoneSectionElement extends ScanDoneSectionElementBase {
   selectedFileType: string;
   selectedFolder: string;
   fileSavedTextContent: TrustedHTML|string;
-  showEditButton: boolean;
   editButtonLabel: string;
   // ScanningBrowserProxy is initialized when scanning_app.js is created.
   private browserProxy = ScanningBrowserProxyImpl.getInstance();
@@ -151,10 +144,6 @@ export class ScanDoneSectionElement extends ScanDoneSectionElementBase {
     anchorTags[0].setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));
 
     return tempEl.innerHTML;
-  }
-
-  private computeShowEditButton(): boolean {
-    return this.selectedFileType !== FileType.kPdf.toString();
   }
 
   private onOpenMediaAppClick(): void {

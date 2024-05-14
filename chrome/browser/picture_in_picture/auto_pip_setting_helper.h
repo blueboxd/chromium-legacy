@@ -27,7 +27,9 @@ class View;
 class HostContentSettingsMap;
 
 // Helper class to manage the content setting for AutoPiP, including the
-// permissions embargo.
+// permissions embargo.  It's intended to be kept around for the duration of the
+// visit to the site, so that 'allow once' can be sticky until navigation.  It
+// does not detect navigation; somebody else should get a new instance.
 class AutoPipSettingHelper {
  public:
   using ResultCb =
@@ -35,7 +37,8 @@ class AutoPipSettingHelper {
   // Convenience function.
   static std::unique_ptr<AutoPipSettingHelper> CreateForWebContents(
       content::WebContents* web_contents,
-      base::OnceClosure close_pip_cb);
+      HostContentSettingsMap* settings_map,
+      permissions::PermissionDecisionAutoBlockerBase* auto_blocker);
 
   // We'll use `close_pip_cb` to close the pip window as needed.  It should be
   // safe to call at any time.  It is up to our caller to make sure that we are
@@ -43,8 +46,7 @@ class AutoPipSettingHelper {
   AutoPipSettingHelper(
       const GURL& origin,
       HostContentSettingsMap* settings_map,
-      permissions::PermissionDecisionAutoBlockerBase* auto_blocker,
-      base::OnceClosure close_pip_cb);
+      permissions::PermissionDecisionAutoBlockerBase* auto_blocker);
   ~AutoPipSettingHelper();
 
   AutoPipSettingHelper(const AutoPipSettingHelper&) = delete;
@@ -59,20 +61,10 @@ class AutoPipSettingHelper {
   // should outlive it.  Will return nullptr if no UI is needed, and will
   // optionally call `close_pip_cb_` if AutoPiP is blocked.
   std::unique_ptr<AutoPipSettingOverlayView> CreateOverlayViewIfNeeded(
+      base::OnceClosure close_pip_cb,
       const gfx::Rect& browser_view_overridden_bounds,
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow);
-
-  // Ignore events on `web_contents` until the user takes an action that hides
-  // the UI.  `web_contents` is presumably for the pip window.  Optional, but if
-  // called it must be after `CreateOverlayViewIfNeeded()` returns the View, but
-  // before the user dismisses it.
-  void IgnoreInputEvents(content::WebContents* web_contents);
-
-  // Only used for testing. Having access to the result callback during testing
-  // allows us to test the behaviour of clicking the various UI buttons, without
-  // the need to perform clicks.
-  ResultCb take_result_cb_for_testing() { return CreateResultCb(); }
 
  private:
   // These values are persisted to logs. Entries should not be renumbered and
@@ -102,11 +94,13 @@ class AutoPipSettingHelper {
   void UpdateContentSetting(ContentSetting new_setting);
 
   // Notify us that the user has interacted with the content settings UI that's
-  // displayed in the pip window.
-  void OnUiResult(AutoPipSettingView::UiResult result);
+  // displayed in the pip window.  `close_pip_cb` will be called if the result
+  // is 'block'.
+  void OnUiResult(base::OnceClosure close_pip_cb,
+                  AutoPipSettingView::UiResult result);
 
   // Return a new ResultCb, and invalidate any previous ones.
-  ResultCb CreateResultCb();
+  ResultCb CreateResultCb(base::OnceClosure close_pip_cb);
 
   // Record metrics for the result of the prompt.
   void RecordResult(PromptResult result);
@@ -120,10 +114,8 @@ class AutoPipSettingHelper {
   // If true, then we've shown the UI but the user hasn't picked an option yet.
   bool ui_was_shown_but_not_acknowledged_ = false;
 
-  // Optional closure to re-enable input events, to be run when the user
-  // dismisses the UI via any button.  Only used for document pip.
-  absl::optional<content::WebContents::ScopedIgnoreInputEvents>
-      scoped_ignore_input_events_;
+  // Has the user clicked 'allow once' on any permission UI we've created?
+  bool already_selected_allow_once_ = false;
 
   base::WeakPtrFactory<AutoPipSettingHelper> weak_factory_{this};
 };

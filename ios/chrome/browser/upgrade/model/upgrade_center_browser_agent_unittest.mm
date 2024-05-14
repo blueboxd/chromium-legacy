@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/upgrade/model/test/fake_upgrade_center.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
@@ -31,6 +32,7 @@ class UpgradeCenterBrowserAgentTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_local_state_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_;
   FakeUpgradeCenter* fake_upgrade_center_;
@@ -40,9 +42,7 @@ TEST_F(UpgradeCenterBrowserAgentTest, AddsInfoBarManagerOnWebStateInsert) {
   auto fake_web_state = std::make_unique<web::FakeWebState>();
   NSString* stable_identifier = fake_web_state->GetStableIdentifier();
 
-  browser_->GetWebStateList()->InsertWebState(
-      WebStateList::kInvalidIndex, std::move(fake_web_state),
-      WebStateList::INSERT_NO_FLAGS, WebStateOpener());
+  browser_->GetWebStateList()->InsertWebState(std::move(fake_web_state));
 
   ASSERT_NE(nullptr, fake_upgrade_center_.infoBarManagers[stable_identifier]);
   ASSERT_EQ(fake_upgrade_center_.infoBarManagers.count, 1U);
@@ -52,9 +52,7 @@ TEST_F(UpgradeCenterBrowserAgentTest, RemovesInfoBarManagerOnWebStateDetach) {
   auto fake_web_state = std::make_unique<web::FakeWebState>();
   NSString* stable_identifier = fake_web_state->GetStableIdentifier();
 
-  browser_->GetWebStateList()->InsertWebState(
-      WebStateList::kInvalidIndex, std::move(fake_web_state),
-      WebStateList::INSERT_NO_FLAGS, WebStateOpener());
+  browser_->GetWebStateList()->InsertWebState(std::move(fake_web_state));
 
   ASSERT_NE(nullptr, fake_upgrade_center_.infoBarManagers[stable_identifier]);
   ASSERT_EQ(fake_upgrade_center_.infoBarManagers.count, 1U);

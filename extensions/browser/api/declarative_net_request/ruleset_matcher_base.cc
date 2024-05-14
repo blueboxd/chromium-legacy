@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
 
+#include <string_view>
 #include <tuple>
 
 #include "base/ranges/algorithm.h"
@@ -19,8 +20,7 @@
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
-namespace extensions {
-namespace declarative_net_request {
+namespace extensions::declarative_net_request {
 namespace flat_rule = url_pattern_index::flat;
 namespace dnr_api = api::declarative_net_request;
 
@@ -72,11 +72,11 @@ bool GetModifiedQuery(const GURL& url,
     return false;
   }
 
-  std::vector<base::StringPiece> remove_query_params;
+  std::vector<std::string_view> remove_query_params;
   if (!IsEmpty(transform.remove_query_params())) {
     remove_query_params.reserve(transform.remove_query_params()->size());
     for (const ::flatbuffers::String* str : *transform.remove_query_params())
-      remove_query_params.push_back(CreateString<base::StringPiece>(*str));
+      remove_query_params.push_back(str->string_view());
   }
 
   // We don't use a map from keys to vector of values to ensure the relative
@@ -84,8 +84,8 @@ bool GetModifiedQuery(const GURL& url,
   // std::list to support fast removal from middle of the list. Note that the
   // key value pairs should already be escaped.
   struct QueryReplace {
-    base::StringPiece key;
-    base::StringPiece value;
+    std::string_view key;
+    std::string_view value;
     bool replace_only = false;
   };
   std::list<QueryReplace> add_or_replace_query_params;
@@ -95,23 +95,22 @@ bool GetModifiedQuery(const GURL& url,
          *transform.add_or_replace_query_params()) {
       DCHECK(query_pair->key());
       DCHECK(query_pair->value());
-      add_or_replace_query_params.emplace_back(
-          QueryReplace{CreateString<base::StringPiece>(*query_pair->key()),
-                       CreateString<base::StringPiece>(*query_pair->value()),
-                       query_pair->replace_only()});
+      add_or_replace_query_params.emplace_back(QueryReplace{
+          query_pair->key()->string_view(), query_pair->value()->string_view(),
+          query_pair->replace_only()});
     }
   }
 
   std::vector<std::string> query_parts;
 
-  auto create_query_part = [](base::StringPiece key,
-                              base::StringPiece value) -> std::string {
+  auto create_query_part = [](std::string_view key,
+                              std::string_view value) -> std::string {
     return base::StrCat({key, "=", value});
   };
 
   bool query_changed = false;
   for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
-    const base::StringPiece key = it.GetKey();
+    const std::string_view key = it.GetKey();
     // Remove query param.
     if (std::binary_search(remove_query_params.begin(),
                            remove_query_params.end(), key)) {
@@ -154,23 +153,22 @@ GURL GetTransformedURL(const RequestParams& params,
   GURL::Replacements replacements;
 
   if (transform.scheme())
-    replacements.SetSchemeStr(
-        CreateString<base::StringPiece>(*transform.scheme()));
+    replacements.SetSchemeStr(transform.scheme()->string_view());
 
   if (transform.host())
-    replacements.SetHostStr(CreateString<base::StringPiece>(*transform.host()));
+    replacements.SetHostStr(transform.host()->string_view());
 
   DCHECK(!(transform.clear_port() && transform.port()));
   if (transform.clear_port())
     replacements.ClearPort();
   else if (transform.port())
-    replacements.SetPortStr(CreateString<base::StringPiece>(*transform.port()));
+    replacements.SetPortStr(transform.port()->string_view());
 
   DCHECK(!(transform.clear_path() && transform.path()));
   if (transform.clear_path())
     replacements.ClearPath();
   else if (transform.path())
-    replacements.SetPathStr(CreateString<base::StringPiece>(*transform.path()));
+    replacements.SetPathStr(transform.path()->string_view());
 
   // |query| is defined outside the if conditions since url::Replacements does
   // not own the strings it uses.
@@ -178,8 +176,7 @@ GURL GetTransformedURL(const RequestParams& params,
   if (transform.clear_query()) {
     replacements.ClearQuery();
   } else if (transform.query()) {
-    replacements.SetQueryStr(
-        CreateString<base::StringPiece>(*transform.query()));
+    replacements.SetQueryStr(transform.query()->string_view());
   } else if (GetModifiedQuery(*params.url, transform, &query)) {
     replacements.SetQueryStr(query);
   }
@@ -188,16 +185,13 @@ GURL GetTransformedURL(const RequestParams& params,
   if (transform.clear_fragment())
     replacements.ClearRef();
   else if (transform.fragment())
-    replacements.SetRefStr(
-        CreateString<base::StringPiece>(*transform.fragment()));
+    replacements.SetRefStr(transform.fragment()->string_view());
 
   if (transform.password())
-    replacements.SetPasswordStr(
-        CreateString<base::StringPiece>(*transform.password()));
+    replacements.SetPasswordStr(transform.password()->string_view());
 
   if (transform.username())
-    replacements.SetUsernameStr(
-        CreateString<base::StringPiece>(*transform.username()));
+    replacements.SetUsernameStr(transform.username()->string_view());
 
   return params.url->ReplaceComponents(replacements);
 }
@@ -209,10 +203,11 @@ RulesetMatcherBase::RulesetMatcherBase(const ExtensionId& extension_id,
     : extension_id_(extension_id), ruleset_id_(ruleset_id) {}
 RulesetMatcherBase::~RulesetMatcherBase() = default;
 
-std::optional<RequestAction> RulesetMatcherBase::GetBeforeRequestAction(
-    const RequestParams& params) const {
+std::optional<RequestAction> RulesetMatcherBase::GetAction(
+    const RequestParams& params,
+    RulesetMatchingStage stage) const {
   std::optional<RequestAction> action =
-      GetBeforeRequestActionIgnoringAncestors(params);
+      GetActionIgnoringAncestors(params, stage);
   std::optional<RequestAction> parent_action =
       GetAllowlistedFrameAction(params.parent_routing_id);
 
@@ -255,7 +250,11 @@ void RulesetMatcherBase::OnDidFinishNavigation(
   // Hence we need not listen to OnRenderFrameCreated.
   DCHECK(host);
 
-  RequestParams params(host, navigation_handle->IsPost());
+  // TODO(crbug.com/1141166): Investigate if allowAllRequest rule should be
+  // supported based on response headers or if response headers are visible at
+  // this stage.
+  RequestParams params(host, navigation_handle->IsPost(),
+                       /*response_headers=*/nullptr);
 
   // Find the highest priority allowAllRequests action corresponding to this
   // frame.
@@ -329,8 +328,7 @@ RulesetMatcherBase::CreateRedirectActionFromMetadata(
 
   GURL redirect_url;
   if (metadata->redirect_url())
-    redirect_url =
-        GURL(CreateString<base::StringPiece>(*metadata->redirect_url()));
+    redirect_url = GURL(metadata->redirect_url()->string_view());
   else
     redirect_url = GetTransformedURL(params, *metadata->transform());
 
@@ -417,5 +415,4 @@ std::optional<RequestAction> RulesetMatcherBase::GetAllowlistedFrameAction(
   return it->second.Clone();
 }
 
-}  // namespace declarative_net_request
-}  // namespace extensions
+}  // namespace extensions::declarative_net_request

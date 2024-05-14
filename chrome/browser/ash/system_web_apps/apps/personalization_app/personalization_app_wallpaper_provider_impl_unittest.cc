@@ -17,6 +17,7 @@
 #include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/wallpaper/wallpaper_pref_manager.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
+#include "base/files/file_util.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
@@ -137,6 +138,15 @@ class TestWallpaperObserver
     return current_wallpaper_.get();
   }
 
+  ash::personalization_app::mojom::CurrentAttribution* current_attribution() {
+    if (!wallpaper_observer_receiver_.is_bound()) {
+      return nullptr;
+    }
+
+    wallpaper_observer_receiver_.FlushForTesting();
+    return current_attribution_.get();
+  }
+
  private:
   mojo::Receiver<ash::personalization_app::mojom::WallpaperObserver>
       wallpaper_observer_receiver_{this};
@@ -243,6 +253,11 @@ class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
     return test_wallpaper_observer_.current_wallpaper();
   }
 
+  ash::personalization_app::mojom::CurrentAttribution* current_attribution() {
+    wallpaper_provider_remote_.FlushForTesting();
+    return test_wallpaper_observer_.current_attribution();
+  }
+
  private:
   // Note: `scoped_feature_list_` should be destroyed after `task_environment_`
   // (see crbug.com/846380).
@@ -258,7 +273,7 @@ class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
       RegisterPrefs(&pref_service_)};
   user_manager::ScopedUserManager scoped_user_manager_;
   TestingProfileManager profile_manager_;
-  raw_ptr<TestingProfile, ExperimentalAsh> profile_;
+  raw_ptr<TestingProfile> profile_;
   TestWallpaperController test_wallpaper_controller_;
   // |wallpaper_controller_client_| must be destructed before
   // |test_wallpaper_controller_|.
@@ -380,8 +395,9 @@ TEST_F(PersonalizationAppWallpaperProviderImplTest, SendsSeaPenWallpaper) {
   SetWallpaperObserver();
 
   test_wallpaper_controller()->SetSeaPenWallpaper(
-      GetTestAccountId(),
-      {/*jpg_bytes=*/std::string(), /*id=*/111, manta::proto::RESOLUTION_64},
+      GetTestAccountId(), {/*jpg_bytes=*/std::string(), /*id=*/111},
+      ash::personalization_app::mojom::SeaPenQuery::NewTextQuery(
+          "search_query"),
       base::DoNothing());
 
   ash::personalization_app::mojom::CurrentWallpaper* current =
@@ -399,11 +415,18 @@ TEST_F(PersonalizationAppWallpaperProviderImplTest,
       GetTestAccountId(), base::FilePath("/sea_pen/111.jpg"),
       base::DoNothing());
 
-  ash::personalization_app::mojom::CurrentWallpaper* current =
+  ash::personalization_app::mojom::CurrentWallpaper* wallpaper =
       current_wallpaper();
-  EXPECT_EQ(ash::WallpaperType::kSeaPen, current->type);
-  EXPECT_EQ(std::string(), current->description_content);
-  EXPECT_EQ(std::string(), current->description_title);
+  EXPECT_EQ(ash::WallpaperType::kSeaPen, wallpaper->type);
+  EXPECT_EQ(std::string(), wallpaper->description_content);
+  EXPECT_EQ(std::string(), wallpaper->description_title);
+
+  ash::personalization_app::mojom::CurrentAttribution* current_attr =
+      current_attribution();
+  EXPECT_EQ("/sea_pen/111.jpg", current_attr->key);
+  std::vector<std::string> expected_attr{"test template query",
+                                         "test template title"};
+  EXPECT_EQ(expected_attr, current_attr->attribution);
 }
 
 TEST_F(PersonalizationAppWallpaperProviderImplTest, SetCurrentWallpaperLayout) {

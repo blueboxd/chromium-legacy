@@ -24,10 +24,10 @@
 using ::testing::_;
 namespace arc {
 
-#define EXPECT_ERROR_LOG(matcher)                                \
-  if (DLOG_IS_ON(ERROR)) {                                       \
-    EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _, matcher)) \
-        .WillOnce(testing::Return(true)); /* suppress logging */ \
+#define EXPECT_ERROR_LOG(matcher)                                    \
+  if (DLOG_IS_ON(ERROR)) {                                           \
+    EXPECT_CALL(log_, Log(logging::LOGGING_ERROR, _, _, _, matcher)) \
+        .WillOnce(testing::Return(true)); /* suppress logging */     \
   }
 
 class TestColorPaletteController : public ash::ColorPaletteController {
@@ -122,7 +122,7 @@ class ArcSystemUIBridgeTest : public testing::Test {
   user_prefs::TestBrowserContextWithPrefs context_;
   FakeSystemUiInstance system_ui_instance_;
   std::unique_ptr<TestColorPaletteController> test_palette_;
-  const raw_ptr<ArcSystemUIBridge, ExperimentalAsh> bridge_;
+  const raw_ptr<ArcSystemUIBridge> bridge_;
   base::test::MockLog log_;
 };
 

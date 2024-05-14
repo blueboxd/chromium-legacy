@@ -164,8 +164,9 @@ void WaitForItemInitialization(
   ON_CALL(mock, OnHoldingSpaceItemsRemoved)
       .WillByDefault([&](const std::vector<const HoldingSpaceItem*>& items) {
         for (const HoldingSpaceItem* item : items) {
-          if (item != item_it->get())
+          if (item != item_it->get()) {
             continue;
+          }
           ADD_FAILURE() << "Item unexpectedly removed: " << item->id();
           run_loop.Quit();
           return;
@@ -339,7 +340,7 @@ class HoldingSpaceKeyedServiceBrowserTest : public InProcessBrowserTest {
   // Used to set up drive fs for for drive tests.
   base::ScopedTempDir test_cache_root_;
   std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
-  raw_ptr<drive::DriveIntegrationService, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<drive::DriveIntegrationService, DanglingUntriaged>
       drive_integration_service_ = nullptr;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
@@ -586,7 +587,8 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceKeyedServiceBrowserTest,
   HoldingSpaceKeyedService* const holding_space_service =
       HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
           browser()->profile());
-  holding_space_service->AddPinnedFiles({file_system_url});
+  holding_space_service->AddPinnedFiles(
+      {file_system_url}, holding_space_metrics::EventSource::kTest);
 
   base::FilePath relative_path;
   ASSERT_TRUE(drive_integration_service()->GetRelativeDrivePath(

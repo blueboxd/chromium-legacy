@@ -39,6 +39,7 @@
 #include "components/search_engines/search_engine_utils.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
+#include "components/search_engines/template_url_data.h"
 #include "components/url_formatter/url_formatter.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/mime_util.h"
@@ -207,6 +208,30 @@ std::string YandexSearchPathFromDeviceFormFactor() {
   }
   NOTREACHED();
   return std::string();
+}
+
+// Returns true if `enterprise_engine` is strictly better than `other_engine`,
+// where `enterprise_engine` is a search engine created by the
+// `SiteSearchSettings` policy, and `other_engine` is a search engine not
+// created by Enterprise policy.
+bool IsEnterpriseSideSearchEngineBetterThanEngine(
+    const TemplateURL* enterprise_engine,
+    const TemplateURL* other_engine) {
+  // Keyword conflicts between search engines set by policy are handled when the
+  // policies are processed. At this point, `enterprise_engine` is created by
+  // the `SiteSearchSettings` policy, `other_engine` should have been created by
+  // something else, but not via policy.
+  CHECK_EQ(enterprise_engine->created_by_policy(),
+           TemplateURLData::CreatedByPolicy::kSiteSearch);
+  CHECK_EQ(other_engine->created_by_policy(),
+           TemplateURLData::CreatedByPolicy::kNoPolicy);
+
+  const std::u16string& keyword = enterprise_engine->keyword();
+  // Prefer `enterprise_engine` if the `keyword` starts with the "@" symbol.
+  // Otherwise, prefer `other_engine` if it has been manually edited by the
+  // user.
+  return (!keyword.empty() && keyword[0] == u'@') ||
+         other_engine->safe_for_autoreplace();
 }
 
 }  // namespace
@@ -1323,9 +1348,8 @@ std::string TemplateURLRef::HandleReplacements(
         break;
 
       case GOOGLE_IMAGE_THUMBNAIL_BASE64: {
-        std::string base64_thumbnail_content;
-        base::Base64Encode(search_terms_args.image_thumbnail_content,
-                           &base64_thumbnail_content);
+        std::string base64_thumbnail_content =
+            base::Base64Encode(search_terms_args.image_thumbnail_content);
         HandleReplacement(std::string(), base64_thumbnail_content, replacement,
                           &url);
         if (replacement.is_post_param) {
@@ -1477,14 +1501,43 @@ TemplateURL::TemplateURL(const TemplateURLData& data,
 TemplateURL::~TemplateURL() {
 }
 
-bool TemplateURL::IsBetterThanEngineWithConflictingKeyword(
+bool TemplateURL::IsBetterThanConflictingEngine(
     const TemplateURL* other) const {
   DCHECK(other);
+
+  auto is_ssp = [](const TemplateURL* turl) {
+    return turl->created_by_policy() ==
+           TemplateURLData::CreatedByPolicy::kSiteSearch;
+  };
+  auto no_policy = [](const TemplateURL* turl) {
+    return turl->created_by_policy() ==
+           TemplateURLData::CreatedByPolicy::kNoPolicy;
+  };
+
+  // Site search engines set by enterprise policy have different priority over
+  // existing search engines because we don't want to break current workflows
+  // for power users.
+  if (is_ssp(this) && no_policy(other)) {
+    return IsEnterpriseSideSearchEngineBetterThanEngine(this, other);
+  } else if (no_policy(this) && is_ssp(other)) {
+    return !IsEnterpriseSideSearchEngineBetterThanEngine(other, this);
+  } else if (is_ssp(this) && is_ssp(other)) {
+    // If both engines are created by the SiteSearchSettings policy, prefer the
+    // one that is featured. Otherwise, fallback to the comparison based on
+    // the signals below.
+    if (this->featured_by_policy() && !other->featured_by_policy()) {
+      return true;
+    } else if (!this->featured_by_policy() && other->featured_by_policy()) {
+      return false;
+    }
+  }
 
   auto get_sort_key = [](const TemplateURL* engine) {
     return std::make_tuple(
         // Policy-created engines always win over non-policy created engines.
-        engine->created_by_policy(),
+        // At this point, managed search engine should be created by DSP policy.
+        engine->created_by_policy() ==
+            TemplateURLData::CreatedByPolicy::kDefaultSearchProvider,
         // Policy-enforced engines always win over policy-recommended engines.
         engine->enforced_by_policy(),
         // The integral value of the type enum is used to sort next.
@@ -1637,8 +1690,16 @@ BuiltinEngineType TemplateURL::GetBuiltinEngineType() const {
         return KEYWORD_MODE_STARTER_PACK_HISTORY;
       case TemplateURLStarterPackData::kTabs:
         return KEYWORD_MODE_STARTER_PACK_TABS;
+      case TemplateURLStarterPackData::kAskGoogle:
+        return KEYWORD_MODE_STARTER_PACK_ASK_GOOGLE;
       default:
-        NOTREACHED();
+        // In theory, this code path should never be reached.  However, it's
+        // possible that when expanding the starter pack, a new entry may
+        // persist in the database that does not yet exist in this version of
+        // chrome. (e.g. a user runs a newer version with the new starter pack
+        // entry, has sync on, which syncs to another login instance running an
+        // older version that hasn't received the new starter pack update yet).
+        // Realistically, this is not catastrophic.
         return KEYWORD_MODE_NON_BUILT_IN;
     }
   } else {
@@ -1824,7 +1885,7 @@ GURL TemplateURL::RemoveSideSearchParamFromURL(
   if (!IsSideSearchSupported())
     return side_search_url;
   return net::AppendOrReplaceQueryParameter(side_search_url,
-                                            side_search_param(), absl::nullopt);
+                                            side_search_param(), std::nullopt);
 }
 
 GURL TemplateURL::GenerateSideImageSearchURL(const GURL& image_search_url,
@@ -1845,7 +1906,7 @@ GURL TemplateURL::RemoveSideImageSearchParamFromURL(
   if (!IsSideImageSearchSupported())
     return image_search_url;
   return net::AppendOrReplaceQueryParameter(
-      image_search_url, side_image_search_param(), absl::nullopt);
+      image_search_url, side_image_search_param(), std::nullopt);
 }
 
 void TemplateURL::CopyFrom(const TemplateURL& other) {

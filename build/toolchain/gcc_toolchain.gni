@@ -7,6 +7,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/rust.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/sysroot.gni")
 import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
@@ -30,8 +31,11 @@ declare_args() {
       (target_os == "android" || target_os == "win")
 
   # Use -MD instead of -MMD for compiler commands. This is useful for tracking
-  # the comprehensive set of dependencies.
-  system_headers_in_deps = false
+  # the comprehensive set of dependencies.  It's also required when building
+  # without the sysroot so that updates to system header files trigger a
+  # rebuild (when using the sysroot, the CR_SYSROOT_KEY define takes care of
+  # this already).
+  system_headers_in_deps = !use_sysroot
 }
 
 # When the arg is set via args.gn, it applies to all toolchains. In order to not
@@ -433,7 +437,7 @@ template("single_gcc_toolchain") {
       description = "AR {{output}}"
       outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
 
-      # Shared libraries go in the target out directory by default so we can
+      # Static libraries go in the target out directory by default so we can
       # generate different targets with the same name and not have them collide.
       default_output_dir = "{{target_out_dir}}"
       default_output_extension = ".a"
@@ -720,7 +724,11 @@ template("single_gcc_toolchain") {
 
         default_output_extension = ".a"
         output_prefix = "lib"
-        default_output_dir = "{{root_out_dir}}"
+
+        # Static libraries go in the target out directory by default so we can
+        # generate different targets with the same name and not have them
+        # collide.
+        default_output_dir = "{{target_out_dir}}"
         description = "RUST(STATICLIB) {{output}}"
         outputs = [ libname ]
 
@@ -742,7 +750,10 @@ template("single_gcc_toolchain") {
 
         # This is prefixed unconditionally in `rlibname`.
         # output_prefix = "lib"
-        default_output_dir = "{{root_out_dir}}"
+        # Static libraries go in the target out directory by default so we can
+        # generate different targets with the same name and not have them
+        # collide.
+        default_output_dir = "{{target_out_dir}}"
         description = "RUST {{output}}"
         outputs = [ rlibname ]
 
@@ -860,6 +871,7 @@ template("gcc_toolchain") {
         use_clang_coverage = false
         use_sanitizer_coverage = false
         generate_linker_map = false
+        use_thin_lto = false
       }
 
       # When cross-compiling we don't want to use the target platform's file

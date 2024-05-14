@@ -166,7 +166,7 @@ inline constexpr char16_t kCityRe[] =
     u"|^시[^도·・]|시[·・]?군[·・]?구"                   // ko-KR
     u"|kota|kabupaten";                                  // id
 inline constexpr char16_t kStateRe[] =
-    u"(?<!(united|hist|history).?)state|county|region|province"
+    u"(?<!(united|hist|history).?)state|region|province"
     u"|county|principality"  // en-UK
     u"|都道府県"             // ja-JP
     u"|estado|provincia"     // pt-BR, pt-PT
@@ -181,8 +181,9 @@ inline constexpr char16_t kStateRe[] =
     u"|provinci";                                                     // id
 
 inline constexpr char16_t kOverflowRe[] =
-    u"complemento"               // pt-BR, pt-PT
-    u"|informações adicionais";  // pt-BR
+    u"complemento"              // pt-BR, pt-PT
+    u"|informações adicionais"  // pt-BR
+    u"|adresszusatz";           // de-DE
 
 inline constexpr char16_t kOverflowAndLandmarkRe[] =
     u"complement and reference"  // en (but could be generic)
@@ -382,13 +383,13 @@ inline constexpr char16_t kEmailRe[] =
 /////////////////////////////////////////////////////////////////////////////
 inline constexpr char16_t kNameIgnoredRe[] =
     u"user.?name|user.?id|nickname|maiden name|title|prefix|suffix|mail"
-    u"|vollständiger.?name"              // de-DE
     u"|用户名"                           // zh-CN
     u"|(?:사용자.?)?아이디|사용자.?ID";  // ko-KR
 inline constexpr char16_t kFullNameRe[] =
     u"^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name"
     u"|name.*first.*last|firstandlastname|contact.?(name|person)"
     u"|receiver"
+    u"|vollständiger.?name"                     // de-DE
     u"|nombre.*y.*apellidos"                    // es
     u"|^nom(?![a-zA-Z])"                        // fr-FR
     u"|お名前|氏名"                             // ja-JP

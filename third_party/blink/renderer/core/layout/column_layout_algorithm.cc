@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "third_party/blink/renderer/core/layout/block_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/column_spanner_path.h"
 #include "third_party/blink/renderer/core/layout/constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/fragmentation_utils.h"
@@ -295,6 +296,7 @@ const LayoutResult* ColumnLayoutAlgorithm::Layout() {
     previously_consumed_block_size = token->ConsumedBlockSize();
   }
 
+  const LayoutUnit unconstrained_intrinsic_block_size = intrinsic_block_size_;
   intrinsic_block_size_ =
       ClampIntrinsicBlockSize(GetConstraintSpace(), Node(), GetBreakToken(),
                               BorderScrollbarPadding(), intrinsic_block_size_);
@@ -337,7 +339,11 @@ const LayoutResult* ColumnLayoutAlgorithm::Layout() {
   }
 
   if (GetConstraintSpace().IsTableCell()) {
-    FinalizeTableCellLayout(intrinsic_block_size_, &container_builder_);
+    FinalizeTableCellLayout(unconstrained_intrinsic_block_size,
+                            &container_builder_);
+  } else {
+    AlignBlockContent(Style(), GetBreakToken(),
+                      unconstrained_intrinsic_block_size, container_builder_);
   }
 
   OutOfFlowLayoutPart(Node(), GetConstraintSpace(), &container_builder_).Run();
@@ -713,7 +719,7 @@ const LayoutResult* ColumnLayoutAlgorithm::LayoutRow(
   }
 
   const LayoutResult* result = nullptr;
-  absl::optional<BreakAppeal> min_break_appeal;
+  std::optional<BreakAppeal> min_break_appeal;
   LayoutUnit intrinsic_block_size_contribution;
 
   do {
@@ -731,7 +737,7 @@ const LayoutResult* ColumnLayoutAlgorithm::LayoutRow(
     // balancing).
     LayoutUnit minimal_space_shortage = kIndefiniteSize;
 
-    min_break_appeal = absl::nullopt;
+    min_break_appeal = std::nullopt;
     intrinsic_block_size_contribution = LayoutUnit();
 
     do {
@@ -788,8 +794,7 @@ const LayoutResult* ColumnLayoutAlgorithm::LayoutRow(
       LogicalOffset logical_offset(column_inline_offset, row_offset);
       new_columns.emplace_back(result, logical_offset);
 
-      absl::optional<LayoutUnit> space_shortage =
-          result->MinimalSpaceShortage();
+      std::optional<LayoutUnit> space_shortage = result->MinimalSpaceShortage();
       UpdateMinimalSpaceShortage(space_shortage, &minimal_space_shortage);
       actual_column_count++;
 
@@ -1418,12 +1423,15 @@ LayoutUnit ColumnLayoutAlgorithm::ConstrainColumnBlockSize(
     size = std::min(size, available_outer_space.ClampNegativeToZero());
   }
 
+  const ConstraintSpace& space = GetConstraintSpace();
+  const ComputedStyle& style = Style();
+
   // Table-cell sizing is special. The aspects of specified block-size (and its
   // min/max variants) that are actually honored by table cells is taken care of
   // in the table layout algorithm. A constraint space with fixed block-size
   // will be passed from the table layout algorithm if necessary. Leave it
   // alone.
-  if (GetConstraintSpace().IsTableCell()) {
+  if (space.IsTableCell()) {
     return size;
   }
 
@@ -1441,22 +1449,26 @@ LayoutUnit ColumnLayoutAlgorithm::ConstrainColumnBlockSize(
   LayoutUnit extra = BorderScrollbarPadding().BlockSum();
   size += extra;
 
-  const ComputedStyle& style = Style();
-  LayoutUnit max = ResolveMaxBlockLength(
-      GetConstraintSpace(), style, BorderPadding(), style.LogicalMaxHeight());
+  LayoutUnit max = ResolveMaxBlockLength(space, style, BorderPadding(),
+                                         style.LogicalMaxHeight());
   LayoutUnit extent = kIndefiniteSize;
-  if (!style.LogicalHeight().IsAuto()) {
-    extent =
-        ResolveMainBlockLength(GetConstraintSpace(), style, BorderPadding(),
-                               style.LogicalHeight(), kIndefiniteSize);
-    // A specified block-size will just constrain the maximum length.
-    if (extent != kIndefiniteSize)
-      max = std::min(max, extent);
+
+  Length block_length = style.LogicalHeight();
+  if (block_length.IsAuto()) {
+    block_length = space.IsBlockAutoBehaviorStretch() ? Length::FillAvailable()
+                                                      : Length::FitContent();
+  }
+
+  extent = ResolveMainBlockLength(space, style, BorderPadding(), block_length,
+                                  kIndefiniteSize);
+  // A specified block-size will just constrain the maximum length.
+  if (extent != kIndefiniteSize) {
+    max = std::min(max, extent);
   }
 
   // A specified min-block-size may increase the maximum length.
-  LayoutUnit min = ResolveMinBlockLength(
-      GetConstraintSpace(), style, BorderPadding(), style.LogicalMinHeight());
+  LayoutUnit min = ResolveMinBlockLength(space, style, BorderPadding(),
+                                         style.LogicalMinHeight());
   max = std::max(max, min);
 
   if (max != LayoutUnit::Max()) {

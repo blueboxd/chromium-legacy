@@ -9,11 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
+#include "ash/app_list/views/app_list_bubble_apps_collections_page.h"
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/app_list_folder_view.h"
@@ -29,6 +30,8 @@
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -42,6 +45,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
@@ -199,7 +203,7 @@ class ButtonFocusSkipper : public ui::EventHandler {
   }
 
  private:
-  std::vector<views::View*> buttons_;
+  std::vector<raw_ptr<views::View, VectorExperimental>> buttons_;
 };
 
 AppListBubbleView::AppListBubbleView(
@@ -233,8 +237,7 @@ AppListBubbleView::AppListBubbleView(
                        : views::HighlightBorder::Type::kHighlightBorder1,
       /*insets_type=*/views::HighlightBorder::InsetsType::kHalfInsets));
 
-  views::FillLayout* layout =
-      SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   a11y_announcer_ = std::make_unique<AppListA11yAnnouncer>(
       AddChildView(std::make_unique<views::View>()));
   InitContentsView(drag_and_drop_host);
@@ -247,7 +250,7 @@ AppListBubbleView::AppListBubbleView(
 
   InitFolderView(drag_and_drop_host);
   // Folder view is laid out manually based on its contents.
-  layout->SetChildViewIgnoredByLayout(folder_view_, true);
+  folder_view_->SetProperty(views::kViewIgnoredByLayoutKey, true);
 
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
@@ -319,6 +322,8 @@ void AppListBubbleView::InitContentsView(
           view_delegate_, drag_and_drop_host, GetAppListConfig(),
           a11y_announcer_.get(), /*folder_controller=*/this,
           /*search_box=*/search_box_view_));
+  apps_collections_page_ = pages_container->AddChildView(
+      std::make_unique<AppListBubbleAppsCollectionsPage>());
 
   // Skip the "hide continue section" button on arrow up/down in app list.
   button_focus_skipper_->AddButton(
@@ -398,13 +403,13 @@ void AppListBubbleView::StartShowAnimation(bool is_side_shelf) {
 
   // Ensure layout is up-to-date before animating views.
   if (needs_layout()) {
-    Layout();
+    DeprecatedLayoutImmediately();
   }
   DCHECK(!needs_layout());
 
   ui::AnimationThroughputReporter reporter(
       layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int value) {
         base::UmaHistogramPercentage(
             "Apps.ClamshellLauncher.AnimationSmoothness.Open", value);
       })));
@@ -478,7 +483,7 @@ void AppListBubbleView::StartHideAnimation(
 
   ui::AnimationThroughputReporter reporter(
       layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int value) {
         base::UmaHistogramPercentage(
             "Apps.ClamshellLauncher.AnimationSmoothness.Close", value);
       })));
@@ -513,6 +518,7 @@ void AppListBubbleView::StartHideAnimation(
 void AppListBubbleView::AbortAllAnimations() {
   apps_page_->AbortAllAnimations();
   search_page_->AbortAllAnimations();
+  apps_collections_page_->AbortAllAnimations();
   layer()->GetAnimator()->AbortAllAnimations();
 }
 
@@ -554,7 +560,9 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
   separator_->SetVisible(page != AppListBubblePage::kAssistant);
 
   const bool supports_anchored_dialogs =
-      page == AppListBubblePage::kApps || page == AppListBubblePage::kSearch;
+      page == AppListBubblePage::kApps ||
+      page == AppListBubblePage::kAppsCollections ||
+      page == AppListBubblePage::kSearch;
 
   search_page_dialog_controller_->Reset(/*enabled=*/supports_anchored_dialogs);
   assistant_page_->SetVisible(page == AppListBubblePage::kAssistant);
@@ -568,26 +576,45 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
         // Trigger hiding first so animations don't overlap.
         search_page_->AnimateHidePage();
         apps_page_->AnimateShowPage();
+      } else if (previous_page == AppListBubblePage::kAppsCollections) {
+        apps_collections_page_->AnimateHidePage();
+        apps_page_->AnimateShowPage();
       } else {
         apps_page_->SetVisible(true);
+        apps_collections_page_->SetVisible(false);
         search_page_->SetVisible(false);
       }
       a11y_announcer_->AnnounceAppListShown();
       MaybeFocusAndActivateSearchBox();
-      // As `current_page_` is reset to `kNone` in `OnHideAnimationEnded`, we
-      // can expect that this gets called every time a launcher gets shown.
-      search_box_view_->SetIsIphAllowed(true);
+      break;
+    case AppListBubblePage::kAppsCollections:
+      if (previous_page == AppListBubblePage::kApps) {
+        apps_page_->AnimateHidePage();
+        apps_collections_page_->AnimateShowPage();
+      } else if (previous_page == AppListBubblePage::kSearch) {
+        // Trigger hiding first so animations don't overlap.
+        search_page_->AnimateHidePage();
+        apps_collections_page_->AnimateShowPage();
+      } else {
+        search_page_->SetVisible(false);
+        apps_page_->SetVisible(false);
+        apps_collections_page_->SetVisible(true);
+      }
+      MaybeFocusAndActivateSearchBox();
       break;
     case AppListBubblePage::kSearch:
       if (previous_page == AppListBubblePage::kApps) {
         apps_page_->AnimateHidePage();
         search_page_->AnimateShowPage();
+      } else if (previous_page == AppListBubblePage::kAppsCollections) {
+        apps_collections_page_->AnimateHidePage();
+        search_page_->AnimateShowPage();
       } else {
         apps_page_->SetVisible(false);
+        apps_collections_page_->SetVisible(false);
         search_page_->SetVisible(true);
       }
       MaybeFocusAndActivateSearchBox();
-      search_box_view_->SetIsIphAllowed(false);
       break;
     case AppListBubblePage::kAssistant:
       if (showing_folder_)
@@ -597,12 +624,12 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
       else
         apps_page_->SetVisible(false);
       search_page_->SetVisible(false);
+      apps_collections_page_->SetVisible(false);
       // Explicitly set search box inactive so the next attempt to activate it
       // will succeed.
       search_box_view_->SetSearchBoxActive(false,
                                            /*event_type=*/ui::ET_UNKNOWN);
       assistant_page_->RequestFocus();
-      search_box_view_->SetIsIphAllowed(false);
       break;
   }
 }
@@ -680,8 +707,8 @@ bool AppListBubbleView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-void AppListBubbleView::Layout() {
-  views::View::Layout();
+void AppListBubbleView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
 
   // The folder view has custom layout code that centers the folder over the
   // associated root apps grid folder item.
@@ -707,10 +734,13 @@ void AppListBubbleView::QueryChanged(const std::u16string& trimmed_query,
                                      bool initiated_by_user) {
   if (current_page_ != AppListBubblePage::kNone) {
     search_page_->search_view()->UpdateForNewSearch(!trimmed_query.empty());
-    if (!trimmed_query.empty())
+    if (!trimmed_query.empty()) {
       ShowPage(AppListBubblePage::kSearch);
-    else
+    } else if (app_list_features::IsAppsCollectionsEnabled()) {
+      ShowPage(AppListBubblePage::kAppsCollections);
+    } else {
       ShowPage(AppListBubblePage::kApps);
+    }
   }
   SchedulePaint();
 }
@@ -760,7 +790,7 @@ void AppListBubbleView::ShowFolderForItemView(AppListItemView* folder_item_view,
   folder_view_->ConfigureForFolderItemView(folder_item_view,
                                            std::move(hide_callback));
   showing_folder_ = true;
-  Layout();
+  DeprecatedLayoutImmediately();
   folder_background_view_->SetVisible(true);
   folder_view_->ScheduleShowHideAnimation(/*show=*/true,
                                           /*hide_for_reparent=*/false);
@@ -854,7 +884,6 @@ void AppListBubbleView::OnHideAnimationEnded(const gfx::Rect& layer_bounds) {
   apps_page_->SetVisible(true);
   search_page_->SetVisible(false);
   assistant_page_->SetVisible(false);
-  search_box_view_->SetIsIphAllowed(false);
 
   is_hiding_ = false;
   if (on_hide_animation_ended_) {
@@ -864,7 +893,7 @@ void AppListBubbleView::OnHideAnimationEnded(const gfx::Rect& layer_bounds) {
 
 void AppListBubbleView::HideFolderView(bool animate, bool hide_for_reparent) {
   showing_folder_ = false;
-  Layout();
+  DeprecatedLayoutImmediately();
   folder_background_view_->SetVisible(false);
   if (!hide_for_reparent) {
     apps_page_->scrollable_apps_grid_view()->ResetForShowApps();

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/lcp_critical_path_predictor_util.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
@@ -71,14 +72,6 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
       url, context->GetSecurityOrigin(), context->GetCurrentWorld(),
       cross_origin, encoding, defer));
 
-  constexpr WebFeature kCountOrbBlockAs[2][2] = {
-      {WebFeature::kORBBlockWithoutAnyEventHandler,
-       WebFeature::kORBBlockWithOnErrorButWithoutOnLoadEventHandler},
-      {WebFeature::kORBBlockWithOnLoadButWithoutOnErrorEventHandler,
-       WebFeature::kORBBlockWithOnLoadAndOnErrorEventHandler}};
-  params.SetCountORBBlockAs(kCountOrbBlockAs[element->HasLoadEventHandler()]
-                                            [element->HasErrorEventHandler()]);
-
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
           element, TextPosition::MinimumPosition(), KURL(), KURL(), String(),
@@ -112,8 +105,8 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   }
 
   ScriptResource::Fetch(params, element_document.Fetcher(), pending_script,
-                        ScriptResource::kAllowStreaming, compile_hints_producer,
-                        compile_hints_consumer);
+                        context->GetIsolate(), ScriptResource::kAllowStreaming,
+                        compile_hints_producer, compile_hints_consumer);
   pending_script->CheckState();
   return pending_script;
 }
@@ -283,8 +276,7 @@ bool ClassicPendingScript::IsEligibleForLowPriorityAsyncScriptExecution()
   static const bool exclude_lcp_influencers =
       features::kLowPriorityAsyncScriptExecutionExcludeLcpInfluencersParam
           .Get();
-  if (exclude_lcp_influencers &&
-      base::FeatureList::IsEnabled(features::kLCPScriptObserver)) {
+  if (exclude_lcp_influencers && LcppScriptObserverEnabled()) {
     if (LCPCriticalPathPredictor* lcpp = top_document.GetFrame()->GetLCPP()) {
       if (lcpp->IsLcpInfluencerScript(GetResource()->Url())) {
         return false;
@@ -322,6 +314,55 @@ bool ClassicPendingScript::IsEligibleForLowPriorityAsyncScriptExecution()
   // rather than later.
   if (GetResource() && GetResource()->IsLinkPreload())
     return false;
+
+  bool is_ad_resource =
+      GetResource() && GetResource()->GetResourceRequest().IsAdResource();
+  static const features::AsyncScriptExperimentalSchedulingTarget target =
+      features::kLowPriorityAsyncScriptExecutionTargetParam.Get();
+  switch (target) {
+    case features::AsyncScriptExperimentalSchedulingTarget::kAds:
+      if (!is_ad_resource) {
+        return false;
+      }
+      break;
+    case features::AsyncScriptExperimentalSchedulingTarget::kNonAds:
+      if (is_ad_resource) {
+        return false;
+      }
+      break;
+    case features::AsyncScriptExperimentalSchedulingTarget::kBoth:
+      break;
+  }
+
+  static const bool opt_out_low =
+      features::kLowPriorityAsyncScriptExecutionOptOutLowFetchPriorityHintParam
+          .Get();
+  static const bool opt_out_auto =
+      features::kLowPriorityAsyncScriptExecutionOptOutAutoFetchPriorityHintParam
+          .Get();
+  static const bool opt_out_high =
+      features::kLowPriorityAsyncScriptExecutionOptOutHighFetchPriorityHintParam
+          .Get();
+
+  if (GetResource()) {
+    switch (GetResource()->GetResourceRequest().GetFetchPriorityHint()) {
+      case mojom::blink::FetchPriorityHint::kLow:
+        if (opt_out_low) {
+          return false;
+        }
+        break;
+      case mojom::blink::FetchPriorityHint::kAuto:
+        if (opt_out_auto) {
+          return false;
+        }
+        break;
+      case mojom::blink::FetchPriorityHint::kHigh:
+        if (opt_out_high) {
+          return false;
+        }
+        break;
+    }
+  }
 
   return true;
 }

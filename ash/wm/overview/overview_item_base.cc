@@ -21,6 +21,8 @@
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/wm_constants.h"
+#include "base/memory/raw_ptr.h"
 
 namespace ash {
 
@@ -43,8 +45,8 @@ std::unique_ptr<OverviewItemBase> OverviewItemBase::Create(
     if (SnapGroup* snap_group =
             snap_group_controller->GetSnapGroupForGivenWindow(window)) {
       return std::make_unique<OverviewGroupItem>(
-          std::vector<aura::Window*>{snap_group->window1(),
-                                     snap_group->window2()},
+          std::vector<raw_ptr<aura::Window, VectorExperimental>>{
+              snap_group->window1(), snap_group->window2()},
           overview_session, overview_grid);
     }
   }
@@ -80,7 +82,7 @@ void OverviewItemBase::RefreshShadowVisuals(bool shadow_visible) {
   gfx::Rect shadow_content_bounds(
       gfx::ToRoundedRect(shadow_bounds_in_screen).size());
   shadow_->SetContentBounds(shadow_content_bounds);
-  shadow_->SetRoundedCornerRadius(kOverviewItemCornerRadius);
+  shadow_->SetRoundedCornerRadius(kWindowMiniViewCornerRadius);
 }
 
 void OverviewItemBase::UpdateShadowTypeForDrag(bool is_dragging) {

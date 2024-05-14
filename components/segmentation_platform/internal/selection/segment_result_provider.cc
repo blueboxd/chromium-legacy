@@ -32,6 +32,14 @@ float ComputeDiscreteMapping(const std::string& discrete_mapping_key,
   return rank;
 }
 
+ModelProvider* GetModelProvider(ExecutionService* execution_service,
+                                SegmentId segment_id,
+                                ModelSource model_source) {
+  return execution_service
+             ? execution_service->GetModelProvider(segment_id, model_source)
+             : nullptr;
+}
+
 class SegmentResultProviderImpl : public SegmentResultProvider {
  public:
   SegmentResultProviderImpl(SegmentInfoDatabase* segment_database,
@@ -54,9 +62,6 @@ class SegmentResultProviderImpl : public SegmentResultProvider {
 
  private:
   struct RequestState {
-    std::unordered_map<ModelSource,
-                       raw_ptr<ModelProvider, AcrossTasksDanglingUntriaged>>
-        model_providers;
     std::unique_ptr<GetResultOptions> options;
   };
 
@@ -99,9 +104,9 @@ class SegmentResultProviderImpl : public SegmentResultProvider {
                             ResultCallbackWithState callback,
                             bool success);
 
-  const raw_ptr<SegmentInfoDatabase, DanglingUntriaged> segment_database_;
+  const raw_ptr<SegmentInfoDatabase> segment_database_;
   const raw_ptr<SignalStorageConfig> signal_storage_config_;
-  const raw_ptr<ExecutionService, DanglingUntriaged> execution_service_;
+  const raw_ptr<ExecutionService> execution_service_;
   const raw_ptr<base::Clock> clock_;
   const bool force_refresh_results_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -111,17 +116,8 @@ class SegmentResultProviderImpl : public SegmentResultProvider {
 
 void SegmentResultProviderImpl::GetSegmentResult(
     std::unique_ptr<GetResultOptions> options) {
-  const SegmentId segment_id = options->segment_id;
   auto request_state = std::make_unique<RequestState>();
   request_state->options = std::move(options);
-  request_state->model_providers[ModelSource::SERVER_MODEL_SOURCE] =
-      execution_service_ ? execution_service_->GetModelProvider(
-                               segment_id, ModelSource::SERVER_MODEL_SOURCE)
-                         : nullptr;
-  request_state->model_providers[ModelSource::DEFAULT_MODEL_SOURCE] =
-      execution_service_ ? execution_service_->GetModelProvider(
-                               segment_id, ModelSource::DEFAULT_MODEL_SOURCE)
-                         : nullptr;
   // If `ignore_db_scores` is true than the server model will be executed now,
   // if that fails to give result, fallback to default model, hence default
   // model is the `fallback_action` if `ignore_db_score` is true. If
@@ -184,7 +180,8 @@ void SegmentResultProviderImpl::OnGotModelScore(
 
   // Handling default models.
   ModelProvider* default_model =
-      request_state->model_providers[ModelSource::DEFAULT_MODEL_SOURCE];
+      GetModelProvider(execution_service_, request_state->options->segment_id,
+                       ModelSource::DEFAULT_MODEL_SOURCE);
   if (!default_model || !default_model->ModelAvailable()) {
     VLOG(1) << __func__ << ": segment="
             << SegmentId_Name(request_state->options->segment_id)
@@ -238,8 +235,8 @@ void SegmentResultProviderImpl::GetCachedModelScore(
     return;
   }
 
-  if (metadata_utils::HasExpiredOrUnavailableResult(*db_segment_info,
-                                                    clock_->Now())) {
+  if (force_refresh_results_ || metadata_utils::HasExpiredOrUnavailableResult(
+                                    *db_segment_info, clock_->Now())) {
     VLOG(1) << __func__ << ": segment="
             << SegmentId_Name(request_state->options->segment_id)
             << " has expired or unavailable result.";
@@ -304,7 +301,9 @@ void SegmentResultProviderImpl::ExecuteModelAndGetScore(
     return;
   }
 
-  ModelProvider* provider = request_state->model_providers[model_source];
+  ModelProvider* provider = GetModelProvider(
+      execution_service_, request_state->options->segment_id, model_source);
+
   auto request = std::make_unique<ExecutionRequest>();
   request->input_context = request_state->options->input_context;
   request->segment_id = segment_info->segment_id();
@@ -365,14 +364,14 @@ void SegmentResultProviderImpl::OnModelExecuted(
                              : ResultState::kServerModelExecutionFailed;
     segment_result = std::make_unique<SegmentResult>(state);
     VLOG(1) << __func__ << ": " << (is_default_model ? "Default" : "Server")
-            << " model execution failed"
-            << " for segment " << proto::SegmentId_Name(segment_id);
+            << " model execution failed" << " for segment "
+            << proto::SegmentId_Name(segment_id);
   }
 
   if (request_state->options->save_results_to_db) {
     segment_database_->SaveSegmentResult(
         segment_id, model_source,
-        success ? absl::make_optional(prediction_result) : absl::nullopt,
+        success ? std::make_optional(prediction_result) : std::nullopt,
         base::BindOnce(&SegmentResultProviderImpl::OnSavedSegmentResult,
                        weak_ptr_factory_.GetWeakPtr(),
                        segment_info->segment_id(), std::move(request_state),

@@ -31,6 +31,10 @@ namespace media {
 
 namespace {
 
+BASE_FEATURE(kAddSharedImageRasterUsageWithNonOOPR,
+             "AddSharedImageRasterUsageWithNonOOPR",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 viz::SharedImageFormat PlaneSharedImageFormat(int num_channels,
                                               bool supports_red) {
   switch (num_channels) {
@@ -97,10 +101,11 @@ void VideoFrameYUVMailboxesHolder::ReleaseCachedData() {
 
   auto* sii = provider_->SharedImageInterface();
   DCHECK(sii);
-  for (auto& mailbox_holder : holders_) {
-    if (!mailbox_holder.mailbox.IsZero())
-      sii->DestroySharedImage(token, mailbox_holder.mailbox);
-    mailbox_holder.mailbox.SetZero();
+  for (unsigned int i = 0; i < kMaxPlanes; ++i) {
+    if (shared_images_[i]) {
+      sii->DestroySharedImage(token, std::move(shared_images_[i]));
+    }
+    holders_[i].mailbox.SetZero();
   }
 
   created_shared_images_ = false;
@@ -149,13 +154,27 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
   constexpr SkAlphaType kPlaneAlphaType = kPremul_SkAlphaType;
   auto* sii = provider_->SharedImageInterface();
   DCHECK(sii);
+
+  // These SharedImages will be written to (and later read from) via the raster
+  // interface. The correct usage depends on whether raster is OOP or is going
+  // over the GLES2 interface.
   uint32_t mailbox_usage;
   auto& caps = provider_->ContextCapabilities();
   if (caps.gpu_rasterization) {
-    mailbox_usage = gpu::SHARED_IMAGE_USAGE_RASTER |
+    mailbox_usage = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                    gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
   } else {
-    mailbox_usage = gpu::SHARED_IMAGE_USAGE_GLES2;
+    mailbox_usage = gpu::SHARED_IMAGE_USAGE_GLES2_READ |
+                    gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
+    // RASTER_{READ, WRITE} usages should be included as these SharedImages are
+    // both read and written via raster, but historically these usages were not
+    // included. Currently in the process of adding with a killswitch.
+    // TODO(crbug.com/1524009): Remove this killswitch post-safe rollout.
+    if (base::FeatureList::IsEnabled(kAddSharedImageRasterUsageWithNonOOPR)) {
+      mailbox_usage = mailbox_usage | gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                      gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
+    }
   }
 
   // Enabled with flags UseWritePixelsYUV and
@@ -176,6 +195,7 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
       CHECK(client_shared_image);
       holders_[0].mailbox = client_shared_image->mailbox();
       holders_[0].texture_target = GL_TEXTURE_2D;
+      shared_images_[0] = std::move(client_shared_image);
 
       // Split up shared image creation from upload so we only have to wait on
       // one sync token.
@@ -216,6 +236,7 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
       CHECK(client_shared_image);
       holders_[plane].mailbox = client_shared_image->mailbox();
       holders_[plane].texture_target = GL_TEXTURE_2D;
+      shared_images_[plane] = std::move(client_shared_image);
     }
 
     // Split up shared image creation from upload so we only have to wait on

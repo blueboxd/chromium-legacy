@@ -90,10 +90,6 @@
 #include "content/shell/app/ios/shell_application_ios.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS)
-#include "ui/gfx/linux/gbm_util.h"  // nogncheck
-#endif
-
 namespace {
 
 #if !BUILDFLAG(IS_FUCHSIA)
@@ -149,7 +145,7 @@ ShellMainDelegate::ShellMainDelegate(bool is_content_browsertests)
 ShellMainDelegate::~ShellMainDelegate() {
 }
 
-absl::optional<int> ShellMainDelegate::BasicStartupComplete() {
+std::optional<int> ShellMainDelegate::BasicStartupComplete() {
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch("run-layout-test")) {
     std::cerr << std::string(79, '*') << "\n"
@@ -195,7 +191,7 @@ absl::optional<int> ShellMainDelegate::BasicStartupComplete() {
 
   RegisterShellPathProvider();
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool ShellMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
@@ -348,31 +344,23 @@ void ShellMainDelegate::InitializeResourceBundle() {
 #endif
 }
 
-absl::optional<int> ShellMainDelegate::PreBrowserMain() {
-  absl::optional<int> exit_code =
-      content::ContentMainDelegate::PreBrowserMain();
+std::optional<int> ShellMainDelegate::PreBrowserMain() {
+  std::optional<int> exit_code = content::ContentMainDelegate::PreBrowserMain();
   if (exit_code.has_value())
     return exit_code;
 
 #if BUILDFLAG(IS_MAC)
   RegisterShellCrApp();
 #endif
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<int> ShellMainDelegate::PostEarlyInitialization(
+std::optional<int> ShellMainDelegate::PostEarlyInitialization(
     InvokedIn invoked_in) {
   if (!ShouldCreateFeatureList(invoked_in)) {
     // Apply field trial testing configuration since content did not.
     browser_client_->CreateFeatureListAndFieldTrials();
   }
-#if BUILDFLAG(IS_CHROMEOS)
-  // At this point, the base::FeatureList has been initialized and the process
-  // should still be single threaded. Additionally, minigbm shouldn't have been
-  // used yet by this process. Therefore, it's a good time to ensure the Intel
-  // media compression environment flag for minigbm is correctly set.
-  ui::EnsureIntelMediaCompressionEnvVarIsSet();
-#endif  // BUILDFLAG(IS_CHROMEOS)
   if (!ShouldInitializeMojo(invoked_in)) {
     InitializeMojoCore();
   }
@@ -399,7 +387,7 @@ absl::optional<int> ShellMainDelegate::PostEarlyInitialization(
                                process_type)
       .Initialize(memory_system_);
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 ContentClient* ShellMainDelegate::CreateContentClient() {

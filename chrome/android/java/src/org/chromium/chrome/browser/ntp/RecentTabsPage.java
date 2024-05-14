@@ -15,9 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -57,19 +60,25 @@ public class RecentTabsPage
     /** Whether {@link #mView} is attached to the application window. */
     private boolean mIsAttachedToWindow;
 
+    private final ObservableSupplier<Integer> mTabStripHeightSupplier;
+    private Callback<Integer> mTabStripHeightChangeCallback;
+
     /**
      * Constructor returns an instance of RecentTabsPage.
      *
      * @param activity The activity this view belongs to.
      * @param recentTabsManager The RecentTabsManager which provides the model data.
      * @param pageHost The NativePageHost used to provide a history navigation delegate object.
-     * @param browserControlsManager The BrowserControlsManager used to provide offset values.
+     * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} used to provide
+     *     offset values.
+     * @param tabStripHeightSupplier Supplier for the tab strip height.
      */
     public RecentTabsPage(
             Activity activity,
             RecentTabsManager recentTabsManager,
             NativePageHost pageHost,
-            BrowserControlsStateProvider browserControlsStateProvider) {
+            BrowserControlsStateProvider browserControlsStateProvider,
+            ObservableSupplier<Integer> tabStripHeightSupplier) {
         mActivity = activity;
         mRecentTabsManager = recentTabsManager;
         mPageHost = pageHost;
@@ -98,6 +107,19 @@ public class RecentTabsPage
                     mBrowserControlsStateProvider.getBottomControlsMinHeight());
         } else {
             mBrowserControlsStateProvider = null;
+        }
+
+        mTabStripHeightSupplier = tabStripHeightSupplier;
+        mView.setPadding(0, mTabStripHeightSupplier.get(), 0, 0);
+        if (ChromeFeatureList.sDynamicTopChrome.isEnabled()) {
+            mTabStripHeightChangeCallback =
+                    newHeight ->
+                            mView.setPadding(
+                                    mView.getPaddingLeft(),
+                                    newHeight,
+                                    mView.getPaddingRight(),
+                                    mView.getPaddingBottom());
+            mTabStripHeightSupplier.addObserver(mTabStripHeightChangeCallback);
         }
 
         onUpdated();
@@ -149,6 +171,8 @@ public class RecentTabsPage
         if (mBrowserControlsStateProvider != null) {
             mBrowserControlsStateProvider.removeObserver(this);
         }
+
+        mTabStripHeightSupplier.removeObserver(mTabStripHeightChangeCallback);
     }
 
     @Override
@@ -300,5 +324,9 @@ public class RecentTabsPage
             layoutParams.bottomMargin = bottomMargin;
             recentTabsRoot.setLayoutParams(layoutParams);
         }
+    }
+
+    Callback<Integer> getTabStripHeightChangeCallbackForTesting() {
+        return mTabStripHeightChangeCallback;
     }
 }

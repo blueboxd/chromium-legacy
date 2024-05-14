@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <string_view>
 #include <utility>
 
 #include "base/command_line.h"
@@ -32,8 +33,10 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/updater/extension_cache.h"
+#include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/extension_downloader_test_delegate.h"
 #include "extensions/browser/updater/request_queue_impl.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_updater_uma.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/verifier_formats.h"
@@ -162,7 +165,7 @@ bool IncrementAuthUserIndex(GURL* url) {
 }
 
 // This sanitizes update urls used to fetch update manifests for extensions.
-std::optional<GURL> SanitizeUpdateURL(const std::string& extension_id,
+std::optional<GURL> SanitizeUpdateURL(const ExtensionId& extension_id,
                                       const GURL& update_url) {
   if (update_url.is_empty()) {
     // Fill in default update URL.
@@ -488,8 +491,8 @@ void ExtensionDownloader::CreateManifestLoader() {
   const ExtensionIdSet extension_ids = active_request->GetExtensionIds();
   NotifyExtensionsDownloadStageChanged(
       extension_ids, ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
-  std::vector<base::StringPiece> id_vector(extension_ids.begin(),
-                                           extension_ids.end());
+  std::vector<std::string_view> id_vector(extension_ids.begin(),
+                                          extension_ids.end());
   std::string id_list = base::JoinString(id_vector, ",");
   VLOG(2) << "Fetching " << active_request->full_url() << " for " << id_list;
   VLOG(2) << "Update interactivity: "
@@ -807,7 +810,7 @@ void ExtensionDownloader::HandleManifestResults(
   DetermineUpdates(fetch_data->TakeAssociatedTasks(), *results, &to_update,
                    &failures);
   for (auto& update : to_update) {
-    const std::string& extension_id = update.first.id;
+    const ExtensionId& extension_id = update.first.id;
 
     GURL crx_url = update.second->crx_url;
 
@@ -855,7 +858,7 @@ void ExtensionDownloader::HandleManifestResults(
 
 ExtensionDownloader::UpdateAvailability
 ExtensionDownloader::GetUpdateAvailability(
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     const std::vector<const UpdateManifestResult*>& possible_candidates,
     UpdateManifestResult** update_result_out) const {
   const bool is_extension_pending = delegate_->IsExtensionPending(extension_id);
@@ -906,8 +909,14 @@ ExtensionDownloader::GetUpdateAvailability(
       if (update_version.CompareTo(existing_version) <= 0) {
         VLOG(2) << extension_id << " version is not older than '"
                 << update_version_str << "'";
-        has_noupdate = true;
-        continue;
+        bool can_rollback =
+            update_version.CompareTo(existing_version) < 0 &&
+            (delegate_->RequestRollback(extension_id) ==
+             ExtensionDownloaderDelegate::RequestRollbackResult::kAllowed);
+        if (!can_rollback) {
+          has_noupdate = true;
+          continue;
+        }
       }
     }
 

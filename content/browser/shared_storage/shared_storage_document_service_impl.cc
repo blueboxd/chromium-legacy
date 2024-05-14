@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -21,7 +22,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/shared_storage/shared_storage_utils.h"
 #include "url/url_constants.h"
@@ -62,6 +62,18 @@ const char kSharedStorageAddModuleDisabledMessage[] =
 const char kSharedStorageSelectURLLimitReachedMessage[] =
     "sharedStorage.selectURL limit has been reached";
 
+// NOTE: To preserve user privacy, the default value of the
+// `blink::features::kSharedStorageExposeDebugMessageForSettingsStatus`
+// feature param MUST remain set to false (although the value can be overridden
+// via the command line or in tests).
+std::string GetSharedStorageErrorMessage(const std::string& debug_message,
+                                         const std::string& input_message) {
+  return blink::features::kSharedStorageExposeDebugMessageForSettingsStatus
+                 .Get()
+             ? base::StrCat({input_message, "\nDebug: ", debug_message})
+             : input_message;
+}
+
 SharedStorageDocumentServiceImpl::~SharedStorageDocumentServiceImpl() {
   GetSharedStorageWorkletHostManager()->OnDocumentServiceDestroyed(this);
 }
@@ -96,16 +108,21 @@ void SharedStorageDocumentServiceImpl::Bind(
 
 void SharedStorageDocumentServiceImpl::CreateWorklet(
     const GURL& script_source_url,
+    network::mojom::CredentialsMode credentials_mode,
     const std::vector<blink::mojom::OriginTrialFeature>& origin_trial_features,
     mojo::PendingAssociatedReceiver<blink::mojom::SharedStorageWorkletHost>
         worklet_host,
     CreateWorkletCallback callback) {
-  if (create_worklet_called_) {
-    // This could indicate a compromised renderer, so let's terminate it.
-    receiver_.ReportBadMessage("Attempted to create multiple worklets.");
-    LogSharedStorageWorkletError(
-        blink::SharedStorageWorkletErrorType::kAddModuleNonWebVisible);
-    return;
+  // A document can only create multiple worklets with `kSharedStorageAPIM123`
+  // enabled.
+  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM123)) {
+    if (create_worklet_called_) {
+      // This could indicate a compromised renderer, so let's terminate it.
+      receiver_.ReportBadMessage("Attempted to create multiple worklets.");
+      LogSharedStorageWorkletError(
+          blink::SharedStorageWorkletErrorType::kAddModuleNonWebVisible);
+      return;
+    }
   }
 
   create_worklet_called_ = true;
@@ -120,16 +137,19 @@ void SharedStorageDocumentServiceImpl::CreateWorklet(
     return;
   }
 
-  if (!IsSharedStorageAddModuleAllowed()) {
+  std::string debug_message;
+  if (!IsSharedStorageAddModuleAllowed(&debug_message)) {
     std::move(callback).Run(
         /*success=*/false,
-        /*error_message=*/kSharedStorageAddModuleDisabledMessage);
+        /*error_message=*/GetSharedStorageErrorMessage(
+            debug_message, kSharedStorageAddModuleDisabledMessage));
     return;
   }
 
   GetSharedStorageWorkletHostManager()->CreateWorkletHost(
       this, render_frame_host().GetLastCommittedOrigin(), script_source_url,
-      origin_trial_features, std::move(worklet_host), std::move(callback));
+      credentials_mode, origin_trial_features, std::move(worklet_host),
+      std::move(callback));
 }
 
 void SharedStorageDocumentServiceImpl::SharedStorageSet(
@@ -137,10 +157,12 @@ void SharedStorageDocumentServiceImpl::SharedStorageSet(
     const std::u16string& value,
     bool ignore_if_present,
     SharedStorageSetCallback callback) {
-  if (!IsSharedStorageAllowed()) {
+  std::string debug_message;
+  if (!IsSharedStorageAllowed(&debug_message)) {
     std::move(callback).Run(
         /*success=*/false,
-        /*error_message=*/kSharedStorageDisabledMessage);
+        /*error_message=*/GetSharedStorageErrorMessage(
+            debug_message, kSharedStorageDisabledMessage));
     return;
   }
 
@@ -163,10 +185,12 @@ void SharedStorageDocumentServiceImpl::SharedStorageAppend(
     const std::u16string& key,
     const std::u16string& value,
     SharedStorageAppendCallback callback) {
-  if (!IsSharedStorageAllowed()) {
+  std::string debug_message;
+  if (!IsSharedStorageAllowed(&debug_message)) {
     std::move(callback).Run(
         /*success=*/false,
-        /*error_message=*/kSharedStorageDisabledMessage);
+        /*error_message=*/GetSharedStorageErrorMessage(
+            debug_message, kSharedStorageDisabledMessage));
     return;
   }
 
@@ -185,9 +209,12 @@ void SharedStorageDocumentServiceImpl::SharedStorageAppend(
 void SharedStorageDocumentServiceImpl::SharedStorageDelete(
     const std::u16string& key,
     SharedStorageDeleteCallback callback) {
-  if (!IsSharedStorageAllowed()) {
-    std::move(callback).Run(/*success=*/false,
-                            /*error_message=*/kSharedStorageDisabledMessage);
+  std::string debug_message;
+  if (!IsSharedStorageAllowed(&debug_message)) {
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/GetSharedStorageErrorMessage(
+            debug_message, kSharedStorageDisabledMessage));
     return;
   }
 
@@ -203,9 +230,12 @@ void SharedStorageDocumentServiceImpl::SharedStorageDelete(
 
 void SharedStorageDocumentServiceImpl::SharedStorageClear(
     SharedStorageClearCallback callback) {
-  if (!IsSharedStorageAllowed()) {
-    std::move(callback).Run(/*success=*/false,
-                            /*error_message=*/kSharedStorageDisabledMessage);
+  std::string debug_message;
+  if (!IsSharedStorageAllowed(&debug_message)) {
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/GetSharedStorageErrorMessage(
+            debug_message, kSharedStorageDisabledMessage));
     return;
   }
 
@@ -256,26 +286,29 @@ SharedStorageDocumentServiceImpl::GetSharedStorageWorkletHostManager() {
       ->GetSharedStorageWorkletHostManager();
 }
 
-bool SharedStorageDocumentServiceImpl::IsSharedStorageAllowed() {
+bool SharedStorageDocumentServiceImpl::IsSharedStorageAllowed(
+    std::string* out_debug_message) {
   // Will trigger a call to
   // `content_settings::PageSpecificContentSettings::BrowsingDataAccessed()` for
   // reporting purposes.
   return GetContentClient()->browser()->IsSharedStorageAllowed(
       render_frame_host().GetBrowserContext(), &render_frame_host(),
-      main_frame_origin_, render_frame_host().GetLastCommittedOrigin());
+      main_frame_origin_, render_frame_host().GetLastCommittedOrigin(),
+      out_debug_message);
 }
 
-bool SharedStorageDocumentServiceImpl::IsSharedStorageAddModuleAllowed() {
+bool SharedStorageDocumentServiceImpl::IsSharedStorageAddModuleAllowed(
+    std::string* out_debug_message) {
   // Will trigger a call to
   // `content_settings::PageSpecificContentSettings::BrowsingDataAccessed()` for
   // reporting purposes.
-  if (!IsSharedStorageAllowed()) {
+  if (!IsSharedStorageAllowed(out_debug_message)) {
     return false;
   }
 
   return GetContentClient()->browser()->IsSharedStorageSelectURLAllowed(
              render_frame_host().GetBrowserContext(), main_frame_origin_,
-             render_frame_host().GetLastCommittedOrigin()) ||
+             render_frame_host().GetLastCommittedOrigin(), out_debug_message) ||
          GetContentClient()->browser()->IsPrivateAggregationAllowed(
              render_frame_host().GetBrowserContext(), main_frame_origin_,
              render_frame_host().GetLastCommittedOrigin());

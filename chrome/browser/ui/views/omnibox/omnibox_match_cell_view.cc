@@ -134,8 +134,9 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
 // RoundedCornerImageView:
 
 class RoundedCornerImageView : public views::ImageView {
+  METADATA_HEADER(RoundedCornerImageView, views::ImageView)
+
  public:
-  METADATA_HEADER(RoundedCornerImageView);
   RoundedCornerImageView() = default;
   RoundedCornerImageView(const RoundedCornerImageView&) = delete;
   RoundedCornerImageView& operator=(const RoundedCornerImageView&) = delete;
@@ -158,7 +159,7 @@ void RoundedCornerImageView::OnPaint(gfx::Canvas* canvas) {
   ImageView::OnPaint(canvas);
 }
 
-BEGIN_METADATA(RoundedCornerImageView, views::ImageView)
+BEGIN_METADATA(RoundedCornerImageView)
 END_METADATA
 
 }  // namespace
@@ -222,7 +223,9 @@ void OmniboxMatchCellView::ComputeMatchMaxWidths(
             std::min(description_width, kMinimumDescriptionWidth) &&
         !OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
       *description_max_width = 0;
-      // Since we're not going to display the description, the contents can have
+    }
+    if (*description_max_width == 0) {
+      // If we're not going to display the description, the contents can have
       // the space we reserved for the separator.
       available_width += separator_width;
       *contents_max_width = std::min(contents_width, available_width);
@@ -462,8 +465,8 @@ gfx::Insets OmniboxMatchCellView::GetInsets() const {
                            vertical_margin, right_margin);
 }
 
-void OmniboxMatchCellView::Layout() {
-  views::View::Layout();
+void OmniboxMatchCellView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
 
   const bool two_line = layout_style_ == LayoutStyle::TWO_LINE_SUGGESTION;
   const gfx::Rect child_area = GetContentsBounds();
@@ -593,5 +596,5 @@ void OmniboxMatchCellView::SetTailSuggestCommonPrefixWidth(
   tail_suggest_common_prefix_width_ = render_text->GetStringSize().width();
 }
 
-BEGIN_METADATA(OmniboxMatchCellView, views::View)
+BEGIN_METADATA(OmniboxMatchCellView)
 END_METADATA

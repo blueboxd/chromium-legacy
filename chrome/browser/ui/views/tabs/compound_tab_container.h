@@ -22,9 +22,9 @@ class TabDragContextBase;
 // specifically noted otherwise as being relative to a specific container.
 class CompoundTabContainer : public TabContainer,
                              public views::ViewTargeterDelegate {
- public:
-  METADATA_HEADER(CompoundTabContainer);
+  METADATA_HEADER(CompoundTabContainer, TabContainer)
 
+ public:
   CompoundTabContainer(TabContainerController& controller,
                        TabHoverCardController* hover_card_controller,
                        TabDragContextBase* drag_context,
@@ -103,7 +103,7 @@ class CompoundTabContainer : public TabContainer,
   views::SizeBounds GetAvailableSize(const View* child) const override;
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  void Layout() override;
+  void Layout(PassKey) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 

@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/payments/payments_requests/unmask_card_request.h"
 
+#include <string_view>
+
 #include "base/json/json_writer.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,6 +17,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace autofill {
 namespace payments {
@@ -36,6 +39,28 @@ const char kUnmaskCardRequestFormatWithOtp[] =
 
 constexpr size_t kDefaultOtpLength = 6U;
 constexpr size_t kDefaultCvcLength = 3U;
+
+// Parses the `defined_challenge_option` as a 3ds challenge option, and sets the
+// appropriate fields in `parsed_challenge_option`.
+void ParseAs3dsChallengeOption(
+    const base::Value::Dict* defined_challenge_option,
+    CardUnmaskChallengeOption* parsed_challenge_option) {
+  parsed_challenge_option->type =
+      CardUnmaskChallengeOptionType::kThreeDomainSecure;
+
+  const auto* challenge_id =
+      defined_challenge_option->FindString("challenge_id");
+  if (challenge_id) {
+    parsed_challenge_option->id =
+        CardUnmaskChallengeOption::ChallengeOptionId(*challenge_id);
+  }
+
+  const auto* url_to_open =
+      defined_challenge_option->FindString("redirect_url");
+  if (url_to_open) {
+    parsed_challenge_option->url_to_open = GURL(*url_to_open);
+  }
+}
 
 // Parses the `defined_challenge_option` as an  OTP challenge option, and sets
 // the appropriate fields in `parsed_challenge_option`.
@@ -68,7 +93,7 @@ void ParseAsOtpChallengeOption(
   // Get the OTP length for this challenge. This will be displayed to the user
   // in the OTP input dialog so that the user knows how many digits the OTP
   // should be.
-  absl::optional<int> otp_length =
+  std::optional<int> otp_length =
       defined_challenge_option->FindInt("otp_length");
   parsed_challenge_option->challenge_input_length =
       otp_length ? *otp_length : kDefaultOtpLength;
@@ -93,7 +118,7 @@ void ParseAsCvcChallengeOption(
   // Get the length of the CVC on the card. In most cases this is 3 digits,
   // but it is possible for this to be 4 digits, for example in the case of
   // the Card Identification Number on the front of an American Express card.
-  absl::optional<int> cvc_length =
+  std::optional<int> cvc_length =
       defined_challenge_option->FindInt("cvc_length");
   parsed_challenge_option->challenge_input_length =
       cvc_length ? *cvc_length : kDefaultCvcLength;
@@ -151,9 +176,7 @@ CardUnmaskChallengeOption ParseCardUnmaskChallengeOption(
   // Check if it's an email OTP challenge option, and if it is, set
   // `defined_challenge_option` to the defined challenge option found, parse the
   // challenge option, and return it.
-  else if (base::FeatureList::IsEnabled(
-               features::kAutofillEnableEmailOtpForVcnYellowPath) &&
-           (defined_challenge_option =
+  else if ((defined_challenge_option =
                 challenge_option.FindDict("email_otp_challenge_option"))) {
     ParseAsOtpChallengeOption(defined_challenge_option,
                               &parsed_challenge_option,
@@ -165,6 +188,16 @@ CardUnmaskChallengeOption ParseCardUnmaskChallengeOption(
   else if ((defined_challenge_option =
                 challenge_option.FindDict("cvc_challenge_option"))) {
     ParseAsCvcChallengeOption(defined_challenge_option,
+                              &parsed_challenge_option);
+  }
+  // Check if it's a 3ds challenge option, and if it is, set
+  // `defined_challenge_option` to the defined challenge option found, parse the
+  // challenge option, and return it.
+  else if ((defined_challenge_option =
+                challenge_option.FindDict("redirect_challenge_option")) &&
+           base::FeatureList::IsEnabled(
+               features::kAutofillEnableVcn3dsAuthentication)) {
+    ParseAs3dsChallengeOption(defined_challenge_option,
                               &parsed_challenge_option);
   }
 
@@ -250,7 +283,7 @@ std::string UnmaskCardRequest::GetRequestContent() {
           base::NumberToString(request_details_.selected_challenge_option
                                    ->challenge_input_length));
 
-      base::StringPiece cvc_position = "CVC_POSITION_UNKNOWN";
+      std::string_view cvc_position = "CVC_POSITION_UNKNOWN";
       switch (request_details_.selected_challenge_option->cvc_position) {
         case autofill::CvcPosition::kFrontOfCard:
           cvc_position = "CVC_POSITION_FRONT";
@@ -338,11 +371,11 @@ void UnmaskCardRequest::ParseResponse(const base::Value::Dict& response) {
 
   const base::Value::Dict* expiration = response.FindDict("expiration");
   if (expiration) {
-    if (absl::optional<int> month = expiration->FindInt("month")) {
+    if (std::optional<int> month = expiration->FindInt("month")) {
       response_details_.expiration_month = base::NumberToString(month.value());
     }
 
-    if (absl::optional<int> year = expiration->FindInt("year")) {
+    if (std::optional<int> year = expiration->FindInt("year")) {
       response_details_.expiration_year = base::NumberToString(year.value());
     }
   }

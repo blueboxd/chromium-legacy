@@ -7,6 +7,7 @@
 
 #include "base/containers/queue.h"
 #include "base/functional/callback.h"
+#import "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -45,6 +46,10 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   void Remove(browsing_data::TimePeriod time_period,
               BrowsingDataRemoveMask remove_mask,
               base::OnceClosure callback) override;
+  void RemoveInRange(base::Time start_time,
+                     base::Time end_time,
+                     BrowsingDataRemoveMask mask,
+                     base::OnceClosure callback) override;
 
  private:
   // Represents a single removal task. Contains all parameters to execute it.
@@ -106,7 +111,7 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // ChromeBrowserState we're to remove from.
-  ChromeBrowserState* browser_state_ = nullptr;
+  raw_ptr<ChromeBrowserState> browser_state_ = nullptr;
 
   // Used to delete data from HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;

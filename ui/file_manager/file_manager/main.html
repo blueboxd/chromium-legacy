@@ -116,8 +116,6 @@ found in the LICENSE file.
       <command id="set-wallpaper"
                label="$i18n{SET_WALLPAPER_BUTTON_LABEL}">
 
-      <command id="share" label="$i18n{SHARE_BUTTON_LABEL}" disabled hidden
-               shortcut="." hide-shortcut-text>
       <command id="manage-in-drive"
                label="$i18n{MANAGE_IN_DRIVE_BUTTON_LABEL}" disabled hidden>
       <command id="manage-mirrorsync"
@@ -355,7 +353,7 @@ found in the LICENSE file.
                       slot="jelly"
                       id="pinned-toggle-jelly"
                       command="#toggle-pinned"
-                      aria-labelledby="pinned-toggle-label">
+                      aria-label="$i18n{OFFLINE_COLUMN_LABEL}">
                   </cros-switch>
                   <cr-toggle
                       slot="old"

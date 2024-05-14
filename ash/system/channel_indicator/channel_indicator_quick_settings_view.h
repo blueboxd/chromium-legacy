@@ -16,8 +16,9 @@ namespace ash {
 // ChannelIndicatorQuickSettingsView contains all of the views included in the
 // channel indicator UI that resides in `QuickSettingsHeader`.
 class ASH_EXPORT ChannelIndicatorQuickSettingsView : public views::View {
+  METADATA_HEADER(ChannelIndicatorQuickSettingsView, views::View)
+
  public:
-  METADATA_HEADER(ChannelIndicatorQuickSettingsView);
   ChannelIndicatorQuickSettingsView(version_info::Channel channel,
                                     bool allow_user_feedback);
   ChannelIndicatorQuickSettingsView(const ChannelIndicatorQuickSettingsView&) =
@@ -37,8 +38,8 @@ class ASH_EXPORT ChannelIndicatorQuickSettingsView : public views::View {
 
  private:
   // Refs maintained for unit test introspection methods.
-  raw_ptr<views::View, ExperimentalAsh> version_button_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> feedback_button_ = nullptr;
+  raw_ptr<views::View> version_button_ = nullptr;
+  raw_ptr<views::View> feedback_button_ = nullptr;
 };
 
 }  // namespace ash

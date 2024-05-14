@@ -4,9 +4,10 @@
 
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 
+#include <optional>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -31,6 +32,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/string_resource.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -48,19 +50,18 @@ class ReadableStreamTest : public testing::Test {
  public:
   ReadableStreamTest() = default;
 
-  absl::optional<String> ReadAll(V8TestingScope& scope,
-                                 ReadableStream* stream) {
+  std::optional<String> ReadAll(V8TestingScope& scope, ReadableStream* stream) {
     ScriptState* script_state = scope.GetScriptState();
     v8::Isolate* isolate = script_state->GetIsolate();
     v8::Local<v8::Context> context = script_state->GetContext();
     v8::Local<v8::Value> v8_stream =
-        ToV8Traits<ReadableStream>::ToV8(script_state, stream).ToLocalChecked();
+        ToV8Traits<ReadableStream>::ToV8(script_state, stream);
     v8::Local<v8::Object> global = context->Global();
     bool set_result = false;
     if (!global->Set(context, V8String(isolate, "stream"), v8_stream)
              .To(&set_result)) {
       ADD_FAILURE();
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     const char script[] =
@@ -83,14 +84,14 @@ readAll(stream);
 
     if (EvalWithPrintingError(&scope, script).IsEmpty()) {
       ADD_FAILURE();
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     while (true) {
       v8::Local<v8::Value> result;
       if (!global->Get(context, V8String(isolate, "result")).ToLocal(&result)) {
         ADD_FAILURE();
-        return absl::nullopt;
+        return std::nullopt;
       }
       if (!result->IsUndefined()) {
         DCHECK(result->IsString());
@@ -105,8 +106,9 @@ readAll(stream);
       scope.PerformMicrotaskCheckpoint();
     }
     NOTREACHED();
-    return absl::nullopt;
+    return std::nullopt;
   }
+  test::TaskEnvironment task_environment_;
 };
 
 // This breaks expectations for general ReadableStreamTransferringOptimizer
@@ -130,8 +132,8 @@ class TestTransferringOptimizer final
         : UnderlyingSourceBase(script_state) {}
 
     ScriptPromise Start(ScriptState* script_state, ExceptionState&) override {
-      Controller()->Enqueue("foo");
-      Controller()->Enqueue(", bar");
+      Controller()->Enqueue(V8String(script_state->GetIsolate(), "foo"));
+      Controller()->Enqueue(V8String(script_state->GetIsolate(), ", bar"));
       Controller()->Close();
       return ScriptPromise::CastUndefined(script_state);
     }
@@ -463,7 +465,7 @@ TEST_F(ReadableStreamTest, Serialize) {
   underlying_source->Close();
 
   EXPECT_EQ(ReadAll(scope, transferred),
-            absl::make_optional<String>("hello, bye"));
+            std::make_optional<String>("hello, bye"));
 }
 
 TEST_F(ReadableStreamTest, DeserializeWithNullOptimizer) {
@@ -494,7 +496,7 @@ TEST_F(ReadableStreamTest, DeserializeWithNullOptimizer) {
   underlying_source->Close();
 
   EXPECT_EQ(ReadAll(scope, transferred),
-            absl::make_optional<String>("hello, bye"));
+            std::make_optional<String>("hello, bye"));
 }
 
 TEST_F(ReadableStreamTest, DeserializeWithTestOptimizer) {
@@ -525,7 +527,7 @@ TEST_F(ReadableStreamTest, DeserializeWithTestOptimizer) {
   underlying_source->Close();
 
   EXPECT_EQ(ReadAll(scope, transferred),
-            absl::make_optional<String>("hello, byefoo, bar"));
+            std::make_optional<String>("hello, byefoo, bar"));
 }
 
 TEST_F(ReadableStreamTest, GarbageCollectJavaScriptUnderlyingSource) {
@@ -596,15 +598,15 @@ class ReadableByteStreamTest : public testing::Test {
     auto* script_state = scope.GetScriptState();
     ReadableStream* stream = Stream();
     v8::Local<v8::Object> global = script_state->GetContext()->Global();
-    EXPECT_TRUE(global
-                    ->Set(scope.GetContext(),
-                          V8String(scope.GetIsolate(), "stream"),
-                          ToV8Traits<ReadableStream>::ToV8(script_state, stream)
-                              .ToLocalChecked())
-                    .IsJust());
+    EXPECT_TRUE(
+        global
+            ->Set(scope.GetContext(), V8String(scope.GetIsolate(), "stream"),
+                  ToV8Traits<ReadableStream>::ToV8(script_state, stream))
+            .IsJust());
   }
 
  private:
+  test::TaskEnvironment task_environment_;
   Persistent<ReadableStream> stream_;
 };
 

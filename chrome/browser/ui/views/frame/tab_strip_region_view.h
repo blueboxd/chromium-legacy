@@ -13,7 +13,6 @@
 #include "ui/views/accessible_pane_view.h"
 
 namespace views {
-class FlexLayout;
 class Button;
 }
 
@@ -25,8 +24,9 @@ class TabStripScrollContainer;
 // Container for the tabstrip and the other views sharing space with it -
 // with the exception of the caption buttons.
 class TabStripRegionView final : public views::AccessiblePaneView {
+  METADATA_HEADER(TabStripRegionView, views::AccessiblePaneView)
+
  public:
-  METADATA_HEADER(TabStripRegionView);
   explicit TabStripRegionView(std::unique_ptr<TabStrip> tab_strip);
   TabStripRegionView(const TabStripRegionView&) = delete;
   TabStripRegionView& operator=(const TabStripRegionView&) = delete;
@@ -58,7 +58,7 @@ class TabStripRegionView final : public views::AccessiblePaneView {
 
   // Calls the parent Layout, but in some cases may also need to manually
   // position the TabSearchButton to layer over the TabStrip.
-  void Layout() override;
+  void Layout(PassKey) override;
 
   // These system drag & drop methods forward the events to TabDragController to
   // support its fallback tab dragging mode in the case where the platform
@@ -84,7 +84,6 @@ class TabStripRegionView final : public views::AccessiblePaneView {
   static void ReportCaptionHitTestInReservedGrabHandleSpace(
       bool in_reserved_grab_handle_space);
 
-  views::FlexLayout* layout_manager_for_testing() { return layout_manager_; }
   views::View* GetTabStripContainerForTesting() { return tab_strip_container_; }
 
  private:
@@ -98,7 +97,6 @@ class TabStripRegionView final : public views::AccessiblePaneView {
   // `render_tab_search_before_tab_strip_` is true.
   void UpdateTabStripMargin();
 
-  raw_ptr<views::FlexLayout, DanglingUntriaged> layout_manager_ = nullptr;
   raw_ptr<views::View, AcrossTasksDanglingUntriaged> tab_strip_container_ =
       nullptr;
   raw_ptr<views::View, DanglingUntriaged> reserved_grab_handle_space_ = nullptr;

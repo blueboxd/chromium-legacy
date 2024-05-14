@@ -4,12 +4,11 @@
 
 package org.chromium.chrome.browser.tab;
 
-import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
@@ -27,11 +26,13 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.Token;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.base.version_info.VersionInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityUtils;
 import org.chromium.chrome.browser.WarmupManager;
@@ -48,22 +49,21 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
+import org.chromium.chrome.browser.tab.Tab.LoadUrlResult;
 import org.chromium.chrome.browser.tab.TabUtils.UseDesktopUserAgentCaller;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.components.prefs.PrefService;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.components.version_info.VersionInfo;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
@@ -73,6 +73,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 /**
  * Implementation of the interface {@link Tab}. Contains and manages a {@link ContentView}. This
@@ -199,6 +200,7 @@ class TabImpl implements Tab {
     private long mTimestampMillis;
     private int mParentId = INVALID_TAB_ID;
     private int mRootId;
+    private @Nullable Token mTabGroupId;
     private @TabUserAgent int mUserAgent = TabUserAgent.DEFAULT;
 
     /**
@@ -223,6 +225,15 @@ class TabImpl implements Tab {
      * Tab#getLaunchType()} will be overridden to "FROM_RESTORE" during tab restoration.
      */
     private @Nullable @TabLaunchType Integer mTabLaunchTypeAtCreation;
+
+    /**
+     * Variables used to track native page creation prior to mNativePage assignment. Avoids the case
+     * where native pages can unintentionally re-create themselves by calling {@link
+     * NativePage#onStateChange} during the creation process.
+     */
+    private boolean mIsAlreadyCreatingNativePage;
+
+    private String mPendingNativePageHost;
 
     /**
      * Creates an instance of a {@link TabImpl}. Package-private. Use {@link TabBuilder} to create
@@ -547,7 +558,7 @@ class TabImpl implements Tab {
     }
 
     @Override
-    public int loadUrl(LoadUrlParams params) {
+    public LoadUrlResult loadUrl(LoadUrlParams params) {
         try {
             TraceEvent.begin("Tab.loadUrl");
             // TODO(tedchoc): When showing the android NTP, delay the call to
@@ -587,7 +598,7 @@ class TabImpl implements Tab {
                 params.setOverrideUserAgent(calculateUserAgentOverrideOption(null));
             }
 
-            @TabLoadStatus int result = loadUrlInternal(params, fixedUrl);
+            LoadUrlResult result = loadUrlInternal(params, fixedUrl);
 
             for (TabObserver observer : mObservers) {
                 observer.onLoadUrl(this, params, result);
@@ -598,10 +609,10 @@ class TabImpl implements Tab {
         }
     }
 
-    private @TabLoadStatus int loadUrlInternal(LoadUrlParams params, GURL fixedUrl) {
-        if (mWebContents == null) return TabLoadStatus.PAGE_LOAD_FAILED;
+    private LoadUrlResult loadUrlInternal(LoadUrlParams params, GURL fixedUrl) {
+        if (mWebContents == null) return new LoadUrlResult(TabLoadStatus.PAGE_LOAD_FAILED, null);
 
-        if (!fixedUrl.isValid()) return TabLoadStatus.PAGE_LOAD_FAILED;
+        if (!fixedUrl.isValid()) return new LoadUrlResult(TabLoadStatus.PAGE_LOAD_FAILED, null);
 
         // Record UMA "ShowHistory" here. That way it'll pick up both user
         // typing chrome://history as well as selecting from the drop down menu.
@@ -610,12 +621,12 @@ class TabImpl implements Tab {
         }
 
         if (TabImplJni.get().handleNonNavigationAboutURL(fixedUrl)) {
-            return TabLoadStatus.DEFAULT_PAGE_LOAD;
+            return new LoadUrlResult(TabLoadStatus.DEFAULT_PAGE_LOAD, null);
         }
 
         params.setUrl(fixedUrl.getSpec());
-        mWebContents.getNavigationController().loadUrl(params);
-        return TabLoadStatus.DEFAULT_PAGE_LOAD;
+        NavigationHandle handle = mWebContents.getNavigationController().loadUrl(params);
+        return new LoadUrlResult(TabLoadStatus.DEFAULT_PAGE_LOAD, handle);
     }
 
     @Override
@@ -1035,6 +1046,7 @@ class TabImpl implements Tab {
         setTitle(state.contentsState.getDisplayTitleFromState());
         mTabLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
         setRootId(state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId);
+        setTabGroupId(state.tabGroupId);
         setUserAgent(state.userAgent);
     }
 
@@ -1229,8 +1241,24 @@ class TabImpl implements Tab {
         WebContents webContents = getWebContents();
         assert webContents != null;
         if (webContents == null) return false;
+        // If the given url is null, there's no work to do.
+        if (url == null) return false;
+
+        // We might be in the middle of loading a native page, in that case we should bail to avoid
+        // recreating another instance.
+        String nativePageHost = Uri.parse(url).getHost();
+        if (mIsAlreadyCreatingNativePage
+                && TextUtils.equals(mPendingNativePageHost, nativePageHost)) {
+            return true;
+        }
+
+        mPendingNativePageHost = nativePageHost;
+        mIsAlreadyCreatingNativePage = true;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
         NativePage nativePage = mDelegateFactory.createNativePage(url, candidateForReuse, this);
+        mIsAlreadyCreatingNativePage = false;
+        mPendingNativePageHost = null;
+
         if (nativePage != null) {
             showNativePage(nativePage);
             notifyPageTitleChanged();
@@ -1412,9 +1440,9 @@ class TabImpl implements Tab {
     private ByteBuffer getWebContentsStateByteBuffer() {
         // Return a temp byte buffer if the state is null.
         if (mWebContentsState == null) {
-            byte[] bytes = new byte[0];
-            return ByteBuffer.wrap(bytes);
+            return ByteBuffer.allocateDirect(0);
         }
+        assert mWebContentsState.buffer().isDirect();
         return mWebContentsState.buffer();
     }
 
@@ -1717,6 +1745,21 @@ class TabImpl implements Tab {
     }
 
     @Override
+    public @Nullable Token getTabGroupId() {
+        return mTabGroupId;
+    }
+
+    @Override
+    public void setTabGroupId(@Nullable Token tabGroupId) {
+        assert tabGroupId == null || !tabGroupId.isZero() : "A TabGroupId token must be non-zero.";
+        if (Objects.equals(mTabGroupId, tabGroupId) || isDestroyed()) return;
+        mTabGroupId = tabGroupId;
+        for (TabObserver observer : mObservers) {
+            observer.onTabGroupIdChanged(this, tabGroupId);
+        }
+    }
+
+    @Override
     @CalledByNative
     public @TabUserAgent int getUserAgent() {
         return mUserAgent;
@@ -1766,7 +1809,7 @@ class TabImpl implements Tab {
     /**
      * Throws a RuntimeException. Useful for testing crash reports with obfuscated Java stacktraces.
      */
-    private int handleJavaCrash() {
+    private LoadUrlResult handleJavaCrash() {
         throw new RuntimeException("Intentional Java Crash");
     }
 
@@ -1871,14 +1914,6 @@ class TabImpl implements Tab {
                                 && !RequestDesktopUtils.shouldApplyWindowSetting(
                                         mProfile, url, getContext()));
 
-        if (!shouldRequestDesktopSite
-                && ContentFeatureMap.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)) {
-            // TODO(shuyng): Make additional setting compatible with site level setting.
-            PrefService prefService = UserPrefs.get(mProfile);
-            boolean peripheralPref =
-                    prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED);
-            shouldRequestDesktopSite = TabUtils.isHardwareKeyboardAvailable(this) && peripheralPref;
-        }
         if (shouldRequestDesktopSite != currentRequestDesktopSite) {
             // The user is not forcing any mode and we determined that we need to
             // change, therefore we are using TRUE or FALSE option. On Android TRUE mean

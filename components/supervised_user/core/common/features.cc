@@ -33,11 +33,6 @@ BASE_FEATURE(kLocalWebApprovals,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Proto fetcher experiments.
-BASE_FEATURE(kEnableProtoApiForClassifyUrl,
-             "EnableProtoApiForClassifyUrl",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Request priority experiment for ClassifyUrl (for critical path of rendering).
 BASE_FEATURE(kHighestRequestPriorityForClassifyUrl,
              "HighestRequestPriorityForClassifyUrl",
@@ -62,10 +57,6 @@ bool IsLocalWebApprovalsEnabled() {
 #else
   return base::FeatureList::IsEnabled(kLocalWebApprovals);
 #endif
-}
-
-bool IsProtoApiForClassifyUrlEnabled() {
-  return base::FeatureList::IsEnabled(kEnableProtoApiForClassifyUrl);
 }
 
 // The following flags control whether supervision features are enabled on
@@ -99,6 +90,10 @@ BASE_FEATURE(kEnableManagedByParentUi,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+BASE_FEATURE(kEnableSupervisedUserSkipParentApprovalToInstallExtensions,
+             "EnableSupervisedUserSkipParentApprovalToInstallExtensions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 BASE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop,
              "EnableExtensionsPermissionsForSupervisedUsersOnDesktop",
@@ -116,28 +111,9 @@ bool CanDisplayFirstTimeInterstitialBanner() {
       kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 }
 
-// When enabled non-syncing signed in supervised users will not be signed out of
-// their google account when cookies are cleared
-BASE_FEATURE(kClearingCookiesKeepsSupervisedUsersSignedIn,
-             "ClearingCookiesKeepsSupervisedUsersSignedIn",
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 BASE_FEATURE(kForceGoogleSafeSearchForSupervisedUsers,
              "ForceGoogleSafeSearchForSupervisedUsers",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-             // For Android and ChromeOS, the long-standing behaviour is that
-             // Safe Search is force-enabled by the browser, irrespective of the
-             // parent configuration.
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             // For other platforms, Safe Search is controlled by the parent
-             // configuration in Family Link.
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // The URL which the "Managed by your parent" UI links to. This is defined as a
 // FeatureParam (but with the currently correct default) because:
@@ -152,6 +128,12 @@ constexpr base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl{
 BASE_FEATURE(kCustomWebSignInInterceptForSupervisedUsers,
              "CustomWebSignInInterceptForSupervisedUsers",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kMigrateAccountManagementSettingsToCapabilities,
+             "MigrateAccountManagementSettingsToCapabilities",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 bool IsChildAccountSupervisionEnabled() {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
@@ -169,9 +151,7 @@ bool IsChildAccountSupervisionEnabled() {
          base::FeatureList::IsEnabled(
              supervised_user::kSupervisedPrefsControlledBySupervisedStore) ||
          base::FeatureList::IsEnabled(
-             supervised_user::kEnableManagedByParentUi) ||
-         base::FeatureList::IsEnabled(
-             supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn);
+             supervised_user::kEnableManagedByParentUi);
 #endif
 }
 

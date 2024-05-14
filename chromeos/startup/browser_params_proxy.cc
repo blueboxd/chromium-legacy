@@ -21,8 +21,17 @@ void BrowserParamsProxy::WaitForLogin() {
   BrowserPostLoginParams::WaitForLogin();
 }
 
-bool BrowserParamsProxy::IsCrosapiDisabledForTesting() const {
-  return BrowserInitParams::is_crosapi_disabled_for_testing();
+// static
+bool BrowserParamsProxy::IsLoggedIn() {
+  return BrowserPostLoginParams::IsLoggedIn();
+}
+
+bool BrowserParamsProxy::IsCrosapiDisabledForTesting() {
+  return BrowserInitParams::IsCrosapiDisabledForTesting();
+}
+
+void BrowserParamsProxy::DisableCrosapiForTesting() {
+  return BrowserInitParams::DisableCrosapiForTesting();
 }
 
 uint32_t BrowserParamsProxy::CrosapiVersion() const {
@@ -151,6 +160,10 @@ const std::optional<std::string>& BrowserParamsProxy::MetricsServiceClientId()
 const crosapi::mojom::EntropySourcePtr& BrowserParamsProxy::EntropySource()
     const {
   return BrowserInitParams::Get()->entropy_source;
+}
+
+uint64_t BrowserParamsProxy::LimitedEntropySyntheticTrialSeed() const {
+  return BrowserInitParams::Get()->limited_entropy_synthetic_trial_seed;
 }
 
 uint64_t BrowserParamsProxy::UkmClientId() const {
@@ -332,6 +345,10 @@ bool BrowserParamsProxy::IsCrosWebAppShortcutUiUpdateEnabled() const {
 
 bool BrowserParamsProxy::IsCrosShortstandEnabled() const {
   return BrowserInitParams::Get()->is_cros_shortstand_enabled;
+}
+
+bool BrowserParamsProxy::ShouldDisableChromeComposeOnChromeOS() const {
+  return BrowserInitParams::Get()->should_disable_chrome_compose_on_chromeos;
 }
 
 }  // namespace chromeos

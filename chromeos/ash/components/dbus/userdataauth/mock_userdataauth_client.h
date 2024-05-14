@@ -122,6 +122,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
                UpdateAuthFactorCallback callback),
               (override));
   MOCK_METHOD(void,
+              UpdateAuthFactorMetadata,
+              (const ::user_data_auth::UpdateAuthFactorMetadataRequest& request,
+               UpdateAuthFactorMetadataCallback callback),
+              (override));
+  MOCK_METHOD(void,
               ListAuthFactors,
               (const ::user_data_auth::ListAuthFactorsRequest& request,
                ListAuthFactorsCallback callback),
@@ -161,6 +166,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
               GetArcDiskFeatures,
               (const ::user_data_auth::GetArcDiskFeaturesRequest& request,
                GetArcDiskFeaturesCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              GetRecoverableKeyStores,
+              (const ::user_data_auth::GetRecoverableKeyStoresRequest& request,
+               GetRecoverableKeyStoresCallback),
               (override));
 };
 

@@ -424,9 +424,10 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // Cancel any in-progress query.
   Stop(true, false);
 
-  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
-      (input.type() == metrics::OmniboxInputType::EMPTY))
+  if (input.IsZeroSuggest() ||
+      (input.type() == metrics::OmniboxInputType::EMPTY)) {
     return;
+  }
 
   // Remove the keyword from input if we're in keyword mode for a starter pack
   // engine.
@@ -465,7 +466,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   }
 
   what_you_typed_match.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
-  if (InKeywordMode(autocomplete_input)) {
+  if (autocomplete_input.InKeywordMode()) {
     // TODO(yoangela): We may want to suppress what you typed matches when in
     // keyword mode.
     what_you_typed_match.from_keyword = true;
@@ -614,7 +615,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   // In keyword mode, it's possible we only provide results from one or two
   // autocomplete provider(s), so it's sometimes necessary to show more results
   // than provider_max_matches_.
-  size_t max_matches = InKeywordMode(params->input)
+  size_t max_matches = params->input.InKeywordMode()
                            ? provider_max_matches_in_keyword_mode_
                            : provider_max_matches_;
 
@@ -1166,7 +1167,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     match.SetAllowedToBeDefault(params.input_before_fixup);
   }
 
-  if (InKeywordMode(params.input)) {
+  if (params.input.InKeywordMode()) {
     match.from_keyword = true;
   }
 
@@ -1182,7 +1183,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   // Populate scoring signals for machine learning model training and scoring.
   if (populate_scoring_signals &&
       AutocompleteScoringSignalsAnnotator::IsEligibleMatch(match)) {
-    match.scoring_signals = absl::make_optional<ScoringSignals>();
+    match.scoring_signals = std::make_optional<ScoringSignals>();
     match.scoring_signals->set_typed_count(info.typed_count());
     match.scoring_signals->set_visit_count(info.visit_count());
     match.scoring_signals->set_elapsed_time_last_visit_secs(

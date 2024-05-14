@@ -71,6 +71,7 @@
 #import "ios/chrome/browser/metrics/model/ios_feed_activity_metrics_provider.h"
 #import "ios/chrome/browser/metrics/model/ios_feed_enabled_metrics_provider.h"
 #import "ios/chrome/browser/metrics/model/ios_profile_session_metrics_provider.h"
+#import "ios/chrome/browser/metrics/model/ios_push_notifications_metrics_provider.h"
 #import "ios/chrome/browser/metrics/model/mobile_session_shutdown_metrics_provider.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -80,6 +81,7 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/paths/paths.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/device_info_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/tabs/model/tab_parenting_global_observer.h"
@@ -265,8 +267,7 @@ void IOSChromeMetricsServiceClient::Initialize() {
   PrefService* local_state = GetApplicationContext()->GetLocalState();
 
   synthetic_trial_registry_ =
-      std::make_unique<variations::SyntheticTrialRegistry>(
-          IsExternalExperimentAllowlistEnabled());
+      std::make_unique<variations::SyntheticTrialRegistry>();
 
   synthetic_trial_observation_.Observe(synthetic_trial_registry_.get());
 
@@ -366,6 +367,10 @@ void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<IOSFeedEnabledMetricsProvider>(
           browser_state->GetPrefs()));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<IOSPushNotificationsMetricsProvider>(
+          IdentityManagerFactory::GetForBrowserState(browser_state)));
 }
 
 void IOSChromeMetricsServiceClient::RegisterUKMProviders() {
@@ -462,9 +467,6 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
   }
   base::UmaHistogramCounts10000("Memory.Browser.MemoryFootprint.NumOpenTabs",
                                 open_tabs_count);
-  base::UmaHistogramCounts10000(
-      "Memory.Browser.MemoryFootprint.NumLiveOverscroll",
-      [OverscrollActionsController instanceCount]);
 
   std::move(collect_final_metrics_done_callback_).Run();
 }

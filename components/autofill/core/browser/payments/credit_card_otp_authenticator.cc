@@ -8,7 +8,7 @@
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #include "components/autofill/core/browser/payments/autofill_payments_feature_availability.h"
 #include "components/autofill/core/browser/payments/otp_unmask_result.h"
-#include "components/autofill/core/common/autofill_tick_clock.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 
 namespace autofill {
 
@@ -40,7 +40,7 @@ void CreditCardOtpAuthenticator::OnUnmaskPromptAccepted(
   }
 
   if (card_->record_type() == CreditCard::RecordType::kVirtualCard) {
-    absl::optional<GURL> last_committed_primary_main_frame_origin;
+    std::optional<GURL> last_committed_primary_main_frame_origin;
     if (autofill_client_->GetLastCommittedPrimaryMainFrameURL().is_valid()) {
       last_committed_primary_main_frame_origin =
           autofill_client_->GetLastCommittedPrimaryMainFrameURL()
@@ -143,7 +143,7 @@ void CreditCardOtpAuthenticator::SendSelectChallengeOptionRequest() {
       billing_customer_number_;
   select_challenge_option_request_->context_token = context_token_;
 
-  select_challenge_option_request_timestamp_ = AutofillTickClock::NowTicks();
+  select_challenge_option_request_timestamp_ = base::TimeTicks::Now();
 
   // Send SelectChallengeOption request to server, the callback is
   // |OnDidSelectChallengeOption|.
@@ -160,8 +160,7 @@ void CreditCardOtpAuthenticator::OnDidSelectChallengeOption(
 
   if (select_challenge_option_request_timestamp_.has_value()) {
     autofill_metrics::LogOtpAuthSelectChallengeOptionRequestLatency(
-        AutofillTickClock::NowTicks() -
-            *select_challenge_option_request_timestamp_,
+        base::TimeTicks::Now() - *select_challenge_option_request_timestamp_,
         selected_challenge_option_.type);
   }
 
@@ -219,7 +218,7 @@ void CreditCardOtpAuthenticator::ShowOtpDialog() {
   // prepared. Risk data is only required for unmask request. Not required for
   // select challenge option request.
   if (risk_data_.empty()) {
-    autofill_client_->LoadRiskData(
+    autofill_client_->GetPaymentsAutofillClient()->LoadRiskData(
         base::BindOnce(&CreditCardOtpAuthenticator::OnDidGetUnmaskRiskData,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -242,7 +241,7 @@ void CreditCardOtpAuthenticator::OnDidGetUnmaskRiskData(
 
 void CreditCardOtpAuthenticator::SendUnmaskCardRequest() {
   unmask_request_->risk_data = risk_data_;
-  unmask_card_request_timestamp_ = AutofillTickClock::NowTicks();
+  unmask_card_request_timestamp_ = base::TimeTicks::Now();
   payments_network_interface_->UnmaskCard(
       *unmask_request_,
       base::BindOnce(&CreditCardOtpAuthenticator::OnDidGetRealPan,
@@ -255,7 +254,7 @@ void CreditCardOtpAuthenticator::OnDidGetRealPan(
         response_details) {
   if (unmask_card_request_timestamp_.has_value()) {
     autofill_metrics::LogOtpAuthUnmaskCardRequestLatency(
-        AutofillTickClock::NowTicks() - *unmask_card_request_timestamp_,
+        base::TimeTicks::Now() - *unmask_card_request_timestamp_,
         selected_challenge_option_.type);
   }
 
@@ -386,8 +385,8 @@ void CreditCardOtpAuthenticator::Reset() {
   selected_challenge_option_request_ongoing_ = false;
   select_challenge_option_request_.reset();
   unmask_request_.reset();
-  select_challenge_option_request_timestamp_ = absl::nullopt;
-  unmask_card_request_timestamp_ = absl::nullopt;
+  select_challenge_option_request_timestamp_ = std::nullopt;
+  unmask_card_request_timestamp_ = std::nullopt;
 }
 
 }  // namespace autofill

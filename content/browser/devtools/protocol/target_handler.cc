@@ -242,7 +242,7 @@ class BrowserToPageConnector {
     base::StringPiece message_sp(reinterpret_cast<const char*>(message.data()),
                                  message.size());
     if (agent_host == page_host_.get()) {
-      absl::optional<base::Value> value = base::JSONReader::Read(message_sp);
+      std::optional<base::Value> value = base::JSONReader::Read(message_sp);
       if (!value || !value->is_dict()) {
         return;
       }
@@ -275,8 +275,7 @@ class BrowserToPageConnector {
     }
     DCHECK(agent_host == browser_host_.get());
 
-    std::string encoded;
-    base::Base64Encode(message_sp, &encoded);
+    std::string encoded = base::Base64Encode(message_sp);
     std::string eval_code =
         "try { window." + binding_name_ + ".onmessage(atob(\"";
     std::string eval_suffix = "\")); } catch(e) { console.error(e); }";
@@ -493,7 +492,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     DCHECK(!flatten_protocol_);
 
     if (throttle_ || worker_throttle_) {
-      absl::optional<base::Value> value =
+      std::optional<base::Value> value =
           base::JSONReader::Read(base::StringPiece(
               reinterpret_cast<const char*>(message.data()), message.size()));
       const std::string* method;

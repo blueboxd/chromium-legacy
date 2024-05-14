@@ -316,11 +316,8 @@ target(link_target_type, "gles2_sources") {
 
   if (!is_android) {
     sources += [
+      "abstract_texture.cc",
       "abstract_texture.h",
-      "passthrough_abstract_texture_impl.cc",
-      "passthrough_abstract_texture_impl.h",
-      "validating_abstract_texture_impl.cc",
-      "validating_abstract_texture_impl.h",
     ]
   } else {
     sources += [
@@ -587,6 +584,9 @@ target(link_target_type, "gles2_sources") {
       "texture_owner.h",
     ]
 
+    # For AImageReader.
+    libs = [ "mediandk" ]
+
     if (use_dawn) {
       sources += [
         "shared_image/dawn_ahardwarebuffer_image_representation.cc",
@@ -594,7 +594,10 @@ target(link_target_type, "gles2_sources") {
       ]
     }
 
-    deps += [ "//base" ]
+    deps += [
+      "//base",
+      "//third_party/jni_zero",
+    ]
 
     # TODO(cblume): http://crbug.com/911313
     # Abstract out the platform specific defines. Right now we need the android
@@ -671,6 +674,9 @@ if (is_android) {
       "surface_texture_gl_owner_unittest.cc",
       "surface_texture_transform_unittest.cc",
     ]
+
+    # For AImageReader_getFormat()
+    libs = [ "mediandk" ]
 
     deps = [
       ":android_texture_owner_test_support",

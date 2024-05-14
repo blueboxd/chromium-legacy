@@ -51,21 +51,6 @@ class ASH_PUBLIC_EXPORT TabletMode {
   virtual void AddObserver(TabletModeObserver* observer) = 0;
   virtual void RemoveObserver(TabletModeObserver* observer) = 0;
 
-  // Deprecated, do NOT use this. Please use
-  // display::Screen::GetScreen()->InTabletMode() instead. To override tablet
-  // state for testing, use display::Screen::OverrideTabletStateForTesting.
-  // TODO(crbug.com/1502114): Remove this.
-  //
-  // Returns true if the system is in tablet mode.
-  virtual bool InTabletMode() const = 0;
-
-  // Deprecated, do NOT use this. Please use
-  // display::Screen::GetScreen()->InTabletMode() instead.
-  // TODO(crbug.com/1502114): Remove this.
-  //
-  // Returns true if TabletMode singleton exists and is in the tablet mode.
-  static bool IsInTabletMode();
-
   // Whether the events from the internal mouse/keyboard are blocked.
   virtual bool AreInternalInputDeviceEventsBlocked() const = 0;
 
@@ -79,6 +64,9 @@ class ASH_PUBLIC_EXPORT TabletMode {
   virtual bool ForceUiTabletModeState(std::optional<bool> enabled) = 0;
 
   // Enable/disable the tablet mode. Used only by test cases.
+  // Do NOT call this directly from unit tests. Instead, please use
+  // ash::TabletModeControllerTestApi().{Enter/Leave}TabletMode().
+  // TODO(crbug.com/1502114): Move this to private.
   virtual void SetEnabledForTest(bool enabled) = 0;
 
  protected:

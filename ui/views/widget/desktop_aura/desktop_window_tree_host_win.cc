@@ -535,7 +535,7 @@ DesktopWindowTreeHostWin::CreateNonClientFrameView() {
 }
 
 bool DesktopWindowTreeHostWin::ShouldUseNativeFrame() const {
-  return IsTranslucentWindowOpacitySupported();
+  return true;
 }
 
 bool DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent() const {
@@ -599,10 +599,6 @@ void DesktopWindowTreeHostWin::FlashFrame(bool flash_frame) {
 
 bool DesktopWindowTreeHostWin::IsAnimatingClosed() const {
   return pending_close_;
-}
-
-bool DesktopWindowTreeHostWin::IsTranslucentWindowOpacitySupported() const {
-  return true;
 }
 
 void DesktopWindowTreeHostWin::SizeConstraintsChanged() {
@@ -712,7 +708,7 @@ void DesktopWindowTreeHostWin::ReleaseCapture() {
 }
 
 bool DesktopWindowTreeHostWin::CaptureSystemKeyEventsImpl(
-    absl::optional<base::flat_set<ui::DomCode>> dom_codes) {
+    std::optional<base::flat_set<ui::DomCode>> dom_codes) {
   // Only one KeyboardHook should be active at a time, otherwise there will be
   // problems with event routing (i.e. which Hook takes precedence) and
   // destruction ordering.
@@ -1001,6 +997,10 @@ void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
 }
 
 void DesktopWindowTreeHostWin::HandleMove() {
+  // Adding/removing a monitor, or changing the primary monitor can cause a
+  // WM_MOVE message before `OnDisplayChanged()`. Without this call, we would
+  // DCHECK due to stale `DisplayInfo`s. See https:://crbug.com/1413940.
+  display::win::ScreenWin::UpdateDisplayInfosIfNeeded();
   CheckForMonitorChange();
   OnHostMovedInPixels();
 }
@@ -1261,7 +1261,7 @@ bool DesktopWindowTreeHostWin::IsModalWindowActive() const {
   if (!dispatcher())
     return false;
 
-  const auto is_active = [](const auto* child) {
+  const auto is_active = [](const aura::Window* child) {
     return child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
            child->TargetVisibility();
   };

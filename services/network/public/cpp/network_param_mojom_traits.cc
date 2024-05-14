@@ -66,8 +66,6 @@ EnumTraits<network::mojom::ProxyScheme, net::ProxyServer::Scheme>::ToMojom(
   switch (scheme) {
     case ProxyServer::SCHEME_INVALID:
       return network::mojom::ProxyScheme::kInvalid;
-    case ProxyServer::SCHEME_DIRECT:
-      return network::mojom::ProxyScheme::kDirect;
     case ProxyServer::SCHEME_HTTP:
       return network::mojom::ProxyScheme::kHttp;
     case ProxyServer::SCHEME_SOCKS4:
@@ -90,9 +88,6 @@ bool EnumTraits<network::mojom::ProxyScheme, net::ProxyServer::Scheme>::
     case network::mojom::ProxyScheme::kInvalid:
       *out = ProxyServer::SCHEME_INVALID;
       return true;
-    case network::mojom::ProxyScheme::kDirect:
-      *out = ProxyServer::SCHEME_DIRECT;
-      return true;
     case network::mojom::ProxyScheme::kHttp:
       *out = ProxyServer::SCHEME_HTTP;
       return true;
@@ -112,12 +107,11 @@ bool EnumTraits<network::mojom::ProxyScheme, net::ProxyServer::Scheme>::
   return false;
 }
 
-absl::optional<net::HostPortPair>
+std::optional<net::HostPortPair>
 StructTraits<network::mojom::ProxyServerDataView,
              net::ProxyServer>::host_and_port(const net::ProxyServer& s) {
-  if (s.scheme() == net::ProxyServer::SCHEME_DIRECT ||
-      s.scheme() == net::ProxyServer::SCHEME_INVALID) {
-    return absl::nullopt;
+  if (s.scheme() == net::ProxyServer::SCHEME_INVALID) {
+    return std::nullopt;
   }
   return s.host_port_pair();
 }
@@ -130,13 +124,12 @@ bool StructTraits<network::mojom::ProxyServerDataView, net::ProxyServer>::Read(
     return false;
   }
 
-  absl::optional<net::HostPortPair> host_and_port;
+  std::optional<net::HostPortPair> host_and_port;
   if (!data.ReadHostAndPort(&host_and_port)) {
     return false;
   }
 
-  if (scheme == net::ProxyServer::SCHEME_INVALID ||
-      scheme == net::ProxyServer::SCHEME_DIRECT) {
+  if (scheme == net::ProxyServer::SCHEME_INVALID) {
     if (host_and_port) {
       return false;
     }
@@ -154,12 +147,19 @@ bool StructTraits<network::mojom::ProxyServerDataView, net::ProxyServer>::Read(
 bool StructTraits<network::mojom::ProxyChainDataView, net::ProxyChain>::Read(
     network::mojom::ProxyChainDataView data,
     net::ProxyChain* out) {
-  absl::optional<std::vector<net::ProxyServer>> proxy_servers;
+  std::optional<std::vector<net::ProxyServer>> proxy_servers;
   if (!data.ReadProxyServers(&proxy_servers)) {
     return false;
   }
+
   if (proxy_servers.has_value()) {
-    *out = net::ProxyChain(std::move(proxy_servers).value());
+    int chain_id = data.ip_protection_chain_id();
+    if (chain_id != net::ProxyChain::kNotIpProtectionChainId) {
+      *out =
+          net::ProxyChain::ForIpProtection(std::move(*proxy_servers), chain_id);
+    } else {
+      *out = net::ProxyChain(std::move(*proxy_servers));
+    }
     if (!out->IsValid()) {
       return false;
     }
@@ -167,14 +167,6 @@ bool StructTraits<network::mojom::ProxyChainDataView, net::ProxyChain>::Read(
     *out = net::ProxyChain();
   }
 
-  bool is_for_ip_protection = data.is_for_ip_protection();
-  if (is_for_ip_protection) {
-    // An invalid ProxyChain should not be marked as being for IP Protection.
-    if (!out->IsValid()) {
-      return false;
-    }
-    *out = std::move(*out).ForIpProtection();
-  }
   return true;
 }
 

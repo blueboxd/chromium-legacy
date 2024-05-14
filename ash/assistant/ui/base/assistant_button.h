@@ -34,9 +34,9 @@ enum class AssistantButtonId;
 
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
     : public views::ImageButton {
- public:
-  METADATA_HEADER(AssistantButton);
+  METADATA_HEADER(AssistantButton, views::ImageButton)
 
+ public:
   // Initialization parameters for customizing the Assistant button.
   struct InitParams {
     InitParams();
@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
  private:
   void OnButtonPressed();
 
-  raw_ptr<AssistantButtonListener, ExperimentalAsh> listener_;
+  raw_ptr<AssistantButtonListener> listener_;
   const AssistantButtonId id_;
 
   // |icon_color_type_| and |icon_description_| are stored only when

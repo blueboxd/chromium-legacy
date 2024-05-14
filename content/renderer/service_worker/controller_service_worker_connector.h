@@ -21,13 +21,15 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_fetch_handler_bypass_option.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_running_status_callback.mojom.h"
 
-namespace content {
-
-class ServiceWorkerRouterEvaluator;
-
+namespace blink {
 namespace mojom {
 class ServiceWorkerContainerHost;
 }  // namespace mojom
+}  // namespace blink
+
+namespace content {
+
+class ServiceWorkerRouterEvaluator;
 
 // Vends a connection to the controller service worker for a given
 // ServiceWorkerContainerHost. This is co-owned by
@@ -80,7 +82,7 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
       const std::string& client_id,
       blink::mojom::ServiceWorkerFetchHandlerBypassOption
           fetch_handler_bypass_option,
-      absl::optional<blink::ServiceWorkerRouterRules> router_rules,
+      std::optional<blink::ServiceWorkerRouterRules> router_rules,
       blink::EmbeddedWorkerStatus initial_running_status,
       mojo::PendingReceiver<blink::mojom::ServiceWorkerRunningStatusCallback>
           running_status_receiver);
@@ -145,7 +147,7 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // `callback` will be called with `CacheStorageError::kErrorStorage` if the
   // cache storage cannot be accessed.
   void CallCacheStorageMatch(
-      absl::optional<std::string> cache_name,
+      std::optional<std::string> cache_name,
       blink::mojom::FetchAPIRequestPtr request,
       blink::mojom::CacheStorage::MatchCallback callback);
 

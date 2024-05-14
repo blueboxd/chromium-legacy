@@ -70,9 +70,12 @@ constexpr char kGaiaID[] = "111111";
 constexpr char kTokenHandle[] = "test_token_handle";
 constexpr char kTestingFileName[] = "testing-file.txt";
 
-const test::UIPath kFirstOnboardingScreen = {"consolidated-consent"};
-
 using AuthOp = FakeUserDataAuthClient::Operation;
+
+bool HasPasswordConfirmationPage() {
+  return !base::FeatureList::IsEnabled(
+      ash::features::kCryptohomeRecoveryBeforeFlowSplit);
+}
 
 }  // namespace
 
@@ -100,9 +103,8 @@ class PasswordChangeTestBase : public LoginManagerTest {
   const AccountId test_account_id_ =
       AccountId::FromUserEmailGaiaId(kUserEmail, kGaiaID);
   const LoginManagerMixin::TestUserInfo test_user_info_{
-      test_account_id_, test::kDefaultAuthSetup,
-      user_manager::UserType::USER_TYPE_REGULAR,
-      user_manager::User::OAuthTokenStatus::OAUTH2_TOKEN_STATUS_INVALID};
+      test_account_id_,
+      test::UserAuthConfig::Create(test::kDefaultAuthSetup).RequireReauth()};
 };
 
 // Test fixture that uses a fake UserDataAuth in order to simulate password
@@ -179,6 +181,12 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, UpdateGaiaPassword) {
       test_user_info_.auth_config.online_password);
   test::PasswordChangedSubmitOldPassword();
 
+  if (HasPasswordConfirmationPage()) {
+    test::CreatePasswordUpdateNoticePageWaiter()->Wait();
+    test::PasswordUpdateNoticeExpectDone();
+    test::PasswordUpdateNoticeDoneAction();
+  }
+
   // User session should start, and whole OOBE screen is expected to be hidden.
   OobeWindowVisibilityWaiter(false).Wait();
 
@@ -203,6 +211,12 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, SubmitOnEnterKeyPressed) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
       nullptr, ui::VKEY_RETURN, false /* control */, false /* shift */,
       false /* alt */, false /* command */));
+
+  if (HasPasswordConfirmationPage()) {
+    test::CreatePasswordUpdateNoticePageWaiter()->Wait();
+    test::PasswordUpdateNoticeExpectDone();
+    test::PasswordUpdateNoticeDoneAction();
+  }
 
   // User session should start, and whole OOBE screen is expected to be hidden,
   OobeWindowVisibilityWaiter(false).Wait();
@@ -234,6 +248,12 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, RetryOnWrongPassword) {
       test_user_info_.auth_config.online_password);
   test::PasswordChangedSubmitOldPassword();
 
+  if (HasPasswordConfirmationPage()) {
+    test::CreatePasswordUpdateNoticePageWaiter()->Wait();
+    test::PasswordUpdateNoticeExpectDone();
+    test::PasswordUpdateNoticeDoneAction();
+  }
+
   // User session should start, and whole OOBE screen is expected to be hidden.
   OobeWindowVisibilityWaiter(false).Wait();
   login_mixin_.WaitForActiveSession();
@@ -253,14 +273,13 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, SkipDataRecovery) {
   test::LocalDataLossWarningPageWaiter()->Wait();
 
   test::LocalDataLossWarningPageExpectGoBack();
-  test::LocalDataLossWarningPageExpectProceed();
+  test::LocalDataLossWarningPageExpectRemove();
 
   // Click "Proceed anyway".
-  test::LocalDataLossWarningPageProceedAction();
+  test::LocalDataLossWarningPageRemoveAction();
 
   // With cryptohome recovery we re-create session and re-run onboarding.
-  OobeWindowVisibilityWaiter(true).Wait();
-  test::OobeJS().CreateVisibilityWaiter(true, kFirstOnboardingScreen)->Wait();
+  test::UserOnboardingWaiter()->Wait();
 
   EXPECT_FALSE(TestingFileExists());
 }
@@ -277,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, TryAgainAfterForgetLinkClick) {
   test::LocalDataLossWarningPageWaiter()->Wait();
 
   test::LocalDataLossWarningPageExpectGoBack();
-  test::LocalDataLossWarningPageExpectProceed();
+  test::LocalDataLossWarningPageExpectRemove();
+
   // Go back to old password input by clicking Try Again.
   test::LocalDataLossWarningPageGoBackAction();
 
@@ -288,6 +308,12 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, TryAgainAfterForgetLinkClick) {
   test::PasswordChangedTypeOldPassword(
       test_user_info_.auth_config.online_password);
   test::PasswordChangedSubmitOldPassword();
+
+  if (HasPasswordConfirmationPage()) {
+    test::CreatePasswordUpdateNoticePageWaiter()->Wait();
+    test::PasswordUpdateNoticeExpectDone();
+    test::PasswordUpdateNoticeDoneAction();
+  }
 
   // User session should start, and whole OOBE screen is expected to be hidden,
   OobeWindowVisibilityWaiter(false).Wait();
@@ -320,8 +346,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, ClosePasswordChangedDialog) {
   OpenGaiaDialog(test_account_id_);
   SetGaiaScreenCredentials(test_account_id_, test::kNewPassword);
 
-  OobeWindowVisibilityWaiter(true).Wait();
-  OobeScreenWaiter(GaiaPasswordChangedView::kScreenId).Wait();
+  test::CreateOldPasswordEnterPageWaiter()->Wait();
 }
 
 class PasswordChangeTokenCheck : public PasswordChangeTest {

@@ -11,6 +11,7 @@
 #include <string>
 #include "base/memory/raw_ptr.h"
 
+#include "chromeos/ash/components/phonehub/phone_hub_structured_metrics_logger.h"
 #include "chromeos/ash/components/phonehub/phone_hub_ui_readiness_recorder.h"
 #include "chromeos/ash/components/phonehub/proto/phonehub_api.pb.h"
 
@@ -26,7 +27,8 @@ class MessageSenderImpl : public MessageSender {
  public:
   MessageSenderImpl(
       secure_channel::ConnectionManager* connection_manager,
-      PhoneHubUiReadinessRecorder* phone_hub_ui_readiness_recorder);
+      PhoneHubUiReadinessRecorder* phone_hub_ui_readiness_recorder,
+      PhoneHubStructuredMetricsLogger* phone_hub_structured_metrics_logger);
   ~MessageSenderImpl() override;
 
   // MessageSender:
@@ -55,10 +57,9 @@ class MessageSenderImpl : public MessageSender {
   void SendMessage(proto::MessageType message_type,
                    const google::protobuf::MessageLite* request);
 
-  raw_ptr<secure_channel::ConnectionManager, ExperimentalAsh>
-      connection_manager_;
-  raw_ptr<PhoneHubUiReadinessRecorder, ExperimentalAsh>
-      phone_hub_ui_readiness_recorder_;
+  raw_ptr<secure_channel::ConnectionManager> connection_manager_;
+  raw_ptr<PhoneHubUiReadinessRecorder> phone_hub_ui_readiness_recorder_;
+  raw_ptr<PhoneHubStructuredMetricsLogger> phone_hub_structured_metrics_logger_;
 };
 
 }  // namespace phonehub

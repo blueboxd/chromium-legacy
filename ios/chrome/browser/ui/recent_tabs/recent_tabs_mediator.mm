@@ -19,9 +19,9 @@
 #import "components/sync_sessions/session_sync_service.h"
 #import "components/sync_sessions/synced_session.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
-#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/favicon/model/favicon_loader.h"
+#import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/all_web_state_list_observation_registrar.h"
@@ -38,9 +38,9 @@
 #import "ios/chrome/browser/ui/recent_tabs/sessions_sync_user_state.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_action_wrangler.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_buttons_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_grid_delegate.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_main_tab_grid_delegate.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #import "url/gurl.h"
 
@@ -97,7 +97,7 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
 
 @interface RecentTabsMediator () <IdentityManagerObserverBridgeDelegate,
                                   SyncedSessionsObserver,
-                                  TabGridToolbarsButtonsDelegate,
+                                  TabGridToolbarsGridDelegate,
                                   WebStateListObserving> {
   std::unique_ptr<AllWebStateListObservationRegistrar> _registrar;
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
@@ -115,6 +115,10 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
   BOOL _isDisabled;
   // Last active page.
   TabGridPage _lastActivePage;
+  // Whether this screen is selected in the TabGrid.
+  BOOL _selectedGrid;
+  // The mode of the TabGrid.
+  TabGridMode _currentMode;
 }
 
 // Return the user's current sign-in and chrome-sync state.
@@ -324,7 +328,8 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
     return SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS;
   }
 
-  std::vector<const sync_sessions::SyncedSession*> sessions;
+  std::vector<raw_ptr<const sync_sessions::SyncedSession, VectorExperimental>>
+      sessions;
   return delegate->GetAllForeignSessions(&sessions)
              ? SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS
              : SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS;
@@ -333,12 +338,17 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
 // Creates and send a tab grid toolbar configuration with button that should be
 // displayed when recent grid is selected.
 - (void)configureToolbarsButtons {
+  if (!_selectedGrid) {
+    return;
+  }
   // Start to configure the delegate, so configured buttons will depend on the
   // correct delegate.
   [self.toolbarsMutator setToolbarsButtonsDelegate:self];
   if (_isDisabled) {
-    [self.toolbarsMutator setToolbarConfiguration:[TabGridToolbarsConfiguration
-                                                      disabledConfiguration]];
+    [self.toolbarsMutator
+        setToolbarConfiguration:
+            [TabGridToolbarsConfiguration
+                disabledConfigurationForPage:TabGridPageRemoteTabs]];
     return;
   }
 
@@ -359,7 +369,8 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
   }
 
   TabGridToolbarsConfiguration* toolbarsConfiguration =
-      [[TabGridToolbarsConfiguration alloc] init];
+      [[TabGridToolbarsConfiguration alloc] initWithPage:TabGridPageRemoteTabs];
+  toolbarsConfiguration.mode = _currentMode;
   toolbarsConfiguration.doneButton = tabsInOtherGrid;
   toolbarsConfiguration.searchButton = YES;
   [self.toolbarsMutator setToolbarConfiguration:toolbarsConfiguration];
@@ -380,6 +391,8 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
 #pragma mark - TabGridPageMutator
 
 - (void)currentlySelectedGrid:(BOOL)selected {
+  _selectedGrid = selected;
+
   if (selected) {
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridSelectRemotePanel"));
@@ -390,14 +403,21 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
   // TODO(crbug.com/1457146): Implement.
 }
 
-#pragma mark - TabGridToolbarsButtonsDelegate
+- (void)switchToMode:(TabGridMode)mode {
+  CHECK(mode == TabGridModeNormal || mode == TabGridModeSearch)
+      << "remote tabs should only support normal and search modes.";
+  _currentMode = mode;
+  [self configureToolbarsButtons];
+}
+
+#pragma mark - TabGridToolbarsGridDelegate
 
 - (void)closeAllButtonTapped:(id)sender {
   NOTREACHED_NORETURN() << "Should not be called in remote tabs.";
 }
 
 - (void)doneButtonTapped:(id)sender {
-  [self.toolbarActionWrangler doneButtonTapped:sender];
+  [self.toolbarTabGridDelegate doneButtonTapped:sender];
 }
 
 - (void)newTabButtonTapped:(id)sender {
@@ -409,7 +429,6 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
 }
 
 - (void)searchButtonTapped:(id)sender {
-  [self.toolbarsMutator setToolbarsMode:TabGridModeSearch];
   [self.gridConsumer setPageMode:TabGridModeSearch];
   base::RecordAction(base::UserMetricsAction("MobileTabGridSearchTabs"));
 }
@@ -417,7 +436,6 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
 - (void)cancelSearchButtonTapped:(id)sender {
   base::RecordAction(base::UserMetricsAction("MobileTabGridCancelSearchTabs"));
   [self.gridConsumer setPageMode:TabGridModeNormal];
-  [self.toolbarsMutator setToolbarsMode:TabGridModeNormal];
 }
 
 - (void)closeSelectedTabs:(id)sender {

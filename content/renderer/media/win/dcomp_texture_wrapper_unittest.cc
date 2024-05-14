@@ -27,7 +27,8 @@ using Microsoft::WRL::ComPtr;
 // which the production versions cannot run in the context of the unittest.
 class StubClientSharedImageInterface : public gpu::ClientSharedImageInterface {
  public:
-  StubClientSharedImageInterface() : gpu::ClientSharedImageInterface(nullptr) {}
+  StubClientSharedImageInterface()
+      : gpu::ClientSharedImageInterface(nullptr, nullptr) {}
   gpu::SyncToken GenVerifiedSyncToken() override { return gpu::SyncToken(); }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
@@ -39,8 +40,15 @@ class StubClientSharedImageInterface : public gpu::ClientSharedImageInterface {
       uint32_t usage,
       base::StringPiece debug_label,
       gfx::GpuMemoryBufferHandle handle) override {
-    return base::MakeRefCounted<gpu::ClientSharedImage>(gpu::Mailbox());
+    return base::MakeRefCounted<gpu::ClientSharedImage>(
+        gpu::Mailbox::GenerateForSharedImage(),
+        gpu::ClientSharedImage::Metadata(format, size, color_space,
+                                         surface_origin, alpha_type, usage),
+        holder_);
   }
+
+ protected:
+  ~StubClientSharedImageInterface() override = default;
 };
 
 class TestGpuChannelHost : public gpu::GpuChannelHost {
@@ -54,9 +62,9 @@ class TestGpuChannelHost : public gpu::GpuChannelHost {
             mojo::ScopedMessagePipeHandle(
                 mojo::MessagePipeHandle(mojo::kInvalidHandleValue))) {}
 
-  std::unique_ptr<gpu::ClientSharedImageInterface>
+  scoped_refptr<gpu::ClientSharedImageInterface>
   CreateClientSharedImageInterface() override {
-    return std::make_unique<StubClientSharedImageInterface>();
+    return base::MakeRefCounted<StubClientSharedImageInterface>();
   }
 
  protected:

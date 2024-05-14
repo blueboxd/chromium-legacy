@@ -120,7 +120,7 @@ void LayoutTextFragment::TextDidChange() {
   LayoutText::TextDidChange();
 
   start_ = 0;
-  fragment_length_ = TextLength();
+  fragment_length_ = TransformedTextLength();
 
   // If we're the remaining text from a first letter then we have to tell the
   // first letter pseudo element to reattach itself so it can re-calculate the
@@ -140,7 +140,7 @@ void LayoutTextFragment::SetTextFragment(String text,
   // Note, we have to call |LayoutText::TextDidChange()| here because, if we
   // use our version we will, potentially, screw up the first-letter settings
   // where we only use portions of the string.
-  if (GetText() != text) {
+  if (TransformedText() != text) {
     SetTextInternal(std::move(text));
     LayoutText::TextDidChange();
   }
@@ -149,7 +149,7 @@ void LayoutTextFragment::SetTextFragment(String text,
   fragment_length_ = length;
 }
 
-void LayoutTextFragment::TransformText() {
+void LayoutTextFragment::TransformAndSecureOriginalText() {
   NOT_DESTROYED();
   // Note, we have to call LayoutText::TextDidChange()| here because, if we use
   // our version we will, potentially, screw up the first-letter settings where
@@ -255,11 +255,11 @@ Position LayoutTextFragment::PositionForCaretOffset(unsigned offset) const {
   return Position(node, Start() + clamped_offset);
 }
 
-absl::optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
+std::optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
     const Position& position) const {
   NOT_DESTROYED();
   if (position.IsNull() || position.AnchorNode() != AssociatedTextNode())
-    return absl::nullopt;
+    return std::nullopt;
   unsigned dom_offset;
   if (position.IsBeforeAnchor()) {
     dom_offset = 0;
@@ -272,7 +272,7 @@ absl::optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
     dom_offset = position.OffsetInContainerNode();
   }
   if (dom_offset < Start() || dom_offset > Start() + FragmentLength())
-    return absl::nullopt;
+    return std::nullopt;
   return dom_offset - Start();
 }
 

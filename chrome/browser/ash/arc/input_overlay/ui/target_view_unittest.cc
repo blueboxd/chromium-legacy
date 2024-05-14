@@ -27,9 +27,9 @@ class TargetViewTest : public OverlayViewTestBase {
     return target->center_;
   }
 
-  int GetTargetRadius(TargetView* target) {
+  int GetTargetPadding(TargetView* target) {
     DCHECK(target);
-    return target->GetCircleRadius();
+    return target->GetPadding();
   }
 
   // Convert the point in `TargetView` coordinates to screen coordinates.
@@ -118,7 +118,7 @@ TEST_F(TargetViewTest, TestCenterClamp) {
   // inside and show the complete circle.
   target_view = GetTargetView();
   EXPECT_TRUE(target_view);
-  EXPECT_EQ(GetTargetCenter(target_view).x(), GetTargetRadius(target_view));
+  EXPECT_EQ(GetTargetCenter(target_view).x(), GetTargetPadding(target_view));
 }
 
 TEST_F(TargetViewTest, TestKeyboardSupport) {
@@ -148,6 +148,7 @@ TEST_F(TargetViewTest, TestKeyboardSupport) {
   EXPECT_FALSE(GetTargetView());
   VerifyLastActionPosition(action_view_size + 1,
                            GetPointInScreenFromTargetView(local_center));
+  PressDoneButtonOnButtonOptionsMenu();
 
   // Enter into the button placement mode again and check whether the key `esc`
   // exits the button placement mode without adding anything.
@@ -170,6 +171,7 @@ TEST_F(TargetViewTest, TestGestureSupport) {
   EXPECT_FALSE(GetTargetView());
   // Check if the action is dropped on the expect position.
   VerifyLastActionPosition(action_view_size + 1, global_center);
+  PressDoneButtonOnButtonOptionsMenu();
 
   // Enter into the button placement mode and test the gesture scroll.
   PressAddButton();

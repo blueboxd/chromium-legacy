@@ -8,12 +8,14 @@
 #include "ash/style/pill_button.h"
 #include "ash/style/typography.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
+#include "ash/system/focus_mode/focus_mode_session.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout_view.h"
@@ -22,12 +24,13 @@ namespace ash {
 
 namespace {
 
-constexpr int kCountdownViewHeight = 72;
+constexpr int kCountdownViewHeight = 62;
 constexpr int kSpaceBetweenButtons = 8;
-constexpr int kBarWidth = 200;
+constexpr int kBarWidth = 225;
 constexpr int kBarHeight = 8;
 constexpr int kAboveBarSpace = 8;
-constexpr int kBelowBarSpace = 6;
+constexpr int kAboveBarSpaceInBubble = 12;
+constexpr int kBelowBarSpace = 8;
 constexpr int kSpaceBetweenContainers = 16;
 
 std::unique_ptr<views::Label> CreateTimerLabel(
@@ -68,7 +71,7 @@ FocusModeCountdownView::FocusModeCountdownView(bool include_end_button)
       AddChildView(std::make_unique<views::BoxLayoutView>());
   timer_container->SetOrientation(views::BoxLayout::Orientation::kVertical);
   timer_container->SetMainAxisAlignment(
-      views::BoxLayout::MainAxisAlignment::kEnd);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   timer_container->SetPreferredSize(gfx::Size(kBarWidth, kCountdownViewHeight));
   timer_container->SetProperty(
       views::kFlexBehaviorKey,
@@ -89,8 +92,9 @@ FocusModeCountdownView::FocusModeCountdownView(bool include_end_button)
   progress_bar_->SetPreferredCornerRadii(gfx::RoundedCornersF(kBarHeight / 2));
   progress_bar_->SetBackgroundColorId(cros_tokens::kCrosSysSystemOnBase);
   progress_bar_->SetForegroundColorId(cros_tokens::kCrosSysPrimary);
-  progress_bar_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::TLBR(kAboveBarSpace, 0, kBelowBarSpace, 0)));
+  progress_bar_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+      include_end_button_ ? kAboveBarSpaceInBubble : kAboveBarSpace, 0,
+      kBelowBarSpace, 0)));
 
   // Add a horizontal container to hold the two bar label timers, and the spacer
   // view used to space them out.
@@ -125,9 +129,11 @@ FocusModeCountdownView::FocusModeCountdownView(bool include_end_button)
 
   FocusModeController* focus_mode_controller = FocusModeController::Get();
   if (include_end_button_) {
-    button_container->AddChildView(std::make_unique<PillButton>(
-        base::BindRepeating(&FocusModeController::ToggleFocusMode,
-                            base::Unretained(focus_mode_controller)),
+    end_button_ = button_container->AddChildView(std::make_unique<PillButton>(
+        base::BindRepeating(
+            &FocusModeController::ToggleFocusMode,
+            base::Unretained(focus_mode_controller),
+            focus_mode_histogram_names::ToggleSource::kContextualPanel),
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON),
         PillButton::Type::kPrimaryWithoutIcon, /*icon=*/nullptr));
@@ -135,36 +141,43 @@ FocusModeCountdownView::FocusModeCountdownView(bool include_end_button)
 
   extend_session_duration_button_ =
       button_container->AddChildView(std::make_unique<PillButton>(
-          base::BindRepeating(&FocusModeController::ExtendActiveSessionDuration,
+          base::BindRepeating(&FocusModeController::ExtendSessionDuration,
                               base::Unretained(focus_mode_controller)),
           l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_LABEL),
           include_end_button_ ? PillButton::Type::kSecondaryWithoutIcon
                               : PillButton::Type::kSecondaryLargeWithoutIcon,
           /*icon=*/nullptr));
+  extend_session_duration_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_ACCESSIBLE_NAME));
+  views::InkDrop::Get(extend_session_duration_button_)
+      ->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
-void FocusModeCountdownView::UpdateUI() {
-  auto* controller = FocusModeController::Get();
-  CHECK(controller->in_focus_session());
+void FocusModeCountdownView::UpdateUI(
+    const FocusModeSession::Snapshot& session_snapshot) {
+  CHECK_EQ(session_snapshot.state, FocusModeSession::State::kOn);
 
-  const base::TimeDelta time_remaining =
-      controller->end_time() - base::Time::Now();
   time_remaining_label_->SetText(focus_mode_util::GetDurationString(
-      time_remaining, focus_mode_util::TimeFormatType::kDigital));
-
-  const base::TimeDelta session_duration = controller->session_duration();
+      session_snapshot.remaining_time, /*digital_format=*/true));
   time_total_label_->SetText(focus_mode_util::GetDurationString(
-      session_duration, focus_mode_util::TimeFormatType::kDigital));
-
-  const base::TimeDelta time_elapsed = session_duration - time_remaining;
+      session_snapshot.session_duration, /*digital_format=*/true));
   time_elapsed_label_->SetText(focus_mode_util::GetDurationString(
-      time_elapsed, focus_mode_util::TimeFormatType::kDigital));
+      session_snapshot.time_elapsed, /*digital_format=*/true));
+  progress_bar_->SetValue(session_snapshot.progress);
 
-  progress_bar_->SetValue(time_elapsed / session_duration);
+  const bool session_extendable =
+      FocusModeController::CanExtendSessionDuration(session_snapshot);
+  // Clear the focus if we are disabling the extend button and it has focus.
+  if (extend_session_duration_button_->HasFocus() && !session_extendable) {
+    // Release focus so that disabling `extend_session_duration_button_` below
+    // does not shift focus into the next available view automatically.
+    auto* focus_manager = GetFocusManager();
+    focus_manager->ClearFocus();
+    focus_manager->SetStoredFocusView(nullptr);
+  }
 
-  extend_session_duration_button_->SetEnabled(
-      session_duration < focus_mode_util::kMaximumDuration);
+  extend_session_duration_button_->SetEnabled(session_extendable);
 }
 
 BEGIN_METADATA(FocusModeCountdownView)

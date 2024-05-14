@@ -57,6 +57,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -66,6 +67,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -82,8 +84,9 @@ import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -147,28 +150,44 @@ public class SelectableTabListEditorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        mTabModelSelector = sActivityTestRule.getActivity().getTabModelSelector();
-        mParentView = (ViewGroup) sActivityTestRule.getActivity().findViewById(R.id.coordinator);
-        mSnackbarManager = sActivityTestRule.getActivity().getSnackbarManager();
+        ChromeTabbedActivity cta = sActivityTestRule.getActivity();
+        // Eagerly inflate the tab switcher.
+
+        boolean isTabSwitcherReady =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            return cta.getTabSwitcherForTesting() != null;
+                        });
+        if (!isTabSwitcherReady) {
+            TabUiTestHelper.enterTabSwitcher(cta);
+            TabUiTestHelper.leaveTabSwitcher(cta);
+        }
+
+        mTabModelSelector = cta.getTabModelSelector();
+        mParentView = (ViewGroup) cta.findViewById(R.id.coordinator);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
+                    ViewGroup compositorViewHolder = cta.getCompositorViewHolderForTesting();
+                    ViewGroup rootView =
+                            DeviceFormFactor.isNonMultiDisplayContextOnTablet(cta)
+                                    ? (ViewGroup) cta.findViewById(R.id.tab_switcher_view_holder)
+                                    : compositorViewHolder;
+                    mSnackbarManager = new SnackbarManager(cta, rootView, null);
                     var currentTabModelFilterSupplier =
                             mTabModelSelector
                                     .getTabModelFilterProvider()
                                     .getCurrentTabModelFilterSupplier();
                     mTabListEditorCoordinator =
                             new TabListEditorCoordinator(
-                                    sActivityTestRule.getActivity(),
+                                    cta,
                                     mParentView,
-                                    sActivityTestRule.getActivity().getBrowserControlsManager(),
+                                    cta.getBrowserControlsManager(),
                                     currentTabModelFilterSupplier,
                                     () -> mTabModelSelector.getModel(false),
-                                    sActivityTestRule.getActivity().getTabContentManager(),
+                                    cta.getTabContentManager(),
                                     mSetRecyclerViewPosition,
                                     getMode(),
-                                    sActivityTestRule
-                                            .getActivity()
-                                            .getCompositorViewHolderForTesting(),
+                                    compositorViewHolder,
                                     /* displayGroups= */ true,
                                     mSnackbarManager,
                                     TabProperties.UiType.SELECTABLE);
@@ -177,7 +196,7 @@ public class SelectableTabListEditorTest {
                     mTabListEditorLayout =
                             mTabListEditorCoordinator.getTabListEditorLayoutForTesting();
                     mRef = new WeakReference<>(mTabListEditorLayout);
-                    mBookmarkModel = sActivityTestRule.getActivity().getBookmarkModelForTesting();
+                    mBookmarkModel = cta.getBookmarkModelForTesting();
                 });
     }
 
@@ -205,6 +224,7 @@ public class SelectableTabListEditorTest {
         }
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
+                    if (mSnackbarManager == null) return;
                     mSnackbarManager.dismissAllSnackbars();
                 });
     }
@@ -224,6 +244,16 @@ public class SelectableTabListEditorTest {
                     true);
             sActivityTestRule.loadUrl("about:blank");
         }
+    }
+
+    private void createNewTab(@TabLaunchType int launchType, boolean isIncognito) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    sActivityTestRule
+                            .getActivity()
+                            .getTabCreator(isIncognito)
+                            .createNewTab(new LoadUrlParams("about:blank"), launchType, null);
+                });
     }
 
     private void prepareBlankTabWithThumbnail(int num, boolean isIncognito) {
@@ -348,6 +378,25 @@ public class SelectableTabListEditorTest {
         mRobot.resultRobot.verifyTabListEditorIsHidden();
 
         verify(mSetRecyclerViewPosition, times(1)).onResult(isNotNull());
+    }
+
+    @Test
+    @MediumTest
+    public void testHideOnNewTab() {
+        prepareBlankTab(2, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+        showSelectionEditor(tabs);
+        mRobot.resultRobot.verifyTabListEditorIsVisible();
+
+        createNewTab(TabLaunchType.FROM_STARTUP, false);
+        mRobot.resultRobot.verifyTabListEditorIsHidden();
+
+        tabs = getTabsInCurrentTabModel();
+        showSelectionEditor(tabs);
+        mRobot.resultRobot.verifyTabListEditorIsVisible();
+
+        createNewTab(TabLaunchType.FROM_RESTORE, false);
+        mRobot.resultRobot.verifyTabListEditorIsHidden();
     }
 
     @Test
@@ -995,7 +1044,8 @@ public class SelectableTabListEditorTest {
                     Snackbar currentSnackbar = mSnackbarManager.getCurrentSnackbarForTesting();
                     Assert.assertEquals(
                             Snackbar.UMA_BOOKMARK_ADDED, currentSnackbar.getIdentifierForTesting());
-                    Assert.assertEquals("Bookmarked", currentSnackbar.getTextForTesting());
+                    Assert.assertEquals(
+                            "Bookmarked to Mobile bookmarks", currentSnackbar.getTextForTesting());
                     currentSnackbar.getController().onAction(null);
                 });
         BookmarkEditActivity activity = BookmarkTestUtil.waitForEditActivity();

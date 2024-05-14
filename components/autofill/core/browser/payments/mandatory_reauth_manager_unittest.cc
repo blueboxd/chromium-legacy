@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -50,10 +51,16 @@ class MandatoryReauthManagerTest : public testing::Test {
         /*history_service=*/nullptr,
         /*sync_service=*/nullptr,
         /*strike_database=*/nullptr,
-        /*image_fetcher=*/nullptr);
+        /*image_fetcher=*/nullptr,
+        /*shared_storage_manager=*/nullptr);
     test::SetCreditCardInfo(&server_card_, "Test User", "1111" /* Visa */,
                             test::NextMonth().c_str(), test::NextYear().c_str(),
                             "1");
+  }
+
+  device_reauth::MockDeviceAuthenticator& device_authenticator() {
+    return *static_cast<device_reauth::MockDeviceAuthenticator*>(
+        mandatory_reauth_manager_->GetDeviceAuthenticatorPtrForTesting());
   }
 
  protected:
@@ -77,44 +84,23 @@ class MandatoryReauthManagerTest : public testing::Test {
 // Test that `MandatoryReauthManager::Authenticate()` triggers
 // `DeviceAuthenticator::AuthenticateWithMessage()`.
 TEST_F(MandatoryReauthManagerTest, Authenticate) {
-  EXPECT_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-              AuthenticateWithMessage)
-      .Times(1);
+  EXPECT_CALL(device_authenticator(), AuthenticateWithMessage).Times(1);
 
   mandatory_reauth_manager_->Authenticate(
       /*callback=*/base::DoNothing());
-
-  // Test that `MandatoryReauthManager::OnAuthenticationCompleted()` resets the
-  // device authenticator.
-  EXPECT_TRUE(mandatory_reauth_manager_->GetDeviceAuthenticatorPtrForTesting());
-  mandatory_reauth_manager_->OnAuthenticationCompleted(
-      /*callback=*/base::DoNothing(), /*success=*/true);
-  EXPECT_FALSE(
-      mandatory_reauth_manager_->GetDeviceAuthenticatorPtrForTesting());
 }
 
 // Test that `MandatoryReauthManager::AuthenticateWithMessage()` triggers
 // `DeviceAuthenticator::AuthenticateWithMessage()`.
 TEST_F(MandatoryReauthManagerTest, AuthenticateWithMessage) {
-  EXPECT_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-              AuthenticateWithMessage)
-      .Times(1);
+  EXPECT_CALL(device_authenticator(), AuthenticateWithMessage).Times(1);
 
   mandatory_reauth_manager_->AuthenticateWithMessage(
       /*message=*/u"Test", /*callback=*/base::DoNothing());
-
-  // Test that `MandatoryReauthManager::OnAuthenticationCompleted()` resets the
-  // device authenticator.
-  EXPECT_TRUE(mandatory_reauth_manager_->GetDeviceAuthenticatorPtrForTesting());
-  mandatory_reauth_manager_->OnAuthenticationCompleted(
-      /*callback=*/base::DoNothing(), /*success=*/true);
-  EXPECT_FALSE(
-      mandatory_reauth_manager_->GetDeviceAuthenticatorPtrForTesting());
 }
 
 TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_Biometric) {
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          CanAuthenticateWithBiometrics)
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometrics)
       .WillByDefault(testing::Return(true));
 
   EXPECT_EQ(mandatory_reauth_manager_->GetAuthenticationMethod(),
@@ -122,11 +108,9 @@ TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_Biometric) {
 }
 
 TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_ScreenLock) {
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          CanAuthenticateWithBiometrics)
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometrics)
       .WillByDefault(testing::Return(false));
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          CanAuthenticateWithBiometricOrScreenLock)
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometricOrScreenLock)
       .WillByDefault(testing::Return(true));
 
   EXPECT_EQ(mandatory_reauth_manager_->GetAuthenticationMethod(),
@@ -134,15 +118,42 @@ TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_ScreenLock) {
 }
 
 TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_UnsupportedMethod) {
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          CanAuthenticateWithBiometrics)
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometrics)
       .WillByDefault(testing::Return(false));
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          CanAuthenticateWithBiometricOrScreenLock)
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometricOrScreenLock)
       .WillByDefault(testing::Return(false));
 
   EXPECT_EQ(mandatory_reauth_manager_->GetAuthenticationMethod(),
             MandatoryReauthAuthenticationMethod::kUnsupportedMethod);
+}
+
+TEST_F(MandatoryReauthManagerTest, StartDeviceAuthentication_Biometric) {
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometrics)
+      .WillByDefault(testing::Return(true));
+
+  EXPECT_CALL(device_authenticator(), AuthenticateWithMessage);
+  mandatory_reauth_manager_->StartDeviceAuthentication(base::DoNothing());
+}
+
+TEST_F(MandatoryReauthManagerTest, StartDeviceAuthentication_ScreenLock) {
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometrics)
+      .WillByDefault(testing::Return(false));
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometricOrScreenLock)
+      .WillByDefault(testing::Return(true));
+
+  EXPECT_CALL(device_authenticator(), AuthenticateWithMessage);
+  mandatory_reauth_manager_->StartDeviceAuthentication(base::DoNothing());
+}
+
+TEST_F(MandatoryReauthManagerTest, StartDeviceAuthentication_Unsupported) {
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometrics)
+      .WillByDefault(testing::Return(false));
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometricOrScreenLock)
+      .WillByDefault(testing::Return(false));
+
+  base::MockCallback<base::OnceCallback<void(bool)>> callback;
+  EXPECT_CALL(callback, Run(true));
+  mandatory_reauth_manager_->StartDeviceAuthentication(callback.Get());
 }
 
 // Test that the MandatoryReauthManager returns that we should offer re-auth
@@ -163,7 +174,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard) {
   autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
 
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kLocalCard));
+      NonInteractivePaymentMethodType::kLocalCard));
   ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
 }
 
@@ -178,7 +189,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard_FlagOff) {
   autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
 
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kLocalCard));
+      NonInteractivePaymentMethodType::kLocalCard));
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -193,7 +204,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_Incognito) {
   autofill_client_->set_is_off_the_record(true);
 
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kLocalCard));
+      NonInteractivePaymentMethodType::kLocalCard));
   ExpectUniqueOfferOptInDecision(
       MandatoryReauthOfferOptInDecision::kIncognitoMode);
 }
@@ -213,7 +224,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_VirtualCard) {
       features::kAutofillEnablePaymentsMandatoryReauth);
 
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kVirtualCard));
+      NonInteractivePaymentMethodType::kVirtualCard));
   ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
 }
 
@@ -232,7 +243,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_MaskedServerCard) {
       features::kAutofillEnablePaymentsMandatoryReauth);
 
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kMaskedServerCard));
+      NonInteractivePaymentMethodType::kMaskedServerCard));
   ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
 }
 
@@ -256,7 +267,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_UserAlreadyMadeDecision) {
   autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
 
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kLocalCard));
+      NonInteractivePaymentMethodType::kLocalCard));
   EXPECT_TRUE(autofill_client_->GetPrefs()->GetUserPrefValue(
       prefs::kAutofillPaymentMethodsMandatoryReauth));
 }
@@ -276,14 +287,13 @@ TEST_F(MandatoryReauthManagerTest,
   base::test::ScopedFeatureList feature_list(
       features::kAutofillEnablePaymentsMandatoryReauth);
 
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          CanAuthenticateWithBiometricOrScreenLock)
+  ON_CALL(device_authenticator(), CanAuthenticateWithBiometricOrScreenLock)
       .WillByDefault(testing::Return(false));
 
   autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
 
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kLocalCard));
+      NonInteractivePaymentMethodType::kLocalCard));
   ExpectUniqueOfferOptInDecision(
       MandatoryReauthOfferOptInDecision::kNoSupportedReauthMethod);
 }
@@ -310,7 +320,7 @@ TEST_F(
 
   // 'card_identifier_if_non_interactive_authentication_flow_completed' is not
   // present, implying interactive authentication happened.
-  EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(absl::nullopt));
+  EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(std::nullopt));
   ExpectUniqueOfferOptInDecision(
       MandatoryReauthOfferOptInDecision::kWentThroughInteractiveAuthentication);
 }
@@ -338,7 +348,7 @@ TEST_F(
   // Test that if the last filled card is the matching local card, we offer
   // re-auth opt-in.
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
-      CreditCard::RecordType::kLocalCard));
+      NonInteractivePaymentMethodType::kLocalCard));
   ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
 }
 
@@ -360,10 +370,9 @@ TEST_F(MandatoryReauthManagerTest, OnUserAcceptedOptInPrompt) {
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          AuthenticateWithMessage)
-      .WillByDefault(testing::WithArg<1>(
-          [](base::OnceCallback<void(bool)> callback) {
+  ON_CALL(device_authenticator(), AuthenticateWithMessage)
+      .WillByDefault(
+          testing::WithArg<1>([](base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(false);
           }));
 
@@ -384,13 +393,12 @@ TEST_F(MandatoryReauthManagerTest, OnUserAcceptedOptInPrompt) {
   auto mock_device_authenticator2 =
       std::make_unique<device_reauth::MockDeviceAuthenticator>();
 
-  autofill_client_->SetDeviceAuthenticator(
+  mandatory_reauth_manager_->SetDeviceAuthenticatorPtrForTesting(
       std::move(mock_device_authenticator2));
 
-  ON_CALL(*autofill_client_->GetDeviceAuthenticatorPtr(),
-          AuthenticateWithMessage)
-      .WillByDefault(testing::WithArg<1>(
-          [](base::OnceCallback<void(bool)> callback) {
+  ON_CALL(device_authenticator(), AuthenticateWithMessage)
+      .WillByDefault(
+          testing::WithArg<1>([](base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(true);
           }));
 
@@ -452,31 +460,33 @@ TEST_F(MandatoryReauthManagerTest, OnUserClosedOptInPrompt) {
 }
 
 // Params of the MandatoryReauthManagerOptInFlowTest:
-// -- CreditCard::RecordType record_type
+// -- NonInteractivePaymentMethodType non-interactive payment method type
 class MandatoryReauthManagerOptInFlowTest
     : public MandatoryReauthManagerTest,
-      public testing::WithParamInterface<CreditCard::RecordType> {
+      public testing::WithParamInterface<NonInteractivePaymentMethodType> {
  public:
   MandatoryReauthManagerOptInFlowTest() = default;
   ~MandatoryReauthManagerOptInFlowTest() override = default;
 
   std::string GetOptInSource() {
     switch (GetParam()) {
-      case CreditCard::RecordType::kLocalCard:
+      case NonInteractivePaymentMethodType::kLocalCard:
         return "CheckoutLocalCard";
-      case CreditCard::RecordType::kFullServerCard:
+      case NonInteractivePaymentMethodType::kFullServerCard:
         return "CheckoutFullServerCard";
-      case CreditCard::RecordType::kVirtualCard:
+      case NonInteractivePaymentMethodType::kVirtualCard:
         return "CheckoutVirtualCard";
-      case CreditCard::RecordType::kMaskedServerCard:
+      case NonInteractivePaymentMethodType::kMaskedServerCard:
         return "CheckoutMaskedServerCard";
+      case NonInteractivePaymentMethodType::kLocalIban:
+        return "CheckoutLocalIban";
+      case NonInteractivePaymentMethodType::kServerIban:
+        return "CheckoutServerIban";
     }
   }
 
-  void SetUpDeviceAuthenticator(
-      device_reauth::MockDeviceAuthenticator* device_authenticator_ptr,
-      bool success) {
-    ON_CALL(*device_authenticator_ptr, AuthenticateWithMessage)
+  void SetUpDeviceAuthenticator(bool success) {
+    ON_CALL(device_authenticator(), AuthenticateWithMessage)
         .WillByDefault(testing::WithArg<1>(
             [success](base::OnceCallback<void(bool)> callback) {
               std::move(callback).Run(success);
@@ -503,11 +513,10 @@ TEST_P(MandatoryReauthManagerOptInFlowTest, OptInSuccess) {
   auto mock_device_authenticator2 =
       std::make_unique<device_reauth::MockDeviceAuthenticator>();
 
-  autofill_client_->SetDeviceAuthenticator(
+  mandatory_reauth_manager_->SetDeviceAuthenticatorPtrForTesting(
       std::move(mock_device_authenticator2));
 
-  SetUpDeviceAuthenticator(autofill_client_->GetDeviceAuthenticatorPtr(),
-                           /*success=*/true);
+  SetUpDeviceAuthenticator(/*success=*/true);
 
   // Start OptIn flow.
   static_cast<MandatoryReauthManager*>(mandatory_reauth_manager_.get())
@@ -557,12 +566,11 @@ TEST_P(MandatoryReauthManagerOptInFlowTest, OptInShownButAuthFailure) {
   auto mock_device_authenticator2 =
       std::make_unique<device_reauth::MockDeviceAuthenticator>();
 
-  autofill_client_->SetDeviceAuthenticator(
+  mandatory_reauth_manager_->SetDeviceAuthenticatorPtrForTesting(
       std::move(mock_device_authenticator2));
 
   // Simulate authentication failure.
-  SetUpDeviceAuthenticator(autofill_client_->GetDeviceAuthenticatorPtr(),
-                           /*success=*/false);
+  SetUpDeviceAuthenticator(/*success=*/false);
 
   // Start OptIn flow.
   static_cast<MandatoryReauthManager*>(mandatory_reauth_manager_.get())
@@ -595,9 +603,7 @@ TEST_P(MandatoryReauthManagerOptInFlowTest, OptInShownButAuthFailure) {
 INSTANTIATE_TEST_SUITE_P(
     ,
     MandatoryReauthManagerOptInFlowTest,
-    testing::Values(CreditCard::RecordType::kLocalCard,
-                    CreditCard::RecordType::kFullServerCard,
-                    CreditCard::RecordType::kVirtualCard,
-                    CreditCard::RecordType::kMaskedServerCard));
+    testing::ValuesIn(MandatoryReauthManager::
+                          GetAllNonInteractivePaymentMethodTypesForTesting()));
 
 }  // namespace autofill::payments

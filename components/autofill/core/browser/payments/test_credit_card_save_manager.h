@@ -12,10 +12,6 @@
 
 namespace autofill {
 
-namespace payments {
-class TestPaymentsNetworkInterface;
-}  // namespace payments
-
 class AutofillClient;
 class AutofillDriver;
 class PersonalDataManager;
@@ -25,7 +21,6 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
   TestCreditCardSaveManager(
       AutofillDriver* driver,
       AutofillClient* client,
-      payments::TestPaymentsNetworkInterface* payments_network_interface,
       PersonalDataManager* personal_data_manager);
 
   TestCreditCardSaveManager(const TestCreditCardSaveManager&) = delete;
@@ -59,7 +54,8 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
 
   void set_upload_request_card(const CreditCard& card);
 
-  payments::PaymentsNetworkInterface::UploadRequestDetails* upload_request();
+  payments::PaymentsNetworkInterface::UploadCardRequestDetails*
+  upload_request();
 
  private:
   void OnDidUploadCard(

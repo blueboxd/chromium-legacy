@@ -248,10 +248,10 @@ class RequestObserver {
 
 // Removes `prefix` from the start of `str`, if present.
 // Returns nullopt otherwise.
-absl::optional<base::StringPiece> StripPrefix(base::StringPiece str,
-                                              base::StringPiece prefix) {
+std::optional<base::StringPiece> StripPrefix(base::StringPiece str,
+                                             base::StringPiece prefix) {
   if (!base::StartsWith(str, prefix)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return str.substr(prefix.size());
@@ -288,7 +288,7 @@ std::string GetContentRangeHeader(const net::HttpByteRange& range,
 // Route: /echorange?<body>
 std::unique_ptr<net::test_server::HttpResponse> HandleRangeRequest(
     const net::test_server::HttpRequest& request) {
-  absl::optional<base::StringPiece> query =
+  std::optional<base::StringPiece> query =
       StripPrefix(request.relative_url, "/echorange?");
   if (!query) {
     return nullptr;
@@ -576,7 +576,10 @@ class PrivateNetworkAccessBrowserTest
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kPrivateNetworkAccessSendPreflights,
             },
-            {}) {}
+            {
+                features::kPrivateNetworkAccessForNavigations,
+                features::kPrivateNetworkAccessForNavigationsWarningOnly,
+            }) {}
 };
 
 class PrivateNetworkAccessBrowserTestWithBlockInsteadOfWarnOption
@@ -640,7 +643,7 @@ class PrivateNetworkAccessBrowserTestForNavigations
                 features::kPrivateNetworkAccessRespectPreflightResults,
                 network::features::kNetworkServiceMemoryCache,
             },
-            {}) {}
+            {features::kPrivateNetworkAccessForNavigationsWarningOnly}) {}
 };
 
 // Test with PNA checks for navigations enabled in warning-only mode.
@@ -2639,8 +2642,10 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
 // This test verifies that child frames with distinct origins from their parent
 // do not inherit their private network request policy, which is based on the
 // origin of the child document instead.
-IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
-                       PrivateNetworkRequestPolicyCalculatedPerOrigin) {
+// TODO (crbug.com/324679506) : Fix the test.
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessBrowserTest,
+    DISABLED_PrivateNetworkRequestPolicyCalculatedPerOrigin) {
   GURL url = InsecurePublicURL(kDefaultPath);
 
   PolicyTestContentBrowserClient client;

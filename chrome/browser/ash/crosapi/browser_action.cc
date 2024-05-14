@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/crosapi/browser_action.h"
 
+#include <optional>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
@@ -120,16 +122,19 @@ class NewWindowForDetachingTabAction final : public BrowserAction {
 
 class NewTabAction final : public BrowserAction {
  public:
-  NewTabAction() : BrowserAction(true), weak_ptr_factory_(this) {}
+  explicit NewTabAction(std::optional<uint64_t> profile_id = std::nullopt)
+      : BrowserAction(true), profile_id_(profile_id), weak_ptr_factory_(this) {}
 
   void Perform(const VersionedBrowserService& service,
                BrowserManagerCallback on_performed) override {
-    service.service->NewTab(base::BindOnce(&NewTabAction::OnPerformed,
+    service.service->NewTab(profile_id_,
+                            base::BindOnce(&NewTabAction::OnPerformed,
                                            weak_ptr_factory_.GetWeakPtr(),
                                            std::move(on_performed)));
   }
 
  private:
+  std::optional<uint64_t> profile_id_;
   base::WeakPtrFactory<NewTabAction> weak_ptr_factory_;
 };
 
@@ -147,7 +152,8 @@ class LaunchAction final : public BrowserAction {
     if (service.interface_version < mojom::BrowserService::kLaunchMinVersion) {
       LOG(WARNING)
           << "Lacros too old for Launch action - falling back to NewTab";
-      service.service->NewTab(base::BindOnce(&LaunchAction::OnPerformed,
+      service.service->NewTab(std::nullopt,
+                              base::BindOnce(&LaunchAction::OnPerformed,
                                              weak_ptr_factory_.GetWeakPtr(),
                                              std::move(on_performed)));
       return;
@@ -344,7 +350,8 @@ class CreateBrowserWithRestoredDataAction final : public BrowserAction {
       int32_t active_tab_index,
       int32_t first_non_pinned_tab_index,
       base::StringPiece app_name,
-      int32_t restore_window_id)
+      int32_t restore_window_id,
+      uint64_t lacros_profile_id)
       : BrowserAction(true),
         urls_(urls),
         bounds_(bounds),
@@ -353,14 +360,15 @@ class CreateBrowserWithRestoredDataAction final : public BrowserAction {
         active_tab_index_(active_tab_index),
         first_non_pinned_tab_index_(first_non_pinned_tab_index),
         app_name_(app_name),
-        restore_window_id_(restore_window_id) {}
+        restore_window_id_(restore_window_id),
+        lacros_profile_id_(lacros_profile_id) {}
 
   void Perform(const VersionedBrowserService& service,
                BrowserManagerCallback on_performed) override {
     crosapi::mojom::DeskTemplateStatePtr additional_state =
         crosapi::mojom::DeskTemplateState::New(
             urls_, active_tab_index_, app_name_, restore_window_id_,
-            first_non_pinned_tab_index_, tab_group_infos_);
+            first_non_pinned_tab_index_, tab_group_infos_, lacros_profile_id_);
     crosapi::CrosapiManager::Get()
         ->crosapi_ash()
         ->desk_template_ash()
@@ -377,6 +385,7 @@ class CreateBrowserWithRestoredDataAction final : public BrowserAction {
   const int32_t first_non_pinned_tab_index_;
   const std::string app_name_;
   const int32_t restore_window_id_;
+  const uint64_t lacros_profile_id_;
 };
 
 class OpenProfileManagerAction final : public BrowserAction {
@@ -400,8 +409,9 @@ std::unique_ptr<BrowserAction> BrowserAction::NewWindow(
 }
 
 // static
-std::unique_ptr<BrowserAction> BrowserAction::NewTab() {
-  return std::make_unique<NewTabAction>();
+std::unique_ptr<BrowserAction> BrowserAction::NewTab(
+    std::optional<uint64_t> profile_id) {
+  return std::make_unique<NewTabAction>(profile_id);
 }
 
 // static
@@ -472,10 +482,12 @@ std::unique_ptr<BrowserAction> BrowserAction::CreateBrowserWithRestoredData(
     int32_t active_tab_index,
     int32_t first_non_pinned_tab_index,
     base::StringPiece app_name,
-    int32_t restore_window_id) {
+    int32_t restore_window_id,
+    uint64_t lacros_profile_id) {
   return std::make_unique<CreateBrowserWithRestoredDataAction>(
       urls, bounds, tab_groups, show_state, active_tab_index,
-      first_non_pinned_tab_index, app_name, restore_window_id);
+      first_non_pinned_tab_index, app_name, restore_window_id,
+      lacros_profile_id);
 }
 
 // static

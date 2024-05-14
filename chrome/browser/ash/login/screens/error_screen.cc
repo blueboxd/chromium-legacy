@@ -16,12 +16,13 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
-#include "chrome/browser/ash/app_mode/certificate_manager_dialog.h"
-#include "chrome/browser/ash/login/auth/chrome_login_performer.h"
-#include "chrome/browser/ash/login/chrome_restart_request.h"
+#include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/signin_specifics.h"
+#include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/captive_portal_window_proxy.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/login_display_host_mojo.h"
+#include "chrome/browser/ash/login/ui/login_web_dialog.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -35,12 +36,16 @@
 #include "chrome/browser/ui/webui/ash/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/ash/login/offline_login_screen_handler.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ash {
@@ -333,41 +338,6 @@ void ErrorScreen::OnUserAction(const base::Value::List& args) {
   }
 }
 
-void ErrorScreen::OnAuthFailure(const AuthFailure& error) {
-  // The only condition leading here is guest mount failure, which should not
-  // happen in practice. For now, just log an error so this situation is visible
-  // in logs if it ever occurs.
-  NOTREACHED() << "Guest login failed.";
-  guest_login_performer_.reset();
-}
-
-void ErrorScreen::OnAuthSuccess(const UserContext& user_context) {
-  LOG(FATAL);
-}
-
-void ErrorScreen::OnOffTheRecordAuthSuccess() {
-  // Restart Chrome to enter the guest session.
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
-  base::CommandLine command_line(browser_command_line.GetProgram());
-  GetOffTheRecordCommandLine(GURL(), browser_command_line, &command_line);
-  RestartChrome(command_line, RestartChromeReason::kGuest);
-}
-
-void ErrorScreen::OnOnlinePasswordUnusable(
-    std::unique_ptr<UserContext> user_context,
-    bool online_password_mismatch) {
-  LOG(FATAL);
-}
-
-void ErrorScreen::AllowlistCheckFailed(const std::string& email) {
-  LOG(FATAL);
-}
-
-void ErrorScreen::PolicyLoadFailed() {
-  LOG(FATAL);
-}
-
 void ErrorScreen::DefaultHideCallback() {
   if (parent_screen_ != OOBE_SCREEN_UNKNOWN && view_) {
     view_->ShowOobeScreen(parent_screen_);
@@ -380,13 +350,19 @@ void ErrorScreen::DefaultHideCallback() {
 void ErrorScreen::OnConfigureCerts() {
   gfx::NativeWindow native_window =
       LoginDisplayHost::default_host()->GetNativeWindow();
-  CertificateManagerDialog* dialog =
-      new CertificateManagerDialog(GetAppProfile(), native_window);
+  LoginWebDialog* dialog = new LoginWebDialog(
+      GetAppProfile(), native_window,
+      l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE),
+      GURL(chrome::kChromeUICertificateManagerDialogURL));
+  // The width matches the Settings UI width.
+  dialog->set_dialog_size(gfx::Size{640, 480});
   dialog->Show();
 }
 
 void ErrorScreen::OnDiagnoseButtonClicked() {
-  ConnectivityDiagnosticsDialog::ShowDialog();
+  gfx::NativeWindow native_window =
+      LoginDisplayHost::default_host()->GetNativeWindow();
+  ConnectivityDiagnosticsDialog::ShowDialog(native_window);
 }
 
 void ErrorScreen::OnLaunchOobeGuestSession() {
@@ -463,13 +439,20 @@ void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
     }
   }
 
-  if (guest_login_performer_) {
+  // If EULA was not accepted yet, Show the Guest ToS screen.
+  if (!StartupUtils::IsEulaAccepted()) {
+    if (LoginDisplayHost::default_host()) {
+      LoginDisplayHost::default_host()->ShowGuestTosScreen();
+    } else {
+      LOG(ERROR) << "Failed to show Guest ToS screen.";
+    }
     return;
   }
 
-  guest_login_performer_ =
-      std::make_unique<ChromeLoginPerformer>(this, AuthEventsRecorder::Get());
-  guest_login_performer_->LoginOffTheRecord();
+  LoginDisplayHost::default_host()->GetExistingUserController()->Login(
+      UserContext(user_manager::UserType::kGuest,
+                  user_manager::GuestAccountId()),
+      SigninSpecifics());
 }
 
 }  // namespace ash

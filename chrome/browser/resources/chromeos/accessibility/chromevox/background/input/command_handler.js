@@ -5,16 +5,17 @@
 /**
  * @fileoverview ChromeVox commands.
  */
-import {AutomationPredicate} from '../../../common/automation_predicate.js';
-import {AutomationUtil} from '../../../common/automation_util.js';
-import {BrowserUtil} from '../../../common/browser_util.js';
-import {constants} from '../../../common/constants.js';
-import {Cursor, CursorUnit} from '../../../common/cursors/cursor.js';
-import {CursorRange} from '../../../common/cursors/range.js';
-import {EventGenerator} from '../../../common/event_generator.js';
-import {KeyCode} from '../../../common/key_code.js';
-import {LocalStorage} from '../../../common/local_storage.js';
-import {RectUtil} from '../../../common/rect_util.js';
+import {AutomationPredicate} from '/common/automation_predicate.js';
+import {AutomationUtil} from '/common/automation_util.js';
+import {BrowserUtil} from '/common/browser_util.js';
+import {constants} from '/common/constants.js';
+import {Cursor, CursorUnit} from '/common/cursors/cursor.js';
+import {CursorRange} from '/common/cursors/range.js';
+import {EventGenerator} from '/common/event_generator.js';
+import {KeyCode} from '/common/key_code.js';
+import {LocalStorage} from '/common/local_storage.js';
+import {RectUtil} from '/common/rect_util.js';
+
 import {NavBraille} from '../../common/braille/nav_braille.js';
 import {BridgeConstants} from '../../common/bridge_constants.js';
 import {BridgeHelper} from '../../common/bridge_helper.js';
@@ -46,9 +47,9 @@ import {PhoneticData} from '../phonetic_data.js';
 import {ChromeVoxPrefs} from '../prefs.js';
 import {TtsBackground} from '../tts_background.js';
 
+import {BackgroundKeyboardHandler} from './background_keyboard_handler.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
 import {GestureInterface} from './gesture_interface.js';
-import {BackgroundKeyboardHandler} from './keyboard_handler.js';
 import {SmartStickyMode} from './smart_sticky_mode.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
@@ -100,7 +101,14 @@ export class CommandHandler extends CommandHandlerInterface {
         SmartStickyMode.instance.toggle();
         return false;
       case Command.PASS_THROUGH_MODE:
-        BackgroundKeyboardHandler.enablePassThroughMode();
+        if (ChromeVoxPrefs.isStickyModeOn()) {
+          new Output()
+              .withString(
+                  Msgs.getMsg('pass_through_unavailable_with_sticky_mode'))
+              .go();
+        } else {
+          BackgroundKeyboardHandler.enablePassThroughMode();
+        }
         return true;
       case Command.SHOW_LEARN_MODE_PAGE:
         this.showLearnModePage_();

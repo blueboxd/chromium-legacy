@@ -23,15 +23,16 @@ class DownloadBubbleNavigationHandler;
 
 class DownloadBubbleRowListView : public views::FlexLayoutView,
                                   public DownloadBubbleRowListViewInfoObserver {
- public:
-  METADATA_HEADER(DownloadBubbleRowListView);
+  METADATA_HEADER(DownloadBubbleRowListView, views::FlexLayoutView)
 
+ public:
   DownloadBubbleRowListView(
       base::WeakPtr<Browser> browser,
       base::WeakPtr<DownloadBubbleUIController> bubble_controller,
       base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler,
       int fixed_width,
-      const DownloadBubbleRowListViewInfo& info);
+      const DownloadBubbleRowListViewInfo& info,
+      bool is_in_partial_view = false);
   ~DownloadBubbleRowListView() override;
   DownloadBubbleRowListView(const DownloadBubbleRowListView&) = delete;
   DownloadBubbleRowListView& operator=(const DownloadBubbleRowListView&) =
@@ -71,6 +72,9 @@ class DownloadBubbleRowListView : public views::FlexLayoutView,
   base::WeakPtr<DownloadBubbleUIController> bubble_controller_;
   base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler_;
   int fixed_width_ = 0;
+
+  // Used for metrics to study clickjacking potential. False in tests.
+  const bool is_in_partial_view_ = false;
 
   // This is owned by the DownloadBubbleContentsView owning `this`.
   raw_ref<const DownloadBubbleRowListViewInfo> info_;

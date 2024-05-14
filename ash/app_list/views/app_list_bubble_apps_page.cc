@@ -187,8 +187,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   // Set up scroll bars.
   scroll_view_->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
-  auto vertical_scroll =
-      std::make_unique<RoundedScrollBar>(/*horizontal=*/false);
+  auto vertical_scroll = std::make_unique<RoundedScrollBar>(
+      views::ScrollBar::Orientation::kVertical);
   vertical_scroll->SetInsets(kVerticalScrollInsets);
   vertical_scroll->SetSnapBackOnDragOutside(false);
   scroll_bar_ = vertical_scroll.get();
@@ -295,14 +295,14 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
 
   // The animation relies on the correct positions of views, so force layout.
   if (needs_layout())
-    Layout();
+    DeprecatedLayoutImmediately();
   DCHECK(!needs_layout());
 
   // This part of the animation has a longer duration than the bubble part
   // handled in AppListBubbleView, so track overall smoothness here.
   ui::AnimationThroughputReporter reporter(
       scrollable_apps_grid_view_->layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int value) {
         // This histogram name is used in Tast tests. Do not rename.
         base::UmaHistogramPercentage(
             "Apps.ClamshellLauncher.AnimationSmoothness.OpenAppsPage", value);
@@ -397,7 +397,7 @@ void AppListBubbleAppsPage::AnimateShowPage() {
 
   ui::AnimationThroughputReporter reporter(
       scroll_contents->layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int value) {
         base::UmaHistogramPercentage(
             "Apps.ClamshellLauncher.AnimationSmoothness.ShowAppsPage", value);
       })));
@@ -464,7 +464,7 @@ void AppListBubbleAppsPage::AnimateHidePage() {
 
   ui::AnimationThroughputReporter reporter(
       scroll_contents->layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int value) {
         base::UmaHistogramPercentage(
             "Apps.ClamshellLauncher.AnimationSmoothness.HideAppsPage", value);
       })));
@@ -592,8 +592,8 @@ bool AppListBubbleAppsPage::MaybeScrollToShowToast() {
   return true;
 }
 
-void AppListBubbleAppsPage::Layout() {
-  views::View::Layout();
+void AppListBubbleAppsPage::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
   if (gradient_helper_)
     gradient_helper_->UpdateGradientMask();
 }
@@ -619,6 +619,21 @@ void AppListBubbleAppsPage::VisibilityChanged(views::View* starting_from,
   }
 }
 
+void AppListBubbleAppsPage::OnBoundsChanged(const gfx::Rect& old_bounds) {
+  // Toast container, and continue section may contain toasts with multiline
+  // labels, whose preferred height will depend on the apps page bounds (in
+  // particular, the amount of horizontal space available to lay out labels).
+  // Propagate the amount of available width for toasts before layout starts, so
+  // the toast views can correctly calculate their preferred size during the
+  // ensuing layout pass (otherwise, the preferred toast size may change as
+  // result of the layout).
+  toast_container_->ConfigureLayoutForAvailableWidth(
+      bounds().width() - 2 * kHorizontalInteriorMargin);
+  continue_section_->ConfigureLayoutForAvailableWidth(
+      bounds().width() - 2 * kHorizontalInteriorMargin -
+      kContinueSectionInsets.width());
+}
+
 void AppListBubbleAppsPage::OnActiveAppListModelsChanged(
     AppListModel* model,
     SearchModel* search_model) {
@@ -639,7 +654,7 @@ void AppListBubbleAppsPage::OnNudgeRemoved() {
   const gfx::Rect current_grid_bounds = scrollable_apps_grid_view_->bounds();
 
   if (needs_layout())
-    Layout();
+    DeprecatedLayoutImmediately();
 
   const gfx::Rect target_grid_bounds = scrollable_apps_grid_view_->bounds();
   const int offset = current_grid_bounds.y() - target_grid_bounds.y();
@@ -767,6 +782,12 @@ void AppListBubbleAppsPage::HandleFocusAfterSort() {
   if (view_delegate_->IsInTabletMode())
     return;
 
+  // Focusing toast button may show the tooltip anchored on the button - make
+  // sure the toast button bounds are correctly set before tooltip is shown.
+  if (GetWidget()) {
+    GetWidget()->LayoutRootViewIfNecessary();
+  }
+
   // If the sort is done and the toast is visible and not fading out, request
   // the focus on the undo button on the toast. Otherwise request the focus on
   // the search box.
@@ -826,7 +847,7 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEnded(
   // to calculate visible items. Therefore trigger layout before starting the
   // fade in animation.
   if (toast_visibility_change)
-    Layout();
+    DeprecatedLayoutImmediately();
 
   // Ensure to scroll before triggering apps grid fade in animation so that
   // the bubble apps page's layout is ready.
@@ -929,13 +950,13 @@ void AppListBubbleAppsPage::OnToggleContinueSection() {
   view_delegate_->SetHideContinueSection(should_hide);
   // AppListControllerImpl will trigger UpdateContinueSectionVisibility().
 
-  // Layout() will change the position of the separator and apps grid based on
-  // the visibility of the continue section view and recent apps.
+  // Layout will change the position of the separator and apps grid based on the
+  // visibility of the continue section view and recent apps.
   if (needs_layout())
-    Layout();
+    DeprecatedLayoutImmediately();
 
   // The vertical offset for slide animations is the difference in separator
-  // position from before the Layout() versus its position now.
+  // position from before layout versus its position now.
   const int vertical_offset = separator_initial_y - separator_->y();
   const base::TimeDelta duration = base::Milliseconds(300);
   const gfx::Tween::Type tween_type = gfx::Tween::ACCEL_LIN_DECEL_100_3;
@@ -962,7 +983,7 @@ void AppListBubbleAppsPage::OnToggleContinueSection() {
   }
 }
 
-BEGIN_METADATA(AppListBubbleAppsPage, views::View)
+BEGIN_METADATA(AppListBubbleAppsPage)
 END_METADATA
 
 }  // namespace ash

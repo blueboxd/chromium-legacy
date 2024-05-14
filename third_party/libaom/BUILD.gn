@@ -7,6 +7,7 @@ import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//testing/test.gni")
 import("//third_party/libaom/libaom_srcs.gni")
 import("//third_party/libaom/libaom_test_srcs.gni")
 import("//third_party/libaom/options.gni")
@@ -84,6 +85,7 @@ if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
     sources += aom_ports_asm_x86
     sources += aom_av1_encoder_asm_sse2
     sources += aom_dsp_encoder_asm_sse2
+    sources += aom_dsp_encoder_asm_ssse3
     if (current_cpu == "x64") {
       sources += aom_av1_encoder_asm_ssse3_x86_64
       sources += aom_dsp_encoder_asm_sse2_x86_64
@@ -362,6 +364,22 @@ fuzzer_test("libaom_av1_dec_fuzzer") {
   seed_corpus = "fuzz/av1_dec_fuzzer_corpus"
   deps = [ ":libaom" ]
   additional_configs = [ ":libaom_config" ]
+}
+
+if (fuzztest_supported) {
+  test("av1_encoder_fuzz_test") {
+    sources = [ "fuzz/av1_encoder_fuzz_test.cc" ]
+
+    fuzztests = [
+      "AV1EncodeFuzzTest.AV1EncodeSucceeds",
+      "AV1EncodeFuzzTest.AV1EncodeArbitraryCallSequenceSucceeds",
+    ]
+
+    deps = [
+      ":libaom",
+      "//third_party/fuzztest:fuzztest_gtest_main",
+    ]
+  }
 }
 
 config("test_libaom_config") {

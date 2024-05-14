@@ -63,7 +63,7 @@ base::Value::Dict GetMetadata(HostContentSettingsMap* settings_map,
 }
 
 bool WasEntryPointAlreadyAnimated(const base::Value::Dict& metadata) {
-  absl::optional<bool> entry_point_animated =
+  std::optional<bool> entry_point_animated =
       metadata.FindBool(kEntryPointAnimatedKey);
   return entry_point_animated.has_value() && entry_point_animated.value();
 }
@@ -134,21 +134,24 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
   DCHECK(web_contents);
   if (!tab_observer_ || GetWebContents() != web_contents) {
     tab_observer_ = std::make_unique<TabObserver>(this, web_contents);
-    ResetInitialCookieControlsStatus();
+    SetUserChangedCookieBlockingForSite(false);
   }
   auto status = GetStatus(web_contents);
   int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
   int third_party_blocked_sites = GetBlockedThirdPartyCookiesSitesCount();
-  int bounce_count = GetStatefulBounceCount();
 
   for (auto& observer : observers_) {
-    observer.OnStatusChanged(status.status, status.enforcement,
+    observer.OnStatusChanged(status.status, status.controls_visible,
+                             status.protections_on, status.enforcement,
                              status.blocking_status, status.expiration);
     observer.OnSitesCountChanged(third_party_allowed_sites,
                                  third_party_blocked_sites);
-    observer.OnBreakageConfidenceLevelChanged(GetConfidenceLevel(
-        status.status, status.enforcement, third_party_allowed_sites,
-        third_party_blocked_sites, bounce_count));
+    observer.OnUserBypassIconStatusChanged(
+        status.controls_visible, status.protections_on, status.blocking_status);
+    observer.OnBreakageConfidenceLevelChanged(
+        GetConfidenceLevel(status.status, status.enforcement,
+                           SiteDataAccessed(third_party_allowed_sites,
+                                            third_party_blocked_sites)));
   }
 }
 
@@ -156,15 +159,21 @@ CookieControlsController::Status CookieControlsController::GetStatus(
     content::WebContents* web_contents) {
   if (!cookie_settings_->ShouldBlockThirdPartyCookies()) {
     return {CookieControlsStatus::kDisabled,
+            /*controls_visible=*/false,
+            /*protections_on=*/false,
             CookieControlsEnforcement::kNoEnforcement,
-            CookieBlocking3pcdStatus::kNotIn3pcd, base::Time()};
+            CookieBlocking3pcdStatus::kNotIn3pcd,
+            base::Time()};
   }
   const GURL& url = web_contents->GetLastCommittedURL();
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(kExtensionScheme)) {
     return {CookieControlsStatus::kDisabled,
+            /*controls_visible=*/false,
+            /*protections_on=*/false,
             CookieControlsEnforcement::kNoEnforcement,
-            CookieBlocking3pcdStatus::kNotIn3pcd, base::Time()};
+            CookieBlocking3pcdStatus::kNotIn3pcd,
+            base::Time()};
   }
 
   SettingInfo info;
@@ -205,7 +214,12 @@ CookieControlsController::Status CookieControlsController::GetStatus(
             : CookieBlocking3pcdStatus::kLimited;
   }
   CookieControlsEnforcement enforcement;
-  if (info.source == SETTING_SOURCE_POLICY) {
+  bool controls_visible = true;
+  if (info.source == SETTING_SOURCE_TPCD_GRANT &&
+      blocking_status == CookieBlocking3pcdStatus::kLimited) {
+    controls_visible = false;
+    enforcement = CookieControlsEnforcement::kEnforcedByTpcdGrant;
+  } else if (info.source == SETTING_SOURCE_POLICY) {
     enforcement = CookieControlsEnforcement::kEnforcedByPolicy;
   } else if (info.source == SETTING_SOURCE_EXTENSION) {
     enforcement = CookieControlsEnforcement::kEnforcedByExtension;
@@ -214,22 +228,22 @@ CookieControlsController::Status CookieControlsController::GetStatus(
     // If the exception cannot be reset in-context because of the nature of the
     // setting, display as managed by setting.
     enforcement = CookieControlsEnforcement::kEnforcedByCookieSetting;
-  } else if (info.source == SETTING_SOURCE_TPCD_GRANT &&
-             blocking_status == CookieBlocking3pcdStatus::kLimited) {
-    enforcement = CookieControlsEnforcement::kEnforcedByTpcdGrant;
   } else {
     enforcement = CookieControlsEnforcement::kNoEnforcement;
   }
-  return {status, enforcement, blocking_status, info.metadata.expiration()};
+  return {status,
+          /*controls_visible=*/controls_visible,
+          /*protections_on=*/!is_allowed,
+          enforcement,
+          blocking_status,
+          info.metadata.expiration()};
 }
 
 CookieControlsBreakageConfidenceLevel
 CookieControlsController::GetConfidenceLevel(
     CookieControlsStatus status,
     CookieControlsEnforcement enforcement,
-    int allowed_sites,
-    int blocked_sites,
-    int bounce_count) {
+    bool site_data_accessed) {
   // If 3PC cookies are not blocked by default:
   switch (status) {
     case CookieControlsStatus::kDisabled:
@@ -245,12 +259,21 @@ CookieControlsController::GetConfidenceLevel(
       break;
   }
 
+  // 3PCD prevents SameSite=None cookies from being sent when the top-level
+  // document is sandboxed without `allow-origin`. For instance when loaded
+  // with: `Content-Security-Policy: sandbox`. In that case, we render the UI to
+  // allow the user to opt into sending SameSite=None cookies again in those
+  // contexts.
+  if (HasOriginSandboxedTopLevelDocument()) {
+    return CookieControlsBreakageConfidenceLevel::kMedium;
+  }
+
   // If no 3P sites have attempted to access site data, nor were any stateful
   // bounces recorded, return low confidence. Take into account both allow and
   // blocked counts, since the breakage might be related to storage
   // partitioning. Partitioned site will be allowed to access partitioned
   // storage.
-  if (allowed_sites + blocked_sites + bounce_count == 0) {
+  if (!site_data_accessed) {
     return CookieControlsBreakageConfidenceLevel::kLow;
   }
 
@@ -299,6 +322,22 @@ CookieControlsController::GetConfidenceLevel(
   return CookieControlsBreakageConfidenceLevel::kMedium;
 }
 
+bool CookieControlsController::HasOriginSandboxedTopLevelDocument() const {
+  content::RenderFrameHost* rfh = GetWebContents()->GetPrimaryMainFrame();
+
+  // If the WebContents has not committed any document yet, we can't
+  // tell if is sandboxed or not.
+  if (rfh->GetLifecycleState() ==
+      content::RenderFrameHost::LifecycleState::kPendingCommit) {
+    // In that case, we fall back on assuming it is not sandboxed.
+    // Since this is only for determining whether to render the User Bypass
+    // icon this fallback is acceptable.
+    return false;
+  }
+
+  return rfh->IsSandboxed(network::mojom::WebSandboxFlags::kOrigin);
+}
+
 void CookieControlsController::OnCookieBlockingEnabledForSite(
     bool block_third_party_cookies) {
   const GURL& url = GetWebContents()->GetLastCommittedURL();
@@ -340,72 +379,28 @@ bool CookieControlsController::FirstPartyCookiesBlocked() {
 }
 
 bool CookieControlsController::HasUserChangedCookieBlockingForSite() {
-  auto current_status = GetStatus(GetWebContents());
-  return current_status.status != initial_page_cookie_controls_status_ &&
-         current_status.enforcement ==
-             CookieControlsEnforcement::kNoEnforcement;
+  return user_changed_cookie_blocking_;
+}
+
+void CookieControlsController::SetUserChangedCookieBlockingForSite(
+    bool changed) {
+  // Avoid a toggle back and forth being marked as "changed".
+  user_changed_cookie_blocking_ = changed && !user_changed_cookie_blocking_;
 }
 
 CookieControlsBreakageConfidenceLevel
 CookieControlsController::GetBreakageConfidenceLevel() {
   auto status = GetStatus(GetWebContents());
-  int allowed_sites = GetAllowedSitesCount();
-  int blocked_sites = GetBlockedSitesCount();
-  int bounce_count = GetStatefulBounceCount();
-  return GetConfidenceLevel(status.status, status.enforcement, allowed_sites,
-                            blocked_sites, bounce_count);
+  int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
+  int third_party_blocked_sites = GetBlockedThirdPartyCookiesSitesCount();
+  return GetConfidenceLevel(
+      status.status, status.enforcement,
+      SiteDataAccessed(third_party_allowed_sites, third_party_blocked_sites));
 }
 
 CookieControlsStatus CookieControlsController::GetCookieControlsStatus() {
   auto status = GetStatus(GetWebContents());
   return status.status;
-}
-
-int CookieControlsController::GetAllowedCookieCount() const {
-  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      GetWebContents()->GetPrimaryPage());
-  if (pscs) {
-    return pscs->allowed_local_shared_objects().GetObjectCount() +
-           pscs->allowed_browsing_data_model()->size();
-  } else {
-    return 0;
-  }
-}
-int CookieControlsController::GetBlockedCookieCount() const {
-  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      GetWebContents()->GetPrimaryPage());
-  if (pscs) {
-    return pscs->blocked_local_shared_objects().GetObjectCount() +
-           pscs->blocked_browsing_data_model()->size();
-  } else {
-    return 0;
-  }
-}
-
-int CookieControlsController::GetAllowedSitesCount() const {
-  // TODO(crbug.com/1446230): The method should return the number of allowed
-  // *third-party* sites (and take BDM into account).
-  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      GetWebContents()->GetPrimaryPage());
-  if (!pscs) {
-    return 0;
-  }
-  return browsing_data::GetUniqueHostCount(
-      pscs->allowed_local_shared_objects(),
-      *(pscs->allowed_browsing_data_model()));
-}
-
-int CookieControlsController::GetBlockedSitesCount() const {
-  // TODO(crbug.com/1446230): The method should return the number of blocked
-  // *third-party* sites (and take BDM into account).
-  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      GetWebContents()->GetPrimaryPage());
-  if (!pscs) {
-    return 0;
-  }
-  return browsing_data::GetUniqueHostCount(
-      pscs->blocked_local_shared_objects(),
-      *(pscs->blocked_browsing_data_model()));
 }
 
 int CookieControlsController::GetAllowedThirdPartyCookiesSitesCount() const {
@@ -444,18 +439,25 @@ int CookieControlsController::GetStatefulBounceCount() const {
   }
 }
 
+bool CookieControlsController::SiteDataAccessed(int third_party_allowed_sites,
+                                                int third_party_blocked_sites) {
+  return third_party_allowed_sites + third_party_blocked_sites +
+             GetStatefulBounceCount() !=
+         0;
+}
+
 void CookieControlsController::PresentBlockedCookieCounter() {
   auto status = GetStatus(GetWebContents());
   int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
   int third_party_blocked_sites = GetBlockedThirdPartyCookiesSitesCount();
-  int bounce_count = GetStatefulBounceCount();
 
   for (auto& observer : observers_) {
     observer.OnSitesCountChanged(third_party_allowed_sites,
                                  third_party_blocked_sites);
-    observer.OnBreakageConfidenceLevelChanged(GetConfidenceLevel(
-        status.status, status.enforcement, third_party_allowed_sites,
-        third_party_blocked_sites, bounce_count));
+    observer.OnBreakageConfidenceLevelChanged(
+        GetConfidenceLevel(status.status, status.enforcement,
+                           SiteDataAccessed(third_party_allowed_sites,
+                                            third_party_blocked_sites)));
   }
 }
 
@@ -464,7 +466,7 @@ void CookieControlsController::OnPageReloadDetected(int recent_reloads_count) {
     waiting_for_page_load_finish_ = true;
   }
 
-  ResetInitialCookieControlsStatus();
+  SetUserChangedCookieBlockingForSite(false);
 
   // Cache whether the expiration has expired since last visit before updating
   // the last visited metadata.
@@ -492,14 +494,11 @@ void CookieControlsController::OnPageReloadDetected(int recent_reloads_count) {
     return;
   }
 
-  int allowed_sites = GetAllowedSitesCount();
-  int blocked_sites = GetBlockedSitesCount();
-  int bounce_count = GetStatefulBounceCount();
-
   for (auto& observer : observers_) {
-    observer.OnBreakageConfidenceLevelChanged(
-        GetConfidenceLevel(status.status, status.enforcement, allowed_sites,
-                           blocked_sites, bounce_count));
+    observer.OnBreakageConfidenceLevelChanged(GetConfidenceLevel(
+        status.status, status.enforcement,
+        SiteDataAccessed(GetAllowedThirdPartyCookiesSitesCount(),
+                         GetBlockedThirdPartyCookiesSitesCount())));
   }
 }
 
@@ -563,10 +562,10 @@ void CookieControlsController::RecordActivationMetrics() {
       "Privacy.CookieControlsActivated.SiteEngagementScore",
       GetSiteEngagementScore(), 100);
 
-  int allowed_sites = GetAllowedSitesCount();
-  int blocked_sites = GetBlockedSitesCount();
-  auto site_data_access_type =
-      GetSiteDataAccessType(allowed_sites, blocked_sites);
+  int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
+  int third_party_blocked_sites = GetBlockedThirdPartyCookiesSitesCount();
+  auto site_data_access_type = GetSiteDataAccessType(third_party_allowed_sites,
+                                                     third_party_blocked_sites);
   base::UmaHistogramEnumeration(
       "Privacy.CookieControlsActivated.SiteDataAccessType",
       site_data_access_type);
@@ -591,13 +590,6 @@ void CookieControlsController::RecordActivationMetrics() {
       .Record(ukm::UkmRecorder::Get());
 
   // TODO(crbug.com/1446230): Add metrics, related to repeated activations.
-}
-
-void CookieControlsController::ResetInitialCookieControlsStatus() {
-  auto status = GetStatus(GetWebContents());
-  initial_page_cookie_controls_status_ = status.status;
-  CHECK(initial_page_cookie_controls_status_ !=
-        CookieControlsStatus::kUninitialized);
 }
 
 CookieControlsController::TabObserver::TabObserver(

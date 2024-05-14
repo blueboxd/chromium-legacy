@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include <iomanip>
+#include <optional>
 #include <ostream>
 #include <string>
 
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "cc/trees/layer_tree_host.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -89,6 +89,12 @@ void PrintLayerHierarchyImp(const Layer* layer,
     }
   }
 
+  if (!layer->rounded_corner_radii().IsEmpty()) {
+    *out << "\n" << property_indent_str;
+    *out << "rounded-corners-radii: "
+         << layer->rounded_corner_radii().ToString();
+  }
+
   const ui::Layer* mask = const_cast<ui::Layer*>(layer)->layer_mask_layer();
 
   if (mask) {
@@ -103,7 +109,7 @@ void PrintLayerHierarchyImp(const Layer* layer,
   }
 
   if (!layer->transform().IsIdentity()) {
-    if (absl::optional<gfx::DecomposedTransform> decomp =
+    if (std::optional<gfx::DecomposedTransform> decomp =
             layer->transform().Decompose()) {
       *out << '\n' << property_indent_str;
       *out << "translation: " << std::fixed << decomp->translate[0];
@@ -121,7 +127,7 @@ void PrintLayerHierarchyImp(const Layer* layer,
 
   *out << '\n';
 
-  std::vector<ui::Layer*> children =
+  std::vector<raw_ptr<ui::Layer, VectorExperimental>> children =
       child_cb ? child_cb.Run(layer) : layer->children();
   for (ui::Layer* child : children) {
     PrintLayerHierarchyImp(child, indent + 3, mouse_location_in_layer, out,

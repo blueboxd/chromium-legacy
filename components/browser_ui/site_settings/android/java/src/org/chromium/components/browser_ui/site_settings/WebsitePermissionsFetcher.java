@@ -69,7 +69,7 @@ public class WebsitePermissionsFetcher {
      * @param contentSettingsType The ContentSettingsType int of the permission.
      */
     public static WebsitePermissionsType getPermissionsType(
-            @ContentSettingsType int contentSettingsType) {
+            @ContentSettingsType.EnumType int contentSettingsType) {
         switch (contentSettingsType) {
             case ContentSettingsType.ADS:
             case ContentSettingsType.ANTI_ABUSE:
@@ -107,12 +107,6 @@ public class WebsitePermissionsFetcher {
             case ContentSettingsType.BLUETOOTH_GUARD:
             case ContentSettingsType.USB_GUARD:
                 return WebsitePermissionsType.CHOSEN_OBJECT_INFO;
-            case ContentSettingsType.MIDI:
-                if (PermissionsAndroidFeatureMap.isEnabled(
-                        PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)) {
-                    return WebsitePermissionsType.PERMISSION_INFO;
-                }
-                return null;
             default:
                 return null;
         }
@@ -225,7 +219,9 @@ public class WebsitePermissionsFetcher {
         private void addAllFetchers(TaskQueue queue) {
             addFetcherForStorage(queue);
             queue.add(new CookiesInfoFetcher());
-            for (@ContentSettingsType int type = 0; type < ContentSettingsType.NUM_TYPES; type++) {
+            for (@ContentSettingsType.EnumType int type = 0;
+                    type < ContentSettingsType.NUM_TYPES;
+                    type++) {
                 addFetcherForContentSettingsType(queue, type);
             }
         }
@@ -296,7 +292,7 @@ public class WebsitePermissionsFetcher {
         }
 
         private void addFetcherForContentSettingsType(
-                TaskQueue queue, @ContentSettingsType int contentSettingsType) {
+                TaskQueue queue, @ContentSettingsType.EnumType int contentSettingsType) {
             WebsitePermissionsType websitePermissionsType = getPermissionsType(contentSettingsType);
             if (websitePermissionsType == null) {
                 return;
@@ -471,10 +467,10 @@ public class WebsitePermissionsFetcher {
         }
 
         private class PermissionInfoFetcher extends Task {
-            final @ContentSettingsType int mType;
+            final @ContentSettingsType.EnumType int mType;
             private boolean mIsEmbeddedPermission;
 
-            public PermissionInfoFetcher(@ContentSettingsType int type) {
+            public PermissionInfoFetcher(@ContentSettingsType.EnumType int type) {
                 mType = type;
             }
 
@@ -493,9 +489,9 @@ public class WebsitePermissionsFetcher {
         }
 
         private class ChooserExceptionInfoFetcher extends Task {
-            final @ContentSettingsType int mChooserDataType;
+            final @ContentSettingsType.EnumType int mChooserDataType;
 
-            public ChooserExceptionInfoFetcher(@ContentSettingsType int type) {
+            public ChooserExceptionInfoFetcher(@ContentSettingsType.EnumType int type) {
                 mChooserDataType = SiteSettingsCategory.objectChooserDataTypeFromGuard(type);
             }
 

@@ -18,6 +18,7 @@
 #include "media/base/mac/videotoolbox_helpers.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/media_buildflags.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/color_space.h"
 
@@ -47,7 +48,7 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   void RequestEncodingParametersChange(
       const Bitrate& bitrate,
       uint32_t framerate,
-      const absl::optional<gfx::Size>& size) override;
+      const std::optional<gfx::Size>& size) override;
   void Destroy() override;
   void Flush(FlushCallback flush_callback) override;
   bool IsFlushSupported() override;
@@ -154,7 +155,7 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   FlushCallback pending_flush_cb_;
 
   // Color space of the first frame sent to Encode().
-  absl::optional<gfx::ColorSpace> encoder_color_space_;
+  std::optional<gfx::ColorSpace> encoder_color_space_;
   bool can_set_encoder_color_space_ = true;
 
   // Monotonically-growing timestamp that will be assigned to the next frame

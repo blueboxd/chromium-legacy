@@ -12,19 +12,6 @@
 
 namespace data_controls {
 
-namespace {
-
-// Constants used to parse sub-dictionaries of DLP policies that should map to
-// an AttributesCondition.
-constexpr char kKeyUrls[] = "urls";
-constexpr char kKeyIncognito[] = "incognito";
-
-#if BUILDFLAG(IS_CHROMEOS)
-constexpr char kKeyComponents[] = "components";
-#endif  // BUILDFLAG(IS_CHROMEOS)
-
-}  // namespace
-
 AttributesCondition::~AttributesCondition() = default;
 
 AttributesCondition::AttributesCondition(const base::Value::Dict& value) {
@@ -46,6 +33,8 @@ AttributesCondition::AttributesCondition(const base::Value::Dict& value) {
   }
 
   incognito_ = value.FindBool(kKeyIncognito);
+  os_clipboard_ = value.FindBool(kKeyOsClipboard);
+  other_profile_ = value.FindBool(kKeyOtherProfile);
 
 #if BUILDFLAG(IS_CHROMEOS)
   const base::Value::List* components_value = value.FindList(kKeyComponents);
@@ -69,12 +58,13 @@ AttributesCondition::AttributesCondition(const base::Value::Dict& value) {
 AttributesCondition::AttributesCondition(AttributesCondition&& other) = default;
 
 bool AttributesCondition::IsValid() const {
+  bool valid = (url_matcher_ && !url_matcher_->IsEmpty()) ||
+               incognito_.has_value() || os_clipboard_.has_value() ||
+               other_profile_.has_value();
 #if BUILDFLAG(IS_CHROMEOS)
-  return (url_matcher_ && !url_matcher_->IsEmpty()) || !components_.empty() ||
-         incognito_.has_value();
-#else
-  return (url_matcher_ && !url_matcher_->IsEmpty()) || incognito_.has_value();
+  valid |= !components_.empty();
 #endif  // BUILDFLAG(IS_CHROMEOS)
+  return valid;
 }
 
 bool AttributesCondition::URLMatches(GURL url) const {
@@ -105,15 +95,30 @@ bool AttributesCondition::ComponentMatches(Component component) const {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-bool AttributesCondition::IncognitoMatches(
-    const absl::optional<bool>& incognito) const {
-  // When the condition has no assertion on the incognito status of the tab,
-  // `incognito` is always considered to have a matching value.
+bool AttributesCondition::IncognitoMatches(bool incognito) const {
   if (!incognito_.has_value()) {
     return true;
   }
 
-  return incognito.has_value() && incognito_.value() == incognito.value();
+  return incognito_.value() == incognito;
+}
+
+bool AttributesCondition::OsClipboardMatches(bool os_clipboard) const {
+  DCHECK(os_clipboard_.has_value());
+
+  return os_clipboard == os_clipboard_.value();
+}
+
+bool AttributesCondition::OtherProfileMatches(bool other_profile) const {
+  if (!other_profile_.has_value()) {
+    return true;
+  }
+
+  return other_profile == other_profile_.value();
+}
+
+bool AttributesCondition::is_os_clipboard_condition() const {
+  return os_clipboard_.has_value();
 }
 
 // static
@@ -139,10 +144,15 @@ std::unique_ptr<Condition> SourceAttributesCondition::Create(
 
 bool SourceAttributesCondition::IsTriggered(
     const ActionContext& action_context) const {
-  if (!IncognitoMatches(action_context.source.incognito)) {
-    return false;
+  if (is_os_clipboard_condition()) {
+    // This returns early as incognito, URLs, etc. don't need to be checked for
+    // an OS clipboard condition.
+    return OsClipboardMatches(action_context.source.os_clipboard);
   }
-  return URLMatches(action_context.source.url);
+
+  return IncognitoMatches(action_context.source.incognito) &&
+         OtherProfileMatches(action_context.source.other_profile) &&
+         URLMatches(action_context.source.url);
 }
 
 SourceAttributesCondition::SourceAttributesCondition(
@@ -172,15 +182,23 @@ std::unique_ptr<Condition> DestinationAttributesCondition::Create(
 
 bool DestinationAttributesCondition::IsTriggered(
     const ActionContext& action_context) const {
-  if (!IncognitoMatches(action_context.destination.incognito)) {
-    return false;
-  }
+  if (is_os_clipboard_condition()) {
 #if BUILDFLAG(IS_CHROMEOS)
-  if (!ComponentMatches(action_context.destination.component)) {
-    return false;
-  }
+    if (!ComponentMatches(action_context.destination.component)) {
+      return false;
+    }
 #endif
-  return URLMatches(action_context.destination.url);
+    // This returns early as incognito, URLs, etc. don't need to be checked for
+    // an OS clipboard condition.
+    return OsClipboardMatches(action_context.destination.os_clipboard);
+  }
+
+  return IncognitoMatches(action_context.destination.incognito) &&
+         OtherProfileMatches(action_context.destination.other_profile) &&
+#if BUILDFLAG(IS_CHROMEOS)
+         ComponentMatches(action_context.destination.component) &&
+#endif
+         URLMatches(action_context.destination.url);
 }
 
 DestinationAttributesCondition::DestinationAttributesCondition(

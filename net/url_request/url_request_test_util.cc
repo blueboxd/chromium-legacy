@@ -16,7 +16,6 @@
 #include "base/threading/thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cookies/cookie_setting_override.h"
 #include "net/dns/mock_host_resolver.h"
@@ -78,7 +77,6 @@ std::unique_ptr<URLRequestContextBuilder> CreateTestURLRequestContextBuilder() {
       ConfiguredProxyResolutionService::CreateDirect());
   builder->SetCertVerifier(
       CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
-  builder->set_ct_policy_enforcer(std::make_unique<DefaultCTPolicyEnforcer>());
   builder->set_ssl_config_service(std::make_unique<SSLConfigServiceDefaults>());
   builder->SetHttpAuthHandlerFactory(HttpAuthHandlerFactory::CreateDefault());
   builder->SetHttpServerProperties(std::make_unique<HttpServerProperties>());
@@ -136,21 +134,18 @@ TestDelegate::TestDelegate()
 TestDelegate::~TestDelegate() = default;
 
 void TestDelegate::RunUntilComplete() {
-  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_complete_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
 void TestDelegate::RunUntilRedirect() {
-  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_redirect_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
 void TestDelegate::RunUntilAuthRequired() {
-  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_auth_required_ = run_loop.QuitClosure();
   run_loop.Run();
@@ -243,11 +238,11 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   // It doesn't make sense for the request to have IO pending at this point.
   DCHECK_NE(bytes_read, ERR_IO_PENDING);
 
-  // If you've reached this, you've either called "RunUntilComplete" or are
-  // using legacy "QuitCurrent*Deprecated". If this DCHECK fails, that probably
-  // means you've run "RunUntilRedirect" or "RunUntilAuthRequired" and haven't
+  // If you've reached this, you've either called "RunUntilComplete"
+  // If this DCHECK fails, that probably  means you've run
+  // "RunUntilRedirect" or "RunUntilAuthRequired" and haven't
   // redirected/auth-challenged
-  DCHECK(on_complete_ || use_legacy_on_complete_);
+  DCHECK(on_complete_);
 
   // If the request was cancelled in a redirect, it should not signal
   // OnReadCompleted. Note that |cancel_in_rs_| may be true due to
@@ -268,9 +263,6 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
       request_status_ = request->Cancel();
       // If bytes_read is 0, won't get a notification on cancelation.
       if (bytes_read == 0) {
-        if (use_legacy_on_complete_)
-          base::RunLoop::QuitCurrentWhenIdleDeprecated();
-        else
           std::move(on_complete_).Run();
       }
       return;
@@ -295,10 +287,7 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
   response_completed_ = true;
-  if (use_legacy_on_complete_)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  else
-    std::move(on_complete_).Run();
+  std::move(on_complete_).Run();
 }
 
 TestNetworkDelegate::TestNetworkDelegate() = default;
@@ -368,7 +357,7 @@ int TestNetworkDelegate::OnHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     const IPEndPoint& endpoint,
-    absl::optional<GURL>* preserve_fragment_on_redirect_url) {
+    std::optional<GURL>* preserve_fragment_on_redirect_url) {
   EXPECT_FALSE(preserve_fragment_on_redirect_url->has_value());
   int req_id = GetRequestId(request);
   bool is_first_response =
@@ -396,7 +385,7 @@ int TestNetworkDelegate::OnHeadersReceived(
 
     redirect_on_headers_received_url_ = GURL();
 
-    // Since both values are absl::optionals, can just copy this over.
+    // Since both values are std::optionals, can just copy this over.
     *preserve_fragment_on_redirect_url = preserve_fragment_on_redirect_url_;
   } else if (add_header_to_first_response_ && is_first_response) {
     *override_response_headers = base::MakeRefCounted<HttpResponseHeaders>(

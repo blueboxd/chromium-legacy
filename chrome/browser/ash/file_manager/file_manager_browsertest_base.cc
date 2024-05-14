@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
-#include "base/base_paths.h"
-#include "base/memory/raw_ptr.h"
 
 #include <stddef.h>
 
@@ -27,6 +25,7 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/webui/file_manager/url_constants.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
+#include "base/base_paths.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -37,6 +36,7 @@
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
 #include "base/json/values_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -75,6 +75,7 @@
 #include "chrome/browser/ash/extensions/file_manager/event_router.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/copy_or_move_io_task_impl.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
@@ -250,7 +251,7 @@ class WebContentCapturingObserver : public content::TestNavigationObserver {
   }
 
  private:
-  raw_ptr<content::WebContents, ExperimentalAsh> web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 };
 
 // During test, the test extensions can send a list of entries (directories
@@ -1708,12 +1709,12 @@ class DriveFsTestVolume : public TestVolume {
   std::optional<drivefs::mojom::DialogResult> last_dialog_result_;
 
   // Profile associated with this volume: not owned.
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
   // Integration service used for testing: not owned.
-  raw_ptr<drive::DriveIntegrationService, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<drive::DriveIntegrationService, DanglingUntriaged>
       integration_service_ = nullptr;
 
-  const raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> original_profile_;
+  const raw_ptr<Profile, DanglingUntriaged> original_profile_;
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
   std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
 };
@@ -1795,8 +1796,7 @@ class DocumentsProviderTestVolume : public TestVolume {
   }
 
  protected:
-  const raw_ptr<arc::FakeFileSystemInstance,
-                DanglingUntriaged | ExperimentalAsh>
+  const raw_ptr<arc::FakeFileSystemInstance, DanglingUntriaged>
       file_system_instance_;
   const std::string authority_;
   const std::string root_document_id_;
@@ -2150,7 +2150,7 @@ class MockGuestOsMountProvider : public guest_os::GuestOsMountProvider {
   int cid_;
 
  private:
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile> profile_;
   std::string name_;
   guest_os::VmType vm_type_;
 };
@@ -2174,8 +2174,7 @@ class GuestOsTestVolume : public LocalTestVolume {
 
   const base::FilePath& mount_path() const { return root_path(); }
 
-  raw_ptr<MockGuestOsMountProvider, DanglingUntriaged | ExperimentalAsh>
-      provider_;
+  raw_ptr<MockGuestOsMountProvider, DanglingUntriaged> provider_;
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
@@ -2363,11 +2362,13 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   if (options.enable_local_image_search) {
     enabled_features.push_back(ash::features::kFilesLocalImageSearch);
+    enabled_features.push_back(search_features::kICASupportedByHardware);
     enabled_features.push_back(search_features::kLauncherImageSearch);
     enabled_features.push_back(search_features::kLauncherImageSearchIca);
     enabled_features.push_back(search_features::kLauncherImageSearchOcr);
   } else {
     disabled_features.push_back(ash::features::kFilesLocalImageSearch);
+    disabled_features.push_back(search_features::kICASupportedByHardware);
     disabled_features.push_back(search_features::kLauncherImageSearch);
     disabled_features.push_back(search_features::kLauncherImageSearchIca);
     disabled_features.push_back(search_features::kLauncherImageSearchOcr);
@@ -2646,6 +2647,8 @@ void FileManagerBrowserTestBase::TearDownOnMainThread() {
   if (error_url_.is_valid()) {
     storage::CopyOrMoveOperationDelegate::SetErrorUrlForTest(nullptr);
   }
+  file_manager::io_task::CopyOrMoveIOTaskImpl::SetDestinationNoSpaceForTesting(
+      false);
 }
 
 void FileManagerBrowserTestBase::TearDown() {
@@ -3330,16 +3333,16 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
     media_view_images_ = std::make_unique<MediaViewTestVolume>(
         arc_file_system_instance_.get(),
-        "com.android.providers.media.documents", arc::kImagesRootDocumentId);
+        "com.android.providers.media.documents", arc::kImagesRootId);
     media_view_videos_ = std::make_unique<MediaViewTestVolume>(
         arc_file_system_instance_.get(),
-        "com.android.providers.media.documents", arc::kVideosRootDocumentId);
+        "com.android.providers.media.documents", arc::kVideosRootId);
     media_view_audio_ = std::make_unique<MediaViewTestVolume>(
         arc_file_system_instance_.get(),
-        "com.android.providers.media.documents", arc::kAudioRootDocumentId);
+        "com.android.providers.media.documents", arc::kAudioRootId);
     media_view_documents_ = std::make_unique<MediaViewTestVolume>(
         arc_file_system_instance_.get(),
-        "com.android.providers.media.documents", arc::kDocumentsRootDocumentId);
+        "com.android.providers.media.documents", arc::kDocumentsRootId);
 
     ASSERT_TRUE(media_view_images_->Mount(profile()));
     ASSERT_TRUE(media_view_videos_->Mount(profile()));
@@ -4015,6 +4018,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         /*filesystem_id*/ "v2",
         /*mount_option*/ {});
     storage::CopyOrMoveOperationDelegate::SetErrorUrlForTest(&error_url_);
+    return;
+  }
+
+  if (name == "mockIOTaskDestinationNoSpace") {
+    file_manager::io_task::CopyOrMoveIOTaskImpl::
+        SetDestinationNoSpaceForTesting(true);
     return;
   }
 

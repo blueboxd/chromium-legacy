@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/browser/file_system_access/file_system_access_lock_manager.h"
+
+#include <optional>
+
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ref.h"
@@ -14,7 +17,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features_generated.h"
 
 namespace content {
@@ -22,9 +24,9 @@ namespace content {
 using LockHandle = FileSystemAccessLockManager::LockHandle;
 using LockType = FileSystemAccessLockManager::LockType;
 
-// This class represents an active lock on the `path_component`. The lock is
-// kept alive when there is some `LockHandle` to it. The lock is released when
-// all its `LockHandle`s have been destroyed.
+// This class represents an active lock on the `path`. The lock is kept alive
+// when there is some `LockHandle` to it. The lock is released when all its
+// `LockHandle`s have been destroyed.
 //
 // Terminology:
 //  - A "caller" is the caller of `FileSystemAccessLockManager` `TakeLock`
@@ -59,11 +61,11 @@ using LockType = FileSystemAccessLockManager::LockType;
 //    have its `LockHandle`s given to the caller.
 class Lock {
  public:
-  Lock(const base::FilePath::StringType& path_component,
+  Lock(const base::FilePath& path,
        const LockType& type,
        const LockType& exclusive_lock_type,
        base::optional_ref<Lock> parent_lock)
-      : path_component_(path_component),
+      : path_(path),
         type_(type),
         exclusive_lock_type_(exclusive_lock_type),
         parent_lock_(std::move(parent_lock)),
@@ -77,9 +79,7 @@ class Lock {
   Lock(Lock const&) = delete;
   Lock& operator=(Lock const&) = delete;
 
-  const base::FilePath::StringType& path_component() const {
-    return path_component_;
-  }
+  const base::FilePath& path() const { return path_; }
 
   const LockType& type() const { return type_; }
 
@@ -88,23 +88,22 @@ class Lock {
   // Returns whether this lock is contentious with `type`.
   bool IsContentious(LockType type) { return type != type_ || IsExclusive(); }
 
-  Lock* GetChild(const base::FilePath::StringType& path_component) {
+  Lock* GetChild(const base::FilePath& path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    auto child_lock_it = child_locks_.find(path_component);
+    auto child_lock_it = child_locks_.find(path);
     return child_lock_it != child_locks_.end() ? child_lock_it->second.get()
                                                : nullptr;
   }
 
   // Get the child if it exists. If it doesn't, creates it if it can. Otherwise
   // return null.
-  Lock* GetOrCreateChild(const base::FilePath::StringType& path_component,
-                         LockType lock_type) {
+  Lock* GetOrCreateChild(const base::FilePath& path, LockType lock_type) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    Lock* child = GetChild(path_component);
+    Lock* child = GetChild(path);
 
     if (!child) {
-      return CreateChild(path_component, lock_type);
+      return CreateChild(path, lock_type);
     }
 
     if (!child->IsContentious(lock_type)) {
@@ -125,9 +124,9 @@ class Lock {
     }
 
     // Create a child that is pending on the eviction of the current child.
-    std::unique_ptr<Lock> evicting_subroot_lock = TakeChild(path_component);
+    std::unique_ptr<Lock> evicting_subroot_lock = TakeChild(path);
     CHECK(evicting_subroot_lock);
-    child = CreateChild(path_component, lock_type);
+    child = CreateChild(path, lock_type);
     child->SetEvictingSubrootLock(std::move(evicting_subroot_lock));
 
     return child;
@@ -176,34 +175,31 @@ class Lock {
   bool InPendingSubtree() { return is_pending_; }
 
  protected:
-  virtual void DestroySelf() { parent_lock_->ReleaseChild(path_component_); }
+  virtual void DestroySelf() { parent_lock_->ReleaseChild(path_); }
 
  private:
   friend class FileSystemAccessLockManager::LockHandle;
 
-  Lock* CreateChild(const base::FilePath::StringType& path_component,
-                    LockType lock_type) {
+  Lock* CreateChild(const base::FilePath& path, LockType lock_type) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    Lock* child_lock =
-        new Lock(path_component, lock_type, exclusive_lock_type_, this);
-    child_locks_.emplace(path_component, base::WrapUnique<Lock>(child_lock));
+    Lock* child_lock = new Lock(path, lock_type, exclusive_lock_type_, this);
+    child_locks_.emplace(path, base::WrapUnique<Lock>(child_lock));
     return child_lock;
   }
 
-  std::unique_ptr<Lock> TakeChild(
-      const base::FilePath::StringType& path_component) {
+  std::unique_ptr<Lock> TakeChild(const base::FilePath& path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    auto child_node = child_locks_.extract(path_component);
+    auto child_node = child_locks_.extract(path);
     if (child_node.empty()) {
       return nullptr;
     }
     return std::move(child_node.mapped());
   }
 
-  void ReleaseChild(const base::FilePath::StringType& path_component) {
+  void ReleaseChild(const base::FilePath& path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    size_t count_removed = child_locks_.erase(path_component);
+    size_t count_removed = child_locks_.erase(path);
 
     CHECK_EQ(1u, count_removed);
   }
@@ -264,7 +260,7 @@ class Lock {
 
       // If we are an Evicting subroot, then we must destroy ourselves through
       // the `pending_lock` that owns us.
-      Lock* pending_lock = parent_lock_->GetChild(path_component_);
+      Lock* pending_lock = parent_lock_->GetChild(path_);
 
       if (InPendingSubtree()) {
         CHECK(IsPendingSubroot());
@@ -300,7 +296,7 @@ class Lock {
 
     // Will destroy `this` if this its an ancestor Lock since ancestors are
     // owned by their children, and we're destroying all the children.
-    for (auto& [_path_component, child] : child_locks_) {
+    for (auto& [_path, child] : child_locks_) {
       // Destroys `child`.
       child->EvictPendingSubtree();
     }
@@ -318,7 +314,7 @@ class Lock {
 
     is_pending_ = false;
     evicting_subroot_lock_ = nullptr;
-    for (auto& [_path_component, child] : child_locks_) {
+    for (auto& [_path, child] : child_locks_) {
       child->PromotePendingToTaken();
     }
     for (auto& pending_callback : pending_callbacks_) {
@@ -347,8 +343,7 @@ class Lock {
   // Returns if we're the subroot of an Evicting subtree. See class comment.
   bool IsEvictingSubroot() {
     return parent_lock_.has_value() &&
-           parent_lock_->GetChild(path_component_)
-                   ->evicting_subroot_lock_.get() == this;
+           parent_lock_->GetChild(path_)->evicting_subroot_lock_.get() == this;
   }
 
   // Makes `this` a Pending subtree that is waiting on the destruction of the
@@ -377,8 +372,8 @@ class Lock {
   base::flat_map<GlobalRenderFrameHostId, raw_ref<LockHandle>>
       frame_id_lock_handles_;
 
-  // The file path component of what we're locking within our parent `Lock`.
-  const base::FilePath::StringType path_component_;
+  // The file path of what we're locking within our parent `Lock`.
+  const base::FilePath path_;
 
   const LockType type_;
 
@@ -389,8 +384,8 @@ class Lock {
   // is safe to dereference since `parent_lock_` owns `this`.
   base::optional_ref<Lock> parent_lock_;
 
-  // The map of path components to the respective children.
-  std::map<base::FilePath::StringType, std::unique_ptr<Lock>> child_locks_;
+  // The map of path and lock to the respective children.
+  std::map<base::FilePath, std::unique_ptr<Lock>> child_locks_;
 
   bool is_pending_;
 
@@ -421,7 +416,7 @@ class RootLock : public Lock {
       : Lock({},
              lock_manager->ancestor_lock_type_,
              lock_manager->exclusive_lock_type_,
-             /*parent_lock=*/absl::nullopt),
+             /*parent_lock=*/std::nullopt),
         lock_manager_(lock_manager),
         root_locator_(root_locator) {}
 
@@ -436,7 +431,7 @@ class RootLock : public Lock {
 FileSystemAccessLockManager::RootLocator
 FileSystemAccessLockManager::RootLocator::FromFileSystemURL(
     const storage::FileSystemURL& url) {
-  absl::optional<storage::BucketLocator> maybe_bucket_locator = absl::nullopt;
+  std::optional<storage::BucketLocator> maybe_bucket_locator = std::nullopt;
   EntryPathType path_type;
   switch (url.type()) {
     case storage::kFileSystemTypeLocal:
@@ -461,7 +456,7 @@ FileSystemAccessLockManager::RootLocator::FromFileSystemURL(
 
 FileSystemAccessLockManager::RootLocator::RootLocator(
     const EntryPathType& type,
-    const absl::optional<storage::BucketLocator>& bucket_locator)
+    const std::optional<storage::BucketLocator>& bucket_locator)
     : type(type), bucket_locator(bucket_locator) {
   // Files in the sandboxed file system must have a `bucket_locator`. See the
   // comment in `RootLocator::FromFileSystemURL()`. Files outside of the
@@ -512,11 +507,15 @@ bool FileSystemAccessLockManager::IsContentious(
     return false;
   }
 
-  auto base_component = url.path().BaseName().value();
-  for (const auto& component : url.path().GetComponents()) {
+  base::FilePath cur_component_path;
+  std::vector<base::FilePath::StringType> components =
+      url.path().GetComponents();
+  for (size_t i = 0; i < components.size(); ++i) {
+    cur_component_path = i == 0 ? base::FilePath(components[0])
+                                : cur_component_path.Append(components[i]);
     LockType component_lock_type =
-        component == base_component ? lock_type : ancestor_lock_type_;
-    lock = lock->GetChild(component);
+        i == components.size() - 1 ? lock_type : ancestor_lock_type_;
+    lock = lock->GetChild(cur_component_path);
     if (!lock) {
       // If there's no lock, then it's not contentious.
       return false;
@@ -541,13 +540,16 @@ void FileSystemAccessLockManager::TakeLock(
   CHECK(lock);
 
   // Attempt to take a lock on all components in the path.
-  auto base_component = url.path().BaseName().value();
-  for (const auto& component : url.path().GetComponents()) {
+  base::FilePath cur_component_path;
+  std::vector<base::FilePath::StringType> components =
+      url.path().GetComponents();
+  for (size_t i = 0; i < components.size(); ++i) {
+    cur_component_path = i == 0 ? base::FilePath(components[0])
+                                : cur_component_path.Append(components[i]);
     // Take `lock_type` on the base and ancestor locks on the ancestors.
     LockType component_lock_type =
-        component == base_component ? lock_type : ancestor_lock_type_;
-    lock = lock->GetOrCreateChild(component, component_lock_type);
-
+        i == components.size() - 1 ? lock_type : ancestor_lock_type_;
+    lock = lock->GetOrCreateChild(cur_component_path, component_lock_type);
     if (!lock) {
       // Couldn't take lock due to contention with a lock in `url`'s path held
       // by an active page.

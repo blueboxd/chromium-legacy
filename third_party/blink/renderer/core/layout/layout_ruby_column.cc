@@ -31,11 +31,6 @@ LayoutRubyColumn::LayoutRubyColumn() : LayoutNGBlockFlow(nullptr) {
 
 LayoutRubyColumn::~LayoutRubyColumn() = default;
 
-bool LayoutRubyColumn::IsOfType(LayoutObjectType type) const {
-  NOT_DESTROYED();
-  return type == kLayoutObjectRubyColumn || LayoutBlockFlow::IsOfType(type);
-}
-
 void LayoutRubyColumn::RemoveLeftoverAnonymousBlock(LayoutBlock*) {
   NOT_DESTROYED();
 }
@@ -177,7 +172,7 @@ void LayoutRubyColumn::RemoveChild(LayoutObject* child) {
   if (RuntimeEnabledFeatures::RubySimplePairingEnabled()) {
     if (!DocumentBeingDestroyed()) {
       DCHECK(child->IsRubyBase() || child->IsRubyText());
-      if (auto* inline_ruby = DynamicTo<LayoutRubyAsInline>(Parent())) {
+      if (auto* inline_ruby = DynamicTo<LayoutRuby>(Parent())) {
         inline_ruby->DidRemoveChildFromColumn(*child);
       } else {
         To<LayoutRubyAsBlock>(Parent())->DidRemoveChildFromColumn(*child);

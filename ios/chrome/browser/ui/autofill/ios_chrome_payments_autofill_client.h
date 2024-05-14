@@ -20,6 +20,13 @@ class IOSChromePaymentsAutofillClient : public PaymentsAutofillClient {
   IOSChromePaymentsAutofillClient& operator=(
       const IOSChromePaymentsAutofillClient&) = delete;
   ~IOSChromePaymentsAutofillClient() override;
+
+  // RiskDataLoader:
+  void LoadRiskData(
+      base::OnceCallback<void(const std::string&)> callback) override;
+
+  // PaymentsAutofillClient:
+  void CreditCardUploadCompleted(bool card_saved) override;
 };
 
 }  // namespace autofill::payments

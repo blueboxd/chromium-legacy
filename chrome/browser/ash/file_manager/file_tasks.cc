@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_open_metrics.h"
@@ -342,7 +343,9 @@ void PostProcessFoundTasks(Profile* profile,
         resulting_tasks->tasks.erase(it);
       }
       if (chromeos::cloud_upload::IsMicrosoftOfficeCloudUploadAllowed(
-              profile)) {
+              profile) &&
+          (!profile->GetProfilePolicyConnector()->IsManaged() ||
+           ash::cloud_upload::IsODFSInstalled(profile))) {
         office_task.task_descriptor.action_id =
             ToSwaActionId(kActionIdOpenInOffice);
         // A transfer to OneDrive is required for the Office PWA to open
@@ -490,7 +493,17 @@ ResultingTasks::ResultingTasks() = default;
 ResultingTasks::~ResultingTasks() = default;
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  // Default handlers according to policy.
   registry->RegisterDictionaryPref(prefs::kDefaultHandlersForFileExtensions);
+
+  // Dictionaries to keep track of default tasks in the file browser.
+  registry->RegisterDictionaryPref(
+      prefs::kDefaultTasksByMimeType,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kDefaultTasksBySuffix,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+
   RegisterOfficeProfilePrefs(registry);
 }
 
@@ -772,7 +785,6 @@ std::optional<TaskDescriptor> ParseTaskID(const std::string& task_id) {
 bool ExecuteFileTask(Profile* profile,
                      const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
-                     gfx::NativeWindow modal_parent,
                      FileTaskFinishedCallback done) {
   // Save some of the arguments of "the most recent ExecuteFileTask" in JSON
   // (base::Value) format.
@@ -808,7 +820,7 @@ bool ExecuteFileTask(Profile* profile,
       RecordOfficeOpenExtensionDriveMetric(file_url);
     }
     const bool started = ExecuteWebDriveOfficeTask(
-        profile, task, file_urls, modal_parent,
+        profile, task, file_urls,
         std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
             ash::cloud_upload::CloudProvider::kGoogleDrive, file_urls.size()));
     if (done) {
@@ -829,7 +841,7 @@ bool ExecuteFileTask(Profile* profile,
       RecordOfficeOpenExtensionOneDriveMetric(file_url);
     }
     const bool started = ExecuteOpenInOfficeTask(
-        profile, task, file_urls, modal_parent,
+        profile, task, file_urls,
         std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
             ash::cloud_upload::CloudProvider::kOneDrive, file_urls.size()));
     if (done) {
@@ -849,8 +861,7 @@ bool ExecuteFileTask(Profile* profile,
   }
   // TODO(b/284800493): Add a test that VirtualTasks get run.
   if (IsVirtualTask(task)) {
-    const bool started =
-        ExecuteVirtualTask(profile, task, file_urls, modal_parent);
+    const bool started = ExecuteVirtualTask(profile, task, file_urls);
     if (done) {
       if (started) {
         std::move(done).Run(

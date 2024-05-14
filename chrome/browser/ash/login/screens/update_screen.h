@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/containers/fixed_flat_set.h"
 #include "base/functional/callback.h"
@@ -170,7 +171,7 @@ class UpdateScreen : public BaseScreen,
   static bool CheckIfOptOutIsEnabled();
 
   base::WeakPtr<UpdateView> view_;
-  raw_ptr<ErrorScreen, ExperimentalAsh> error_screen_;
+  raw_ptr<ErrorScreen> error_screen_;
   ScreenExitCallback exit_callback_;
 
   // Whether the update screen is shown.
@@ -198,7 +199,7 @@ class UpdateScreen : public BaseScreen,
 
   // EU country list.
   inline static constexpr auto kEUCountriesSet =
-      base::MakeFixedFlatSet<base::StringPiece>(
+      base::MakeFixedFlatSet<std::string_view>(
           {"at", "be", "bg", "hr", "cy", "cz", "dk", "ee", "fi",
            "fr", "de", "gr", "hu", "ie", "it", "lv", "lt", "lu",
            "mt", "nl", "pl", "pt", "ro", "sk", "si", "es", "se"});
@@ -230,7 +231,7 @@ class UpdateScreen : public BaseScreen,
   // Time to delay showing the screen.
   base::TimeDelta show_delay_;
 
-  raw_ptr<const base::TickClock, ExperimentalAsh> tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   base::TimeTicks start_update_downloading_;
   // Support variables for update stages time recording.

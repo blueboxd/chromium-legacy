@@ -39,7 +39,8 @@ class MockHatsService : public HatsServiceDesktop {
                (const SurveyStringData&)survey_specific_string_data,
                base::OnceClosure success_callback,
                base::OnceClosure failure_callback,
-               const absl::optional<std::string_view>& supplied_trigger_id),
+               const std::optional<std::string>& supplied_trigger_id,
+               const HatsService::SurveyOptions& survey_options),
               (override));
   MOCK_METHOD(bool,
               LaunchDelayedSurvey,
@@ -55,10 +56,11 @@ class MockHatsService : public HatsServiceDesktop {
                int timeout_ms,
                (const SurveyBitsData&)survey_specific_bits_data,
                (const SurveyStringData&)survey_specific_string_data,
-               bool require_same_origin,
+               (HatsService::NavigationBehaviour)navigation_behaviour,
                base::OnceClosure success_callback,
                base::OnceClosure failure_callback,
-               const absl::optional<std::string_view>& supplied_trigger_id),
+               const std::optional<std::string>& supplied_trigger_id,
+               const HatsService::SurveyOptions& survey_options),
               (override));
   MOCK_METHOD(void, HatsNextDialogClosed, (), (override));
   MOCK_METHOD(bool, CanShowAnySurvey, (bool user_prompted), (const override));

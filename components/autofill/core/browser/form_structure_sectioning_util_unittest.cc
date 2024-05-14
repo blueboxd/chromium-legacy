@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/form_structure_sectioning_util.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,6 @@
 #include "components/autofill/core/common/signatures.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using autofill::features::kAutofillSectioningModeCreateGaps;
 using autofill::features::kAutofillSectioningModeExpand;
@@ -44,7 +44,7 @@ constexpr char kFieldsPerSectionHistogram[] =
 // The key information from which we build the `FormFieldData` objects for a
 // unittest.
 struct FieldTemplate {
-  ServerFieldType field_type = UNKNOWN_TYPE;
+  FieldType field_type = UNKNOWN_TYPE;
   FormControlType form_control_type = FormControlType::kInputText;
   std::string autocomplete_section = "";
   HtmlFieldMode autocomplete_mode = HtmlFieldMode::kNone;
@@ -59,7 +59,7 @@ std::vector<std::unique_ptr<AutofillField>> CreateFields(
   for (const auto& t : field_templates) {
     const auto& f =
         result.emplace_back(std::make_unique<AutofillField>(FormFieldData()));
-    f->unique_renderer_id = test::MakeFieldRendererId();
+    f->renderer_id = test::MakeFieldRendererId();
     f->form_control_type = t.form_control_type;
     f->SetTypeTo(AutofillType(t.field_type));
     DCHECK_EQ(f->Type().GetStorableType(), t.field_type);

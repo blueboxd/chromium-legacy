@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './error_dialog.js';
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import 'chrome://borealis-installer/strings.m.js';
 import 'chrome://resources/ash/common/cr.m.js';
@@ -78,7 +78,10 @@ export class BorealisInstallerAppElement extends PolymerElement {
     this.listenerIds.push(
         this.router.onProgressUpdate.addListener(
             (progressFraction: number, progressLabel: string) => {
-              this.installerProgress = progressFraction * 100;
+              // Multiply by 100 to get percentage then round to 2 decimal
+              // places.
+              this.installerProgress =
+                  Math.round(progressFraction * 100 * 100) / 100;
               this.progressLabel = progressLabel;
             }),
         this.router.onInstallFinished.addListener(

@@ -85,9 +85,7 @@ std::unique_ptr<base::Pickle> ConvertToPickle(
 class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
  public:
   explicit WrappedPickleIOBuffer(std::unique_ptr<const base::Pickle> pickle)
-      : net::WrappedIOBuffer(reinterpret_cast<const char*>(pickle->data()),
-                             pickle->size()),
-        pickle_(std::move(pickle)) {
+      : net::WrappedIOBuffer(*pickle), pickle_(std::move(pickle)) {
     DCHECK(pickle_->data());
   }
 
@@ -600,10 +598,10 @@ void ServiceWorkerResourceReaderImpl::CompleteReadResponseHead(int status) {
 #endif
   DCHECK(read_response_head_callback_);
 
-  absl::optional<mojo_base::BigBuffer> metadata =
+  std::optional<mojo_base::BigBuffer> metadata =
       metadata_buffer_
-          ? absl::optional<mojo_base::BigBuffer>(metadata_buffer_->TakeBuffer())
-          : absl::nullopt;
+          ? std::optional<mojo_base::BigBuffer>(metadata_buffer_->TakeBuffer())
+          : std::nullopt;
 
   metadata_buffer_ = nullptr;
 

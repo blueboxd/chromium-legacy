@@ -21,8 +21,8 @@ import './load_error.js';
 import './options_dialog.js';
 import './shared_vars.css.js';
 import './sidebar.js';
-import './site_permissions.js';
-import './site_permissions_by_site.js';
+import './site_permissions/site_permissions.js';
+import './site_permissions/site_permissions_by_site.js';
 import './toolbar.js';
 // <if expr="chromeos_ash">
 import './kiosk_dialog.js';
@@ -30,22 +30,23 @@ import './kiosk_dialog.js';
 // </if>
 
 import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
-import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
+import type {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ActivityLogExtensionPlaceholder} from './activity_log/activity_log.js';
-import {ExtensionsDetailViewElement} from './detail_view.js';
-import {ExtensionsItemListElement} from './item_list.js';
+import type {ActivityLogExtensionPlaceholder} from './activity_log/activity_log.js';
+import type {ExtensionsDetailViewElement} from './detail_view.js';
+import type {ExtensionsItemListElement} from './item_list.js';
 // <if expr="chromeos_ash">
 import {KioskBrowserProxyImpl} from './kiosk_browser_proxy.js';
 // </if>
 import {getTemplate} from './manager.html.js';
-import {Dialog, navigation, Page, PageState} from './navigation_helper.js';
+import type {PageState} from './navigation_helper.js';
+import {Dialog, navigation, Page} from './navigation_helper.js';
 import {Service} from './service.js';
-import {ExtensionsToolbarElement} from './toolbar.js';
+import type {ExtensionsToolbarElement} from './toolbar.js';
 
 /**
  * Compares two extensions to determine which should come first in the list.
@@ -612,6 +613,10 @@ export class ExtensionsManagerElement extends ExtensionsManagerElementBase {
     const toPage = newPage.page;
     let data: chrome.developerPrivate.ExtensionInfo|undefined;
     let activityLogPlaceholder;
+    if (toPage === Page.LIST) {
+      // Dismiss menu notifications for extensions module of Safety Hub.
+      this.delegate.dismissSafetyHubExtensionsMenuNotification();
+    }
     if (newPage.extensionId) {
       data = this.getData_(newPage.extensionId);
       if (!data) {

@@ -33,8 +33,9 @@ class DictationHintView;
 
 // View for the Dictation bubble.
 class ASH_EXPORT DictationBubbleView : public views::BubbleDialogDelegateView {
+  METADATA_HEADER(DictationBubbleView, views::BubbleDialogDelegateView)
+
  public:
-  METADATA_HEADER(DictationBubbleView);
   DictationBubbleView();
   DictationBubbleView(const DictationBubbleView&) = delete;
   DictationBubbleView& operator=(const DictationBubbleView&) = delete;
@@ -65,8 +66,8 @@ class ASH_EXPORT DictationBubbleView : public views::BubbleDialogDelegateView {
  private:
   friend class DictationBubbleControllerTest;
 
-  raw_ptr<TopRowView, ExperimentalAsh> top_row_view_ = nullptr;
-  raw_ptr<DictationHintView, ExperimentalAsh> hint_view_ = nullptr;
+  raw_ptr<TopRowView> top_row_view_ = nullptr;
+  raw_ptr<DictationHintView> hint_view_ = nullptr;
 };
 
 BEGIN_VIEW_BUILDER(/* no export */,
@@ -78,8 +79,9 @@ END_VIEW_BUILDER
 // **important**: Chromevox expects this class to have a specific name to
 // compute when to announce hints differently. Don't change it!
 class ASH_EXPORT DictationHintView : public views::View {
+  METADATA_HEADER(DictationHintView, views::View)
+
  public:
-  METADATA_HEADER(DictationHintView);
   DictationHintView();
   DictationHintView(const DictationHintView&) = delete;
   DictationHintView& operator=(const DictationHintView&) = delete;
@@ -98,8 +100,7 @@ class ASH_EXPORT DictationHintView : public views::View {
 
   // Labels containing hints for users of Dictation. A max of five hints can be
   // shown at any given time.
-  std::vector<raw_ptr<views::Label, ExperimentalAsh>> labels_{kMaxLabelHints,
-                                                              nullptr};
+  std::vector<raw_ptr<views::Label>> labels_{kMaxLabelHints, nullptr};
 };
 
 }  // namespace ash

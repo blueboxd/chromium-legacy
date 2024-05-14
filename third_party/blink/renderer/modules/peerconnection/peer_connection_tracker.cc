@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,7 +20,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromecast_buildflags.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
@@ -107,23 +107,6 @@ String SerializeServers(
   return result.ToString();
 }
 
-// TODO(https://crbug.com/1318448): When goog-constraints have been removed,
-// this serialization code is no longer needed.
-String SerializePeerConnectionMediaConstraints(
-    const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
-  StringBuilder builder;
-#if BUILDFLAG(IS_FUCHSIA) && BUILDFLAG(ENABLE_CAST_RECEIVER)
-  // TODO(crbug.com/804275): Delete when Fuchsia no longer needs it.
-  if (config.enable_dtls_srtp.has_value()) {
-    if (builder.length())
-      builder.Append(", ");
-    builder.Append("DtlsSrtpKeyAgreement: ");
-    builder.Append(config.enable_dtls_srtp.value() ? "true" : "false");
-  }
-#endif
-  return builder.ToString();
-}
-
 String SerializeGetUserMediaMediaConstraints(
     const MediaConstraints& constraints) {
   return String(constraints.ToString());
@@ -190,7 +173,7 @@ String SerializeDirection(webrtc::RtpTransceiverDirection direction) {
 }
 
 String SerializeOptionalDirection(
-    const absl::optional<webrtc::RtpTransceiverDirection>& direction) {
+    const std::optional<webrtc::RtpTransceiverDirection>& direction) {
   return direction ? SerializeDirection(*direction) : "null";
 }
 
@@ -400,9 +383,7 @@ String SerializeRtcpMuxPolicy(
   return policy_str;
 }
 
-// Serializes things that are of interest from the RTCConfiguration. Note that
-// this does not include some parameters that were passed down via
-// GoogMediaConstraints; see SerializePeerConnectionMediaConstraints() for that.
+// Serializes things that are of interest from the RTCConfiguration.
 String SerializeConfiguration(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config,
     bool usesInsertableStreams) {
@@ -513,14 +494,14 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
           stats.timestamp().us() /
               static_cast<double>(base::Time::kMicrosecondsPerMillisecond));
       // Values are reported as
-      // "values": ["member1", value, "member2", value...]
+      // "values": ["attribute1", value, "attribute2", value...]
       base::Value::List name_value_pairs;
-      for (const auto* member : stats.Members()) {
-        if (!member->is_defined()) {
+      for (const auto& attribute : stats.Attributes()) {
+        if (!attribute.has_value()) {
           continue;
         }
-        name_value_pairs.Append(member->name());
-        name_value_pairs.Append(MemberToValue(*member));
+        name_value_pairs.Append(attribute.name());
+        name_value_pairs.Append(AttributeToValue(attribute));
       }
       // Modify "media-source" to also contain the result of the
       // MediaStreamTrack Statistics API, if applicable.
@@ -560,34 +541,22 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
     return result_list;
   }
 
-  base::Value MemberToValue(const webrtc::RTCStatsMemberInterface& member) {
-    switch (member.type()) {
-      // Types supported by base::Value are passed as the appropriate type.
-      case webrtc::RTCStatsMemberInterface::Type::kBool:
-        return base::Value(*member.cast_to<webrtc::RTCStatsMember<bool>>());
-      case webrtc::RTCStatsMemberInterface::Type::kInt32:
-        return base::Value(*member.cast_to<webrtc::RTCStatsMember<int32_t>>());
-      case webrtc::RTCStatsMemberInterface::Type::kString:
-        return base::Value(
-            *member.cast_to<webrtc::RTCStatsMember<std::string>>());
-      case webrtc::RTCStatsMemberInterface::Type::kDouble:
-        return base::Value(*member.cast_to<webrtc::RTCStatsMember<double>>());
-      // Types not supported by base::Value are converted to string.
-      case webrtc::RTCStatsMemberInterface::Type::kUint32:
-      case webrtc::RTCStatsMemberInterface::Type::kInt64:
-      case webrtc::RTCStatsMemberInterface::Type::kUint64:
-      case webrtc::RTCStatsMemberInterface::Type::kSequenceBool:
-      case webrtc::RTCStatsMemberInterface::Type::kSequenceInt32:
-      case webrtc::RTCStatsMemberInterface::Type::kSequenceUint32:
-      case webrtc::RTCStatsMemberInterface::Type::kSequenceInt64:
-      case webrtc::RTCStatsMemberInterface::Type::kSequenceUint64:
-      case webrtc::RTCStatsMemberInterface::Type::kSequenceDouble:
-      case webrtc::RTCStatsMemberInterface::Type::kSequenceString:
-      case webrtc::RTCStatsMemberInterface::Type::kMapStringUint64:
-      case webrtc::RTCStatsMemberInterface::Type::kMapStringDouble:
-      default:
-        return base::Value(member.ValueToString());
+  base::Value AttributeToValue(const webrtc::Attribute& attribute) {
+    // Types supported by `base::Value` are passed as the appropriate type.
+    if (attribute.holds_alternative<bool>()) {
+      return base::Value(attribute.get<bool>());
     }
+    if (attribute.holds_alternative<int32_t>()) {
+      return base::Value(attribute.get<int32_t>());
+    }
+    if (attribute.holds_alternative<std::string>()) {
+      return base::Value(attribute.get<std::string>());
+    }
+    if (attribute.holds_alternative<double>()) {
+      return base::Value(attribute.get<double>());
+    }
+    // Types not supported by `base::Value` are converted to string.
+    return base::Value(attribute.ToString());
   }
 
   const int lid_;
@@ -757,7 +726,6 @@ void PeerConnectionTracker::RegisterPeerConnection(
   info->rtc_configuration =
       SerializeConfiguration(config, pc_handler->encoded_insertable_streams());
 
-  info->constraints = SerializePeerConnectionMediaConstraints(config);
   if (frame)
     info->url = frame->GetDocument().Url().GetString();
   else
@@ -880,7 +848,7 @@ void PeerConnectionTracker::TrackAddIceCandidate(
 void PeerConnectionTracker::TrackIceCandidateError(
     RTCPeerConnectionHandler* pc_handler,
     const String& address,
-    absl::optional<uint16_t> port,
+    std::optional<uint16_t> port,
     const String& host_candidate,
     const String& url,
     int error_code,
@@ -953,13 +921,12 @@ void PeerConnectionTracker::TrackCreateDataChannel(
   result.Append(String::FromUTF8(data_channel->label()));
   result.Append(", ordered: ");
   result.Append(SerializeBoolean(data_channel->ordered()));
-  absl::optional<uint16_t> maxPacketLifeTime =
-      data_channel->maxPacketLifeTime();
+  std::optional<uint16_t> maxPacketLifeTime = data_channel->maxPacketLifeTime();
   if (maxPacketLifeTime.has_value()) {
     result.Append(", maxPacketLifeTime: ");
     result.Append(String::Number(*maxPacketLifeTime));
   }
-  absl::optional<uint16_t> maxRetransmits = data_channel->maxRetransmitsOpt();
+  std::optional<uint16_t> maxRetransmits = data_channel->maxRetransmitsOpt();
   if (maxRetransmits.has_value()) {
     result.Append(", maxRetransmits: ");
     result.Append(String::Number(*maxRetransmits));

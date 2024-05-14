@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -506,11 +507,11 @@ std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(
   return render_text;
 }
 
-void RenderText::SetText(const std::u16string& text) {
+void RenderText::SetText(std::u16string text) {
   DCHECK(!composition_range_.IsValid());
   if (text_ == text)
     return;
-  text_ = text;
+  text_ = std::move(text);
   UpdateStyleLengths();
 
   // Clear style ranges as they might break new text graphemes and apply
@@ -532,7 +533,7 @@ void RenderText::SetText(const std::u16string& text) {
   if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
     text_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
-  obscured_reveal_index_ = absl::nullopt;
+  obscured_reveal_index_ = std::nullopt;
   OnTextAttributeChanged();
 }
 
@@ -540,7 +541,7 @@ void RenderText::AppendText(const std::u16string& text) {
   text_ += text;
   UpdateStyleLengths();
   cached_bounds_and_offset_valid_ = false;
-  obscured_reveal_index_ = absl::nullopt;
+  obscured_reveal_index_ = std::nullopt;
 
   // Invalidate the cached text direction if it depends on the text contents.
   if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
@@ -588,13 +589,13 @@ void RenderText::SetCursorEnabled(bool cursor_enabled) {
 void RenderText::SetObscured(bool obscured) {
   if (obscured != obscured_) {
     obscured_ = obscured;
-    obscured_reveal_index_ = absl::nullopt;
+    obscured_reveal_index_ = std::nullopt;
     cached_bounds_and_offset_valid_ = false;
     OnTextAttributeChanged();
   }
 }
 
-void RenderText::SetObscuredRevealIndex(absl::optional<size_t> index) {
+void RenderText::SetObscuredRevealIndex(std::optional<size_t> index) {
   if (obscured_reveal_index_ != index) {
     obscured_reveal_index_ = index;
     cached_bounds_and_offset_valid_ = false;
@@ -663,7 +664,7 @@ void RenderText::SetElideBehavior(ElideBehavior elide_behavior) {
   }
 }
 
-void RenderText::SetWhitespaceElision(absl::optional<bool> whitespace_elision) {
+void RenderText::SetWhitespaceElision(std::optional<bool> whitespace_elision) {
   if (whitespace_elision_ != whitespace_elision) {
     whitespace_elision_ = whitespace_elision;
     OnDisplayTextAttributeChanged();
@@ -2179,7 +2180,7 @@ std::u16string RenderText::Elide(const std::u16string& text,
     // The elided text must be smaller in bytes. Otherwise, break-lists are not
     // consistent and the characters after the last range are not styled.
     DCHECK_LE(new_text.size(), text.size());
-    render_text->SetText(new_text);
+    render_text->SetText(std::move(new_text));
 
     // Restore styles and baselines without breaking multi-character graphemes.
     render_text->styles_ = styles_;
@@ -2337,8 +2338,8 @@ internal::GraphemeIterator RenderText::GetGraphemeIteratorAtIndex(
   if (index == text.length())
     return text_to_display_indices_.end();
 
-  DCHECK(layout_text_up_to_date_);
-  DCHECK(!text_to_display_indices_.empty());
+  CHECK(layout_text_up_to_date_);
+  CHECK(!text_to_display_indices_.empty());
 
   // The function std::lower_bound(...) finds the first not less than |index|.
   internal::GraphemeIterator iter = std::lower_bound(
@@ -2348,7 +2349,7 @@ internal::GraphemeIterator RenderText::GetGraphemeIteratorAtIndex(
       });
 
   if (iter == text_to_display_indices_.end() || *iter.*field != index) {
-    DCHECK(iter != text_to_display_indices_.begin());
+    CHECK(iter != text_to_display_indices_.begin());
     --iter;
   }
 

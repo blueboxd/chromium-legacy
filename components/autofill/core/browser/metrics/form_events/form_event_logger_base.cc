@@ -49,7 +49,7 @@ bool DetermineHeuristicOnlyEmailFormStatus(const FormStructure& form) {
   // applicable must be inside a form tag, must not run heuristics normally
   // (i.e., their field count is below `kMinRequiredFieldsForHeuristics`), but
   // must be eligible for single field form heuristics.
-  if (!form.is_form_tag() || form.ShouldRunHeuristics() ||
+  if (!form.is_form_element() || form.ShouldRunHeuristics() ||
       !form.ShouldRunHeuristicsForSingleFieldForms()) {
     return false;
   }
@@ -141,6 +141,13 @@ void FormEventLoggerBase::OnDidShowSuggestions(
   has_logged_autocomplete_off_ |= field.autocomplete_attribute == "off";
 
   RecordShowSuggestions();
+}
+
+void FormEventLoggerBase::OnDidRefill(
+    AutofillMetrics::PaymentsSigninState signin_state_for_metrics,
+    const FormStructure& form) {
+  signin_state_for_metrics_ = signin_state_for_metrics;
+  Log(FORM_EVENT_DID_DYNAMIC_REFILL, form);
 }
 
 void FormEventLoggerBase::SetAblationStatus(

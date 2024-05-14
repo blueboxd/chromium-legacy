@@ -105,9 +105,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
       did_finish_parsing_children_(false),
       is_in_reset_function_(false),
       rel_list_(MakeGarbageCollected<RelList>(this)) {
-  static uint64_t next_unique_renderer_form_id = 1;
-  unique_renderer_form_id_ = next_unique_renderer_form_id++;
-
   UseCounter::Count(document, WebFeature::kFormElement);
 }
 
@@ -278,12 +275,9 @@ bool HTMLFormElement::ValidateInteractively() {
           "An invalid form control with name='%name' is not focusable.");
       message.Replace("%name", unhandled->GetName());
 
-      ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
+      unhandled->ToHTMLElement().AddConsoleMessage(
           mojom::blink::ConsoleMessageSource::kRendering,
           mojom::blink::ConsoleMessageLevel::kError, message);
-      console_message->SetNodes(GetDocument().GetFrame(),
-                                {unhandled->ToHTMLElement().GetDomNodeId()});
-      GetDocument().AddConsoleMessage(console_message);
     }
   }
   return false;

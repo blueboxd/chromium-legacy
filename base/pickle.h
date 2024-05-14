@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <string_view>
 
 #include "base/base_export.h"
 #include "base/check_op.h"
@@ -219,11 +220,16 @@ class BASE_EXPORT Pickle {
   void WriteString16(const StringPiece16& value);
   // "Data" is a blob with a length. When you read it out you will be given the
   // length. See also WriteBytes.
+  // TODO(crbug.com/1490484): Migrate callers to the span versions.
   void WriteData(const char* data, size_t length);
+  void WriteData(span<const uint8_t> data);
+  void WriteData(std::string_view data);
   // "Bytes" is a blob with no length. The caller must specify the length both
   // when reading and writing. It is normally used to serialize PoD types of a
   // known size. See also WriteData.
+  // TODO(crbug.com/1490484): Migrate callers to the span version.
   void WriteBytes(const void* data, size_t length);
+  void WriteBytes(span<const uint8_t> data);
 
   // WriteAttachment appends |attachment| to the pickle. It returns
   // false iff the set is full or if the Pickle implementation does not support
@@ -267,6 +273,15 @@ class BASE_EXPORT Pickle {
     return header_ ? header_->payload_size : 0;
   }
 
+  base::span<const uint8_t> payload_bytes() const {
+    return base::as_bytes(base::make_span(payload(), payload_size()));
+  }
+
+ protected:
+  // Returns size of the header, which can have default value, set by user or
+  // calculated by passed raw data.
+  size_t header_size() const { return header_size_; }
+
   const char* payload() const {
     return reinterpret_cast<const char*>(header_) + header_size_;
   }
@@ -277,11 +292,6 @@ class BASE_EXPORT Pickle {
     // This object may be invalid.
     return header_ ? payload() + payload_size() : NULL;
   }
-
- protected:
-  // Returns size of the header, which can have default value, set by user or
-  // calculated by passed raw data.
-  size_t header_size() const { return header_size_; }
 
   char* mutable_payload() {
     return reinterpret_cast<char*>(header_) + header_size_;
@@ -347,7 +357,7 @@ class BASE_EXPORT Pickle {
   }
 
   inline void* ClaimUninitializedBytesInternal(size_t num_bytes);
-  inline void WriteBytesCommon(const void* data, size_t length);
+  inline void WriteBytesCommon(span<const uint8_t> data);
 
   FRIEND_TEST_ALL_PREFIXES(PickleTest, DeepCopyResize);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, Resize);

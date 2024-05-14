@@ -131,14 +131,14 @@ class MockLearningTaskControllerService
   MOCK_METHOD3(BeginObservation,
                void(const base::UnguessableToken& id,
                     const WTF::Vector<FeatureValue>& features,
-                    const absl::optional<TargetValue>& default_target));
+                    const std::optional<TargetValue>& default_target));
   MOCK_METHOD2(CompleteObservation,
                void(const base::UnguessableToken& id,
                     const ObservationCompletion& completion));
   MOCK_METHOD1(CancelObservation, void(const base::UnguessableToken& id));
   MOCK_METHOD2(UpdateDefaultTarget,
                void(const base::UnguessableToken& id,
-                    const absl::optional<TargetValue>& default_target));
+                    const std::optional<TargetValue>& default_target));
   MOCK_METHOD2(PredictDistribution,
                void(const WTF::Vector<FeatureValue>& features,
                     PredictDistributionCallback callback));
@@ -205,6 +205,7 @@ class FakeMediaMetricsProvider
   void Initialize(bool is_mse,
                   media::mojom::MediaURLScheme url_scheme,
                   media::mojom::MediaStreamType media_stream_type) override {}
+  void OnStarted(media::mojom::blink::PipelineStatusPtr status) override {}
   void OnError(media::mojom::blink::PipelineStatusPtr status) override {}
   void OnFallback(::media::mojom::blink::PipelineStatusPtr status) override {}
   void SetIsEME() override {}
@@ -216,6 +217,7 @@ class FakeMediaMetricsProvider
   void SetRendererType(
       media::mojom::blink::RendererType renderer_type) override {}
   void SetKeySystem(const String& key_system) override {}
+  void SetHasWaitingForKey() override {}
   void SetIsHardwareSecure() override {}
   void SetHasPlayed() override {}
   void SetHaveEnough() override {}
@@ -1149,8 +1151,7 @@ void RunCallbackPermutationTest(std::vector<PredictionType> callback_order) {
 // Test that decodingInfo() behaves correctly for all orderings/timings of the
 // underlying prediction services.
 TEST(MediaCapabilitiesTests, PredictionCallbackPermutations) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   std::vector<PredictionType> callback_order(
       {PredictionType::kDB, PredictionType::kBadWindow, PredictionType::kNnr,
        PredictionType::kGpuFactories});

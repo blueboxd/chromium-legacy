@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/display_color_spaces.h"
@@ -113,6 +114,7 @@ MediaQueryEvaluatorTestCase g_screen_test_cases[] = {
     {"(display-mode: 'browser')", false},
     {"(display-mode: @junk browser)", false},
     {"(display-mode: tabbed)", false},
+    {"(display-mode: picture-in-picture)", false},
     {"(max-device-aspect-ratio: 4294967295/1)", true},
     {"(min-device-aspect-ratio: 1/4294967296)", true},
     {"(max-device-aspect-ratio: 0.5)", false},
@@ -632,6 +634,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
 }
 
 TEST(MediaQueryEvaluatorTest, Dynamic) {
+  test::TaskEnvironment task_environment;
   auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(500, 500));
   page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
 
@@ -651,6 +654,7 @@ TEST(MediaQueryEvaluatorTest, Dynamic) {
 }
 
 TEST(MediaQueryEvaluatorTest, DynamicNoView) {
+  test::TaskEnvironment task_environment;
   auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(500, 500));
   LocalFrame* frame = &page_holder->GetFrame();
   page_holder.reset();
@@ -809,14 +813,14 @@ TEST(MediaQueryEvaluatorTest, CachedDevicePosture) {
 
   MediaValuesCached::MediaValuesCachedData data;
   {
-    data.device_posture = device::mojom::blink::DevicePostureType::kContinuous;
+    data.device_posture = mojom::blink::DevicePostureType::kContinuous;
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(media_values);
     TestMQEvaluator(g_device_posture_none_cases, media_query_evaluator);
   }
 
   {
-    data.device_posture = device::mojom::blink::DevicePostureType::kFolded;
+    data.device_posture = mojom::blink::DevicePostureType::kFolded;
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(media_values);
     TestMQEvaluator(g_device_posture_folded_cases, media_query_evaluator);

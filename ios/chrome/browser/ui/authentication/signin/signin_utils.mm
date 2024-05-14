@@ -15,7 +15,6 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -267,7 +266,7 @@ IdentitySigninState GetPrimaryIdentitySigninState(
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(browser_state);
-  // TODO(crbug.com/1462552): After phase 3 migration of kSync users, Remove
+  // TODO(crbug.com/40066949): After phase 3 migration of kSync users, Remove
   // this usage.
   if (auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSync) &&
       syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete()) {

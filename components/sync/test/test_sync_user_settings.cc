@@ -249,7 +249,7 @@ base::Time TestSyncUserSettings::GetExplicitPassphraseTime() const {
   return base::Time();
 }
 
-absl::optional<PassphraseType> TestSyncUserSettings::GetPassphraseType() const {
+std::optional<PassphraseType> TestSyncUserSettings::GetPassphraseType() const {
   return IsUsingExplicitPassphrase() ? PassphraseType::kCustomPassphrase
                                      : PassphraseType::kImplicitPassphrase;
 }
@@ -262,10 +262,11 @@ bool TestSyncUserSettings::SetDecryptionPassphrase(
   return false;
 }
 
-void TestSyncUserSettings::SetDecryptionNigoriKey(
+void TestSyncUserSettings::SetExplicitPassphraseDecryptionNigoriKey(
     std::unique_ptr<Nigori> nigori) {}
 
-std::unique_ptr<Nigori> TestSyncUserSettings::GetDecryptionNigoriKey() const {
+std::unique_ptr<Nigori>
+TestSyncUserSettings::GetExplicitPassphraseDecryptionNigoriKey() const {
   return nullptr;
 }
 

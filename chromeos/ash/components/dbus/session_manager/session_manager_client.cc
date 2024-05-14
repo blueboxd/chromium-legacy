@@ -10,6 +10,7 @@
 #include <cstring>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/span.h"
@@ -70,7 +71,7 @@ constexpr char kStopping[] = "stopping";
 // Helper to get the enum type of RetrievePolicyResponseType based on error
 // name.
 RetrievePolicyResponseType GetPolicyResponseTypeByError(
-    base::StringPiece error_name) {
+    std::string_view error_name) {
   if (error_name == login_manager::dbus_error::kNone) {
     return RetrievePolicyResponseType::SUCCESS;
   } else if (error_name == login_manager::dbus_error::kGetServiceFail ||
@@ -263,9 +264,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendString(key);
 
     const std::string metadata_blob = metadata.SerializeAsString();
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(metadata_blob.data()),
-        metadata_blob.size());
+    writer.AppendArrayOfBytes(base::as_byte_span(metadata_blob));
     writer.AppendUint64(data.size());
 
     base::ScopedFD fd = CreateSharedMemoryRegionFDWithData(data);
@@ -653,7 +652,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     // time, we will need to change the behavior to either listen to
     // LastSyncInfo event from tlsdated or communicate through signals with
     // session manager in this particular flow.
-    session_manager_proxy_->CallMethod(
+    session_manager_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
         base::BindOnce(&SessionManagerClientImpl::OnGetServerBackedStateKeys,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -861,9 +860,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     const std::string descriptor_blob = descriptor.SerializeAsString();
     // static_cast does not work due to signedness.
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(descriptor_blob.data()),
-        descriptor_blob.size());
+    writer.AppendArrayOfBytes(base::as_byte_span(descriptor_blob));
     session_manager_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnRetrievePolicy,
@@ -881,9 +878,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     const std::string descriptor_blob = descriptor.SerializeAsString();
     // static_cast does not work due to signedness.
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(descriptor_blob.data()),
-        descriptor_blob.size());
+    writer.AppendArrayOfBytes(base::as_byte_span(descriptor_blob));
     auto result = blocking_method_caller_->CallMethodAndBlock(&method_call);
     RetrievePolicyResponseType response_type =
         RetrievePolicyResponseType::SUCCESS;
@@ -908,12 +903,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     const std::string descriptor_blob = descriptor.SerializeAsString();
     // static_cast does not work due to signedness.
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(descriptor_blob.data()),
-        descriptor_blob.size());
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(policy_blob.data()),
-        policy_blob.size());
+    writer.AppendArrayOfBytes(base::as_byte_span(descriptor_blob));
+    writer.AppendArrayOfBytes(base::as_byte_span(policy_blob));
     // The timeout is intentionally chosen to be that big because on some
     // devices the operation is slow and a short timeout would lead to
     // unnecessary enrollment failures. See crbug.com/1155533 for context.
@@ -1128,29 +1119,58 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   // Called when kSessionManagerGetServerBackedStateKeys method is complete.
   void OnGetServerBackedStateKeys(StateKeysCallback callback,
-                                  dbus::Response* response) {
-    std::vector<std::string> state_keys;
-    if (response) {
-      dbus::MessageReader reader(response);
-      dbus::MessageReader array_reader(nullptr);
-
-      if (!reader.PopArray(&array_reader)) {
-        LOG(ERROR) << "Bad response: " << response->ToString();
-      } else {
-        while (array_reader.HasMoreData()) {
-          const uint8_t* data = nullptr;
-          size_t size = 0;
-          if (!array_reader.PopArrayOfBytes(&data, &size)) {
-            LOG(ERROR) << "Bad response: " << response->ToString();
-            state_keys.clear();
-            break;
-          }
-          state_keys.emplace_back(reinterpret_cast<const char*>(data), size);
-        }
-      }
+                                  dbus::Response* response,
+                                  dbus::ErrorResponse* error_response) {
+    if (!response) {
+      // When the implementation returns an error, `error_response` is not null.
+      // However, session manager's implementation of state key retrieval does
+      // not support returning errors, hence we assume that it is null and
+      // report communication error.
+      std::move(callback).Run(
+          base::unexpected(StateKeyErrorType::kCommunicationError));
+      return;
     }
 
-    std::move(callback).Run(state_keys);
+    dbus::MessageReader reader(response);
+    dbus::MessageReader array_reader(nullptr);
+    if (!reader.PopArray(&array_reader)) {
+      LOG(ERROR) << "Bad response (not an array of keys): "
+                 << response->ToString();
+      std::move(callback).Run(
+          base::unexpected(StateKeyErrorType::kInvalidResponse));
+      return;
+    }
+
+    std::vector<std::string> state_keys;
+    while (array_reader.HasMoreData()) {
+      const uint8_t* data = nullptr;
+      size_t size = 0;
+      if (!array_reader.PopArrayOfBytes(&data, &size)) {
+        LOG(ERROR) << "Bad response (not an array of bytes): "
+                   << response->ToString();
+        std::move(callback).Run(
+            base::unexpected(StateKeyErrorType::kInvalidResponse));
+        return;
+      }
+      if (size == 0) {
+        LOG(ERROR) << "Bad response (empty array of bytes): "
+                   << response->ToString();
+        std::move(callback).Run(
+            base::unexpected(StateKeyErrorType::kInvalidResponse));
+        return;
+      }
+      state_keys.emplace_back(reinterpret_cast<const char*>(data), size);
+    }
+
+    if (state_keys.empty()) {
+      // TODO(b/318708647): Improve session manager's implementation to report
+      // an error via DBus rather than return empty list of keys. This will
+      // allow to differentiate between various types of missing identifiers.
+      std::move(callback).Run(
+          base::unexpected(StateKeyErrorType::kMissingIdentifiers));
+      return;
+    }
+    std::move(callback).Run(base::ok(std::move(state_keys)));
   }
 
   // Called when kSessionManagerGetPsmDeviceActiveSecret method is complete.
@@ -1240,7 +1260,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(AdbSideloadResponseCode::SUCCESS, is_allowed);
   }
 
-  raw_ptr<dbus::ObjectProxy, ExperimentalAsh> session_manager_proxy_ = nullptr;
+  raw_ptr<dbus::ObjectProxy> session_manager_proxy_ = nullptr;
   std::unique_ptr<chromeos::BlockingMethodCaller> blocking_method_caller_;
   base::ObserverList<Observer>::Unchecked observers_{
       SessionManagerClient::kObserverListPolicy};

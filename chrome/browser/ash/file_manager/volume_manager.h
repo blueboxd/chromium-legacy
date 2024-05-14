@@ -250,8 +250,7 @@ class VolumeManager : public KeyedService,
       bool read_only,
       const std::vector<std::string>& mime_types) override;
   void OnDocumentsProviderRootRemoved(const std::string& authority,
-                                      const std::string& root_id,
-                                      const std::string& document_id) override;
+                                      const std::string& root_id) override;
 
   // ui::ClipboardObserver:
   void OnClipboardDataChanged() override;
@@ -340,12 +339,10 @@ class VolumeManager : public KeyedService,
   static int counter_;
   const int id_ = ++counter_;  // Only used in log traces
 
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
-  const raw_ptr<drive::DriveIntegrationService, ExperimentalAsh>
-      drive_integration_service_;
-  const raw_ptr<ash::disks::DiskMountManager, ExperimentalAsh>
-      disk_mount_manager_;
-  const raw_ptr<ash::file_system_provider::Service, ExperimentalAsh>
+  const raw_ptr<Profile> profile_;
+  const raw_ptr<drive::DriveIntegrationService> drive_integration_service_;
+  const raw_ptr<ash::disks::DiskMountManager> disk_mount_manager_;
+  const raw_ptr<ash::file_system_provider::Service>
       file_system_provider_service_;
 
   PrefChangeRegistrar pref_change_registrar_;

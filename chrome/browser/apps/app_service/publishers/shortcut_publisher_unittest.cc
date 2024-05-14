@@ -10,6 +10,7 @@
 #include "base/test/test_future.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
@@ -99,6 +100,7 @@ class ShortcutPublisherTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::features::kCrosWebAppShortcutUiUpdate);
     profile_ = std::make_unique<TestingProfile>();
+    WaitForAppServiceProxyReady(proxy());
   }
 
   Profile* profile() { return profile_.get(); }
@@ -128,7 +130,7 @@ TEST_F(ShortcutPublisherTest, PublishExistingShortcuts) {
 
   ShortcutPtr shortcut_2 = std::make_unique<Shortcut>("app_id_1", "local_id_2");
   shortcut_2->name = "name2";
-  shortcut_2->shortcut_source = ShortcutSource::kDeveloper;
+  shortcut_2->shortcut_source = ShortcutSource::kUser;
 
   Shortcuts initial_chrome_shortcuts;
   initial_chrome_shortcuts.push_back(std::move(shortcut_1));
@@ -224,7 +226,7 @@ TEST_F(ShortcutPublisherTest, ShortcutRemoved) {
 
   ShortcutPtr shortcut_2 = std::make_unique<Shortcut>("app_id_1", "local_id_2");
   shortcut_2->name = "name2";
-  shortcut_2->shortcut_source = ShortcutSource::kDeveloper;
+  shortcut_2->shortcut_source = ShortcutSource::kUser;
 
   Shortcuts initial_chrome_shortcuts;
   initial_chrome_shortcuts.push_back(std::move(shortcut_1));

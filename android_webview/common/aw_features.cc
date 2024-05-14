@@ -11,14 +11,16 @@ namespace features {
 
 // Alphabetical:
 
+// Enable back/forward cache support in WebView. Note that this will only take
+// effect iff both this feature flag and the content/public kBackForwardCache
+// flag is enabled.
+BASE_FEATURE(kWebViewBackForwardCache,
+             "WebViewBackForwardCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable brotli compression support in WebView.
 BASE_FEATURE(kWebViewBrotliSupport,
              "WebViewBrotliSupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Check layer_tree_frame_sink_id when return resources to compositor.
-BASE_FEATURE(kWebViewCheckReturnResources,
-             "WebViewCheckReturnResources",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to destroy the WebView rendering functor when after a WebView window
@@ -29,12 +31,6 @@ BASE_FEATURE(kWebViewCheckReturnResources,
 BASE_FEATURE(kWebViewClearFunctorInBackground,
              "WebViewClearFunctorInBackground",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Use the SafeBrowsingApiHandlerBridge which uses the connectionless GMS APIs.
-// This Feature is checked and used in downstream internal code.
-BASE_FEATURE(kWebViewConnectionlessSafeBrowsing,
-             "WebViewConnectionlessSafeBrowsing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Kill switch for adding CHECKs to loading pak files.
 BASE_FEATURE(kWebViewCheckPakFileDescriptors,
@@ -88,6 +84,11 @@ BASE_FEATURE(kWebViewMixedContentAutoupgrades,
              "WebViewMixedContentAutoupgrades",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// This enables WebView audio to be muted using an API.
+BASE_FEATURE(kWebViewMuteAudio,
+             "WebViewMuteAudio",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Only allow extra headers added via loadUrl() to be sent to the original
 // origin; strip them from the request if a cross-origin redirect occurs.
 BASE_FEATURE(kWebViewExtraHeadersSameOriginOnly,
@@ -98,12 +99,6 @@ BASE_FEATURE(kWebViewExtraHeadersSameOriginOnly,
 BASE_FEATURE(kWebViewJavaJsBridgeMojo,
              "WebViewJavaJsBridgeMojo",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable reporting filtered metrics from webview clients used to be
-// out-sampled.
-BASE_FEATURE(kWebViewMetricsFiltering,
-             "WebViewMetricsFiltering",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Field trial feature for controlling support of Origin Trials on WebView.
 BASE_FEATURE(kWebViewOriginTrials,
@@ -157,10 +152,21 @@ BASE_FEATURE(kWebViewUseMetricsUploadServiceOnlySdkRuntime,
              "WebViewUseMetricsUploadServiceOnlySdkRuntime",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Propagate Android's network notification signals to networking stack
-BASE_FEATURE(kWebViewPropagateNetworkSignals,
-             "webViewPropagateNetworkSignals",
+// Enables prerender2 on WebView (https://crbug.com/1517472).
+BASE_FEATURE(kWebViewPrerender2,
+             "WebViewPrerender2",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Propagate Android's network change notification signals to the networking
+// stack. This only propagates the following notifications:
+// * OnNetworkConnected
+// * OnNetworkDisconnected
+// * OnNetworkMadeDefault
+// * OnNetworkSoonToDisconnect.
+// AreNetworkHandlesCurrentlySupported is also controlled through this flag.
+BASE_FEATURE(kWebViewPropagateNetworkChangeSignals,
+             "webViewPropagateNetworkChangeSignals",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Provide the unreduced product version from the AwContentBrowserClient API,
 // regardless of the user agent reduction policy.

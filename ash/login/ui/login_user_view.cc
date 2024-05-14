@@ -125,7 +125,7 @@ class EnterpriseBadgeLayout : public views::LayoutManager {
     DCHECK_EQ(host->children().size(), 1U);
     const gfx::Rect content_bounds(host->GetContentsBounds());
     const int offset = content_bounds.width() - size_;
-    auto* child = host->children()[0];
+    auto* child = host->children()[0].get();
     child->SetPosition({offset, offset});
     child->SetSize({size_, size_});
   }
@@ -155,7 +155,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
     }
 
    private:
-    const raw_ptr<LoginUserView::UserImage, ExperimentalAsh> view_;
+    const raw_ptr<LoginUserView::UserImage> view_;
   };
 
   explicit UserImage(LoginDisplayStyle style)
@@ -210,7 +210,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
 
     bool is_managed =
         user.user_account_manager ||
-        user.basic_user_info.type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+        user.basic_user_info.type == user_manager::UserType::kPublicAccount;
     enterprise_icon_container_->SetVisible(is_managed);
   }
 
@@ -259,8 +259,8 @@ class LoginUserView::UserImage : public NonAccessibleView {
     }
   }
 
-  raw_ptr<AnimatedRoundedImageView, ExperimentalAsh> image_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> enterprise_icon_container_ = nullptr;
+  raw_ptr<AnimatedRoundedImageView> image_ = nullptr;
+  raw_ptr<views::View> enterprise_icon_container_ = nullptr;
   bool animation_enabled_ = false;
 
   base::WeakPtrFactory<UserImage> weak_factory_{this};
@@ -331,7 +331,7 @@ class LoginUserView::UserLabel : public NonAccessibleView {
   const std::u16string& displayed_name() const { return user_name_->GetText(); }
 
  private:
-  raw_ptr<views::Label, ExperimentalAsh> user_name_ = nullptr;
+  raw_ptr<views::Label> user_name_ = nullptr;
   const int label_width_;
 };
 
@@ -370,7 +370,7 @@ class LoginUserView::TapButton : public views::Button {
   }
 
  private:
-  const raw_ptr<LoginUserView, ExperimentalAsh> parent_;
+  const raw_ptr<LoginUserView> parent_;
 };
 
 BEGIN_METADATA(LoginUserView, TapButton, views::Button)
@@ -593,8 +593,8 @@ gfx::Size LoginUserView::CalculatePreferredSize() const {
   }
 }
 
-void LoginUserView::Layout() {
-  views::View::Layout();
+void LoginUserView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
   tap_button_->SetBoundsRect(GetLocalBounds());
 }
 
@@ -632,7 +632,7 @@ void LoginUserView::UpdateCurrentUserState() {
     accessible_name = l10n_util::GetStringFUTF16(
         IDS_ASH_LOGIN_POD_MANAGED_ACCESSIBLE_NAME, email);
   } else if (current_user_.basic_user_info.type ==
-             user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+             user_manager::UserType::kPublicAccount) {
     accessible_name = l10n_util::GetStringFUTF16(
         IDS_ASH_LOGIN_POD_MANAGED_ACCESSIBLE_NAME,
         base::UTF8ToUTF16(current_user_.basic_user_info.display_name));
@@ -653,7 +653,7 @@ void LoginUserView::UpdateCurrentUserState() {
 
   user_image_->UpdateForUser(current_user_);
   user_label_->UpdateForUser(current_user_);
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void LoginUserView::UpdateOpacity() {
@@ -693,8 +693,7 @@ void LoginUserView::UpdateOpacity() {
 }
 
 void LoginUserView::SetLargeLayout() {
-  auto* layout = SetLayoutManager(std::make_unique<views::TableLayout>());
-  layout
+  SetLayoutManager(std::make_unique<views::TableLayout>())
       ->AddColumn(views::LayoutAlignment::kEnd, views::LayoutAlignment::kCenter,
                   1.0f, views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
       .AddPaddingColumn(views::TableLayout::kFixedSize,
@@ -714,7 +713,7 @@ void LoginUserView::SetLargeLayout() {
       .AddRows(1, views::TableLayout::kFixedSize);
 
   AddChildView(tap_button_.get());
-  layout->SetChildViewIgnoredByLayout(tap_button_, true);
+  tap_button_->SetProperty(views::kViewIgnoredByLayoutKey, true);
 
   AddChildView(user_image_.get());
   user_image_->SetProperty(views::kTableColAndRowSpanKey, gfx::Size(5, 1));

@@ -32,8 +32,7 @@
 #include "extensions/common/constants.h"
 #include "url/origin.h"
 
-namespace extensions {
-namespace declarative_net_request {
+namespace extensions::declarative_net_request {
 namespace {
 
 namespace flat_rule = url_pattern_index::flat;
@@ -371,7 +370,8 @@ std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
     rulesets_to_evaluate.emplace_back(&ruleset, host_permission_access);
   }
 
-  const RequestParams params(request);
+  // TODO(crbug.com/1141166): Add response headers here.
+  const RequestParams params(request, /*response_headers=*/nullptr);
   std::optional<RequestAction> before_request_action =
       GetBeforeRequestAction(rulesets_to_evaluate, request, params);
 
@@ -474,5 +474,4 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
   return true;
 }
 
-}  // namespace declarative_net_request
-}  // namespace extensions
+}  // namespace extensions::declarative_net_request

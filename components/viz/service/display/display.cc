@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -59,7 +60,6 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -87,7 +87,9 @@ const DrawQuad::Material kNonSplittableMaterials[] = {
     DrawQuad::Material::kYuvVideoContent,
 };
 
+#if !BUILDFLAG(IS_MAC)
 constexpr base::TimeDelta kAllowedDeltaFromFuture = base::Milliseconds(16);
+#endif
 
 // A lower bounds for GetEstimatedDisplayDrawTime, influenced by
 // Compositing.Display.DrawToSwapUs.
@@ -112,22 +114,33 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
   // before swap-time), then invalidate the feedback. Also report how far into
   // the future (or from the past) the timestamps are.
   // https://crbug.com/894440
-  const auto now = base::TimeTicks::Now();
+  //
   // The timestamp for the presentation feedback may have a different source and
   // therefore the timestamp can be slightly in the future in comparison with
   // base::TimeTicks::Now(). Such presentation feedbacks should not be rejected.
   // See https://crbug.com/1040178
   // Sometimes we snap the feedback's time stamp to the nearest vsync, and that
   // can be offset by one vsync-internal. These feedback has kVSync set.
+
+  // If the the presentation is from before the swap-time, then invalidate
+  // the feedback.
+  if (feedback.timestamp < draw_time) {
+    return gfx::PresentationFeedback::Failure();
+  }
+
+  // All |feedback.timestamp| on Mac are valid and should not be sanitized.
+#if !BUILDFLAG(IS_MAC)
+  const auto now = base::TimeTicks::Now();
   const auto allowed_delta_from_future =
       ((feedback.flags & (gfx::PresentationFeedback::kHWClock |
                           gfx::PresentationFeedback::kVSync)) != 0)
           ? kAllowedDeltaFromFuture
           : base::TimeDelta();
-  if ((feedback.timestamp > now + allowed_delta_from_future) ||
-      (feedback.timestamp < draw_time)) {
+  if (feedback.timestamp > now + allowed_delta_from_future) {
     return gfx::PresentationFeedback::Failure();
   }
+#endif
+
   return feedback;
 }
 
@@ -911,7 +924,7 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   bool should_draw = have_copy_requests || (have_damage && size_matches);
   client_->DisplayWillDrawAndSwap(should_draw, &frame.render_pass_list);
 
-  absl::optional<base::ElapsedTimer> draw_timer;
+  std::optional<base::ElapsedTimer> draw_timer;
   if (should_draw) {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
@@ -938,6 +951,9 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
       // This should only be set for software draws in synchronous compositor.
       DCHECK(!disable_image_filtering);
     }
+
+    DBG_LOG("renderer.ptr", "renderer = %p%s", this,
+            renderer_.get() == software_renderer_ ? " (software)" : "");
 
     draw_timer.emplace();
     overlay_processor_->SetFrameSequenceNumber(frame_sequence_number_);

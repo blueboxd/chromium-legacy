@@ -18,14 +18,14 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using autofill::FieldType;
 using autofill::FormData;
-using autofill::ServerFieldType;
 
 namespace password_manager {
 
 namespace {
 
-constexpr ServerFieldType kPasswordRelatedServerTypes[] = {
+constexpr FieldType kPasswordRelatedServerTypes[] = {
     autofill::USERNAME,     autofill::USERNAME_AND_EMAIL_ADDRESS,
     autofill::PASSWORD,     autofill::ACCOUNT_CREATION_PASSWORD,
     autofill::NEW_PASSWORD, autofill::CONFIRMATION_PASSWORD,
@@ -39,7 +39,7 @@ void SetPredictionType(bool pick_meaningful_type,
   } else {
     // Set a random type, probably even invalid.
     prediction.type =
-        static_cast<ServerFieldType>(provider.ConsumeIntegral<uint8_t>());
+        static_cast<FieldType>(provider.ConsumeIntegral<uint8_t>());
   }
 }
 
@@ -66,7 +66,7 @@ FormPredictions GenerateFormPredictions(const FormData& form_data,
       PasswordFieldPrediction field_prediction;
       SetPredictionType(pick_meaningful_type, provider, field_prediction);
       field_prediction.may_use_prefilled_placeholder = use_placeholder;
-      field_prediction.renderer_id = field.unique_renderer_id;
+      field_prediction.renderer_id = field.renderer_id;
       predictions.fields.push_back(std::move(field_prediction));
     }
   }

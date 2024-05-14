@@ -17,10 +17,10 @@
 #include "components/safe_browsing/content/browser/triggers/trigger_manager.h"
 #include "components/safe_browsing/content/browser/triggers/trigger_throttler.h"
 #include "components/safe_browsing/content/browser/triggers/trigger_util.h"
+#include "components/safe_browsing/content/browser/unsafe_resource_util.h"
 #include "components/safe_browsing/content/browser/web_contents_key.h"
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/common/features.h"
-#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -162,7 +162,7 @@ void AdSamplerTrigger::CreateAdSampleReport() {
           base::Unretained(trigger_manager_), TriggerType::AD_SAMPLE,
           GetWebContentsKey(web_contents()), base::TimeDelta(),
           /*did_proceed=*/false, /*num_visits=*/0, error_options,
-          /*warning_shown_ts=*/absl::nullopt,
+          /*warning_shown_ts=*/std::nullopt,
           /*is_hats_candidate=*/false),
       base::Milliseconds(finish_report_delay_ms_));
 

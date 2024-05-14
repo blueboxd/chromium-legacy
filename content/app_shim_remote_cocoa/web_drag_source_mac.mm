@@ -25,6 +25,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/drop_data.h"
+#include "net/base/apple/url_conversions.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -294,7 +295,7 @@ using content::DropData;
     // TODO(https://crbug.com/898608): The |downloadFileName_| and
     // |downloadURL_| values should be computed by the caller.
     if (_dropData->download_metadata.empty()) {
-      absl::optional<base::FilePath> suggestedFilename =
+      std::optional<base::FilePath> suggestedFilename =
           _dropData->GetSafeFilenameForImageFileContents();
       if (suggestedFilename) {
         _downloadFileName = std::move(*suggestedFilename);

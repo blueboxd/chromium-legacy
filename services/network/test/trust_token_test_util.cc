@@ -45,7 +45,7 @@ mojom::TrustTokenOperationStatus
 TrustTokenRequestHelperTest::ExecuteBeginOperationAndWaitForResult(
     TrustTokenRequestHelper* helper,
     net::URLRequest* request) {
-  base::test::TestFuture<absl::optional<net::HttpRequestHeaders>,
+  base::test::TestFuture<std::optional<net::HttpRequestHeaders>,
                          mojom::TrustTokenOperationStatus>
       future;
   helper->Begin(request->url(), future.GetCallback());
@@ -63,13 +63,6 @@ TrustTokenRequestHelperTest::ExecuteFinalizeAndWaitForResult(
   base::test::TestFuture<mojom::TrustTokenOperationStatus> future;
   helper->Finalize(*response->headers.get(), future.GetCallback());
   return future.Get();
-}
-
-int TrustTokenEnumToInt(mojom::TrustTokenMajorVersion version) {
-  if (version == mojom::TrustTokenMajorVersion::kPrivateStateTokenV1) {
-    return 1;
-  }
-  return 0;
 }
 
 std::string TrustTokenEnumToString(mojom::TrustTokenOperationType operation) {
@@ -125,10 +118,10 @@ TrustTokenTestParameters& TrustTokenTestParameters::operator=(
     const TrustTokenTestParameters&) = default;
 
 TrustTokenTestParameters::TrustTokenTestParameters(
-    network::mojom::TrustTokenMajorVersion version,
+    int version,
     network::mojom::TrustTokenOperationType operation,
-    absl::optional<network::mojom::TrustTokenRefreshPolicy> refresh_policy,
-    absl::optional<std::vector<std::string>> issuer_specs)
+    std::optional<network::mojom::TrustTokenRefreshPolicy> refresh_policy,
+    std::optional<std::vector<std::string>> issuer_specs)
     : version(version),
       operation(operation),
       refresh_policy(refresh_policy),
@@ -141,9 +134,8 @@ SerializeTrustTokenParametersAndConstructExpectation(
 
   auto parameters =
       base::Value::Dict()
-          .Set("version", TrustTokenEnumToInt(input.version))
+          .Set("version", input.version)
           .Set("operation", TrustTokenEnumToString(input.operation));
-  trust_token_params->version = input.version;
   trust_token_params->operation = input.operation;
 
   if (input.refresh_policy.has_value()) {

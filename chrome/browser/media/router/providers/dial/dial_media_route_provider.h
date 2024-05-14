@@ -93,11 +93,11 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
   void DetachRoute(const std::string& route_id) override;
   void EnableMdnsDiscovery() override;
   void DiscoverSinksNow() override;
-  void CreateMediaRouteController(
+  void BindMediaController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer,
-      CreateMediaRouteControllerCallback callback) override;
+      BindMediaControllerCallback callback) override;
   void GetState(GetStateCallback callback) override;
 
   void SetActivityManagerForTest(
@@ -163,7 +163,7 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
                         TerminateRouteCallback callback);
   void HandleStopAppResult(const MediaRoute::Id& route_id,
                            TerminateRouteCallback callback,
-                           const absl::optional<std::string>& message,
+                           const std::optional<std::string>& message,
                            mojom::RouteRequestResultCode result_code);
   void NotifyAllOnRoutesUpdated();
   void NotifyOnRoutesUpdated(const std::vector<MediaRoute>& routes);

@@ -72,8 +72,9 @@
 namespace {
 
 class OmniboxRemoveSuggestionButton : public views::ImageButton {
+  METADATA_HEADER(OmniboxRemoveSuggestionButton, views::ImageButton)
+
  public:
-  METADATA_HEADER(OmniboxRemoveSuggestionButton);
   explicit OmniboxRemoveSuggestionButton(PressedCallback callback)
       : ImageButton(std::move(callback)) {
     views::ConfigureVectorImageButton(this);
@@ -94,7 +95,7 @@ class OmniboxRemoveSuggestionButton : public views::ImageButton {
   }
 };
 
-BEGIN_METADATA(OmniboxRemoveSuggestionButton, views::ImageButton)
+BEGIN_METADATA(OmniboxRemoveSuggestionButton)
 END_METADATA
 
 }  // namespace
@@ -103,9 +104,9 @@ END_METADATA
 // OmniboxResultSelectionIndicator
 
 class OmniboxResultSelectionIndicator : public views::View {
- public:
-  METADATA_HEADER(OmniboxResultSelectionIndicator);
+  METADATA_HEADER(OmniboxResultSelectionIndicator, views::View)
 
+ public:
   const bool cr2023_expanded_state_colors_enabled =
       omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
           omnibox::kExpandedStateColors);
@@ -153,7 +154,7 @@ class OmniboxResultSelectionIndicator : public views::View {
   }
 };
 
-BEGIN_METADATA(OmniboxResultSelectionIndicator, views::View)
+BEGIN_METADATA(OmniboxResultSelectionIndicator)
 END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -341,7 +342,7 @@ std::unique_ptr<views::Background> OmniboxResultView::GetPopupCellBackground(
     gfx::RoundedCornersF radii = {0, static_cast<float>(view->height()),
                                   static_cast<float>(view->height()), 0};
     return views::CreateThemedRoundedRectBackground(
-        GetOmniboxBackgroundColorId(part_state), radii, 0);
+        GetOmniboxBackgroundColorId(part_state), radii);
   }
 
   return views::CreateThemedSolidBackground(
@@ -362,7 +363,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   if (match_.answer) {
     suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
     suggestion_view_->description()->SetTextWithStyling(
-        match_.answer->second_line(), true);
+        match_.answer->second_line(), false);
   } else {
     // Not all 2-line suggestions have deemphasized descriptions; specifically,
     // calculator answers are 2-line but not deemphasized.
@@ -422,10 +423,8 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
       selected ? kColorOmniboxResultsTextSelected : kColorOmniboxText;
   bool prefers_contrast =
       GetNativeTheme() && GetNativeTheme()->UserHasContrastPreference();
-  if (match_.answer) {
-    suggestion_view_->content()->ApplyTextColor(default_id);
-    suggestion_view_->description()->ApplyTextColor(default_id);
-  } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+  if (match_.answer ||
+      match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
     suggestion_view_->content()->ApplyTextColor(default_id);
     suggestion_view_->description()->ApplyTextColor(dimmed_id);
   } else if (match_.type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
@@ -611,13 +610,16 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   node_data->role = ax::mojom::Role::kListBoxOption;
 
+  const auto* autocomplete_controller =
+      popup_view_->controller()->autocomplete_controller();
+
   // TODO(tommycli): We re-fetch the original match from the popup model,
   // because |match_| already has its contents and description swapped by this
   // class, and we don't want that for the bubble. We should improve this.
   bool is_selected = GetMatchSelected();
-  if (model_index_ < popup_view_->controller()->result().size()) {
+  if (model_index_ < autocomplete_controller->result().size()) {
     AutocompleteMatch raw_match =
-        popup_view_->controller()->result().match_at(model_index_);
+        autocomplete_controller->result().match_at(model_index_);
     // The selected match can have a special name, e.g. when is one or more
     // buttons that can be tabbed to.
     std::u16string label =
@@ -632,7 +634,7 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                              model_index_ + 1);
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                             popup_view_->controller()->result().size());
+                             autocomplete_controller->result().size());
 
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, is_selected);
   if (IsMouseHovered())
@@ -729,7 +731,7 @@ DEFINE_ENUM_CONVERTERS(OmniboxPartState,
                        {OmniboxPartState::HOVERED, u"HOVERED"},
                        {OmniboxPartState::SELECTED, u"SELECTED"})
 
-BEGIN_METADATA(OmniboxResultView, views::View)
+BEGIN_METADATA(OmniboxResultView)
 ADD_READONLY_PROPERTY_METADATA(bool, MatchSelected)
 ADD_READONLY_PROPERTY_METADATA(OmniboxPartState, ThemeState)
 ADD_READONLY_PROPERTY_METADATA(gfx::Image, Icon)

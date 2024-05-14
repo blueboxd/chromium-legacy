@@ -4555,7 +4555,7 @@ TEST_F(AXPlatformNodeWinTest, UIAItemStatusPropertyId) {
 
   Init(root, row1, header1, header2, header3, header4);
 
-  auto* row_node = GetRoot()->children()[0];
+  auto* row_node = GetRoot()->children()[0].get();
 
   EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
                          row_node->children()[0]),
@@ -5804,7 +5804,7 @@ TEST_F(AXPlatformNodeWinTest, IsUIAControlForStatusRole) {
 
 TEST_F(AXPlatformNodeWinTest, UIALandmarkType) {
   auto TestLandmarkType = [this](ax::mojom::Role node_role,
-                                 absl::optional<LONG> expected_landmark_type,
+                                 std::optional<LONG> expected_landmark_type,
                                  const std::string& node_name = {}) {
     AXNodeData root_data;
     root_data.id = 1;
@@ -7299,7 +7299,7 @@ TEST_F(AXPlatformNodeWinTest, ISelectionItemProviderGrid) {
 
   Init(root, row1, cell1);
 
-  const auto* row = GetRoot()->children()[0];
+  const auto* row = GetRoot()->children()[0].get();
   ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
       QueryInterfaceFromNode<IRawElementProviderSimple>(row->children()[0]);
 
@@ -7369,7 +7369,7 @@ TEST_F(AXPlatformNodeWinTest, ISelectionItemProviderGetSelectionContainer) {
   ComPtr<IRawElementProviderSimple> container_provider =
       GetRootIRawElementProviderSimple();
 
-  const auto* row = GetRoot()->children()[0];
+  const auto* row = GetRoot()->children()[0].get();
   ComPtr<ISelectionItemProvider> item_provider =
       QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
 
@@ -7393,7 +7393,7 @@ TEST_F(AXPlatformNodeWinTest, ISelectionItemProviderSelectFollowFocus) {
 
   Init(root, tab1);
 
-  auto* tab1_node = GetRoot()->children()[0];
+  auto* tab1_node = GetRoot()->children()[0].get();
   ComPtr<IRawElementProviderSimple> tab1_raw_element_provider_simple =
       QueryInterfaceFromNode<IRawElementProviderSimple>(tab1_node);
   ASSERT_NE(nullptr, tab1_raw_element_provider_simple.Get());
@@ -7847,7 +7847,7 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_BulkFetch) {
 
   // Note: base::JSONReader is fine for unit tests, but production code
   // that parses untrusted JSON should always use DataDecoder instead.
-  absl::optional<base::Value> result_val =
+  std::optional<base::Value> result_val =
       base::JSONReader::Read(response, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(result_val);
   const base::Value::Dict& result = result_val->GetDict();

@@ -6,19 +6,18 @@ import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {fakeDriveVolumeId, MockVolumeManager} from '../../background/js/mock_volume_manager.js';
-import {VolumeInfoImpl} from '../../background/js/volume_info_impl.js';
-import {EntryList, FakeEntryImpl, VolumeEntry} from '../../common/js/files_app_entry_types.js';
+import {VolumeInfo} from '../../background/js/volume_info.js';
+import {EntryList, FakeEntryImpl, FilesAppEntry, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {isSinglePartitionFormatEnabled} from '../../common/js/flags.js';
 import {MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
-import {reportPromise, waitUntil} from '../../common/js/test_error_reporting.js';
+import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {str} from '../../common/js/translations.js';
 import {TrashRootEntry} from '../../common/js/trash.js';
 import {RootType, VolumeType} from '../../common/js/volume_manager_types.js';
-import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {DialogType} from '../../externs/ts/state.js';
+import {DialogType} from '../../state/state.js';
 
 import {AndroidAppListModel} from './android_app_list_model.js';
-import {constants} from './constants.js';
+import {ODFS_EXTENSION_ID} from './constants.js';
 import {DirectoryModel} from './directory_model.js';
 import {createFakeAndroidAppListModel} from './fake_android_app_list_model.js';
 import {createFakeDirectoryModel} from './mock_directory_model.js';
@@ -61,15 +60,15 @@ export function setUp() {
   // Override VolumeInfo.prototype.resolveDisplayRoot to be sync.
   // @ts-ignore: error TS7006: Parameter 'successCallback' implicitly has an
   // 'any' type.
-  VolumeInfoImpl.prototype.resolveDisplayRoot = function(successCallback) {
+  VolumeInfo.prototype.resolveDisplayRoot = function(successCallback) {
     // @ts-ignore: error TS2341: Property 'fileSystem_' is private and only
-    // accessible within class 'VolumeInfoImpl'.
+    // accessible within class 'VolumeInfo'.
     this.displayRoot_ = this.fileSystem_.root;
     // @ts-ignore: error TS2341: Property 'displayRoot_' is private and only
-    // accessible within class 'VolumeInfoImpl'.
+    // accessible within class 'VolumeInfo'.
     successCallback(this.displayRoot_);
     // @ts-ignore: error TS2341: Property 'fileSystem_' is private and only
-    // accessible within class 'VolumeInfoImpl'.
+    // accessible within class 'VolumeInfo'.
     return Promise.resolve(this.fileSystem_.root);
   };
 
@@ -423,8 +422,7 @@ export function testOrderAndNestItems() {
       MockVolumeManager.createMockVolumeInfo(VolumeType.SMB, 'smb:file-share'));
   // Add ODFS.
   volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
-      VolumeType.PROVIDED, 'provided:odfs', '', '',
-      constants.ODFS_EXTENSION_ID));
+      VolumeType.PROVIDED, 'provided:odfs', '', '', ODFS_EXTENSION_ID));
 
   const androidAppListModelWithApps =
       createFakeAndroidAppListModel(['android:app1', 'android:app2']);
@@ -573,8 +571,7 @@ export function testOrderAndNestItems() {
 /**
  * Tests model with My files enabled.
  */
-/** @param {()=>void} callback */
-export function testMyFilesVolumeEnabled(callback) {
+export async function testMyFilesVolumeEnabled() {
   const volumeManager = new MockVolumeManager();
   // Item 1 of the volume info list should have Downloads volume type.
   assertEquals(
@@ -635,19 +632,16 @@ export function testMyFilesVolumeEnabled(callback) {
     }
   });
 
-  reportPromise(
-      waitUntil(() => {
-        // Wait for Downloads folder to be read from My files volume.
-        return foundEntries.length >= 1;
-      }).then(() => {
-        // @ts-ignore: error TS7005: Variable 'foundEntries' implicitly has an
-        // 'any[]' type.
-        assertEquals(foundEntries[0].name, 'Downloads');
-        // @ts-ignore: error TS7005: Variable 'foundEntries' implicitly has an
-        // 'any[]' type.
-        assertTrue(foundEntries[0].isDirectory);
-      }),
-      callback);
+  await waitUntil(() => {
+    // Wait for Downloads folder to be read from My files volume.
+    return foundEntries.length >= 1;
+  });
+  // @ts-ignore: error TS7005: Variable 'foundEntries' implicitly has an
+  // 'any[]' type.
+  assertEquals(foundEntries[0].name, 'Downloads');
+  // @ts-ignore: error TS7005: Variable 'foundEntries' implicitly has an
+  // 'any[]' type.
+  assertTrue(foundEntries[0].isDirectory);
 }
 
 /**

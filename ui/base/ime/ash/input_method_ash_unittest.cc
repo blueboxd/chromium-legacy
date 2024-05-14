@@ -393,8 +393,7 @@ class InputMethodAshTest : public ui::ImeKeyEventDispatcher,
 
   bool stop_propagation_post_ime_;
 
-  raw_ptr<TestInputMethodManager, DanglingUntriaged | ExperimentalAsh>
-      input_method_manager_;
+  raw_ptr<TestInputMethodManager, DanglingUntriaged> input_method_manager_;
 
   base::test::TaskEnvironment task_environment_;
 };
@@ -1773,9 +1772,9 @@ TEST_F(InputMethodAshTest, GetsGrammarFragments) {
   EXPECT_EQ(input_method_ash_->GetGrammarFragmentAtCursor(), fragment);
 
   input_method_ash_->SetEditableSelectionRange(gfx::Range(7, 7));
-  EXPECT_EQ(input_method_ash_->GetGrammarFragmentAtCursor(), absl::nullopt);
+  EXPECT_EQ(input_method_ash_->GetGrammarFragmentAtCursor(), std::nullopt);
   input_method_ash_->SetEditableSelectionRange(gfx::Range(4, 7));
-  EXPECT_EQ(input_method_ash_->GetGrammarFragmentAtCursor(), absl::nullopt);
+  EXPECT_EQ(input_method_ash_->GetGrammarFragmentAtCursor(), std::nullopt);
 }
 
 }  // namespace ash

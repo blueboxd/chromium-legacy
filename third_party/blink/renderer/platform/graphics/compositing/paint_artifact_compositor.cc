@@ -361,9 +361,8 @@ bool NeedsFullUpdateAfterPaintingChunk(
 
   // Solid color status change requires full update to change the cc::Layer
   // type.
-  if (RuntimeEnabledFeatures::SolidColorLayersEnabled() &&
-      previous.background_color.is_solid_color !=
-          repainted.background_color.is_solid_color) {
+  if (previous.background_color.is_solid_color !=
+      repainted.background_color.is_solid_color) {
     return true;
   }
 
@@ -462,7 +461,7 @@ bool PaintArtifactCompositor::DecompositeEffect(
   auto is_composited_scroll = [this](const TransformPaintPropertyNode& t) {
     return NeedsCompositedScrolling(t);
   };
-  absl::optional<PropertyTreeState> upcast_state = group_state.CanUpcastWith(
+  std::optional<PropertyTreeState> upcast_state = group_state.CanUpcastWith(
       layer.GetPropertyTreeState(), is_composited_scroll);
   if (!upcast_state)
     return false;

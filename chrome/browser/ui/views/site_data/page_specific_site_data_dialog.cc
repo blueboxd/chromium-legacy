@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/site_data/page_specific_site_data_dialog_controller.h"
 #include "chrome/browser/ui/views/site_data/site_data_row_view.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_model.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -290,11 +291,6 @@ class PageSpecificSiteDataDialogModelDelegate : public ui::DialogModelDelegate {
     DeleteMatchingHostNodeFromModel(allowed_cookies_tree_model_.get(), origin);
     DeleteMatchingHostNodeFromModel(blocked_cookies_tree_model_.get(), origin);
 
-    if (!base::FeatureList::IsEnabled(
-            browsing_data::features::kMigrateStorageToBDM)) {
-      DeletePartitionedStorage(origin);
-    }
-
     // Removing origin from Browsing Data Model to support new storage types.
     // The UI assumes deletion completed successfully, so we're passing
     // `base::DoNothing` callback.
@@ -399,7 +395,8 @@ class PageSpecificSiteDataDialogModelDelegate : public ui::DialogModelDelegate {
                          [](const url::Origin& origin) { return origin; }},
         *entry.data_owner);
     return CreateSite(entry_origin, from_allowed_model,
-                      IsBrowsingDataEntryViewFullyPartitioned(entry));
+                      IsBrowsingDataEntryViewFullyPartitioned(entry) &&
+                          IsOnlyPartitionedStorageAccessAllowed(entry_origin));
   }
 
   bool IsBrowsingDataEntryViewFullyPartitioned(
@@ -661,7 +658,7 @@ views::Widget* ShowPageSpecificSiteDataDialog(
           base::BindRepeating(&PageSpecificSiteDataDialogModelDelegate::
                                   OnDialogExplicitlyClosed,
                               base::Unretained(delegate)),
-          ui::DialogModelButton::Params().SetLabel(
+          ui::DialogModel::Button::Params().SetLabel(
               l10n_util::GetStringUTF16(IDS_DONE)))
       .SetCloseActionCallback(base::BindOnce(
           &PageSpecificSiteDataDialogModelDelegate::OnDialogExplicitlyClosed,

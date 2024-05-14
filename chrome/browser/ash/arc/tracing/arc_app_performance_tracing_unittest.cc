@@ -20,6 +20,7 @@
 #include "chrome/browser/ash/arc/tracing/test/arc_app_performance_tracing_test_helper.h"
 #include "chrome/browser/ash/arc/tracing/uma_perf_reporting.h"
 #include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -50,9 +51,9 @@ constexpr base::TimeDelta kTestPeriod = base::Seconds(1) / (60 / 20);
 constexpr int kMillisecondsToFirstFrame = 500;
 
 struct Application {
-  std::string package;
-  std::string activity;
-  std::string name;
+  const char* package;
+  const char* activity;
+  const char* name;
 };
 
 std::string GetStatisticName(const std::string& name,
@@ -79,6 +80,27 @@ int64_t ReadFocusStatistics(const std::string& name) {
   return ReadStatistics(name, kFocusCategory);
 }
 
+constexpr std::initializer_list<Application> kApplications{
+    {"com.mojang.minecraftpe", "com.mojang.minecraftpe.MainActivity",
+     "MinecraftConsumerEdition"},
+    {"com.innersloth.spacemafia",
+     "com.innersloth.spacemafia.EosUnityPlayerActivity", "AmongUs"},
+    {"com.plarium.raidlegends", "com.plarium.unity_app.UnityMainActivity",
+     "RaidLegends"},
+    {"com.valvesoftware.underlords", "com.valvesoftware.underlords.applauncher",
+     "Underlords"},
+    {"com.tocaboca.tocalifeworld", "com.tocaboca.activity.TocaBocaMainActivity",
+     "TocaLife"},
+    {"com.king.candycrushsaga",
+     "com.king.candycrushsaga.CandyCrushSagaActivity", "CandyCrush"},
+    {"com.playrix.homescapes", "com.playrix.homescapes.GoogleActivity",
+     "Homescapes"},
+    {"com.ea.gp.fifamobile", "com.ea.gp.fifamobile.FifaMainActivity",
+     "FIFAMobile"},
+    {"com.miHoYo.GenshinImpact", "com.miHoYo.GetMobileInfo.MainActivity",
+     "GenshinImpact"},
+};
+
 }  // namespace
 
 // BrowserWithTestWindowTest contains required ash/shell support that would not
@@ -97,6 +119,11 @@ class ArcAppPerformanceTracingTest : public BrowserWithTestWindowTest {
 
   // testing::Test:
   void SetUp() override {
+    ForgetAppMetrics(kFocusCategory);
+    for (const auto& app : kApplications) {
+      ForgetAppMetrics(app.name);
+    }
+
     BrowserWithTestWindowTest::SetUp();
 
     arc_test_.SetUp(profile());
@@ -117,9 +144,32 @@ class ArcAppPerformanceTracingTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
+  TestingProfile* CreateProfile(const std::string& profile_name) override {
+    auto* profile = BrowserWithTestWindowTest::CreateProfile(profile_name);
+    auto* user = user_manager()->FindUserAndModify(
+        AccountId::FromUserEmail(profile_name));
+    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile);
+    return profile;
+  }
+
  protected:
   int64_t task_id = 1;
   std::unique_ptr<exo::Surface> shell_root_surface_;
+
+  void ForgetAppMetrics(const std::string& category) {
+    base::StatisticsRecorder::ForgetHistogramForTesting(
+        GetStatisticName("FPS2", category));
+    base::StatisticsRecorder::ForgetHistogramForTesting(
+        GetStatisticName("PerceivedFPS2", category));
+    base::StatisticsRecorder::ForgetHistogramForTesting(
+        GetStatisticName("CommitDeviation2", category));
+    base::StatisticsRecorder::ForgetHistogramForTesting(
+        GetStatisticName("PresentDeviation2", category));
+    base::StatisticsRecorder::ForgetHistogramForTesting(
+        GetStatisticName("RenderQuality2", category));
+    base::StatisticsRecorder::ForgetHistogramForTesting(
+        GetStatisticName("JanksPerMinute2", category));
+  }
 
   // Ensures that tracing is ready to begin, which means up to the point that
   // waiting for the delayed start has just begun.
@@ -151,7 +201,8 @@ class ArcAppPerformanceTracingTest : public BrowserWithTestWindowTest {
     auto* arc_widget = PrepareArcAppTracing(package_name, activity_name);
     tracing_helper().GetTracingSession()->FireTimerForTesting();
     DCHECK(tracing_helper().GetTracingSession());
-    DCHECK(tracing_helper().GetTracingSession()->TracingActive());
+    DCHECK(tracing_helper().GetTracingSession()->tracing_active());
+    DCHECK(tracing_helper().GetTracingSession()->HasPresentFrames());
     return arc_widget;
   }
 
@@ -173,7 +224,7 @@ class ArcAppPerformanceTracingTest : public BrowserWithTestWindowTest {
 
  private:
   ArcAppPerformanceTracingTestHelper tracing_helper_;
-  ArcAppTest arc_test_;
+  ArcAppTest arc_test_{ArcAppTest::UserManagerMode::kDoNothing};
 };
 
 TEST_F(ArcAppPerformanceTracingTest, TracingScheduled) {
@@ -206,7 +257,8 @@ TEST_F(ArcAppPerformanceTracingTest, TracingScheduled) {
       arc_widget1->GetNativeWindow(), nullptr /* lost_active */);
   ASSERT_TRUE(tracing_helper().GetTracingSession());
   // Scheduled but not started.
-  EXPECT_FALSE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->HasPresentFrames());
 
   // Test reverse order, create window first.
   exo::Surface shell_root_surface2;
@@ -229,7 +281,8 @@ TEST_F(ArcAppPerformanceTracingTest, TracingScheduled) {
       0 /* session_id */);
   ASSERT_TRUE(tracing_helper().GetTracingSession());
   // Scheduled but not started.
-  EXPECT_FALSE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->HasPresentFrames());
   arc_widget1->Close();
   arc_widget2->Close();
 }
@@ -266,19 +319,22 @@ TEST_F(ArcAppPerformanceTracingTest, TracingStoppedOnIdle) {
   tracing_helper().AdvanceTickCount(kNormalInterval);
   tracing_helper().Commit(shell_root_surface_.get(), PresentType::kSuccessful);
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_TRUE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->HasPresentFrames());
 
   tracing_helper().AdvanceTickCount(kNormalInterval * 5);
   tracing_helper().Commit(shell_root_surface_.get(), PresentType::kSuccessful);
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_TRUE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->HasPresentFrames());
 
   // Ten or more missed frames is considered a timeout.
   tracing_helper().AdvanceTickCount(kNormalInterval * 10);
   tracing_helper().Commit(shell_root_surface_.get(), PresentType::kSuccessful);
   // Tracing is rescheduled and no longer active.
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_FALSE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->HasPresentFrames());
   arc_widget->Close();
 }
 
@@ -287,7 +343,8 @@ TEST_F(ArcAppPerformanceTracingTest, TracingStoppedOnIdleBeforeFirstFrame) {
   tracing_helper().GetTracingSession()->FireTimerForTesting();
 
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_TRUE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->HasPresentFrames());
 
   // Ten or more missed frames is considered a timeout.
   tracing_helper().AdvanceTickCount(kNormalInterval * 10);
@@ -295,7 +352,8 @@ TEST_F(ArcAppPerformanceTracingTest, TracingStoppedOnIdleBeforeFirstFrame) {
 
   // Tracing is rescheduled and no longer active.
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_FALSE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->HasPresentFrames());
 
   // Later commits (at normal intervals) will be ignored and not cause problems.
   // We do more than one commit just to be reasonably sure we have given a buggy
@@ -308,7 +366,8 @@ TEST_F(ArcAppPerformanceTracingTest, TracingStoppedOnIdleBeforeFirstFrame) {
 
   // Tracing still not active.
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_FALSE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->HasPresentFrames());
 
   arc_widget->Close();
 }
@@ -322,8 +381,11 @@ TEST_F(ArcAppPerformanceTracingTest, StatisticsReported) {
   tracing_helper().PlayDefaultSequence(shell_root_surface_.get());
   tracing_helper().FireTimerForTesting();
   EXPECT_EQ(45L, ReadFocusStatistics("FPS2"));
+  EXPECT_EQ(48L, ReadFocusStatistics("PerceivedFPS2"));
   EXPECT_EQ(216L, ReadFocusStatistics("CommitDeviation2"));
+  EXPECT_EQ(216L, ReadFocusStatistics("PresentDeviation2"));
   EXPECT_EQ(48L, ReadFocusStatistics("RenderQuality2"));
+  EXPECT_EQ(0L, ReadFocusStatistics("JanksPerMinute2"));
   arc_widget->Close();
 
   arc_widget = PrepareArcFocusAppTracing();
@@ -332,63 +394,42 @@ TEST_F(ArcAppPerformanceTracingTest, StatisticsReported) {
   arc_widget->Close();
 }
 
+TEST_F(ArcAppPerformanceTracingTest, DifferingFPSTypes) {
+  // 32 ms interval is 31.25 FPS.
+  constexpr base::TimeDelta kCommitInterval = base::Milliseconds(32);
+  constexpr int kFrameCount = 100;
+
+  UmaPerfReporting::SetTracingPeriodForTesting(kFrameCount * kCommitInterval);
+  views::Widget* arc_widget = PrepareArcFocusAppTracing();
+
+  tracing_helper().GetTracingSession()->FireTimerForTesting();
+  for (int frame = 0; frame < kFrameCount; frame++) {
+    tracing_helper().AdvanceTickCount(kCommitInterval);
+    // One frame of every ten is missed, so perceived FPS is 28.125.
+    tracing_helper().Commit(
+        shell_root_surface_.get(),
+        (frame % 10) == 0 ? PresentType::kDiscarded : PresentType::kSuccessful);
+  }
+
+  tracing_helper().FireTimerForTesting();
+  EXPECT_EQ(31L, ReadFocusStatistics("FPS2"));
+  EXPECT_EQ(28L, ReadFocusStatistics("PerceivedFPS2"));
+  arc_widget->Close();
+}
+
 TEST_F(ArcAppPerformanceTracingTest, ApplicationStatisticsReported) {
-  std::vector<const Application> applications;
-
-  const Application minecraft = {"com.mojang.minecraftpe",
-                                 "com.mojang.minecraftpe.MainActivity",
-                                 "MinecraftConsumerEdition"};
-  applications.push_back(minecraft);
-
-  const Application among_us = {
-      "com.innersloth.spacemafia",
-      "com.innersloth.spacemafia.EosUnityPlayerActivity", "AmongUs"};
-  applications.push_back(among_us);
-
-  const Application raid_legends = {"com.plarium.raidlegends",
-                                    "com.plarium.unity_app.UnityMainActivity",
-                                    "RaidLegends"};
-  applications.push_back(raid_legends);
-
-  const Application underlords = {"com.valvesoftware.underlords",
-                                  "com.valvesoftware.underlords.applauncher",
-                                  "Underlords"};
-  applications.push_back(underlords);
-
-  const Application toca_life = {"com.tocaboca.tocalifeworld",
-                                 "com.tocaboca.activity.TocaBocaMainActivity",
-                                 "TocaLife"};
-  applications.push_back(toca_life);
-
-  const Application candy_crush = {
-      "com.king.candycrushsaga",
-      "com.king.candycrushsaga.CandyCrushSagaActivity", "CandyCrush"};
-  applications.push_back(candy_crush);
-
-  const Application homescapes = {"com.playrix.homescapes",
-                                  "com.playrix.homescapes.GoogleActivity",
-                                  "Homescapes"};
-  applications.push_back(homescapes);
-
-  const Application fifa_mobile = {"com.ea.gp.fifamobile",
-                                   "com.ea.gp.fifamobile.FifaMainActivity",
-                                   "FIFAMobile"};
-  applications.push_back(fifa_mobile);
-
-  const Application genshin_impact = {"com.miHoYo.GenshinImpact",
-                                      "com.miHoYo.GetMobileInfo.MainActivity",
-                                      "GenshinImpact"};
-  applications.push_back(genshin_impact);
-
-  for (const Application& application : applications) {
+  for (const Application& application : kApplications) {
     views::Widget* const arc_widget =
         StartArcAppTracing(application.package, application.activity);
 
     tracing_helper().PlayDefaultSequence(shell_root_surface_.get());
     tracing_helper().FireTimerForTesting();
     EXPECT_EQ(45L, ReadStatistics("FPS2", application.name));
+    EXPECT_EQ(48L, ReadStatistics("PerceivedFPS2", application.name));
     EXPECT_EQ(216L, ReadStatistics("CommitDeviation2", application.name));
+    EXPECT_EQ(216L, ReadStatistics("PresentDeviation2", application.name));
     EXPECT_EQ(48L, ReadStatistics("RenderQuality2", application.name));
+    EXPECT_EQ(0L, ReadStatistics("JanksPerMinute2", application.name));
     arc_widget->Close();
   }
 }
@@ -469,11 +510,13 @@ TEST_F(ArcAppPerformanceTracingTest, DestroySurface) {
   tracing_helper().GetTracingSession()->FireTimerForTesting();
 
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_TRUE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_TRUE(tracing_helper().GetTracingSession()->HasPresentFrames());
   exo::SetShellRootSurface(arc_widget->GetNativeWindow(), nullptr);
   shell_root_surface_.reset();
   ASSERT_TRUE(tracing_helper().GetTracingSession());
-  EXPECT_FALSE(tracing_helper().GetTracingSession()->TracingActive());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->tracing_active());
+  EXPECT_FALSE(tracing_helper().GetTracingSession()->HasPresentFrames());
 
   // Try to re-active window without surface
   tracing_helper().GetTracing()->OnWindowActivated(

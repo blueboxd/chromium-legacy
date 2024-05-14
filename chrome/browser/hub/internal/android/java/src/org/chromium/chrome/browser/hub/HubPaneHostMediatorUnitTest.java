@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.hub;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
@@ -13,7 +14,7 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.hub.HubPaneHostProperties.ACTION_BUTTON_DATA;
 import static org.chromium.chrome.browser.hub.HubPaneHostProperties.PANE_ROOT_VIEW;
 
-import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.test.filters.SmallTest;
 
@@ -27,9 +28,9 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.cached_flags.CachedFlagUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.CachedFlagUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Tests for {@link HubPaneHostMediator}. */
@@ -39,7 +40,7 @@ public class HubPaneHostMediatorUnitTest {
 
     private @Mock Pane mPane;
     private @Mock FullButtonData mButtonData;
-    private @Mock View mRootView;
+    private @Mock ViewGroup mRootView;
 
     private ObservableSupplierImpl<Pane> mPaneSupplier;
     private ObservableSupplierImpl<FullButtonData> mActionButtonSupplier;
@@ -67,10 +68,12 @@ public class HubPaneHostMediatorUnitTest {
         mPaneSupplier.set(mPane);
         HubPaneHostMediator mediator = new HubPaneHostMediator(mModel, mPaneSupplier);
         ShadowLooper.idleMainLooper();
+        assertNotNull(mModel.get(PANE_ROOT_VIEW));
         assertTrue(mPaneSupplier.hasObservers());
         assertTrue(mActionButtonSupplier.hasObservers());
 
         mediator.destroy();
+        assertNull(mModel.get(PANE_ROOT_VIEW));
         assertFalse(mPaneSupplier.hasObservers());
         assertFalse(mActionButtonSupplier.hasObservers());
     }

@@ -24,12 +24,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/types/pass_key.h"
 #include "services/network/public/mojom/attribution.mojom-shared.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
@@ -162,8 +162,11 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   static void ColorSchemeChanged();
   static void ColorProvidersChanged();
 
+  void EmulateForcedColors(bool is_dark_theme);
+  void DisableEmulatedForcedColors();
   void UpdateColorProviders(
       const ColorProviderColorMaps& color_provider_colors);
+  void UpdateColorProvidersForTest();
   const ui::ColorProvider* GetColorProviderForPainting(
       mojom::blink::ColorScheme color_scheme,
       bool in_forced_colors) const;
@@ -219,6 +222,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   ChromeClient& GetChromeClient() const {
     DCHECK(chrome_client_) << "No chrome client";
     return *chrome_client_;
+  }
+  void SetChromeClientForTesting(ChromeClient* chrome_client) {
+    chrome_client_ = chrome_client;
   }
   AutoscrollController& GetAutoscrollController() const {
     return *autoscroll_controller_;
@@ -290,6 +296,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // Frozen state corresponds to "lifecycle state for CPU suspension"
   // https://wicg.github.io/page-lifecycle/#sec-lifecycle-states
   bool Frozen() const { return frozen_; }
+
+  bool ShowPausedHudOverlay() const { return show_paused_hud_overlay_; }
+  void SetShowPausedHudOverlay(bool show_overlay);
 
   void SetPageScaleFactor(float);
   float PageScaleFactor() const;
@@ -574,6 +583,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // controlled from the renderer.
   bool paused_ = false;
   bool frozen_ = false;
+  bool show_paused_hud_overlay_ = false;
 
 #if DCHECK_IS_ON()
   bool is_painting_ = false;
@@ -586,6 +596,10 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   std::unique_ptr<ui::ColorProvider> light_color_provider_;
   std::unique_ptr<ui::ColorProvider> dark_color_provider_;
   std::unique_ptr<ui::ColorProvider> forced_colors_color_provider_;
+
+  // This provider is used when forced color emulation is enabled via DevTools,
+  // overriding the light, dark or forced colors color providers.
+  std::unique_ptr<ui::ColorProvider> emulated_forced_colors_provider_;
 
   HeapHashSet<WeakMember<PluginsChangedObserver>> plugins_changed_observers_;
 

@@ -11,6 +11,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "ash/shell.h"
 #include "base/check_deref.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -25,9 +26,11 @@
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/run_until.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/ash/http_auth_dialog.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_target_device_connection_broker.h"
@@ -56,18 +59,17 @@
 #include "chrome/browser/ash/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/auth_notification_types.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -132,6 +134,9 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -143,7 +148,7 @@ constexpr char kCancelButton[] = "cancelButton";
 constexpr char kClientCert1Name[] = "client_1";
 constexpr char kClientCert2Name[] = "client_2";
 constexpr char kLoadingDialog[] = "loadingDialog";
-constexpr char kSigninWebview[] = "$('gaia-signin').getSigninFrame_()";
+constexpr char kSigninWebview[] = "$('gaia-signin').getSigninFrame()";
 constexpr char kSigninWebviewOnLockScreen[] =
     "$('main-element').getSigninFrame_()";
 constexpr char kTestCookieHost[] = "host1.com";
@@ -347,7 +352,7 @@ class WebviewLoginTest : public OobeBaseTest {
 
   void WaitForServicesSet() {
     test::OobeJS()
-        .CreateWaiter("$('gaia-signin').authenticator_.services_")
+        .CreateWaiter("$('gaia-signin').authenticator.services_")
         ->Wait();
   }
 
@@ -361,6 +366,15 @@ class WebviewLoginTest : public OobeBaseTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButtonOobeFlow) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+
+  // Click back to reload (unreachable) identifier page.
+  test::OobeJS().ClickOnPath(kBackButton);
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+}
+
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, ErrorScreenOnGaiaError) {
   WaitForGaiaPageLoadAndPropertyUpdate();
   ExpectIdentifierPage();
@@ -370,8 +384,9 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, ErrorScreenOnGaiaError) {
       GaiaUrls::GetInstance()->embedded_setup_chromeos_url(),
       net::HTTP_NOT_FOUND);
 
-  // Click back to reload (unreachable) identifier page.
-  test::OobeJS().ClickOnPath(kBackButton);
+  // Click ESC key to reload (unreachable) identifier page.
+  ui::test::EventGenerator generator(Shell::Get()->GetPrimaryRootWindow());
+  generator.PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 }
 
@@ -414,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest,
   fake_gaia_.fake_gaia()->SetFixedResponse(
       GaiaUrls::GetInstance()->embedded_setup_chromeos_url(), net::HTTP_OK,
       "<body>no-op gaia</body>");
-  test::OobeJS().ExecuteAsync("$('gaia-signin').authenticator_.reload()");
+  test::OobeJS().ExecuteAsync("$('gaia-signin').authenticator.reload()");
 
   // Wait for both buttons to become disabled due to reload.
   test::OobeJS().CreateEnabledWaiter(false, kPrimaryButton)->Wait();
@@ -470,9 +485,11 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
   // later if it has been cleared.
   InjectCookie(signin_frame_partition_1);
 
-  // Press the back button at a sign-in screen without pre-existing users to
+  // Press ESC key at a sign-in screen without pre-existing users to
   // start a new sign-in attempt.
-  test::OobeJS().ClickOnPath(kBackButton);
+  ui::test::EventGenerator generator(Shell::Get()->GetPrimaryRootWindow());
+  generator.PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+
   WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.
@@ -525,12 +542,12 @@ class WebviewCloseViewLoginTest : public WebviewLoginTest,
   void EmulateGaiaDoneTimeout() {
     // Wait for user info timer to be set.
     test::OobeJS()
-        .CreateWaiter("$('gaia-signin').authenticator_.gaiaDoneTimer_")
+        .CreateWaiter("$('gaia-signin').authenticator.gaiaDoneTimer_")
         ->Wait();
 
     // Emulate timeout fire.
     test::OobeJS().ExecuteAsync(
-        "$('gaia-signin').authenticator_.onGaiaDoneTimeout_()");
+        "$('gaia-signin').authenticator.onGaiaDoneTimeout_()");
   }
 };
 
@@ -876,7 +893,7 @@ class WebviewDeviceOwnedLoginTest : public WebviewLoginTest {
 IN_PROC_BROWSER_TEST_F(WebviewDeviceOwnedLoginTest, AllowNewUser) {
   WaitForGaiaPageLoad();
 
-  std::string frame_url = "$('gaia-signin').authenticator_.reloadUrl_";
+  std::string frame_url = "$('gaia-signin').authenticator.reloadUrl_";
   // New users are allowed.
   test::OobeJS().ExpectTrue(frame_url + ".search('flow=nosignup') == -1");
 
@@ -896,9 +913,7 @@ class ReauthWebviewLoginTest : public WebviewLoginTest {
   LoginManagerMixin::TestUserInfo reauth_user_{
       AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeUserGaiaId),
-      test::kDefaultAuthSetup, user_manager::USER_TYPE_REGULAR,
-      /* invalid token status to force online signin */
-      user_manager::User::OAUTH2_TOKEN_STATUS_INVALID};
+      test::UserAuthConfig::Create(test::kDefaultAuthSetup).RequireReauth()};
   LoginManagerMixin login_manager_mixin_{&mixin_host_, {reauth_user_}};
 };
 
@@ -1037,9 +1052,8 @@ class ReauthEndpointWebviewLoginTest : public WebviewLoginTest {
   LoginManagerMixin::TestUserInfo reauth_user_{
       AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeUserGaiaId),
-      test::kDefaultAuthSetup, user_manager::USER_TYPE_CHILD,
-      /* invalid token status to force online signin */
-      user_manager::User::OAUTH2_TOKEN_STATUS_INVALID};
+      test::UserAuthConfig::Create(test::kDefaultAuthSetup).RequireReauth(),
+      user_manager::UserType::kChild};
   LoginManagerMixin login_manager_mixin_{&mixin_host_, {reauth_user_}};
 };
 
@@ -1457,7 +1471,7 @@ class WebviewClientCertsLoginTest : public WebviewClientCertsLoginTestBase {
   LoginManagerMixin::TestUserInfo test_user_{
       AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeUserGaiaId),
-      test::kDefaultAuthSetup, user_manager::USER_TYPE_REGULAR};
+      test::kDefaultAuthSetup, user_manager::UserType::kRegular};
   LoginManagerMixin login_manager_mixin_{&mixin_host_, {test_user_}};
 
  private:
@@ -1648,9 +1662,9 @@ IN_PROC_BROWSER_TEST_P(SigninFrameWebviewClientCertsLoginTest, LockscreenTest) {
       LockScreenReauthDialogTestHelper::ShowDialogAndWait();
   ASSERT_TRUE(lock_screen_reauth_dialog);
   lock_screen_reauth_dialog->ForceSamlRedirect();
-  lock_screen_reauth_dialog->ExpectVerifyAccountScreenVisible();
+  lock_screen_reauth_dialog->WaitForVerifyAccountScreen();
   lock_screen_reauth_dialog->ClickVerifyButton();
-  lock_screen_reauth_dialog->WaitForSamlScreen();
+  lock_screen_reauth_dialog->WaitForSigninWebview();
 
   // Act: navigate to the page hosted by the test server in the sign-in frame of
   // the lock screen SAML reauth dialog.
@@ -2114,54 +2128,15 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     FakeSessionManagerClient::Get()->set_server_backed_state_keys(state_keys);
   }
 
-  void SetUpOnMainThread() override {
-    // Setup the observer reacting on NOTIFICATION_AUTH_NEEDED before the test
-    // runs because there is no action we actively trigger to request proxy
-    // authentication. Instead, the sign-in screen automatically shows the gaia
-    // webview, which will request the gaia URL, which leads to a login prompt.
-    auth_needed_wait_loop_ = std::make_unique<base::RunLoop>();
-    auth_needed_observer_ =
-        std::make_unique<content::WindowedNotificationObserver>(
-            chrome::NOTIFICATION_AUTH_NEEDED,
-            base::BindRepeating(&WebviewProxyAuthLoginTest::OnAuthRequested,
-                                base::Unretained(this)));
-
-    WebviewLoginTest::SetUpOnMainThread();
-  }
-
-  void TearDownOnMainThread() override {
-    WebviewLoginTest::TearDownOnMainThread();
-
-    auth_needed_observer_.reset();
-    auth_needed_wait_loop_.reset();
-  }
-
-  bool OnAuthRequested(const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-    // Only care for notifications originating from the frame which is
-    // displaying gaia.
-    content::WebContents* main_web_contents = GetLoginUI()->GetWebContents();
-    content::RenderFrameHost* gaia_rfh =
-        signin::GetAuthFrame(main_web_contents, gaia_frame_parent_);
-    LoginHandler* login_handler =
-        content::Details<LoginNotificationDetails>(details)->handler();
-    if (login_handler->web_contents() !=
-        content::WebContents::FromRenderFrameHost(gaia_rfh)) {
-      return false;
-    }
-
-    gaia_frame_login_handler_ = login_handler;
-    auth_needed_wait_loop_->Quit();
-    return true;
-  }
-
   // Waits until proxy authentication has been requested by the frame displaying
-  // gaia. Returns the LoginHandler handling this authentication request.
-  LoginHandler* WaitForAuthRequested() {
-    auth_needed_wait_loop_->Run();
-    LoginHandler* handler = gaia_frame_login_handler_;
-    gaia_frame_login_handler_ = nullptr;
-    return handler;
+  // gaia. Returns the HttpAuthDialog handling this authentication request.
+  HttpAuthDialog* WaitForAuthRequested() {
+    bool success = base::test::RunUntil(
+        []() { return HttpAuthDialog::GetAllDialogsForTest().size() == 1; });
+    if (!success) {
+      return nullptr;
+    }
+    return HttpAuthDialog::GetAllDialogsForTest().front();
   }
 
   void UpdateServedPolicyFromDevicePolicyTestHelper() {
@@ -2173,16 +2148,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     return &device_policy_builder_;
   }
 
-  content::WindowedNotificationObserver* auth_needed_observer() {
-    return auth_needed_observer_.get();
-  }
-
  private:
-  std::unique_ptr<content::WindowedNotificationObserver> auth_needed_observer_;
-  std::unique_ptr<base::RunLoop> auth_needed_wait_loop_;
-  // Unowned pointer - set to the LoginHandler of the frame displaying gaia.
-  raw_ptr<LoginHandler, ExperimentalAsh> gaia_frame_login_handler_ = nullptr;
-
   // A proxy server which requires authentication using the 'Basic'
   // authentication method.
   std::unique_ptr<net::SpawnedTestServer> auth_proxy_server_;
@@ -2199,7 +2165,8 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
 IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, ProxyAuthTransfer) {
   WaitForSigninScreen();
 
-  LoginHandler* login_handler = WaitForAuthRequested();
+  HttpAuthDialog* auth_dialog = WaitForAuthRequested();
+  ASSERT_TRUE(auth_dialog);
 
   // Before entering auth data, make `policy_test_server_` serve a policy that
   // we can use to detect if policies have been fetched.
@@ -2225,7 +2192,7 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, ProxyAuthTransfer) {
 
   // Now enter auth data, which should trigger a gaia page which should now be
   // successful.
-  login_handler->SetAuth(u"foo", u"bar");
+  auth_dialog->SupplyCredentialsForTest(u"foo", u"bar");
   WaitForGaiaPageLoad();
 
   // Wait for the policy-mapped pref to change, because the supplied proxy auth
@@ -2286,7 +2253,7 @@ IN_PROC_BROWSER_TEST_F(WebviewChildLoginTest, UserInfoSentBeforeAuthFinished) {
   WaitForServicesSet();
 
   // Timer should not be set.
-  test::OobeJS().ExpectFalse("$('gaia-signin').authenticator_.gaiaDoneTimer_");
+  test::OobeJS().ExpectFalse("$('gaia-signin').authenticator.gaiaDoneTimer_");
 
   test::WaitForPrimaryUserSessionStart();
 
@@ -2310,7 +2277,7 @@ IN_PROC_BROWSER_TEST_F(WebviewChildLoginTest, UserInfoSentAfterTimerSet) {
 
   // Wait for user info timer to be set.
   test::OobeJS()
-      .CreateWaiter("$('gaia-signin').authenticator_.gaiaDoneTimer_")
+      .CreateWaiter("$('gaia-signin').authenticator.gaiaDoneTimer_")
       ->Wait();
 
   // Send user info after that.

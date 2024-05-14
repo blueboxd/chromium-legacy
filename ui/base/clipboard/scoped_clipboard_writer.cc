@@ -58,6 +58,12 @@ void ScopedClipboardWriter::SetDataSource(
   data_src_ = std::move(data_src);
 }
 
+void ScopedClipboardWriter::SetDataSourceURL(const GURL& main_frame,
+                                             const GURL& frame_url) {
+  main_frame_url_ = main_frame;
+  frame_url_ = frame_url;
+}
+
 void ScopedClipboardWriter::WriteText(const std::u16string& text) {
   RecordWrite(ClipboardFormatMetric::kText);
   std::string utf8_text = base::UTF16ToUTF8(text);

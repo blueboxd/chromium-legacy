@@ -112,15 +112,14 @@ bool CallbackInvokeHelper<CallbackBase, mode, return_type_is_promise>::
       // b) Callbacks which don't do the above, split into two groups:
       //   1) If there's a current running task, no need to create a new scope.
       //   2) If there is no current running task, set the parent to
-      //   absl::nullopt, making the current callback a root task.
+      //   std::nullopt, making the current callback a root task.
       scheduler::TaskAttributionInfo* parent_task = nullptr;
       if constexpr (std::is_same<
                         CallbackBase,
                         CallbackFunctionWithTaskAttributionBase>::value) {
         parent_task = callback_->GetParentTask();
       }
-      if (parent_task ||
-          !tracker->RunningTask(callback_->CallbackRelevantScriptState())) {
+      if (parent_task || !tracker->RunningTask(isolate)) {
         task_attribution_scope_ = tracker->CreateTaskScope(
             callback_->CallbackRelevantScriptState(), parent_task,
             scheduler::TaskAttributionTracker::TaskScopeType::kCallback);
@@ -136,9 +135,9 @@ template <class CallbackBase,
           CallbackReturnTypeIsPromise return_type_is_promise>
 bool CallbackInvokeHelper<CallbackBase, mode, return_type_is_promise>::
     CallInternal(int argc, v8::Local<v8::Value>* argv) {
-  ExecutionContext* execution_context =
-      ExecutionContext::From(callback_->CallbackRelevantScriptState());
-  probe::InvokeCallback probe_scope(execution_context, class_like_name_,
+  ScriptState* script_state = callback_->CallbackRelevantScriptState();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  probe::InvokeCallback probe_scope(script_state, class_like_name_,
                                     /*callback=*/nullptr, function_);
 
   if constexpr (mode == CallbackInvokeHelperMode::kConstructorCall) {

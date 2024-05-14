@@ -14,7 +14,7 @@
   const readAnythingApp = document.querySelector('read-anything-app');
   const container = readAnythingApp.shadowRoot.getElementById('container');
 
-  const sentence1 = 'Only need the light when it\'s burning low.';
+  const sentence1 = 'Only need the light when it\'s burning low. ';
   const sentence2 = 'Only miss the sun when it starts to snow.';
   const axTree = {
     rootId: 1,
@@ -63,7 +63,7 @@
   readAnythingApp.resetPreviousHighlight();
 
   // Second sentence is highlighted and first is before it
-  readAnythingApp.playNextMessage();
+  readAnythingApp.playNextGranularity();
   assertEquals(
       container.querySelector('.current-read-highlight').textContent,
       sentence2);

@@ -62,6 +62,7 @@ import java.util.UUID;
 public class MediaDrmBridge {
     private static final String TAG = "media";
     private static final String SECURITY_LEVEL = "securityLevel";
+    private static final String CURRENT_HDCP_LEVEL = "hdcpLevel";
     private static final String SERVER_CERTIFICATE = "serviceCertificate";
     private static final String ORIGIN = "origin";
     private static final String PRIVACY_MODE = "privacyMode";
@@ -530,6 +531,14 @@ public class MediaDrmBridge {
             mOrigin = origin;
             mOriginSet = true;
             return true;
+        } catch (MediaDrm.MediaDrmStateException e) {
+            Log.e(TAG, "Failed to set security origin %s", origin, e);
+            Log.e(TAG, "getDiagnosticInfo:", e.getDiagnosticInfo());
+
+            // displayMetrics() is only available for P or greater.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                displayMetrics();
+            }
         } catch (java.lang.IllegalArgumentException e) {
             Log.e(TAG, "Failed to set security origin %s", origin, e);
         } catch (java.lang.IllegalStateException e) {
@@ -575,7 +584,9 @@ public class MediaDrmBridge {
             mMediaDrm.setPropertyString(SECURITY_LEVEL, securityLevel);
             return true;
         } catch (java.lang.IllegalArgumentException e) {
+            Log.e(TAG, "Failed to set security level %s", securityLevel, e);
         } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to set security level %s", securityLevel, e);
         }
 
         Log.e(TAG, "Security level %s not supported!", securityLevel);
@@ -1241,35 +1252,62 @@ public class MediaDrmBridge {
     }
 
     /**
-     * Return the security level of this DRM object. In case of failure this
-     * returns the empty string, which is treated by the native side as
-     * "DEFAULT".
-     * TODO(jrummell): Revisit this in the future if the security level gets
-     * used for more things.
+     * Return the current HDCP level of this MediaDrm object. In case of failure this returns the
+     * empty string, which is treated by the native side as "HDCP_VERSION_NONE".
+     */
+    @CalledByNative
+    private String getCurrentHdcpLevel() {
+
+        // May return empty string on failure.
+        return getPropertyString(CURRENT_HDCP_LEVEL);
+    }
+
+    /**
+     * Return the security level of this MediaDrm object. In case of failure this returns the empty
+     * string, which is treated by the native side as "DEFAULT".
+     * TODO(jrummell): Revisit this in the future if the security level gets used for more things.
      */
     @CalledByNative
     private String getSecurityLevel() {
-        if (mMediaDrm == null || !isWidevine()) {
-            Log.e(TAG, "getSecurityLevel(): MediaDrm is null or security level is not supported.");
+
+        /// May return empty string on failure.
+        return getPropertyString(SECURITY_LEVEL);
+    }
+
+    /** Return the version property. In case of failure this returns an empty string. */
+    @CalledByNative
+    private String getVersion() {
+        // PROPERTY_VERSION is supported by all CDMs, but oemCryptoBuildInformation is only
+        // supported by Widevine.
+        String version = getPropertyString(MediaDrm.PROPERTY_VERSION);
+        Log.i(TAG, "Version: %s", version);
+        if (isWidevine()) {
+            Log.i(
+                    TAG,
+                    "oemCryptoBuildInformation: %s",
+                    getPropertyString("oemCryptoBuildInformation"));
+        }
+        return version;
+    }
+
+    /**
+     * Return the `property` string of this DRM object. In case of failure this returns the empty
+     * string.
+     */
+    private String getPropertyString(String property) {
+        if (mMediaDrm == null) {
+            Log.e(TAG, "getPropertyString(%s): MediaDrm is null.", property);
             return "";
         }
 
-        // Any failure in getPropertyString() means we don't know what the current security level
-        // is.
         try {
-            return mMediaDrm.getPropertyString(SECURITY_LEVEL);
-        } catch (java.lang.IllegalStateException e) {
-            // getPropertyString() may fail with android.media.MediaDrmResetException or
-            // android.media.MediaDrm.MediaDrmStateException. As MediaDrmStateException was added in
-            // API 21, we can't use it directly. However, both of these are IllegalStateExceptions,
-            // so both will be handled here.
-            Log.e(TAG, "Failed to get current security level", e);
-            return "";
+            return mMediaDrm.getPropertyString(property);
         } catch (Exception e) {
-            // getPropertyString() has been failing with android.media.ResourceBusyException on some
-            // devices. ResourceBusyException is not mentioned as a possible exception nor a runtime
-            // exception and thus can not be listed, so catching all exceptions to handle it here.
-            Log.e(TAG, "Failed to get current security level", e);
+            // getPropertyString() may fail with android.media.MediaDrmResetException or
+            // android.media.MediaDrm.MediaDrmStateException. It has also been failing with
+            // android.media.ResourceBusyException on some devices. To handle all possible errors
+            // catching all exceptions.
+            Log.e(TAG, "Failed to get property %s", property, e);
             return "";
         }
     }

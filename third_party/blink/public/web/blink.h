@@ -83,10 +83,6 @@ BLINK_EXPORT void InitializeWithoutIsolateForTesting(
 // must be called before this.
 BLINK_EXPORT v8::Isolate* CreateMainThreadIsolate();
 
-// Get the V8 Isolate for the main thread.
-// initialize must have been called first.
-BLINK_EXPORT v8::Isolate* MainThreadIsolate();
-
 // Alters the rendering of content to conform to a fixed set of rules.
 BLINK_EXPORT void SetWebTestMode(bool);
 BLINK_EXPORT bool WebTestMode();
@@ -110,6 +106,11 @@ BLINK_EXPORT void DecommitFreeableMemory();
 // Send memory pressure notification to isolates.
 BLINK_EXPORT void MemoryPressureNotificationToAllIsolates(
     v8::MemoryPressureLevel);
+
+// Send a request to the all isolates to prioritize energy efficiency
+// because the embedder is running in battery saver mode.
+BLINK_EXPORT void SetBatterySaverModeForAllIsolates(
+    bool battery_saver_mode_enabled);
 
 // Send isolate background/foreground notification to worker thread isolates.
 BLINK_EXPORT void IsolateInBackgroundNotification();

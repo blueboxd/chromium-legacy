@@ -193,9 +193,7 @@ class TurnSyncOnHelperBrowserTestWithParam
           std::tuple<TurnSyncOnHelper::SigninAbortedMode, bool>> {
  public:
   TurnSyncOnHelperBrowserTestWithParam()
-      : SigninBrowserTestBase(/*use_main_profile=*/false) {
-    feature_list_.InitAndDisableFeature(switches::kUnoDesktop);
-  }
+      : SigninBrowserTestBase(/*use_main_profile=*/false) {}
 
  protected:
   bool should_remove_initial_account() const {
@@ -205,9 +203,6 @@ class TurnSyncOnHelperBrowserTestWithParam
   TurnSyncOnHelper::SigninAbortedMode aborted_mode() const {
     return std::get<TurnSyncOnHelper::SigninAbortedMode>(GetParam());
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that aborting a Sync opt-in flow started with a secondary account
@@ -215,12 +210,17 @@ class TurnSyncOnHelperBrowserTestWithParam
 IN_PROC_BROWSER_TEST_P(TurnSyncOnHelperBrowserTestWithParam,
                        PrimaryAccountResetAfterSyncOptInFlowAborted) {
   Profile* profile = GetProfile();
-  auto accounts_info = SetAccountsCookiesAndTokens(
-      {"first@gmail.com", "second@gmail.com", "third@gmail.com"});
-  AccountInfo first_account_info = accounts_info[0];
-  AccountInfo second_account_info = accounts_info[1];
-  AccountInfo third_account_info = accounts_info[2];
-  CoreAccountId first_account_id = first_account_info.account_id;
+  CoreAccountInfo primary_account_info = signin::MakeAccountAvailable(
+      identity_manager(), identity_test_env()
+                              ->CreateAccountAvailabilityOptionsBuilder()
+                              .AsPrimary(signin::ConsentLevel::kSignin)
+                              .WithCookie()
+                              .Build("first@gmail.com"));
+  auto secondary_accounts_info =
+      SetAccountsCookiesAndTokens({"second@gmail.com", "third@gmail.com"});
+  AccountInfo second_account_info = secondary_accounts_info[0];
+  AccountInfo third_account_info = secondary_accounts_info[1];
+  CoreAccountId first_account_id = primary_account_info.account_id;
   CoreAccountId second_account_id = second_account_info.account_id;
 
   ASSERT_EQ(signin::ConsentLevel::kSignin,
@@ -235,8 +235,8 @@ IN_PROC_BROWSER_TEST_P(TurnSyncOnHelperBrowserTestWithParam,
   new TurnSyncOnHelper(
       profile, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
-      signin_metrics::Reason::kUnknownReason, second_account_id, aborted_mode(),
-      std::move(owned_delegate), run_loop.QuitClosure());
+      second_account_id, aborted_mode(), std::move(owned_delegate),
+      run_loop.QuitClosure());
 
   delegate->WaitUntilBlock();
   EXPECT_EQ(Delegate::BlockingStep::kSyncConfirmation,
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_P(TurnSyncOnHelperBrowserTestWithParam,
         // Second account removed, first account is still primary.
         EXPECT_THAT(
             identity_manager()->GetAccountsWithRefreshTokens(),
-            UnorderedElementsAre(first_account_info, third_account_info));
+            UnorderedElementsAre(primary_account_info, third_account_info));
         EXPECT_EQ(signin::ConsentLevel::kSignin,
                   signin::GetPrimaryAccountConsentLevel(identity_manager()));
         EXPECT_EQ(first_account_id, identity_manager()->GetPrimaryAccountId(
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_P(TurnSyncOnHelperBrowserTestWithParam,
         // First account is still primary, second account was not removed.
         EXPECT_THAT(
             identity_manager()->GetAccountsWithRefreshTokens(),
-            UnorderedElementsAre(first_account_info, second_account_info,
+            UnorderedElementsAre(primary_account_info, second_account_info,
                                  third_account_info));
         EXPECT_EQ(signin::ConsentLevel::kSignin,
                   signin::GetPrimaryAccountConsentLevel(identity_manager()));
@@ -311,8 +311,6 @@ IN_PROC_BROWSER_TEST_P(TurnSyncOnHelperBrowserTestWithParam,
     case TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT_ON_WEB_ONLY:
       // This case is handled in the TurnSyncOnHelperBrowserTestWithUnoDesktop
       // test suite, since this mode is used only when Uno Desktop is enabled.
-      // TODO(b/312935856): Add test for this case in the Uno Desktop test suite
-      // when implemented.
       NOTREACHED();
   }
 }
@@ -329,25 +327,20 @@ INSTANTIATE_TEST_SUITE_P(
 class TurnSyncOnHelperBrowserTest : public SigninBrowserTestBase {
  public:
   TurnSyncOnHelperBrowserTest()
-      : SigninBrowserTestBase(/*use_main_profile=*/false) {
-    feature_list_.InitAndDisableFeature(switches::kUnoDesktop);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
+      : SigninBrowserTestBase(/*use_main_profile=*/false) {}
 };
 
 // Regression test for https://crbug.com/1404961
 IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTest, UndoSyncRemoveAccount) {
   Profile* profile = GetProfile();
-  auto accounts_info = SetAccountsCookiesAndTokens({"account@gmail.com"});
-  AccountInfo account_info = accounts_info[0];
-  CoreAccountId account_id = account_info.account_id;
 
-  ASSERT_EQ(signin::ConsentLevel::kSignin,
-            signin::GetPrimaryAccountConsentLevel(identity_manager()));
-  ASSERT_EQ(account_id, identity_manager()->GetPrimaryAccountId(
-                            signin::ConsentLevel::kSignin));
+  CoreAccountInfo account_info = signin::MakeAccountAvailable(
+      identity_manager(), identity_test_env()
+                              ->CreateAccountAvailabilityOptionsBuilder()
+                              .AsPrimary(signin::ConsentLevel::kSignin)
+                              .WithCookie()
+                              .Build("account@gmail.com"));
+  CoreAccountId account_id = account_info.account_id;
 
   base::RunLoop run_loop;
   Delegate::Choices choices = {.sync_optin_choice = std::nullopt};
@@ -355,8 +348,7 @@ IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTest, UndoSyncRemoveAccount) {
   base::WeakPtr<Delegate> delegate = owned_delegate->GetWeakPtr();
   new TurnSyncOnHelper(
       profile, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
-      signin_metrics::Reason::kUnknownReason, account_id,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO, account_id,
       TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT,
       std::move(owned_delegate), run_loop.QuitClosure());
 
@@ -387,8 +379,15 @@ IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTest, UndoSyncRemoveAccount) {
 
   // For the scenario in https://crbug.com/1404961, the reconcilor has to be
   // triggered by the account removal.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   ASSERT_EQ(reconcilor->GetState(),
             signin_metrics::AccountReconcilorState::kRunning);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  // On Dice platforms with `switches::kUnoDesktop` enabled and empty primary
+  // account, updating cookies is disabled. Therefore running the reconcilor
+  // doesn't require any network requests and might have been completed by now.
+  // The reconcilor will not remove the account from cookies but revoking
+  // refresh tokens should be sufficient to invalidate cookies.
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -421,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTestWithUnoDesktop,
   new TurnSyncOnHelper(
       profile, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
-      signin_metrics::Reason::kUnknownReason, first_account_id,
+      first_account_id,
       TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT_ON_WEB_ONLY,
       std::move(owned_delegate), run_loop.QuitClosure());
 
@@ -446,4 +445,125 @@ IN_PROC_BROWSER_TEST_F(TurnSyncOnHelperBrowserTestWithUnoDesktop,
   EXPECT_FALSE(
       identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 }
+
+// Tests that aborting a Sync opt-in flow started with a secondary account
+// reverts the primary account to the initial one.
+IN_PROC_BROWSER_TEST_F(
+    TurnSyncOnHelperBrowserTestWithUnoDesktop,
+    PrimaryAccountResetAfterSyncOptInFlowAbortedForSecondaryAccount) {
+  Profile* profile = GetProfile();
+  // Set up the primary account.
+  CoreAccountInfo primary_account_info = signin::MakeAccountAvailable(
+      identity_manager(), identity_test_env()
+                              ->CreateAccountAvailabilityOptionsBuilder()
+                              .AsPrimary(signin::ConsentLevel::kSignin)
+                              .WithCookie()
+                              .Build("first@gmail.com"));
+  auto secondary_accounts_info =
+      SetAccountsCookiesAndTokens({"second@gmail.com", "third@gmail.com"});
+  AccountInfo second_account_info = secondary_accounts_info[0];
+  AccountInfo third_account_info = secondary_accounts_info[1];
+  CoreAccountId first_account_id = primary_account_info.account_id;
+  CoreAccountId second_account_id = second_account_info.account_id;
+
+  ASSERT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  ASSERT_EQ(first_account_id, identity_manager()->GetPrimaryAccountId(
+                                  signin::ConsentLevel::kSignin));
+
+  base::RunLoop run_loop;
+  Delegate::Choices choices = {.sync_optin_choice = std::nullopt};
+  auto owned_delegate = std::make_unique<Delegate>(choices);
+  base::WeakPtr<Delegate> delegate = owned_delegate->GetWeakPtr();
+  new TurnSyncOnHelper(
+      profile, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
+      second_account_id,
+      TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT_ON_WEB_ONLY,
+      std::move(owned_delegate), run_loop.QuitClosure());
+
+  delegate->WaitUntilBlock();
+  EXPECT_EQ(Delegate::BlockingStep::kSyncConfirmation,
+            delegate->blocking_step());
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_EQ(second_account_id, identity_manager()->GetPrimaryAccountId(
+                                   signin::ConsentLevel::kSignin));
+
+  choices.sync_optin_choice = LoginUIService::ABORT_SYNC;
+  delegate->UpdateChoicesAndAdvanceFlow(choices);
+
+  // The flow should complete and destroy the delegate and TurnSyncOnHelper.
+  run_loop.Run();
+  EXPECT_FALSE(delegate);
+
+  // First account is still primary, second account was not removed.
+  EXPECT_THAT(identity_manager()->GetAccountsWithRefreshTokens(),
+              UnorderedElementsAre(primary_account_info, second_account_info,
+                                   third_account_info));
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_EQ(first_account_id, identity_manager()->GetPrimaryAccountId(
+                                  signin::ConsentLevel::kSignin));
+}
+
+// Tests that aborting a Sync opt-in flow started with a new secondary account
+// reverts the primary account to the initial one and removes the new account.
+IN_PROC_BROWSER_TEST_F(
+    TurnSyncOnHelperBrowserTestWithUnoDesktop,
+    PrimaryAccountResetAfterSyncOptInFlowAbortedForNewAccount) {
+  Profile* profile = GetProfile();
+
+  // Set up the primary account.
+  CoreAccountInfo primary_account_info = signin::MakeAccountAvailable(
+      identity_manager(), identity_test_env()
+                              ->CreateAccountAvailabilityOptionsBuilder()
+                              .AsPrimary(signin::ConsentLevel::kSignin)
+                              .WithCookie()
+                              .Build("first@gmail.com"));
+  CoreAccountId first_account_id = primary_account_info.account_id;
+  auto secondary_accounts_info =
+      SetAccountsCookiesAndTokens({"second@gmail.com"});
+  AccountInfo second_account_info = secondary_accounts_info[0];
+  CoreAccountId second_account_id = second_account_info.account_id;
+
+  ASSERT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  ASSERT_EQ(first_account_id, identity_manager()->GetPrimaryAccountId(
+                                  signin::ConsentLevel::kSignin));
+
+  base::RunLoop run_loop;
+  Delegate::Choices choices = {.sync_optin_choice = std::nullopt};
+  auto owned_delegate = std::make_unique<Delegate>(choices);
+  base::WeakPtr<Delegate> delegate = owned_delegate->GetWeakPtr();
+  new TurnSyncOnHelper(
+      profile, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
+      second_account_id, TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT,
+      std::move(owned_delegate), run_loop.QuitClosure());
+
+  delegate->WaitUntilBlock();
+  EXPECT_EQ(Delegate::BlockingStep::kSyncConfirmation,
+            delegate->blocking_step());
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_EQ(second_account_id, identity_manager()->GetPrimaryAccountId(
+                                   signin::ConsentLevel::kSignin));
+
+  choices.sync_optin_choice = LoginUIService::ABORT_SYNC;
+  delegate->UpdateChoicesAndAdvanceFlow(choices);
+
+  // The flow should complete and destroy the delegate and TurnSyncOnHelper.
+  run_loop.Run();
+  EXPECT_FALSE(delegate);
+
+  // First account is still primary, second account was removed.
+  EXPECT_THAT(identity_manager()->GetAccountsWithRefreshTokens(),
+              UnorderedElementsAre(primary_account_info));
+  EXPECT_EQ(signin::ConsentLevel::kSignin,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+  EXPECT_EQ(first_account_id, identity_manager()->GetPrimaryAccountId(
+                                  signin::ConsentLevel::kSignin));
+}
+
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)

@@ -56,13 +56,6 @@ public abstract class PrivacySandboxSettingsBaseFragment extends ChromeBaseSetti
                 context, PrivacySandboxSettingsFragment.class, fragmentArgs);
     }
 
-    public static CharSequence getStatusString(Context context) {
-        return context.getString(
-                PrivacySandboxBridge.isPrivacySandboxEnabled()
-                        ? R.string.privacy_sandbox_status_enabled
-                        : R.string.privacy_sandbox_status_disabled);
-    }
-
     @Override
     public void onCreatePreferences(@Nullable Bundle bundle, @Nullable String s) {
         // Enable the options menu to be able to use a custom question mark button.
@@ -123,8 +116,22 @@ public abstract class PrivacySandboxSettingsBaseFragment extends ChromeBaseSetti
             SnackbarManager.SnackbarController controller,
             int type,
             int identifier) {
-        mSnackbarManager.showSnackbar(
-                Snackbar.make(getResources().getString(stringResId), controller, type, identifier));
+        showSnackbar(stringResId, controller, type, identifier, 0, false);
+    }
+
+    protected void showSnackbar(
+            int stringResId,
+            SnackbarManager.SnackbarController controller,
+            int type,
+            int identifier,
+            int actionStringResId,
+            boolean multiLine) {
+        var snackbar =
+                Snackbar.make(getResources().getString(stringResId), controller, type, identifier);
+        if (actionStringResId != 0)
+            snackbar.setAction(getResources().getString(actionStringResId), null);
+        if (multiLine) snackbar.setSingleLine(false);
+        mSnackbarManager.showSnackbar(snackbar);
     }
 
     protected void parseAndRecordReferrer() {

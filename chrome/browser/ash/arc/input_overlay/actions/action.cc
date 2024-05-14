@@ -117,19 +117,20 @@ void LogEvent(const ui::Event& event) {
 }
 
 void LogTouchEvents(const std::list<ui::TouchEvent>& events) {
-  for (auto& event : events)
+  for (auto& event : events) {
     LogEvent(event);
+  }
 }
 
 std::optional<std::pair<ui::DomCode, int>> ParseKeyboardKey(
     const base::Value::Dict& value,
-    const base::StringPiece key_name) {
+    const std::string_view key_name) {
   const std::string* key = value.FindString(kKey);
   if (!key) {
     LOG(ERROR) << "No key-value for {" << key_name << "}.";
     return std::nullopt;
   }
-  auto code = ui::KeycodeConverter::CodeStringToDomCode(*key);
+  const auto code = ui::KeycodeConverter::CodeStringToDomCode(*key);
   if (code == ui::DomCode::NONE) {
     LOG(ERROR)
         << "Invalid key code string. It should be similar to {KeyA}, but got {"
@@ -199,10 +200,8 @@ bool Action::ParseFromJson(const base::Value::Dict& value) {
   }
 
   // Location can be empty for mouse related actions.
-  const base::Value::List* position = value.FindList(kLocation);
-  if (position) {
-    auto parsed_pos = ParseLocation(*position);
-    if (!parsed_pos.empty()) {
+  if (const base::Value::List* position = value.FindList(kLocation)) {
+    if (auto parsed_pos = ParseLocation(*position); !parsed_pos.empty()) {
       original_positions_ = parsed_pos;
       on_left_or_middle_side_ =
           (original_positions_.front().anchor().x() <= kHalf);
@@ -463,7 +462,7 @@ int Action::GetUIRadius() {
   }
 
   const auto& content_bounds = touch_injector_->content_bounds_f();
-  int min = std::min(content_bounds.width(), content_bounds.height());
+  const int min = std::min(content_bounds.width(), content_bounds.height());
   return std::max(static_cast<int>(*radius_ * min), kMinRadius);
 }
 

@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/line_relative_rect.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
 
 class LineRelativeRectTest : public testing::Test {};
 
 TEST(LineRelativeRectTest, EnclosingRect) {
+  test::TaskEnvironment task_environment_;
   gfx::RectF r(1000, 10000, 10, 100);
   LineRelativeRect lor = LineRelativeRect::EnclosingRect(r);
   EXPECT_EQ(lor.offset.line_left, 1000) << "offset X";
@@ -32,6 +34,7 @@ TEST(LineRelativeRectTest, EnclosingRect) {
 }
 
 TEST(LineRelativeRectTest, CreateFromLineBox) {
+  test::TaskEnvironment task_environment_;
   PhysicalRect r(1000, 10000, 10, 100);
   LineRelativeRect lor = LineRelativeRect::CreateFromLineBox(r, true);
   EXPECT_EQ(lor.offset.line_left, 1000) << "offset X, no rotation";
@@ -47,11 +50,12 @@ TEST(LineRelativeRectTest, CreateFromLineBox) {
 }
 
 TEST(LineRelativeRectTest, ComputeRelativeToPhysicalTransformAtOrigin) {
+  test::TaskEnvironment task_environment_;
   LineRelativeRect r_origin = {{LayoutUnit(), LayoutUnit()},
                                {LayoutUnit(20), LayoutUnit(30)}};
 
   WritingMode writing_mode = WritingMode::kHorizontalTb;
-  absl::optional<AffineTransform> rotation =
+  std::optional<AffineTransform> rotation =
       r_origin.ComputeRelativeToPhysicalTransform(writing_mode);
   EXPECT_EQ(rotation, AffineTransform());
 
@@ -65,11 +69,12 @@ TEST(LineRelativeRectTest, ComputeRelativeToPhysicalTransformAtOrigin) {
 }
 
 TEST(LineRelativeRectTest, ComputeRelativeToPhysicalTransformNotAtOrigin) {
+  test::TaskEnvironment task_environment_;
   LineRelativeRect r_origin = {{LayoutUnit(1000), LayoutUnit(10000)},
                                {LayoutUnit(10), LayoutUnit(100)}};
 
   WritingMode writing_mode = WritingMode::kHorizontalTb;
-  absl::optional<AffineTransform> rotation =
+  std::optional<AffineTransform> rotation =
       r_origin.ComputeRelativeToPhysicalTransform(writing_mode);
   EXPECT_EQ(rotation, AffineTransform());
 
@@ -85,6 +90,7 @@ TEST(LineRelativeRectTest, ComputeRelativeToPhysicalTransformNotAtOrigin) {
 }
 
 TEST(LineRelativeRectTest, Create_kHorizontalTB) {
+  test::TaskEnvironment task_environment_;
   PhysicalRect r(1000, 10000, 10, 100);
 
   const WritingMode writing_mode = WritingMode::kHorizontalTb;
@@ -92,7 +98,7 @@ TEST(LineRelativeRectTest, Create_kHorizontalTB) {
 
   const LineRelativeRect rotated_box =
       LineRelativeRect::CreateFromLineBox(r, is_horizontal);
-  absl::optional<AffineTransform> rotation =
+  std::optional<AffineTransform> rotation =
       rotated_box.ComputeRelativeToPhysicalTransform(writing_mode);
 
   EXPECT_EQ(rotation, AffineTransform());
@@ -119,6 +125,7 @@ TEST(LineRelativeRectTest, Create_kHorizontalTB) {
 }
 
 TEST(LineRelativeRectTest, Create_kSidewaysLr) {
+  test::TaskEnvironment task_environment_;
   PhysicalRect r(1000, 10000, 10, 100);
 
   const WritingMode writing_mode = WritingMode::kSidewaysLr;
@@ -126,7 +133,7 @@ TEST(LineRelativeRectTest, Create_kSidewaysLr) {
   EXPECT_FALSE(is_horizontal);
   const LineRelativeRect rotated_box =
       LineRelativeRect::CreateFromLineBox(r, is_horizontal);
-  absl::optional<AffineTransform> rotation =
+  std::optional<AffineTransform> rotation =
       rotated_box.ComputeRelativeToPhysicalTransform(writing_mode);
 
   // AffineTransform ("translation(-9000,11100), scale(1,1), angle(-90deg),
@@ -159,6 +166,7 @@ TEST(LineRelativeRectTest, Create_kSidewaysLr) {
 }
 
 TEST(LineRelativeRectTest, Create_kVerticalRl) {
+  test::TaskEnvironment task_environment_;
   PhysicalRect r(1000, 10000, 10, 100);
 
   const WritingMode writing_mode = WritingMode::kVerticalRl;
@@ -166,7 +174,7 @@ TEST(LineRelativeRectTest, Create_kVerticalRl) {
   EXPECT_FALSE(is_horizontal);
   const LineRelativeRect rotated_box =
       LineRelativeRect::CreateFromLineBox(r, is_horizontal);
-  absl::optional<AffineTransform> rotation =
+  std::optional<AffineTransform> rotation =
       rotated_box.ComputeRelativeToPhysicalTransform(writing_mode);
 
   // AffineTransform ("translation(11010,9000), scale(1,1), angle(90deg),

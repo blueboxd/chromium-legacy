@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/hash/sha1.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -21,6 +22,19 @@ namespace {
 // nudges when override switch is set.
 constexpr base::TimeDelta kAshContextualNudgesMinInterval = base::Seconds(0);
 constexpr base::TimeDelta kAshContextualNudgesMaxInterval = base::Seconds(60);
+
+// The hash value for the secret key of the forest feature.
+constexpr char kForestHashKey[] =
+    "\x1a\x93\x5f\x64\x0d\x7f\x0c\x2f\x88\xe8\x80\x9a\x5f\x16\xbb\xd8\x74\x06"
+    "\x8a\xb1";
+
+// Whether checking the forest secret key is ignored.
+bool g_ignore_forest_secret_key = false;
+
+// The hash value for the secret key of the campbell feature.
+constexpr char kCampbellHashKey[] =
+    "\x78\xb6\xa7\x59\x06\x11\xc7\xea\x09\x7e\x92\xe3\xe9\xff\xa6\x01\x4c"
+    "\x03\x18\x32";
 
 }  // namespace
 
@@ -89,10 +103,10 @@ const char kArcDisableDownloadProvider[] = "arc-disable-download-provider";
 // Used in autotest to disable GMS-core caches which is on by default.
 const char kArcDisableGmsCoreCache[] = "arc-disable-gms-core-cache";
 
-// Flag that disables ARC locale sync with Android container. Used in autotest
+// Flag that disables ARC locale sync with Android Container. Used in autotest
 // to prevent conditions when certain apps, including Play Store may get
 // restarted. Restarting Play Store may cause random test failures. Enabling
-// this flag would also forces ARC container to use 'en-US' as a locale and
+// this flag would also forces ARC Container to use 'en-US' as a locale and
 // 'en-US,en' as preferred languages.
 const char kArcDisableLocaleSync[] = "arc-disable-locale-sync";
 
@@ -179,12 +193,21 @@ const char kPrivacyPolicyHostForTests[] = "privacy-policy-host-for-tests";
 // readahead (default) - used during production and is equivalent to no switch
 //                       being set. This is used in tast test to explicitly turn
 //                       on guest ureadahead (see |kArcDisableUreadahead|).
-// generate - used during Android PFQ data collector to pre-generate pack file
+// generate - used during Android Uprev data collector to pre-generate pack file
 //            and upload to Google Cloud as build artifact for CrOS build image.
 // disabled - used for test purpose to disable ureadahead during ARCVM boot.
 //            note, |kArcDisableUreadahead| also disables both, guest and host
 //            parts of ureadahead.
 const char kArcVmUreadaheadMode[] = "arcvm-ureadahead-mode";
+
+// Sets the mode of operation for ureadahead during ARC Container boot.
+// readahead (default) - used during production and is equivalent to no switch
+//                       being set.
+// generate - used during Android Uprev data collector to pre-generate pack file
+//            and upload to Google Cloud as build artifact for CrOS build image.
+// disabled - used for test purpose to disable ureadahead during ARC Container
+// boot.
+const char kArcHostUreadaheadMode[] = "arc-host-ureadahead-mode";
 
 // Madvises the kernel to use Huge Pages for guest memory.
 const char kArcVmUseHugePages[] = "arcvm-use-hugepages";
@@ -295,6 +318,11 @@ const char kAshUiModeTablet[] = "touch_view";
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
+// Switch used to pass in a secret key for Campbell feature. Unless the correct
+// secret key is provided, Campbell feature will remain disabled, regardless of
+// the state of the associated feature flag.
+const char kCampbellKey[] = "campbell-key";
+
 // If this flag is set, it indicates that this device is a "Cellular First"
 // device. Cellular First devices use cellular telephone data networks as
 // their primary means of connecting to the internet.
@@ -332,6 +360,17 @@ const char kCryptohomeUseAuthSession[] = "cryptohome-use-authsession";
 // test encryption migration scenarios.
 const char kCryptohomeUseOldEncryptionForTesting[] =
     "cryptohome-use-old-encryption-for-testing";
+
+// Normally the cryptohome without any any authentication factors
+// is considered corrupted. Special mechanism would detect such situation
+// during user creation and remove such users. If such user is an owner
+// the power wash should be triggered instead. However, if such event happens
+// in tests, all logs would be lost, and it would be difficult to investigate
+// exact reason behind the Owner user being misconfigured.
+// This flag prevents triggering powerwash in such cases, simple user removal
+// would be triggered instead.
+const char kCryptohomeIgnoreCleanupOwnershipForTesting[] =
+    "cryptohome-ignore-cleanup-ownership-for-testing";
 
 // Indicates that the wallpaper images specified by
 // kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
@@ -621,6 +660,9 @@ const char kForceCryptohomeRecoveryForTesting[] =
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
 
+// Disables first-run UI from being shown.
+const char kDisableFirstRunUI[] = "disable-first-run-ui";
+
 // Forces Hardware ID check (happens during OOBE) to fail or succeed. Possible
 // values: "failure" or "success". Should be used only for testing.
 const char kForceHWIDCheckResultForTest[] = "force-hwid-check-result-for-test";
@@ -654,6 +696,9 @@ const char kForceShowReleaseTrack[] = "force-show-release-track";
 // screen off) is used even if the device is in laptop mode.
 const char kForceTabletPowerButton[] = "force-tablet-power-button";
 
+// Supply secret key for the Forest feature.
+const char kForestFeatureKey[] = "forest-feature-key";
+
 // Specifies the device's form factor. If provided, this flag overrides the
 // value from the LSB release info. Possible values are: "CHROMEBASE",
 // "CHROMEBIT", "CHROMEBOOK", "REFERENCE", "CHROMEBOX"
@@ -661,6 +706,12 @@ const char kFormFactor[] = "form-factor";
 
 // Sets the throttle fps for compositor frame submission.
 const char kFrameThrottleFps[] = "frame-throttle-fps";
+
+// Switch name for "glanceables-v2-key" flag and its expected hashed value.
+const char kGlanceablesKeyExpectedHash[] =
+    "\x52\xde\x04\xda\xef\x3a\xde\xe2\x90\x68\xa1\x5c\x36\xd5\x6b\x1d\xb8\x11"
+    "\xe2\xcb";
+const char kGlanceablesKeySwitch[] = "glanceables-key";
 
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
@@ -718,10 +769,6 @@ const char kStabilizeTimeDependentViewForTests[] =
 // Decreases delay in uploading installation event logs for integration test.
 const char kInstallLogFastUploadForTests[] =
     "install-log-fast-upload-for-tests";
-
-// When specified, Chrome OS will install a System Extension from the specified
-// directory. For now, only one extension can be specified.
-const char kInstallSystemExtension[] = "install-system-extension";
 
 // Minimum time the kiosk splash screen will be shown in seconds.
 const char kKioskSplashScreenMinTimeSeconds[] =
@@ -1292,6 +1339,48 @@ bool UseFakeCrasAudioClientForDBus() {
 bool ShouldAllowDefaultShelfPinLayoutIgnoringSync() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kAllowDefaultShelfPinLayoutIgnoringSync);
+}
+
+bool IsCampbellSecretKeyMatched() {
+  // Commandline looks like:
+  //  out/Default/chrome --user-data-dir=/tmp/tmp123
+  //  --campbell-key="INSERT KEY HERE"
+  //  --enable-features=CampbellGlyph:icon/<icon>
+  const std::string provided_key_hash = base::SHA1HashString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kCampbellKey));
+
+  const bool key_matched = (provided_key_hash == kCampbellHashKey);
+  if (!key_matched) {
+    LOG(ERROR)
+        << "Provided campbel secrey key does not match the expected one.";
+  }
+
+  return key_matched;
+}
+
+bool IsForestSecretKeyMatched() {
+  if (g_ignore_forest_secret_key) {
+    return true;
+  }
+
+  // Commandline looks like:
+  //  out/Default/chrome --user-data-dir=/tmp/tmp123
+  //  --birch-feature-key="INSERT KEY HERE" --enable-features=ForestFeature
+  const std::string provided_key_hash = base::SHA1HashString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kForestFeatureKey));
+
+  bool birch_key_matched = (provided_key_hash == kForestHashKey);
+  if (!birch_key_matched) {
+    LOG(ERROR) << "Provided secret key does not match with the expected one.";
+  }
+
+  return birch_key_matched;
+}
+
+void SetIgnoreForestSecretKeyForTest(bool ignore) {
+  g_ignore_forest_secret_key = ignore;
 }
 
 }  // namespace switches

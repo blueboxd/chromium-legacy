@@ -19,13 +19,28 @@ class WebContents;
 
 class ForceInstalledPreinstalledDeprecatedAppDialogView
     : public views::BoxLayoutView {
+  METADATA_HEADER(ForceInstalledPreinstalledDeprecatedAppDialogView,
+                  views::BoxLayoutView)
+
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class Site {
+    kGmail = 0,
+    kDocs = 1,
+    kDrive = 2,
+    kSheets = 3,
+    kSlides = 4,
+    kYoutube = 5,
+    kMaxValue = kYoutube,
+  };
+
   struct LinkConfig {
     GURL link;
     std::u16string link_text;
+    Site site;
   };
 
-  METADATA_HEADER(ForceInstalledPreinstalledDeprecatedAppDialogView);
   ForceInstalledPreinstalledDeprecatedAppDialogView(
       const ForceInstalledPreinstalledDeprecatedAppDialogView&) = delete;
   ForceInstalledPreinstalledDeprecatedAppDialogView& operator=(

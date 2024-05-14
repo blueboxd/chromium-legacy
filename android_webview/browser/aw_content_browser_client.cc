@@ -41,7 +41,6 @@
 #include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/common/mojom/render_message_filter.mojom.h"
 #include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
 #include "base/android/locale_utils.h"
@@ -80,8 +79,6 @@
 #include "components/url_matcher/url_matcher.h"
 #include "components/url_matcher/url_util.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_associated_interface.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -114,6 +111,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/url_loader_factory_builder.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -145,50 +143,6 @@ bool g_created_network_context_params = false;
 
 // On apps targeting API level O or later, check cleartext is enforced.
 bool g_check_cleartext_permitted = false;
-
-// TODO(sgurun) move this to its own file.
-// This class handles android_webview.mojom.RenderMessageFilter Mojo interface's
-// methods on IO thread.
-class AwContentsMessageFilter
-    : public content::BrowserMessageFilter,
-      public content::BrowserAssociatedInterface<mojom::RenderMessageFilter> {
- public:
-  explicit AwContentsMessageFilter(int process_id);
-
-  AwContentsMessageFilter(const AwContentsMessageFilter&) = delete;
-  AwContentsMessageFilter& operator=(const AwContentsMessageFilter&) = delete;
-
-  // BrowserMessageFilter methods.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // mojom::RenderMessageFilter overrides:
-  void SubFrameCreated(
-      const blink::LocalFrameToken& parent_frame_token,
-      const blink::LocalFrameToken& child_frame_token) override;
-
- private:
-  ~AwContentsMessageFilter() override;
-
-  int process_id_;
-};
-
-AwContentsMessageFilter::AwContentsMessageFilter(int process_id)
-    : content::BrowserAssociatedInterface<mojom::RenderMessageFilter>(this),
-      process_id_(process_id) {}
-
-AwContentsMessageFilter::~AwContentsMessageFilter() = default;
-
-bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  return false;
-}
-
-void AwContentsMessageFilter::SubFrameCreated(
-    const blink::LocalFrameToken& parent_frame_token,
-    const blink::LocalFrameToken& child_frame_token) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  AwContentsIoThreadClient::SubFrameCreated(process_id_, parent_frame_token,
-                                            child_frame_token);
-}
 
 }  // anonymous namespace
 
@@ -315,8 +269,6 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   // AwSettings.mAllowContentUrlAccess).
   content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(
       host->GetID(), url::kContentScheme);
-
-  host->AddFilter(new AwContentsMessageFilter(host->GetID()));
 }
 
 bool AwContentBrowserClient::IsExplicitNavigation(
@@ -629,7 +581,8 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
     content::BrowserContext* browser_context,
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
     content::NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
+    int frame_tree_node_id,
+    absl::optional<int64_t> navigation_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Set lookup mechanism based on feature flag
@@ -644,13 +597,12 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
             return client->GetSafeBrowsingUrlCheckerDelegate();
           },
           base::Unretained(this)),
-      wc_getter, frame_tree_node_id,
+      wc_getter, frame_tree_node_id, navigation_id,
       // TODO(crbug.com/1033760): rt_lookup_service is
       // used to perform real time URL check, which is gated by UKM opted-in.
       // Since AW currently doesn't support UKM, this feature is not enabled.
       /* rt_lookup_service */ nullptr,
       /* hash_realtime_service */ nullptr,
-      /* ping_manager */ nullptr,
       /* hash_realtime_selection */
       hash_real_time_selection,
       // TODO(crbug.com/1501194): pass in async_check_tracker to support async
@@ -707,17 +659,14 @@ AwContentBrowserClient::CreateURLLoaderThrottlesForKeepAlive(
             return client->GetSafeBrowsingUrlCheckerDelegate();
           },
           base::Unretained(this)),
-      wc_getter, frame_tree_node_id,
+      wc_getter, frame_tree_node_id, /*navigation_id=*/absl::nullopt,
       // TODO(crbug.com/1033760): rt_lookup_service is
       // used to perform real time URL check, which is gated by UKM opted-in.
       // Since AW currently doesn't support UKM, this feature is not enabled.
       /* rt_lookup_service */ nullptr,
       /* hash_realtime_service */ nullptr,
-      /* ping_manager */ nullptr,
       /* hash_realtime_selection */
       hash_real_time_selection,
-      // TODO(crbug.com/1501194): pass in async_check_tracker to support async
-      // check on WV.
       /* async_check_tracker */ nullptr));
 
   return result;
@@ -809,14 +758,6 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
       ignore_navigation);
 }
 
-bool AwContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync() {
-  // WebView allows the embedder to override navigation in such a way that
-  // might trigger reentrancy if this returned true. See comments in
-  // ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync() for
-  // more details.
-  return false;
-}
-
 bool AwContentBrowserClient::CreateThreadPool(base::StringPiece name) {
   if (g_should_create_thread_pool) {
     base::ThreadPoolInstance::Create(name);
@@ -829,6 +770,7 @@ std::unique_ptr<content::LoginDelegate>
 AwContentBrowserClient::CreateLoginDelegate(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
+    content::BrowserContext* browser_context,
     const content::GlobalRequestID& request_id,
     bool is_request_for_primary_main_frame,
     const GURL& url,
@@ -976,7 +918,7 @@ bool AwContentBrowserClient::ShouldLockProcessToSite(
   return false;
 }
 
-bool AwContentBrowserClient::WillCreateURLLoaderFactory(
+void AwContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     int render_process_id,
@@ -984,7 +926,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     const url::Origin& request_initiator,
     std::optional<int64_t> navigation_id,
     ukm::SourceIdObj ukm_source_id,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
+    network::URLLoaderFactoryBuilder& factory_builder,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
     bool* bypass_redirect_checks,
@@ -1011,9 +953,9 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     // ContentBrowserClient::WillCreateURLLoaderFactory guarantee that
     // |factory_override| is null only when the security features on the network
     // service is no-op for requests coming to the URLLoaderFactory. Hence we
-    // can use |factory_receiver| here.
-    proxied_receiver = std::move(*factory_receiver);
-    *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
+    // can use |factory_builder| here.
+    std::tie(proxied_receiver, target_factory_remote) =
+        factory_builder.Append();
   }
   scoped_refptr<AwBrowserContextIoThreadHandle> browser_context_handle =
       base::MakeRefCounted<AwBrowserContextIoThreadHandle>(
@@ -1068,7 +1010,6 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
             aw_browser_context->service_worker_xrw_allowlist_matcher(),
             std::move(browser_context_handle)));
   }
-  return true;
 }
 
 uint32_t AwContentBrowserClient::GetWebSocketOptions(
@@ -1355,6 +1296,11 @@ bool AwContentBrowserClient::ShouldUseOsWebTriggerAttributionReporting(
 network::mojom::IpProtectionProxyBypassPolicy
 AwContentBrowserClient::GetIpProtectionProxyBypassPolicy() {
   return network::mojom::IpProtectionProxyBypassPolicy::kNone;
+}
+
+bool AwContentBrowserClient::WillProvidePublicFirstPartySets() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kWebViewFpsComponent);
 }
 
 }  // namespace android_webview

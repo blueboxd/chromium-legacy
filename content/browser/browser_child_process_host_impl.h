@@ -12,8 +12,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
-#include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/single_thread_task_runner.h"
@@ -21,6 +21,7 @@
 #include "content/browser/child_process_host_impl.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/tracing/tracing_service_controller.h"
+#include "content/common/buildflags.h"
 #include "content/common/child_process.mojom.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
@@ -109,8 +110,10 @@ class BrowserChildProcessHostImpl
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
 
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
   // Adds an IPC message filter.
   void AddFilter(BrowserMessageFilter* filter);
+#endif
 
   // Same as Launch(), but the process is launched with preloaded files and file
   // descriptors containing in `file_data`.
@@ -223,7 +226,7 @@ class BrowserChildProcessHostImpl
 
   // The shared memory region used by |metrics_allocator_| that should be
   // transferred to the child process.
-  base::WritableSharedMemoryRegion metrics_shared_region_;
+  base::UnsafeSharedMemoryRegion metrics_shared_region_;
 
   // Indicates if the main browser process is used instead of a dedicated child
   // process.

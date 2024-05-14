@@ -170,7 +170,7 @@ void NativeThemeMac::Paint(cc::PaintCanvas* canvas,
                            const gfx::Rect& rect,
                            const ExtraParams& extra,
                            ColorScheme color_scheme,
-                           const absl::optional<SkColor>& accent_color) const {
+                           const std::optional<SkColor>& accent_color) const {
   ColorScheme color_scheme_updated = color_scheme;
   if (color_scheme_updated == ColorScheme::kDefault) {
     color_scheme_updated = GetDefaultSystemColorScheme();
@@ -316,7 +316,7 @@ void NativeThemeMac::PaintScrollBarTrackGradient(
 
   // And draw.
   cc::PaintFlags flags;
-  absl::optional<SkColor> track_color =
+  std::optional<SkColor> track_color =
       GetScrollbarColor(ScrollbarPart::kTrack, color_scheme, extra_params);
   if (track_color.has_value()) {
     flags.setAntiAlias(true);
@@ -458,7 +458,7 @@ void NativeThemeMac::PaintMacScrollbarThumb(
   paint_canvas.DrawRoundRect(bounds, radius, flags);
 }
 
-absl::optional<SkColor> NativeThemeMac::GetScrollbarColor(
+std::optional<SkColor> NativeThemeMac::GetScrollbarColor(
     ScrollbarPart part,
     ColorScheme color_scheme,
     const ScrollbarExtraParams& extra_params) const {
@@ -511,7 +511,7 @@ absl::optional<SkColor> NativeThemeMac::GetScrollbarColor(
     }
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 SkColor NativeThemeMac::GetSystemButtonPressedColor(SkColor base_color) const {
@@ -573,25 +573,27 @@ NativeThemeMac::NativeThemeMac(bool should_only_use_dark_colors,
     : NativeThemeBase(should_only_use_dark_colors,
                       ui::SystemTheme::kDefault,
                       theme_to_update) {
-  if (!should_only_use_dark_colors)
-    InitializeDarkModeStateAndObserver();
-  }
+  if (@available(macOS 10.9, *)) {
+    if (!should_only_use_dark_colors) {
+      InitializeDarkModeStateAndObserver();
+    }
 
-  if (theme_to_update) {
-    theme_to_update->set_use_dark_colors(IsDarkMode());
-    theme_to_update->set_preferred_color_scheme(
-        CalculatePreferredColorScheme());
-    theme_to_update->SetPreferredContrast(CalculatePreferredContrast());
-    theme_to_update->set_prefers_reduced_transparency(
-        PrefersReducedTransparency());
-    theme_to_update->set_inverted_colors(InvertedColors());
+    if (theme_to_update) {
+      theme_to_update->set_use_dark_colors(IsDarkMode());
+      theme_to_update->set_preferred_color_scheme(
+          CalculatePreferredColorScheme());
+      theme_to_update->SetPreferredContrast(CalculatePreferredContrast());
+      theme_to_update->set_prefers_reduced_transparency(
+          PrefersReducedTransparency());
+      theme_to_update->set_inverted_colors(InvertedColors());
 
-    // Observe caption style changes.
-    CFNotificationCenterAddObserver(
-        CFNotificationCenterGetLocalCenter(), this,
-        CaptionSettingsChangedNotificationCallback,
-        kMACaptionAppearanceSettingsChangedNotification, nullptr,
-        CFNotificationSuspensionBehaviorDeliverImmediately);
+      // Observe caption style changes.
+      CFNotificationCenterAddObserver(
+          CFNotificationCenterGetLocalCenter(), this,
+          CaptionSettingsChangedNotificationCallback,
+          kMACaptionAppearanceSettingsChangedNotification, nullptr,
+          CFNotificationSuspensionBehaviorDeliverImmediately);
+    }
   }
 }
 

@@ -44,8 +44,8 @@ const char kTestProfileUserName[] = "test@google.com";
 const std::vector<std::string> kPublicCertificateIds = {"id1", "id2", "id3"};
 
 void CaptureDecryptedPublicCertificateCallback(
-    absl::optional<NearbyShareDecryptedPublicCertificate>* dest,
-    absl::optional<NearbyShareDecryptedPublicCertificate> src) {
+    std::optional<NearbyShareDecryptedPublicCertificate>* dest,
+    std::optional<NearbyShareDecryptedPublicCertificate> src) {
   *dest = std::move(src);
 }
 
@@ -100,7 +100,7 @@ class NearbyShareCertificateManagerImplTest
         task_environment_.GetMockClock());
     cert_manager_->AddObserver(this);
 
-    cert_store_ = cert_store_factory_.instances().back();
+    cert_store_ = cert_store_factory_.instances().back().get();
 
     private_cert_exp_scheduler_ =
         scheduler_factory_.pref_name_to_expiration_instance()
@@ -460,16 +460,14 @@ class NearbyShareCertificateManagerImplTest
     }
   }
 
-  raw_ptr<FakeNearbyShareCertificateStorage,
-          DanglingUntriaged | ExperimentalAsh>
-      cert_store_;
-  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<FakeNearbyShareCertificateStorage, DanglingUntriaged> cert_store_;
+  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged>
       private_cert_exp_scheduler_;
-  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged>
       public_cert_exp_scheduler_;
-  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged>
       upload_scheduler_;
-  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<ash::nearby::FakeNearbyScheduler, DanglingUntriaged>
       download_scheduler_;
   bool is_bluetooth_adapter_present_ = true;
   std::string bluetooth_mac_address_ = kTestUnparsedBluetoothMacAddress;
@@ -514,12 +512,12 @@ TEST_P(NearbyShareCertificateManagerImplTest,
               kNearbyShareCertificateValidityPeriod * 0.5 - Now());
 
   // Sanity check that the cert storage is as expected.
-  absl::optional<std::vector<NearbySharePrivateCertificate>> stored_certs =
+  std::optional<std::vector<NearbySharePrivateCertificate>> stored_certs =
       cert_store_->GetPrivateCertificates();
   EXPECT_EQ(stored_certs->at(0).ToDictionary(),
             private_certificate.ToDictionary());
 
-  absl::optional<NearbyShareEncryptedMetadataKey> encrypted_metadata_key =
+  std::optional<NearbyShareEncryptedMetadataKey> encrypted_metadata_key =
       cert_manager_->EncryptPrivateCertificateMetadataKey(
           nearby_share::mojom::Visibility::kAllContacts);
   EXPECT_EQ(GetNearbyShareTestEncryptedMetadataKey().encrypted_key(),
@@ -585,7 +583,7 @@ TEST_P(NearbyShareCertificateManagerImplTest,
 
 TEST_P(NearbyShareCertificateManagerImplTest,
        GetDecryptedPublicCertificateSuccess) {
-  absl::optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
+  std::optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
   cert_manager_->GetDecryptedPublicCertificate(
       metadata_encryption_keys_[0],
       base::BindOnce(&CaptureDecryptedPublicCertificateCallback,
@@ -609,7 +607,7 @@ TEST_P(NearbyShareCertificateManagerImplTest,
   auto metadata_key = private_cert.EncryptMetadataKey();
   ASSERT_TRUE(metadata_key);
 
-  absl::optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
+  std::optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
   cert_manager_->GetDecryptedPublicCertificate(
       *metadata_key, base::BindOnce(&CaptureDecryptedPublicCertificateCallback,
                                     &decrypted_pub_cert));
@@ -621,7 +619,7 @@ TEST_P(NearbyShareCertificateManagerImplTest,
 
 TEST_P(NearbyShareCertificateManagerImplTest,
        GetDecryptedPublicCertificateGetPublicCertificatesFailure) {
-  absl::optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
+  std::optional<NearbyShareDecryptedPublicCertificate> decrypted_pub_cert;
   cert_manager_->GetDecryptedPublicCertificate(
       metadata_encryption_keys_[0],
       base::BindOnce(&CaptureDecryptedPublicCertificateCallback,
@@ -813,8 +811,8 @@ TEST_P(NearbyShareCertificateManagerImplTest,
       std::vector<NearbySharePrivateCertificate>());
 
   // Full name and icon URL are missing in local device data manager.
-  local_device_data_manager_->SetFullName(absl::nullopt);
-  local_device_data_manager_->SetIconUrl(absl::nullopt);
+  local_device_data_manager_->SetFullName(std::nullopt);
+  local_device_data_manager_->SetIconUrl(std::nullopt);
 
   cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,
@@ -836,7 +834,7 @@ TEST_P(NearbyShareCertificateManagerImplTest,
       std::vector<NearbySharePrivateCertificate>());
 
   // Full name and icon URL are missing in local device data manager.
-  profile_info_provider_->set_profile_user_name(absl::nullopt);
+  profile_info_provider_->set_profile_user_name(std::nullopt);
 
   cert_manager_->Start();
   HandlePrivateCertificateRefresh(/*expect_private_cert_refresh=*/true,

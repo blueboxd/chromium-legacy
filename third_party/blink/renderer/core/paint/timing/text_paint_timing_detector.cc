@@ -64,22 +64,24 @@ void LargestTextPaintManager::ReportCandidateToTrace(
       GetFrameIdForTracing(&frame_view_->GetFrame()));
 }
 
-TextRecord* LargestTextPaintManager::UpdateMetricsCandidate() {
+std::pair<TextRecord*, bool> LargestTextPaintManager::UpdateMetricsCandidate() {
   if (!largest_text_) {
-    return nullptr;
+    return {nullptr, false};
   }
   const base::TimeTicks time = largest_text_->paint_time;
   const uint64_t size = largest_text_->recorded_size;
-  DCHECK(paint_timing_detector_);
-  bool changed = paint_timing_detector_->NotifyMetricsIfLargestTextPaintChanged(
-      time, size);
+  CHECK(paint_timing_detector_);
+  CHECK(paint_timing_detector_->GetLargestContentfulPaintCalculator());
+
+  bool changed = paint_timing_detector_->GetLargestContentfulPaintCalculator()
+                     ->NotifyMetricsIfLargestTextPaintChanged(time, size);
   if (changed) {
     // It is not possible for an update to happen with a candidate that has no
     // paint time.
     DCHECK(!time.is_null());
     ReportCandidateToTrace(*largest_text_);
   }
-  return largest_text_.Get();
+  return {largest_text_.Get(), changed};
 }
 
 void TextPaintTimingDetector::OnPaintFinished() {
@@ -119,8 +121,6 @@ void TextPaintTimingDetector::ReportPresentationTime(
     }
   }
   AssignPaintTimeToQueuedRecords(frame_index, timestamp);
-  if (recording_largest_text_paint_)
-    ltp_manager_->UpdateMetricsCandidate();
 }
 
 bool TextPaintTimingDetector::ShouldWalkObject(
@@ -179,17 +179,16 @@ void TextPaintTimingDetector::RecordAggregatedText(
   // Web font styled node should be rewalkable so that resizing during swap
   // would make the node eligible to be LCP candidate again.
   if (RuntimeEnabledFeatures::WebFontResizeLCPEnabled()) {
-    if (aggregator.GetNode()->GetComputedStyle() &&
-        aggregator.GetNode()->GetComputedStyle()->GetFont().HasCustomFont()) {
+    if (aggregator.StyleRef().GetFont().HasCustomFont()) {
       rewalkable_set_.insert(&aggregator);
     }
   }
 
   LocalFrame& frame = frame_view_->GetFrame();
   if (LocalDOMWindow* window = frame.DomWindow()) {
-    if (SoftNavigationHeuristics* soft_navigation =
+    if (SoftNavigationHeuristics* heuristics =
             SoftNavigationHeuristics::From(*window)) {
-      soft_navigation->RecordPaint(
+      heuristics->RecordPaint(
           &frame, mapped_visual_rect.size().GetArea(),
           aggregator.GetNode()->IsModifiedBySoftNavigation());
     }
@@ -197,7 +196,7 @@ void TextPaintTimingDetector::RecordAggregatedText(
   recorded_set_.insert(&aggregator);
   MaybeRecordTextRecord(aggregator, aggregated_size, property_tree_state,
                         aggregated_visual_rect, mapped_visual_rect);
-  if (absl::optional<PaintTimingVisualizer>& visualizer =
+  if (std::optional<PaintTimingVisualizer>& visualizer =
           frame_view_->GetPaintTimingDetector().Visualizer()) {
     visualizer->DumpTextDebuggingRect(aggregator, mapped_visual_rect);
   }

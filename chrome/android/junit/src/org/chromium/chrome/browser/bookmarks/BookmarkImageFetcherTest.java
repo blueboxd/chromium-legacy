@@ -39,8 +39,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -85,7 +85,8 @@ public class BookmarkImageFetcherTest {
     private final BookmarkId mBookmarkId2 = new BookmarkId(/* id= */ 3, BookmarkType.NORMAL);
 
     private final BookmarkItem mFolderItem =
-            new BookmarkItem(mFolderId, "Folder", null, true, null, true, false, 0, false, 0);
+            new BookmarkItem(
+                    mFolderId, "Folder", null, true, null, true, false, 0, false, 0, false);
     private final BookmarkItem mBookmarkItem1 =
             new BookmarkItem(
                     mBookmarkId1,
@@ -97,7 +98,8 @@ public class BookmarkImageFetcherTest {
                     false,
                     0,
                     false,
-                    0);
+                    0,
+                    false);
     private final BookmarkItem mBookmarkItem2 =
             new BookmarkItem(
                     mBookmarkId2,
@@ -109,7 +111,8 @@ public class BookmarkImageFetcherTest {
                     false,
                     0,
                     false,
-                    0);
+                    0,
+                    false);
     private final Bitmap mBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 
     private Activity mActivity;

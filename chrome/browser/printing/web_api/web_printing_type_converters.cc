@@ -57,6 +57,39 @@ void ProcessMultipleDocumentHandling(
   }
 }
 
+void ProcessOrientationRequested(
+    const PrinterSemanticCapsAndDefaults& caps,
+    blink::mojom::WebPrinterAttributes* attributes) {
+  // The assumptions below hold true for almost all modern printers, so this
+  // yields a fine approximation even without further plumbing.
+  // TODO(b/302505962): Consider querying the printer for reverse-portrait and
+  // reverse-landscape.
+  attributes->orientation_requested_default =
+      blink::mojom::WebPrintingOrientationRequested::kPortrait;
+  attributes->orientation_requested_supported = {
+      blink::mojom::WebPrintingOrientationRequested::kPortrait,
+      blink::mojom::WebPrintingOrientationRequested::kLandscape};
+}
+
+void ProcessPrinterResolution(const PrinterSemanticCapsAndDefaults& caps,
+                              blink::mojom::WebPrinterAttributes* attributes) {
+  attributes->printer_resolution_default = caps.default_dpi;
+  attributes->printer_resolution_supported = caps.dpis;
+}
+
+void ProcessPrintColorMode(const PrinterSemanticCapsAndDefaults& caps,
+                           blink::mojom::WebPrinterAttributes* attributes) {
+  attributes->print_color_mode_default =
+      caps.color_default ? blink::mojom::WebPrintColorMode::kColor
+                         : blink::mojom::WebPrintColorMode::kMonochrome;
+  attributes->print_color_mode_supported.push_back(
+      blink::mojom::WebPrintColorMode::kMonochrome);
+  if (caps.color_model != mojom::ColorModel::kUnknownColorModel) {
+    attributes->print_color_mode_supported.push_back(
+        blink::mojom::WebPrintColorMode::kColor);
+  }
+}
+
 void ProcessSides(const PrinterSemanticCapsAndDefaults& caps,
                   blink::mojom::WebPrinterAttributes* attributes) {
   if (caps.duplex_default != mojom::DuplexMode::kUnknownDuplexMode) {
@@ -74,7 +107,6 @@ void ProcessSides(const PrinterSemanticCapsAndDefaults& caps,
                                        attributes->sides_supported)) {
     attributes->sides_default.reset();
     attributes->sides_supported.clear();
-    return;
   }
 }
 
@@ -91,6 +123,9 @@ TypeConverter<blink::mojom::WebPrinterAttributesPtr,
 
   printing::ProcessCopies(capabilities, attributes.get());
   printing::ProcessMultipleDocumentHandling(capabilities, attributes.get());
+  printing::ProcessOrientationRequested(capabilities, attributes.get());
+  printing::ProcessPrinterResolution(capabilities, attributes.get());
+  printing::ProcessPrintColorMode(capabilities, attributes.get());
   printing::ProcessSides(capabilities, attributes.get());
 
   return attributes;

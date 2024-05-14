@@ -9,10 +9,12 @@
 #include <optional>
 
 #include "chrome/browser/ui/views/web_apps/isolated_web_apps/isolated_web_app_installer_model.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
 class DialogDelegate;
+class Widget;
 }  // namespace views
 
 namespace web_app {
@@ -33,13 +35,19 @@ class SignedWebBundleMetadata;
 // are any nested dialogs that show up during the installation flow. Those are
 // all handled by the ViewController.
 class IsolatedWebAppInstallerView : public views::View {
+  METADATA_HEADER(IsolatedWebAppInstallerView, views::View)
+
  public:
+  static constexpr char kInstallerWidgetName[] = "IsolatedWebAppInstaller";
+  static constexpr char kNestedDialogWidgetName[] =
+      "IsolatedWebAppInstallerDialog";
+
   class Delegate {
    public:
     virtual void OnSettingsLinkClicked() = 0;
-    virtual void OnManageProfilesLinkClicked() = 0;
     virtual void OnChildDialogCanceled() = 0;
     virtual void OnChildDialogAccepted() = 0;
+    virtual void OnChildDialogDestroying() = 0;
   };
 
   // Configures the buttons of the given DialogDelegate.
@@ -65,8 +73,8 @@ class IsolatedWebAppInstallerView : public views::View {
   virtual void ShowInstallSuccessScreen(
       const SignedWebBundleMetadata& bundle_metadata) = 0;
 
-  virtual void ShowDialog(
-      const IsolatedWebAppInstallerModel::DialogContent& dialog_content) = 0;
+  virtual views::Widget* ShowDialog(
+      const IsolatedWebAppInstallerModel::Dialog& dialog) = 0;
 };
 
 }  // namespace web_app

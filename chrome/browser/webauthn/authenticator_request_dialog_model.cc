@@ -25,7 +25,10 @@
 #include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate.h"
 #include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webauthn/authenticator_request_bubble.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
+#include "chrome/browser/ui/webauthn/authenticator_request_window.h"
+#include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/browser/webauthn/webauthn_metrics_util.h"
@@ -67,6 +70,17 @@
 #endif
 
 namespace {
+
+// StepUiType enumerates the different types of UI that can be displayed.
+enum class StepUIType {
+  NONE,
+  // A Chromium captive dialog.
+  DIALOG,
+  // A Google Password Manager bubble.
+  BUBBLE,
+  // A top-level window.
+  WINDOW,
+};
 
 constexpr int GetMessageIdForTransportDescription(
     AuthenticatorTransport transport) {
@@ -184,18 +198,18 @@ void MaybeStoreLastUsedPairing(
 
 // Retrieves the last used pairing public key from the user's profile, if
 // available.
-absl::optional<std::vector<uint8_t>> RetrieveLastUsedPairing(
+std::optional<std::vector<uint8_t>> RetrieveLastUsedPairing(
     content::RenderFrameHost* rfh) {
   if (!rfh) {
     // The RFH might be null in unit tests, or it might not be alive anymore.
-    return absl::nullopt;
+    return std::nullopt;
   }
   Profile* profile = Profile::FromBrowserContext(rfh->GetBrowserContext());
   std::string maybe_last_used_pairing = profile->GetPrefs()->GetString(
       webauthn::pref_names::kLastUsedPairingFromSyncPublicKey);
-  absl::optional<std::vector<uint8_t>> last_used_pairing;
+  std::optional<std::vector<uint8_t>> last_used_pairing;
   if (maybe_last_used_pairing.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return base::Base64Decode(maybe_last_used_pairing);
 }
@@ -219,7 +233,7 @@ const gfx::VectorIcon& GetCredentialIcon(device::AuthenticatorType type) {
 
 std::u16string GetMechanismDescription(
     device::AuthenticatorType type,
-    const absl::optional<std::u16string>& priority_phone_name) {
+    const std::optional<std::u16string>& priority_phone_name) {
   if (type == device::AuthenticatorType::kPhone) {
     return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_SOURCE_PHONE,
                                       *priority_phone_name);
@@ -274,15 +288,15 @@ int SourcePriority(device::AuthenticatorType source) {
 }
 
 // Returns the ID of a string and authenticator transport to label a button that
-// triggers the Windows native WebAuthn API, or absl::nullopt if the button
+// triggers the Windows native WebAuthn API, or std::nullopt if the button
 // should not be shown. The transport represents the option Windows will prefer
 // when tapping the button and is used to pick an icon and position on the list.
-absl::optional<std::pair<int, AuthenticatorTransport>> GetWindowsAPIButtonLabel(
+std::optional<std::pair<int, AuthenticatorTransport>> GetWindowsAPIButtonLabel(
     const device::FidoRequestHandlerBase::TransportAvailabilityInfo&
         transport_availability,
     bool specific_phones_listed) {
   if (!transport_availability.has_win_native_api_authenticator) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   bool win_handles_internal;
   bool win_handles_hybrid;
@@ -333,7 +347,7 @@ absl::optional<std::pair<int, AuthenticatorTransport>> GetWindowsAPIButtonLabel(
     return std::make_pair(IDS_WEBAUTHN_TRANSPORT_EXTERNAL_SECURITY_KEY,
                           AuthenticatorTransport::kUsbHumanInterfaceDevice);
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // Returns whether the given authenticator type is implemented within Chrome
@@ -359,6 +373,28 @@ bool IsChromeImplemented(device::AuthenticatorType type) {
     case device::AuthenticatorType::kOther:
       // For testing purposes.
       return true;
+  }
+}
+
+StepUIType step_ui_type(AuthenticatorRequestDialogModel::Step step) {
+  switch (step) {
+    case AuthenticatorRequestDialogModel::Step::kClosed:
+    case AuthenticatorRequestDialogModel::Step::kNotStarted:
+    case AuthenticatorRequestDialogModel::Step::kConditionalMediation:
+    case AuthenticatorRequestDialogModel::Step::kWaitingForEnclave:
+      return StepUIType::NONE;
+
+    case AuthenticatorRequestDialogModel::Step::kRecoverSecurityDomain:
+      return StepUIType::WINDOW;
+
+    case AuthenticatorRequestDialogModel::Step::kGPMCreatePasskey:
+    case AuthenticatorRequestDialogModel::Step::kTrustThisComputer:
+    case AuthenticatorRequestDialogModel::Step::kGPMTouchID:
+    case AuthenticatorRequestDialogModel::Step::kGPMOnboarding:
+      return StepUIType::BUBBLE;
+
+    default:
+      return StepUIType::DIALOG;
   }
 }
 
@@ -426,6 +462,10 @@ void AuthenticatorRequestDialogModel::HideDialog() {
   SetCurrentStep(Step::kNotStarted);
 }
 
+bool AuthenticatorRequestDialogModel::should_dialog_be_closed() const {
+  return step_ui_type(current_step_) != StepUIType::DIALOG;
+}
+
 void AuthenticatorRequestDialogModel::StartFlow(
     TransportAvailabilityInfo transport_availability,
     bool use_conditional_mediation) {
@@ -453,10 +493,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
     }
   }
 
-  if (base::FeatureList::IsEnabled(
-          device::kWebAuthnSortRecognizedCredentials)) {
-    SortRecognizedCredentials();
-  }
+  SortRecognizedCredentials();
 
 #if BUILDFLAG(IS_MAC)
   RecordMacOsStartedHistogram();
@@ -480,7 +517,6 @@ void AuthenticatorRequestDialogModel::StartOver() {
     observer.OnStartOver();
   }
 
-  current_step_ = Step::kNotStarted;
   SetCurrentStep(Step::kMechanismSelection);
 }
 
@@ -508,6 +544,10 @@ void AuthenticatorRequestDialogModel::
     } else {
       SetCurrentStep(Step::kErrorNoAvailableTransports);
     }
+  } else if (transport_availability_.request_type ==
+                 device::FidoRequestType::kMakeCredential &&
+             hints_.transport &&
+             StartGuidedFlowForMakeCredentialFromHint(*hints_.transport)) {
   } else if (ephemeral_state_.priority_mechanism_index_) {
     Mechanism& mechanism =
         mechanisms_[*ephemeral_state_.priority_mechanism_index_];
@@ -533,7 +573,10 @@ void AuthenticatorRequestDialogModel::
 #endif
              )) {
       SetCurrentStep(Step::kSelectPriorityMechanism);
-    } else {
+    } else if (cred != nullptr || !hints_.transport.has_value() ||
+               transport_availability_.request_type !=
+                   device::FidoRequestType::kGetAssertion ||
+               !StartGuidedFlowForGetAssertionFromHint(*hints_.transport)) {
       mechanism.callback.Run();
     }
   } else {
@@ -595,8 +638,129 @@ void AuthenticatorRequestDialogModel::
       StartWinNativeApi();
       return;
     }
-    SetCurrentStep(Step::kMechanismSelection);
+    if (!hints_.transport.has_value() ||
+        transport_availability_.request_type !=
+            device::FidoRequestType::kGetAssertion ||
+        // If there were any matches, ignore a hint and show the user the list.
+        base::ranges::any_of(mechanisms_,
+                             [](const auto& mech) {
+                               return absl::get_if<Mechanism::Credential>(
+                                   &mech.type);
+                             }) ||
+        !StartGuidedFlowForGetAssertionFromHint(*hints_.transport)) {
+      SetCurrentStep(Step::kMechanismSelection);
+    }
   }
+}
+
+bool AuthenticatorRequestDialogModel::StartGuidedFlowForMakeCredentialFromHint(
+    AuthenticatorTransport transport) {
+  CHECK_EQ(transport_availability_.request_type,
+           device::FidoRequestType::kMakeCredential);
+
+  // The RP has given a hint about the expected transport for a create() call.
+  // See https://w3c.github.io/webauthn/#enum-hints
+  switch (*hints_.transport) {
+    case AuthenticatorTransport::kUsbHumanInterfaceDevice:
+      if (transport_availability_.has_win_native_api_authenticator) {
+        StartWinNativeApi();
+      } else if (base::Contains(
+                     transport_availability_.available_transports,
+                     AuthenticatorTransport::kUsbHumanInterfaceDevice)) {
+        StartGuidedFlowForTransport(*hints_.transport);
+      } else {
+        return false;
+      }
+      break;
+    case AuthenticatorTransport::kHybrid:
+      if (WebAuthnApiSupportsHybrid()) {
+        StartWinNativeApi();
+      } else if (base::Contains(transport_availability_.available_transports,
+                                AuthenticatorTransport::kHybrid)) {
+        if (!paired_phones_.empty()) {
+          SetCurrentStep(Step::kMechanismSelection);
+        } else {
+          StartGuidedFlowForAddPhone();
+        }
+      } else {
+        return false;
+      }
+      break;
+    case AuthenticatorTransport::kInternal:
+      if (transport_availability_.has_win_native_api_authenticator) {
+        StartWinNativeApi();
+      } else if (transport_availability_.has_icloud_keychain &&
+                 should_create_in_icloud_keychain_) {
+        StartICloudKeychain();
+      } else if (base::Contains(transport_availability_.available_transports,
+                                AuthenticatorTransport::kInternal)) {
+        StartGuidedFlowForTransport(*hints_.transport);
+      } else {
+        return false;
+      }
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+  return true;
+}
+
+bool AuthenticatorRequestDialogModel::StartGuidedFlowForGetAssertionFromHint(
+    AuthenticatorTransport transport) {
+  CHECK_EQ(transport_availability_.request_type,
+           device::FidoRequestType::kGetAssertion);
+
+  // The RP has given a hint about the expected transport for a get() call.
+  // See https://w3c.github.io/webauthn/#enum-hints
+  switch (*hints_.transport) {
+    case AuthenticatorTransport::kUsbHumanInterfaceDevice:
+      if (transport_availability_.has_win_native_api_authenticator) {
+        StartWinNativeApi();
+      } else if (base::Contains(
+                     transport_availability_.available_transports,
+                     AuthenticatorTransport::kUsbHumanInterfaceDevice)) {
+        StartGuidedFlowForTransport(*hints_.transport);
+      } else {
+        return false;
+      }
+      break;
+    case AuthenticatorTransport::kHybrid:
+      if (WebAuthnApiSupportsHybrid()) {
+        StartWinNativeApi();
+      } else if (base::Contains(transport_availability_.available_transports,
+                                AuthenticatorTransport::kHybrid)) {
+        if (base::ranges::any_of(mechanisms_, [](const auto& mechanism) {
+              return absl::get_if<Mechanism::Phone>(&mechanism.type) != nullptr;
+            })) {
+          SetCurrentStep(Step::kMechanismSelection);
+        } else {
+          StartGuidedFlowForAddPhone();
+        }
+      } else {
+        return false;
+      }
+      return true;
+    case AuthenticatorTransport::kInternal:
+      // If we can enumerate platform credentials, and there's a match, we'll
+      // either jump to it immediately, or show an account selector.
+      if (transport_availability_.has_win_native_api_authenticator) {
+        StartWinNativeApi();
+      } else {
+        // We might not be able to enumerate iCloud Keychain because of
+        // permissions issues, but that UI is bit limiting once we have jumped
+        // to it, and people who have denied Chrome that permission are a bit of
+        // a corner case, so we'll not currently jump to iCloud Keychain based
+        // on this hint. (It's only a click away.)
+        return false;
+      }
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+
+  return true;
 }
 
 void AuthenticatorRequestDialogModel::OnPhoneContactFailed(
@@ -633,6 +797,10 @@ void AuthenticatorRequestDialogModel::OnCableConnectingTimerComplete() {
       current_step_ == Step::kCableV2Connecting) {
     SetCurrentStep(Step::kCableV2Connected);
   }
+}
+
+void AuthenticatorRequestDialogModel::OnRecoverSecurityDomainClosed() {
+  // TODO(enclave): implement this.
 }
 
 void AuthenticatorRequestDialogModel::StartPhonePairing() {
@@ -764,12 +932,10 @@ void AuthenticatorRequestDialogModel::StartPlatformAuthenticatorFlow() {
               transport_availability_.recognized_credentials.front()};
         }
 #if BUILDFLAG(IS_MAC)
-        if (base::FeatureList::IsEnabled(
-                device::kWebAuthnSkipSingleAccountMacOS) &&
-            (transport_availability_.user_verification_requirement ==
-                 device::UserVerificationRequirement::kRequired ||
-             local_biometrics_override_for_testing_.value_or(
-                 device::fido::mac::DeviceHasBiometricsAvailable()))) {
+        if (transport_availability_.user_verification_requirement ==
+                device::UserVerificationRequirement::kRequired ||
+            local_biometrics_override_for_testing_.value_or(
+                device::fido::mac::DeviceHasBiometricsAvailable())) {
           // If it's not preferable to complete the request by clicking
           // "Continue" then don't show the account selection sheet.
           HideDialogAndDispatchToPlatformAuthenticator();
@@ -800,7 +966,7 @@ void AuthenticatorRequestDialogModel::StartPlatformAuthenticatorFlow() {
       after_off_the_record_interstitial_ =
           base::BindOnce(&AuthenticatorRequestDialogModel::
                              HideDialogAndDispatchToPlatformAuthenticator,
-                         weak_factory_.GetWeakPtr(), absl::nullopt);
+                         weak_factory_.GetWeakPtr(), std::nullopt);
       SetCurrentStep(Step::kOffTheRecordInterstitial);
       return;
     }
@@ -1010,6 +1176,13 @@ bool AuthenticatorRequestDialogModel::OnHybridTransportError() {
   return true;
 }
 
+bool AuthenticatorRequestDialogModel::OnEnclaveError() {
+  // TODO(enclave): this is just a placeholder. We'll need a specific error
+  // sheet for this case.
+  SetCurrentStep(Step::kCableV2Error);
+  return true;
+}
+
 bool AuthenticatorRequestDialogModel::OnNoPasskeys() {
   SetCurrentStep(Step::kErrorNoPasskeys);
   return true;
@@ -1072,6 +1245,16 @@ void AuthenticatorRequestDialogModel::OnAttestationPermissionResponse(
     return;
   }
   std::move(attestation_callback_).Run(attestation_permission_granted);
+}
+
+void AuthenticatorRequestDialogModel::OnGPMOnboardingAccepted() {
+  DCHECK_EQ(current_step(), Step::kGPMOnboarding);
+  SetCurrentStep(Step::kGPMCreatePin);
+}
+
+void AuthenticatorRequestDialogModel::OnTrustThisComputer() {
+  DCHECK_EQ(current_step(), Step::kTrustThisComputer);
+  SetCurrentStep(Step::kRecoverSecurityDomain);
 }
 
 void AuthenticatorRequestDialogModel::AddAuthenticator(
@@ -1151,10 +1334,64 @@ void AuthenticatorRequestDialogModel::OnAccountPreselected(
            ? AuthenticatorTransport::kHybrid
            : AuthenticatorTransport::kInternal}));
   ephemeral_state_.creds_.clear();
-  if (source == device::AuthenticatorType::kPhone) {
+
+  if (source != device::AuthenticatorType::kPhone &&
+      source != device::AuthenticatorType::kEnclave) {
+    HideDialogAndDispatchToPlatformAuthenticator(source);
+    return;
+  }
+
+  if (!base::FeatureList::IsEnabled(device::kWebAuthnEnclaveAuthenticator)) {
     ContactPriorityPhone();
   } else {
-    HideDialogAndDispatchToPlatformAuthenticator(source);
+    switch (account_state_) {
+      case AccountState::kReady:
+        SetCurrentStep(Step::kWaitingForEnclave);
+        break;
+
+      case AccountState::kRecoverable:
+        if (priority_phone_index_) {
+          SetCurrentStep(Step::kTrustThisComputer);
+        } else {
+          SetCurrentStep(Step::kRecoverSecurityDomain);
+        }
+        break;
+
+      case AccountState::kLoading:
+      case AccountState::kChecking:
+        // TODO(enclave): need to disable the UI elements.
+        NOTIMPLEMENTED();
+        break;
+
+      case AccountState::kNone:
+      case AccountState::kIrrecoverable:
+        if (priority_phone_index_) {
+          ContactPriorityPhone();
+        } else {
+          NOTIMPLEMENTED();
+        }
+        break;
+
+      case AccountState::kEmpty:
+        if (transport_availability_.request_type ==
+            device::FidoRequestType::kMakeCredential) {
+          if (priority_phone_index_) {
+            SetCurrentStep(Step::kTrustThisComputer);
+          } else {
+            SetCurrentStep(Step::kRecoverSecurityDomain);
+          }
+        } else {
+          if (priority_phone_index_) {
+            ContactPriorityPhone();
+          } else {
+            // TODO(enclave): the security domain is empty but there were
+            // sync entities. Most like the security domain was reset without
+            // clearing the entities, thus they are unusable. We have not yet
+            // decided what the behaviour will be in this case.
+            NOTIMPLEMENTED();
+          }
+        }
+    }
   }
 }
 
@@ -1187,10 +1424,10 @@ void AuthenticatorRequestDialogModel::ContactPhoneForTesting(
   ContactPhone(name);
 }
 
-absl::optional<std::u16string>
+std::optional<std::u16string>
 AuthenticatorRequestDialogModel::GetPriorityPhoneName() const {
   if (!priority_phone_index_) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return base::UTF8ToUTF16(paired_phones_[*priority_phone_index_]->name);
 }
@@ -1240,8 +1477,8 @@ void AuthenticatorRequestDialogModel::FinishCollectToken() {
 
 void AuthenticatorRequestDialogModel::StartInlineBioEnrollment(
     base::OnceClosure next_callback) {
-  max_bio_samples_ = absl::nullopt;
-  bio_samples_remaining_ = absl::nullopt;
+  max_bio_samples_ = std::nullopt;
+  bio_samples_remaining_ = std::nullopt;
   bio_enrollment_callback_ = std::move(next_callback);
   SetCurrentStep(Step::kInlineBioEnrollment);
 }
@@ -1271,12 +1508,31 @@ void AuthenticatorRequestDialogModel::RequestAttestationPermission(
                      : Step::kAttestationPermissionRequest);
 }
 
+content::RenderFrameHost* AuthenticatorRequestDialogModel::GetRenderFrameHost()
+    const {
+  return content::RenderFrameHost::FromID(frame_host_id_);
+}
+
+AuthenticatorRequestDialogModel::AccountState
+AuthenticatorRequestDialogModel::account_state() const {
+  return account_state_;
+}
+
+void AuthenticatorRequestDialogModel::set_account_state(AccountState state) {
+  account_state_ = state;
+  if (current_step() == Step::kRecoverSecurityDomain &&
+      state == AccountState::kReady) {
+    // The user completed the recovery that we were waiting for.
+    SetCurrentStep(Step::kWaitingForEnclave);
+  }
+}
+
 void AuthenticatorRequestDialogModel::set_cable_transport_info(
-    absl::optional<bool> extension_is_v2,
+    std::optional<bool> extension_is_v2,
     std::vector<std::unique_ptr<device::cablev2::Pairing>> paired_phones,
     base::RepeatingCallback<void(std::unique_ptr<device::cablev2::Pairing>)>
         contact_phone_callback,
-    const absl::optional<std::string>& cable_qr_string) {
+    const std::optional<std::string>& cable_qr_string) {
   DCHECK(paired_phones.empty() || contact_phone_callback);
 
   if (extension_is_v2.has_value()) {
@@ -1345,7 +1601,7 @@ void AuthenticatorRequestDialogModel::RecordMacOsStartedHistogram() {
     return;
   }
 
-  absl::optional<MacOsHistogramValues> v;
+  std::optional<MacOsHistogramValues> v;
   if (transport_availability_.request_type ==
           device::FidoRequestType::kMakeCredential &&
       transport_availability_.make_credential_attachment.has_value() &&
@@ -1398,7 +1654,7 @@ void AuthenticatorRequestDialogModel::RecordMacOsSuccessHistogram(
     return;
   }
 
-  absl::optional<MacOsHistogramValues> v;
+  std::optional<MacOsHistogramValues> v;
 
   if (transport_availability_.request_type ==
       device::FidoRequestType::kMakeCredential) {
@@ -1465,20 +1721,33 @@ void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
     return;
   }
 
+  const StepUIType previous_ui_type = step_ui_type(current_step_);
   current_step_ = step;
 
   // Reset state related to automatically advancing the state.
   cable_connecting_sheet_timer_.Stop();
   cable_connecting_ready_to_advance_ = false;
 
-  if (should_dialog_be_closed()) {
-    // The dialog will close itself.
-    showing_dialog_ = false;
-  } else {
-    auto* web_contents = GetWebContents();
-    if (!showing_dialog_ && web_contents) {
-      ShowAuthenticatorRequestDialog(web_contents, this);
-      showing_dialog_ = true;
+  const StepUIType ui_type = step_ui_type(current_step_);
+  auto* const web_contents = GetWebContents();
+  if (previous_ui_type != ui_type && web_contents) {
+    // The UI observes `OnStepTransition` and updates automatically.
+    switch (ui_type) {
+      case StepUIType::NONE:
+        // Any UI will close itself.
+        break;
+
+      case StepUIType::DIALOG:
+        ShowAuthenticatorRequestDialog(web_contents, this);
+        break;
+
+      case StepUIType::BUBBLE:
+        ShowAuthenticatorRequestBubble(web_contents, this);
+        break;
+
+      case StepUIType::WINDOW:
+        ShowAuthenticatorRequestWindow(this);
+        break;
     }
   }
 
@@ -1563,6 +1832,10 @@ void AuthenticatorRequestDialogModel::StartICloudKeychain() {
       device::AuthenticatorType::kICloudKeychain);
 }
 
+void AuthenticatorRequestDialogModel::StartEnclave() {
+  SetCurrentStep(Step::kWaitingForEnclave);
+}
+
 void AuthenticatorRequestDialogModel::ContactPhone(const std::string& name) {
 #if BUILDFLAG(IS_MAC)
   if (transport_availability()->ble_access_denied) {
@@ -1619,9 +1892,9 @@ void AuthenticatorRequestDialogModel::StartConditionalMediationRequest() {
   auto* web_contents = GetWebContents();
   if (web_contents && render_frame_host) {
     std::vector<password_manager::PasskeyCredential> credentials;
-    absl::optional<size_t> priority_phone_index =
+    std::optional<size_t> priority_phone_index =
         GetIndexOfMostRecentlyUsedPhoneFromSync();
-    absl::optional<std::u16string> priority_phone_name;
+    std::optional<std::u16string> priority_phone_name;
     if (priority_phone_index) {
       priority_phone_name =
           base::UTF8ToUTF16(paired_phones_[*priority_phone_index]->name);
@@ -1715,11 +1988,11 @@ void AuthenticatorRequestDialogModel::ContactNextPhoneByName(
   DCHECK(found_name);
 }
 
-absl::optional<size_t>
+std::optional<size_t>
 AuthenticatorRequestDialogModel::GetIndexOfMostRecentlyUsedPhoneFromSync()
     const {
   // Try finding the most recently used phone from sync.
-  absl::optional<std::vector<uint8_t>> last_used_pairing =
+  std::optional<std::vector<uint8_t>> last_used_pairing =
       RetrieveLastUsedPairing(content::RenderFrameHost::FromID(frame_host_id_));
   if (last_used_pairing) {
     for (size_t i = 0; i < paired_phones_.size(); ++i) {
@@ -1732,7 +2005,7 @@ AuthenticatorRequestDialogModel::GetIndexOfMostRecentlyUsedPhoneFromSync()
   }
   // Could not find a most recently used phone. Instead, return the phone that
   // last published to sync.
-  absl::optional<int> ret;
+  std::optional<int> ret;
   for (size_t i = 0; i < paired_phones_.size(); ++i) {
     if (paired_phones_[i]->from_sync_deviceinfo) {
       if (!ret || paired_phones_[*ret]->last_updated <
@@ -1782,7 +2055,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
       is_get_assertion &&
       base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI);
   priority_phone_index_ = GetIndexOfMostRecentlyUsedPhoneFromSync();
-  absl::optional<std::u16string> priority_phone_name = GetPriorityPhoneName();
+  std::optional<std::u16string> priority_phone_name = GetPriorityPhoneName();
   bool list_phone_passkeys =
       is_new_get_assertion_ui && priority_phone_index_ &&
       base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials);
@@ -1901,7 +2174,16 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
             base::Unretained(this)));
   }
 
-  absl::optional<std::pair<int, AuthenticatorTransport>> windows_button_label;
+  if (base::FeatureList::IsEnabled(device::kWebAuthnEnclaveAuthenticator) &&
+      account_state_ == AccountState::kReady && !is_get_assertion) {
+    const std::u16string name = u"Google Password Manager (UNTRANSLATED)";
+    mechanisms_.emplace_back(
+        Mechanism::Enclave(), name, name, kIcloudKeychainIcon,
+        base::BindRepeating(&AuthenticatorRequestDialogModel::StartEnclave,
+                            base::Unretained(this)));
+  }
+
+  std::optional<std::pair<int, AuthenticatorTransport>> windows_button_label;
   if (base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI)) {
     windows_button_label = GetWindowsAPIButtonLabel(transport_availability_,
                                                     specific_phones_listed);
@@ -1960,13 +2242,22 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
     }
   }
 
+  // If the new UI is enabled, only show USB as an option if the QR code is
+  // not available, if tapping it would trigger a prompt to enable BLE, or if
+  // hints will cause us to jump to USB UI.
+  const bool include_usb_option =
+      base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI) &&
+      base::Contains(transport_availability_.available_transports,
+                     AuthenticatorTransport::kUsbHumanInterfaceDevice) &&
+      (!include_add_phone_option || !transport_availability_.is_ble_powered ||
+       transport_availability_.ble_access_denied ||
+       hints_.transport == AuthenticatorTransport::kUsbHumanInterfaceDevice);
+
   if (include_add_phone_option) {
     std::u16string label;
     if (base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI)) {
-      label = l10n_util::GetStringUTF16(GetHybridButtonLabel(
-          base::Contains(transport_availability_.available_transports,
-                         AuthenticatorTransport::kUsbHumanInterfaceDevice),
-          specific_phones_listed));
+      label = l10n_util::GetStringUTF16(
+          GetHybridButtonLabel(!include_usb_option, specific_phones_listed));
     } else {
       label = l10n_util::GetStringUTF16(
           specific_phones_listed
@@ -1979,11 +2270,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms() {
             &AuthenticatorRequestDialogModel::StartGuidedFlowForAddPhone,
             base::Unretained(this)));
   }
-  if (base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI) &&
-      (!include_add_phone_option || !transport_availability_.is_ble_powered ||
-       transport_availability_.ble_access_denied)) {
-    // If the new UI is enabled, only show USB as an option if the QR code is
-    // not available or if tapping it would trigger a prompt to enable BLE.
+  if (include_usb_option) {
     transports_to_list_if_active.push_back(
         AuthenticatorTransport::kUsbHumanInterfaceDevice);
   }
@@ -2018,7 +2305,7 @@ void AuthenticatorRequestDialogModel::AddWindowsButton(
                           base::Unretained(this)));
 }
 
-absl::optional<size_t>
+std::optional<size_t>
 AuthenticatorRequestDialogModel::IndexOfPriorityMechanism() {
   if (base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI) &&
       transport_availability_.request_type ==
@@ -2030,7 +2317,7 @@ AuthenticatorRequestDialogModel::IndexOfPriorityMechanism() {
 
     if (transport_availability_.has_empty_allow_list) {
       // The index and info of the credential that the UI should default to.
-      absl::optional<std::pair<size_t, const Mechanism::CredentialInfo*>>
+      std::optional<std::pair<size_t, const Mechanism::CredentialInfo*>>
           best_cred;
       bool multiple_distinct_creds = false;
 
@@ -2076,12 +2363,13 @@ AuthenticatorRequestDialogModel::IndexOfPriorityMechanism() {
     }
 
     // For all other cases, go to the multi source passkey picker.
-    return absl::nullopt;
+    return std::nullopt;
   }
+
   if (mechanisms_.size() == 1) {
     return 0;
   } else if (mechanisms_.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   bool windows_handles_hybrid = WebAuthnApiSupportsHybrid();
@@ -2212,7 +2500,7 @@ AuthenticatorRequestDialogModel::IndexOfPriorityMechanism() {
     }
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void AuthenticatorRequestDialogModel::OnPasskeysChanged(
@@ -2236,15 +2524,11 @@ void AuthenticatorRequestDialogModel::OnPasskeyModelShuttingDown() {
 
 void AuthenticatorRequestDialogModel::
     HideDialogAndDispatchToPlatformAuthenticator(
-        absl::optional<device::AuthenticatorType> type) {
+        std::optional<device::AuthenticatorType> type) {
   HideDialog();
 
-  // Prefer to use the enclave authenticator over a platform authenticator
-  // if the device has registered to use it.
-  if (!type && is_enclave_authenticator_available_) {
-    type = device::AuthenticatorType::kEnclave;
-  }
-
+  std::vector<AuthenticatorReference>& authenticators =
+      ephemeral_state_.saved_authenticators_.authenticator_list();
 #if BUILDFLAG(IS_WIN)
   // The Windows-native UI already handles retrying so we do not offer a second
   // level of retry in that case.
@@ -2254,13 +2538,23 @@ void AuthenticatorRequestDialogModel::
 #elif BUILDFLAG(IS_MAC)
   // If there are multiple platform authenticators, one of them is the default.
   if (!type.has_value() &&
+      base::FeatureList::IsEnabled(
+          device::kWebAuthnPreferVirtualPlatformAuthenticator)) {
+    if (base::ranges::any_of(
+            authenticators, [](const AuthenticatorReference& ref) {
+              return ref.type == device::AuthenticatorType::kOther &&
+                     ref.transport == device::FidoTransportProtocol::kInternal;
+            })) {
+      type = device::AuthenticatorType::kOther;
+    }
+  }
+
+  if (!type.has_value() &&
       base::FeatureList::IsEnabled(device::kWebAuthnICloudKeychain)) {
     type = device::AuthenticatorType::kTouchID;
   }
 #endif
 
-  auto& authenticators =
-      ephemeral_state_.saved_authenticators_.authenticator_list();
   auto platform_authenticator_it = base::ranges::find_if(
       authenticators, [type](const AuthenticatorReference& ref) -> bool {
         if (type && *type == device::AuthenticatorType::kEnclave) {
@@ -2290,10 +2584,7 @@ void AuthenticatorRequestDialogModel::OnTransportAvailabilityChanged(
     return;
   }
   transport_availability_ = std::move(transport_availability);
-  if (base::FeatureList::IsEnabled(
-          device::kWebAuthnSortRecognizedCredentials)) {
-    SortRecognizedCredentials();
-  }
+  SortRecognizedCredentials();
   mechanisms_.clear();
   PopulateMechanisms();
   ephemeral_state_.priority_mechanism_index_ = IndexOfPriorityMechanism();

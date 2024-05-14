@@ -35,7 +35,7 @@
 #include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"  // nogncheck
-#include "components/supervised_user/core/common/supervised_user_utils.h"
+#include "components/supervised_user/core/browser/supervised_user_utils.h"
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -366,9 +366,7 @@ bool HandleNewTabURLRewrite(GURL* url,
   }
 
   if (!(url->SchemeIs(content::kChromeUIScheme) &&
-        url->host() == chrome::kChromeUINewTabHost) &&
-      !(url->SchemeIs(chrome::kChromeSearchScheme) &&
-        url->host_piece() == chrome::kChromeSearchLocalNtpHost)) {
+        url->host() == chrome::kChromeUINewTabHost)) {
     return false;
   }
 

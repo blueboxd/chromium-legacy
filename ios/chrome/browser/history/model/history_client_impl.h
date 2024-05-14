@@ -10,6 +10,7 @@
 
 #include "base/callback_list.h"
 #include "base/functional/callback_forward.h"
+#import "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/history_client.h"
@@ -45,7 +46,7 @@ class HistoryClientImpl : public history::HistoryClient,
   void NotifyProfileError(sql::InitStatus init_status,
                           const std::string& diagnostics) override;
   std::unique_ptr<history::HistoryBackendClient> CreateBackendClient() override;
-  void UpdateBookmarkLastUsedTime(const base::Uuid& bookmark_node_uuid,
+  void UpdateBookmarkLastUsedTime(int64_t bookmark_node_id,
                                   base::Time time) override;
 
   // bookmarks::BaseBookmarkModelObserver implementation.
@@ -71,8 +72,8 @@ class HistoryClientImpl : public history::HistoryClient,
                                        const std::set<GURL>& removed_urls);
 
   // BookmarkModel instances providing access to bookmarks. May be null.
-  bookmarks::BookmarkModel* local_or_syncable_bookmark_model_ = nullptr;
-  bookmarks::BookmarkModel* account_bookmark_model_ = nullptr;
+  raw_ptr<bookmarks::BookmarkModel> local_or_syncable_bookmark_model_ = nullptr;
+  raw_ptr<bookmarks::BookmarkModel> account_bookmark_model_ = nullptr;
 
   // Callback invoked when URLs are removed from BookmarkModel.
   base::RepeatingCallback<void(const std::set<GURL>&)> on_bookmarks_removed_;

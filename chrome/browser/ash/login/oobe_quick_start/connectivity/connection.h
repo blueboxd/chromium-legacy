@@ -70,14 +70,14 @@ class Connection
 
     virtual std::unique_ptr<Connection> Create(
         NearbyConnection* nearby_connection,
-        SessionContext session_context,
+        SessionContext* session_context,
         mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder,
         ConnectionClosedCallback on_connection_closed,
         ConnectionAuthenticatedCallback on_connection_authenticated);
   };
 
   Connection(NearbyConnection* nearby_connection,
-             SessionContext session_context,
+             SessionContext* session_context,
              mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder,
              ConnectionClosedCallback on_connection_closed,
              ConnectionAuthenticatedCallback on_connection_authenticated);
@@ -126,6 +126,7 @@ class Connection
       RequestAccountTransferAssertionCallback callback) override;
   void WaitForUserVerification(AwaitUserVerificationCallback callback) override;
   base::Value::Dict GetPrepareForUpdateInfo() override;
+  void NotifyPhoneSetupComplete() override;
 
   void DoWaitForUserVerification(size_t attempt_number,
                                  AwaitUserVerificationCallback callback);
@@ -189,8 +190,8 @@ class Connection
                                std::optional<std::vector<uint8_t>> data);
 
   base::OneShotTimer response_timeout_timer_;
-  raw_ptr<NearbyConnection, ExperimentalAsh> nearby_connection_;
-  SessionContext session_context_;
+  raw_ptr<NearbyConnection> nearby_connection_;
+  raw_ptr<SessionContext> session_context_;
   State connection_state_ = State::kOpen;
   ConnectionClosedCallback on_connection_closed_;
   bool authenticated_ = false;

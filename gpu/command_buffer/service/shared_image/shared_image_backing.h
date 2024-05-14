@@ -123,6 +123,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       size_t estimated_size,
       bool is_thread_safe,
       std::optional<gfx::BufferUsage> buffer_usage = std::nullopt);
@@ -248,6 +249,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Returns the GpuMemoryBufferHandle if present.
   virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle();
 
+  // True for images in Ash that were imported from Exo clients.
+  virtual bool IsImportedFromExo();
+
   // Helper to determine if the entire SharedImage is cleared.
   bool IsCleared() const { return ClearedRect() == gfx::Rect(size()); }
 
@@ -258,6 +262,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Used by SharedImageManager.
   friend class SharedImageManager;
   friend class CompoundImageBacking;
+
+  const std::string& debug_label() const { return debug_label_; }
 
   virtual std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
       SharedImageManager* manager,
@@ -286,7 +292,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       MemoryTypeTracker* tracker,
       const wgpu::Device& device,
       wgpu::BackendType backend_type,
-      std::vector<wgpu::TextureFormat> view_formats);
+      std::vector<wgpu::TextureFormat> view_formats,
+      scoped_refptr<SharedContextState> context_state);
   virtual std::unique_ptr<OverlayImageRepresentation> ProduceOverlay(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker);
@@ -387,6 +394,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const GrSurfaceOrigin surface_origin_;
   const SkAlphaType alpha_type_;
   const uint32_t usage_;
+  const std::string debug_label_;
   size_t estimated_size_ GUARDED_BY(lock_);
 
   // Note that this will be eventually removed and merged into SharedImageUsage.
@@ -408,7 +416,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // A vector of SharedImageRepresentations which hold references to this
   // backing. The first reference is considered the owner, and the vector is
   // ordered by the order in which references were taken.
-  std::vector<SharedImageRepresentation*> refs_ GUARDED_BY(lock_);
+  std::vector<raw_ptr<SharedImageRepresentation, VectorExperimental>> refs_
+      GUARDED_BY(lock_);
 };
 
 // Helper implementation of SharedImageBacking which tracks a simple
@@ -425,6 +434,7 @@ class GPU_GLES2_EXPORT ClearTrackingSharedImageBacking
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       size_t estimated_size,
       bool is_thread_safe,
       std::optional<gfx::BufferUsage> buffer_usage = std::nullopt);

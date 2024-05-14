@@ -6,18 +6,17 @@
 #define CHROME_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_MANAGER_H_
 
 #include <functional>
-#include <vector>
+#include <optional>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "build/build_config.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/picture_in_picture_window_options/picture_in_picture_window_options.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "url/origin.h"
+#include "url/gurl.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/picture_in_picture/auto_pip_setting_overlay_view.h"
@@ -34,7 +33,6 @@ class Display;
 }  // namespace display
 
 #if !BUILDFLAG(IS_ANDROID)
-class AutoPipSettingHelper;
 class PictureInPictureOcclusionTracker;
 
 namespace views {
@@ -130,7 +128,7 @@ class PictureInPictureWindowManager {
 
   // Returns the window bounds of the video picture-in-picture or the document
   // picture-in-picture if either of them is present.
-  absl::optional<gfx::Rect> GetPictureInPictureWindowBounds() const;
+  std::optional<gfx::Rect> GetPictureInPictureWindowBounds() const;
 
   // Used for Document picture-in-picture windows only. The returned dimensions
   // represent the outer window bounds.
@@ -182,28 +180,22 @@ class PictureInPictureWindowManager {
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow);
 
-  AutoPipSettingHelper* get_setting_helper_for_testing() {
-    return auto_pip_setting_helper_.get();
-  }
-
   // Returns the PictureInPictureOcclusionTracker, which can inform observers
   // when a widget has been occluded by a video or document picture-in-picture
   // window.
   PictureInPictureOcclusionTracker* GetOcclusionTracker();
 #endif
 
-  // Get the origins for initiators of active Picture-in-Picture sessions.
-  // Always returns an empty vector for Document Picture-in-Picture sessions.
-  // For Video picture-in-picture sessions, the maximum size of the vector
-  // will be 1, because only one window can be present per Chrome instances.
-  // See spec for detailed information:
-  // https://www.w3.org/TR/picture-in-picture/#defines
-  std::vector<url::Origin> GetActiveSessionOrigins();
-
   void set_window_controller_for_testing(
       content::PictureInPictureWindowController* controller) {
     pip_window_controller_ = controller;
   }
+
+  // Return true if and only if the URL is can be used as an opener.  This check
+  // allows us to explicitly opt-in opener URL types, to ensure that the pip
+  // window's title bar is formatted properly.  Allowing any secure context, for
+  // example, might result in a misleading window title.
+  static bool IsSupportedForDocumentPictureInPicture(const GURL& url);
 
  private:
   friend struct base::DefaultSingletonTraits<PictureInPictureWindowManager>;
@@ -248,9 +240,6 @@ class PictureInPictureWindowManager {
   static void ExitPictureInPictureSoon();
 
 #if !BUILDFLAG(IS_ANDROID)
-  // Create the settings helper if this is auto-pip and we don't have one.
-  void CreateAutoPipSettingHelperIfNeeded();
-
   // Creates the `occlusion_tracker_` if it does not already exist and should
   // exist.
   void CreateOcclusionTrackerIfNecessary();
@@ -265,8 +254,6 @@ class PictureInPictureWindowManager {
   std::unique_ptr<VideoWebContentsObserver> video_web_contents_observer_;
 #if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<DocumentWebContentsObserver> document_web_contents_observer_;
-
-  std::unique_ptr<AutoPipSettingHelper> auto_pip_setting_helper_;
 
   std::unique_ptr<PictureInPictureOcclusionTracker> occlusion_tracker_;
 #endif  //! BUILDFLAG(IS_ANDROID)

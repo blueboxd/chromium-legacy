@@ -47,14 +47,19 @@ class MockController : public DlpFilesController {
                    void(std::unique_ptr<file_access::ScopedFileAccess>)>),
               (override));
 
-  MOCK_METHOD(absl::optional<data_controls::Component>,
+  MOCK_METHOD(std::optional<data_controls::Component>,
               MapFilePathToPolicyComponent,
               (Profile * profile, const base::FilePath& file_path),
               (override));
 
+  MOCK_METHOD(bool,
+              IsInLocalFileSystem,
+              (const base::FilePath& file_path),
+              (override));
+
   MOCK_METHOD(void,
               ShowDlpBlockedFiles,
-              (absl::optional<uint64_t> task_id,
+              (std::optional<uint64_t> task_id,
                std::vector<base::FilePath> blocked_files,
                dlp::FileAction action),
               (override));

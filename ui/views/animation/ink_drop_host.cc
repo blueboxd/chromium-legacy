@@ -185,8 +185,14 @@ SkColor InkDropHost::GetBaseColor() const {
     return absl::get<SkColor>(ink_drop_base_color_);
   }
 
-  return absl::get<base::RepeatingCallback<SkColor()>>(ink_drop_base_color_)
-      .Run();
+  // The callback may need access to the color provider, which is only available
+  // after the view is added to a widget.
+  if (host_view_->GetWidget()) {
+    return absl::get<base::RepeatingCallback<SkColor()>>(ink_drop_base_color_)
+        .Run();
+  }
+
+  return gfx::kPlaceholderColor;
 }
 
 void InkDropHost::SetBaseColor(SkColor color) {
@@ -232,7 +238,7 @@ float InkDropHost::GetVisibleOpacity() const {
   return ink_drop_visible_opacity_;
 }
 
-void InkDropHost::SetHighlightOpacity(absl::optional<float> opacity) {
+void InkDropHost::SetHighlightOpacity(std::optional<float> opacity) {
   if (opacity == ink_drop_highlight_opacity_) {
     return;
   }
@@ -341,7 +347,7 @@ InkDropEventHandler* InkDropHost::GetEventHandler() {
 }
 
 bool InkDropHost::AddInkDropClip(ui::Layer* ink_drop_layer) {
-  absl::optional<gfx::RRectF> clipping_data =
+  std::optional<gfx::RRectF> clipping_data =
       HighlightPathGenerator::GetRoundRectForView(host_view_);
   if (!clipping_data) {
     return false;

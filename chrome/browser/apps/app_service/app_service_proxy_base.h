@@ -127,9 +127,7 @@ class AppServiceProxyBase : public KeyedService,
   // Convenience method that calls app_icon_loader()->LoadIcon to load app icons
   // with `app_id`. `callback` may be dispatched synchronously if it's possible
   // to quickly return a result.
-  // TODO(crbug.com/1412708): Remove app_type from interface.
   std::unique_ptr<IconLoader::Releaser> LoadIcon(
-      AppType app_type,
       const std::string& app_id,
       const IconType& icon_type,
       int32_t size_hint_in_dip,
@@ -145,9 +143,7 @@ class AppServiceProxyBase : public KeyedService,
   // `allow_placeholder_icon` indicate whether we allow loading placeholder icon
   // from the in memory cache and do not attempt to retry to load the actual
   // icon.
-  // TODO(crbug.com/1412708): Remove app_type from interface.
   std::unique_ptr<IconLoader::Releaser> LoadIconWithIconEffects(
-      AppType app_type,
       const std::string& app_id,
       uint32_t icon_effects,
       IconType icon_type,
@@ -437,6 +433,9 @@ class AppServiceProxyBase : public KeyedService,
 
   virtual void OnLaunched(LaunchCallback callback,
                           LaunchResult&& launch_result);
+
+  virtual bool ShouldExcludeBrowserTabApps(bool exclude_browser_tab_apps,
+                                           WindowMode window_mode);
 
   // Returns true if we should read icon image files from the local app_service
   // icon directory on disk, e.g. for ChromeOS. Otherwise, returns false.

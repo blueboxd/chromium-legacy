@@ -4,7 +4,10 @@
 
 #include "components/segmentation_platform/internal/scheduler/model_execution_scheduler_impl.h"
 
+#include <optional>
+
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/clock.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
@@ -15,12 +18,11 @@
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
 
 ModelExecutionSchedulerImpl::ModelExecutionSchedulerImpl(
-    std::vector<Observer*>&& observers,
+    std::vector<raw_ptr<Observer, VectorExperimental>>&& observers,
     SegmentInfoDatabase* segment_database,
     SignalStorageConfig* signal_storage_config,
     ModelManager* model_manager,
@@ -98,7 +100,7 @@ void ModelExecutionSchedulerImpl::OnModelExecutionCompleted(
 
   segment_database_->SaveSegmentResult(
       segment_id, proto::ModelSource::SERVER_MODEL_SOURCE,
-      success ? absl::make_optional(segment_result) : absl::nullopt,
+      success ? std::make_optional(segment_result) : std::nullopt,
       base::BindOnce(&ModelExecutionSchedulerImpl::OnResultSaved,
                      weak_ptr_factory_.GetWeakPtr(), segment_id));
 }

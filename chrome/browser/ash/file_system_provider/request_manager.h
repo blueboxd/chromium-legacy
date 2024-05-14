@@ -21,8 +21,7 @@
 
 class Profile;
 
-namespace ash {
-namespace file_system_provider {
+namespace ash::file_system_provider {
 
 // Request type, passed to RequestManager::CreateRequest. For logging purposes.
 enum class RequestType {
@@ -66,7 +65,7 @@ class RequestManager {
   // this interface.
   class HandlerInterface {
    public:
-    virtual ~HandlerInterface() {}
+    virtual ~HandlerInterface() = default;
 
     // Called when the request is created. Executes the request implementation.
     // Returns false in case of a execution failure.
@@ -94,7 +93,7 @@ class RequestManager {
   // Observes activities in the request manager.
   class Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
 
     // Called when the request is created.
     virtual void OnRequestCreated(int request_id, RequestType type) = 0;
@@ -212,7 +211,6 @@ class RequestManager {
   base::WeakPtrFactory<RequestManager> weak_ptr_factory_{this};
 };
 
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_REQUEST_MANAGER_H_

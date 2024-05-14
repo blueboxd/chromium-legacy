@@ -6,10 +6,12 @@
 load("//lib/builders.star", "os", "sheriff_rotations")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
+load("//lib/builder_health_indicators.star", "health_spec")
 
 ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     console_view = "checks",
+    health_spec = health_spec.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
 )
@@ -66,33 +68,15 @@ ci.builder(
 
 ci.builder(
     name = "linux-3p-licenses",
-    description_html = "Daily scan for third party license errors.",
+    description_html = "Weekly scan for third party license errors.",
     executable = "recipe:chromium_licenses/scan",
-    schedule = "15 22 * * 1",  # 10:15pm UTC / 8:15am AEST / 1:15am PST
+    schedule = "15 22 * * 1",  # Once a week 10:15pm UTC / 8:15am AEST / 1:15am PST
     triggered_by = None,
     os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
         console_view = "checks",
         category = "3p-licenses",
         short_name = "linux",
-    ),
-    contact_team_email = "chops-security-core@google.com",
-    execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
-    notifies = ["peeps-security-core-ssci"],
-)
-
-ci.builder(
-    name = "win-3p-licenses",
-    description_html = "Daily scan for third party license errors.",
-    executable = "recipe:chromium_licenses/scan",
-    schedule = "15 22 * * 1",  # Once a week 10:15pm UTC / 8:15am AEST / 1:15am PST
-    triggered_by = None,
-    builderless = True,
-    os = os.WINDOWS_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        console_view = "checks",
-        category = "3p-licenses",
-        short_name = "win",
     ),
     contact_team_email = "chops-security-core@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,

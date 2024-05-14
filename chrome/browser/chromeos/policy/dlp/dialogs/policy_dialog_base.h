@@ -26,15 +26,15 @@ using WarningCallback = base::OnceCallback<void(bool should_proceed)>;
 // Currently, `user_justification` may contain a valid value only for Enterprise
 // Connectors.
 using WarningWithJustificationCallback =
-    base::OnceCallback<void(absl::optional<std::u16string> user_justification,
+    base::OnceCallback<void(std::optional<std::u16string> user_justification,
                             bool should_proceed)>;
 
 // PolicyDialogBase is the base class for showing Data Protection warnings or
 // detailed error dialogs.
 class PolicyDialogBase : public views::DialogDelegateView {
- public:
-  METADATA_HEADER(PolicyDialogBase);
+  METADATA_HEADER(PolicyDialogBase, views::DialogDelegateView)
 
+ public:
   // Type of the restriction for which the dialog is created.
   enum class Restriction {
     kScreenCapture,
@@ -114,9 +114,9 @@ class PolicyDialogBase : public views::DialogDelegateView {
                                   const std::u16string& title) = 0;
 
   // The upper section of the dialog.
-  raw_ptr<views::View, ExperimentalAsh> upper_panel_;
+  raw_ptr<views::View> upper_panel_;
   // The scrollable container used for listing contents or files.
-  raw_ptr<views::View, ExperimentalAsh> scroll_view_container_;
+  raw_ptr<views::View> scroll_view_container_;
 };
 
 }  // namespace policy

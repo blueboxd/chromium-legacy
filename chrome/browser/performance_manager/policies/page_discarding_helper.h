@@ -5,19 +5,23 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_POLICIES_PAGE_DISCARDING_HELPER_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_POLICIES_PAGE_DISCARDING_HELPER_H_
 
+#include <optional>
+
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/performance_manager/mechanisms/page_discarder.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-shared.h"
+#include "components/memory_pressure/reclaim_target.h"
+#include "components/memory_pressure/unnecessary_discard_monitor.h"
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/page_node.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace url_matcher {
 class URLMatcher;
@@ -131,12 +135,13 @@ class PageDiscardingHelper : public GraphOwned,
   // kProtected) can also be discarded.
   // `minimum_time_in_background` is passed to `CanDiscard()`, see the comment
   // there about its usage.
-  void DiscardMultiplePages(absl::optional<uint64_t> reclaim_target_kb,
-                            bool discard_protected_tabs,
-                            base::OnceCallback<void(bool)> post_discard_cb,
-                            DiscardReason discard_reason,
-                            base::TimeDelta minimum_time_in_background =
-                                kNonVisiblePagesUrgentProtectionTime);
+  void DiscardMultiplePages(
+      std::optional<memory_pressure::ReclaimTarget> reclaim_target,
+      bool discard_protected_tabs,
+      base::OnceCallback<void(bool)> post_discard_cb,
+      DiscardReason discard_reason,
+      base::TimeDelta minimum_time_in_background =
+          kNonVisiblePagesUrgentProtectionTime);
 
   void ImmediatelyDiscardSpecificPage(
       const PageNode* page_node,
@@ -184,19 +189,21 @@ class PageDiscardingHelper : public GraphOwned,
   // there's been at least one successful discard or if there's no more discard
   // candidates.
   void PostDiscardAttemptCallback(
-      absl::optional<uint64_t> reclaim_target_kb,
+      std::optional<memory_pressure::ReclaimTarget> reclaim_target,
       bool discard_protected_tabs,
       base::OnceCallback<void(bool)> post_discard_cb,
       DiscardReason discard_reason,
       base::TimeDelta minimum_time_in_background,
-      bool success);
+      const std::vector<mechanism::PageDiscarder::DiscardEvent>&
+          discard_events);
 
   // The mechanism used to do the actual discarding.
-  std::unique_ptr<performance_manager::mechanism::PageDiscarder>
-      page_discarder_;
+  std::unique_ptr<mechanism::PageDiscarder> page_discarder_;
 
   std::map<std::string, std::unique_ptr<url_matcher::URLMatcher>>
       profiles_no_discard_patterns_;
+
+  memory_pressure::UnnecessaryDiscardMonitor unnecessary_discard_monitor_;
 
   raw_ptr<Graph> graph_ = nullptr;
 

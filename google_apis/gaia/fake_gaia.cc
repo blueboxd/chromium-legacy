@@ -4,6 +4,7 @@
 
 #include "google_apis/gaia/fake_gaia.h"
 
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -21,7 +22,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -61,7 +61,6 @@ const char kTestReauthProofToken[] = "fake-reauth-proof-token";
 const char kTestCookieAttributes[] =
     "; Path=/; HttpOnly; SameSite=None; Secure";
 
-const char kDefaultGaiaId[] = "12345";
 const char kDefaultEmail[] = "email12345@foo.com";
 
 const base::FilePath::CharType kEmbeddedSetupChromeos[] =
@@ -729,7 +728,7 @@ void FakeGaia::HandleTokenInfo(const HttpRequest& request,
             .Set("issued_to", token_info->issued_to)
             .Set("audience", token_info->audience)
             .Set("user_id", token_info->user_id)
-            .Set("scope", base::JoinString(std::vector<base::StringPiece>(
+            .Set("scope", base::JoinString(std::vector<std::string_view>(
                                                token_info->scopes.begin(),
                                                token_info->scopes.end()),
                                            " "))
@@ -775,7 +774,7 @@ void FakeGaia::HandleListAccounts(const HttpRequest& request,
   std::vector<std::string> listed_accounts;
   listed_accounts.push_back(base::StringPrintf(
       kIndividualListedAccountResponseFormat, configuration_.email.c_str(),
-      kDefaultGaiaId, kAccountIsSignedIn));
+      kDefaultGaiaId.data(), kAccountIsSignedIn));
 
   for (const std::string& gaia_id : configuration_.signed_out_gaia_ids) {
     DCHECK_NE(kDefaultGaiaId, gaia_id);
@@ -884,7 +883,6 @@ void FakeGaia::HandleGetReAuthProofToken(const HttpRequest& request,
     default:
       LOG(FATAL) << "Unsupported ReAuthProofTokenStatus: "
                  << static_cast<int>(next_reauth_status_);
-      break;
   }
 }
 

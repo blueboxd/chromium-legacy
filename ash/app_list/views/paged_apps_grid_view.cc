@@ -207,7 +207,7 @@ class PagedAppsGridView::BackgroundCardLayer : public ui::LayerOwner,
   bool is_active_page_ = false;
 
   const bool is_jelly_enabled_;
-  const raw_ptr<PagedAppsGridView, ExperimentalAsh> paged_apps_grid_view_;
+  const raw_ptr<PagedAppsGridView> paged_apps_grid_view_;
 };
 
 PagedAppsGridView::PagedAppsGridView(
@@ -287,7 +287,7 @@ void PagedAppsGridView::OnGestureEvent(ui::GestureEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // views::View:
 
-void PagedAppsGridView::Layout() {
+void PagedAppsGridView::Layout(PassKey) {
   if (ignore_layout())
     return;
 
@@ -560,7 +560,7 @@ void PagedAppsGridView::SelectedPageChanged(int old_selected,
                                             int new_selected) {
   items_container()->layer()->SetTransform(gfx::Transform());
   if (IsDragging()) {
-    Layout();
+    DeprecatedLayoutImmediately();
     UpdateDropTargetRegion();
     MaybeStartPageFlipTimer(last_drag_point());
   } else {
@@ -577,7 +577,7 @@ void PagedAppsGridView::SelectedPageChanged(int old_selected,
     } else {
       ClearSelectedView();
     }
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 }
 
@@ -591,12 +591,12 @@ void PagedAppsGridView::TransitionStarting() {
 void PagedAppsGridView::TransitionStarted() {
   if (abs(pagination_model_.transition().target_page -
           pagination_model_.selected_page()) > 1) {
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 
   pagination_metrics_tracker_ =
       GetWidget()->GetCompositor()->RequestNewThroughputTracker();
-  pagination_metrics_tracker_->Start(metrics_util::ForSmoothness(
+  pagination_metrics_tracker_->Start(metrics_util::ForSmoothnessV3(
       base::BindRepeating(&ReportPaginationSmoothness)));
 }
 
@@ -803,10 +803,10 @@ void PagedAppsGridView::EndAppsGridCardifiedView() {
 
 void PagedAppsGridView::AnimateCardifiedState() {
   if (GetWidget()) {
-    // Normally Layout() cancels any animations. At this point there may be a
-    // pending Layout(), force it now so that one isn't triggered part way
-    // through the animation. Further, ignore this layout so that the position
-    // isn't reset.
+    // Normally layout cancels any animations. At this point there may be a
+    // pending layout; force it now so that one isn't triggered part way through
+    // the animation. Further, ignore this layout so that the position isn't
+    // reset.
     DCHECK(!ignore_layout_);
     base::AutoReset<bool> auto_reset(&ignore_layout_, true);
     GetWidget()->LayoutRootViewIfNecessary();
@@ -835,7 +835,7 @@ void PagedAppsGridView::AnimateCardifiedState() {
   for (auto& background_card : background_cards_) {
     reporters.push_back(std::make_unique<ui::AnimationThroughputReporter>(
         background_card->layer()->GetAnimator(),
-        metrics_util::ForSmoothness(base::BindRepeating(
+        metrics_util::ForSmoothnessV3(base::BindRepeating(
             &ReportCardifiedSmoothness, cardified_state_))));
   }
 
@@ -1208,10 +1208,10 @@ void PagedAppsGridView::AnimateOnNudgeRemoved() {
   UpdateTilePadding();
 
   if (GetWidget()) {
-    // Normally Layout() cancels any animations. At this point there may be a
-    // pending Layout(), force it now so that one isn't triggered part way
-    // through the animation. Further, ignore this layout so that the position
-    // isn't reset.
+    // Normally layout cancels any animations. At this point there may be a
+    // pending layout; force it now so that one isn't triggered part way through
+    // the animation. Further, ignore this layout so that the position isn't
+    // reset.
     base::AutoReset<bool> auto_reset(&ignore_layout_, true);
     GetWidget()->LayoutRootViewIfNecessary();
   }

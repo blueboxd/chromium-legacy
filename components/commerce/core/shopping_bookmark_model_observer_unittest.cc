@@ -214,8 +214,6 @@ TEST_F(ShoppingBookmarkModelObserverTest,
 
 // Ensure a subscription is automatically tracked if that flag is enabled.
 TEST_F(ShoppingBookmarkModelObserverTest, TestAutomaticTrackingOnAdd) {
-  test_features_.InitAndEnableFeature(kShoppingListTrackByDefault);
-
   uint64_t cluster_id = 12345L;
   ProductInfo info;
   info.product_cluster_id.emplace(cluster_id);
@@ -236,8 +234,6 @@ TEST_F(ShoppingBookmarkModelObserverTest, TestAutomaticTrackingOnAdd) {
 
 // Ensure a subscription is automatically tracked if that flag is enabled.
 TEST_F(ShoppingBookmarkModelObserverTest, TestShoppingCollectionChangeMetrics) {
-  test_features_.InitAndEnableFeature(kShoppingCollection);
-
   base::UserActionTester user_action_tester;
 
   ASSERT_EQ(user_action_tester.GetActionCount(

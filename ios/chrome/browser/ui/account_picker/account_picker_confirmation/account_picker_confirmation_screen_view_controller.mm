@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/account_picker/account_picker_layout_delegate.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_view.h"
-#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -24,6 +23,8 @@
 
 namespace {
 
+// Duration of showing/hiding the identity button.
+constexpr NSTimeInterval kIdentityButtonAnimationDuration = 0.1;
 // Margins for `_contentView` (top, bottom, leading and trailing).
 constexpr CGFloat kContentMargin = 16.;
 // Space between elements in `_contentView`.
@@ -118,6 +119,19 @@ CGFloat GetPixelLength() {
   SetConfigurationTitle(_primaryButton, _submitString);
 }
 
+- (void)setIdentityButtonHidden:(BOOL)hidden animated:(BOOL)animated {
+  if (!animated) {
+    _identityButtonControl.hidden = hidden;
+    return;
+  }
+  __weak __typeof(_identityButtonControl) weakIdentityButton =
+      _identityButtonControl;
+  [UIView animateWithDuration:kIdentityButtonAnimationDuration
+                   animations:^{
+                     weakIdentityButton.hidden = hidden;
+                   }];
+}
+
 #pragma mark - UIViewController
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -205,6 +219,20 @@ CGFloat GetPixelLength() {
         .active = YES;
   }
 
+  // Add `childViewController` as a child view controller above the list of
+  // accounts to choose from.
+  UIViewController* childViewController =
+      self.accountConfirmationChildViewController;
+  if (childViewController) {
+    [_contentView addArrangedSubview:childViewController.view];
+    childViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addChildViewController:childViewController];
+    [childViewController didMoveToParentViewController:self];
+    [childViewController.view.widthAnchor
+        constraintEqualToAnchor:_contentView.widthAnchor]
+        .active = YES;
+  }
+
   // Add IdentityButtonControl for the default identity.
   _identityButtonControl =
       [[IdentityButtonControl alloc] initWithFrame:CGRectZero];
@@ -245,6 +273,10 @@ CGFloat GetPixelLength() {
                             action:@selector(askEveryTimeSwitchAction:)
                   forControlEvents:UIControlEventValueChanged];
     _askEveryTimeSwitch.on = YES;
+    [_askEveryTimeSwitch
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
     [switchWithLabel addArrangedSubview:askEveryTimeLabel];
     [switchWithLabel addArrangedSubview:_askEveryTimeSwitch];
 
@@ -314,6 +346,13 @@ CGFloat GetPixelLength() {
   // Ensure that keyboard is hidden.
   UIResponder* firstResponder = GetFirstResponder();
   [firstResponder resignFirstResponder];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  CGFloat width = self.view.intrinsicContentSize.width;
+  self.preferredContentSize =
+      CGSizeMake(width, [self layoutFittingHeightForWidth:width]);
 }
 
 #pragma mark - UI actions

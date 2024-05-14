@@ -272,7 +272,7 @@ class SearchBoxTextfield : public views::Textfield {
   }
 
  private:
-  const raw_ptr<SearchBoxViewBase, ExperimentalAsh> search_box_view_;
+  const raw_ptr<SearchBoxViewBase> search_box_view_;
 };
 
 // TODO (kylixrd): Enable the following once tast-tests are fixed. Metadata
@@ -633,7 +633,7 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
   UpdateButtonsVisibility();
   OnSearchBoxActiveChanged(active);
 
-  content_container_->Layout();
+  content_container_->DeprecatedLayoutImmediately();
   UpdateSearchBoxFocusPaint();
   SchedulePaint();
 }
@@ -688,7 +688,7 @@ void SearchBoxViewBase::NotifyGestureEvent() {
 
 void SearchBoxViewBase::OnSearchBoxFocusedChanged() {
   UpdateSearchBoxBorder();
-  Layout();
+  DeprecatedLayoutImmediately();
   UpdateSearchBoxFocusPaint();
   SchedulePaint();
 }

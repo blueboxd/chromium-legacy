@@ -16,7 +16,7 @@
 #import "components/sync/test/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -620,6 +620,8 @@ TEST_F(SigninPromoViewMediatorTest,
   EXPECT_FALSE([SigninPromoViewMediator
       shouldDisplaySigninPromoViewWithAccessPoint:signin_metrics::AccessPoint::
                                                       ACCESS_POINT_RECENT_TABS
+                                signinPromoAction:SigninPromoAction::
+                                                      kInstantSignin
                             authenticationService:GetAuthenticationService()
                                       prefService:browser_state->GetPrefs()]);
 }
@@ -754,6 +756,32 @@ TEST_F(SigninPromoViewMediatorTest,
       signinPromoViewDidTapPrimaryButtonWithDefaultAccount:signin_promo_view_];
   EXPECT_EQ(SigninPromoViewState::kUsedAtLeastOnce,
             mediator_.signinPromoViewState);
+}
+
+// Tests that review settings promo is not shown if the user has already
+// dismissed it, but the signin promo should not be affected.
+TEST_F(SigninPromoViewMediatorTest,
+       ShouldNotDisplaySigninPromoViewIfAlreadySeen) {
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER);
+  TestChromeBrowserState::Builder builder;
+  builder.SetPrefService(CreatePrefService());
+  std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
+  browser_state->GetPrefs()->SetBoolean(
+      prefs::kIosBookmarkSettingsPromoAlreadySeen, true);
+  EXPECT_FALSE([SigninPromoViewMediator
+      shouldDisplaySigninPromoViewWithAccessPoint:
+          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER
+                                signinPromoAction:SigninPromoAction::
+                                                      kReviewAccountSettings
+                            authenticationService:GetAuthenticationService()
+                                      prefService:browser_state->GetPrefs()]);
+  EXPECT_TRUE([SigninPromoViewMediator
+      shouldDisplaySigninPromoViewWithAccessPoint:
+          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER
+                                signinPromoAction:SigninPromoAction::
+                                                      kInstantSignin
+                            authenticationService:GetAuthenticationService()
+                                      prefService:browser_state->GetPrefs()]);
 }
 
 }  // namespace

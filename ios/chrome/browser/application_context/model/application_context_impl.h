@@ -86,6 +86,16 @@ class ApplicationContextImpl : public ApplicationContext {
   PushNotificationService* GetPushNotificationService() override;
 
  private:
+  // Represents the possible application states the app can be in.
+  enum class AppState {
+    kForeground,
+    kBackground,
+  };
+
+  // Helper method to implement the work required when transitioning between
+  // application states.
+  void OnAppEnterState(AppState app_state);
+
   // Sets the locale used by the application.
   void SetApplicationLocale(const std::string& locale);
 
@@ -96,6 +106,11 @@ class ApplicationContextImpl : public ApplicationContext {
   void CreateGCMDriver();
 
   base::ThreadChecker thread_checker_;
+
+  // Used internally for tracking whether the call to StartTearDown() has
+  // happened already, to avoid recreating lazily-constructed objects after they
+  // have already been destroyed.
+  bool tearing_down_ = false;
 
   // Logger which observers and logs application wide events to breadcrumbs.
   // Will be null if breadcrumbs feature is not enabled.

@@ -12,12 +12,14 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_test_suite.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme_features.h"
 
 namespace blink {
 
-using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace {
 
@@ -60,7 +62,8 @@ class ScrollbarThemeFluentTest : public ::testing::TestWithParam<float> {
   void SetUp() override {
     feature_list_.InitAndEnableFeature(::features::kFluentScrollbar);
     ScrollbarThemeSettings::SetFluentScrollbarsEnabled(true);
-    mock_scrollable_area_ = MakeGarbageCollected<MockScrollableArea>();
+    mock_scrollable_area_ = MakeGarbageCollected<MockScrollableArea>(
+        /*maximum_scroll_offset=*/ScrollOffset(0, 1000));
     mock_scrollable_area_->SetScaleFromDIP(GetParam());
     // ScrollbarThemeFluent Needs to be instantiated after feature flag and
     // scrollbar settings have been set.
@@ -89,6 +92,7 @@ class ScrollbarThemeFluentTest : public ::testing::TestWithParam<float> {
     return mock_scrollable_area_;
   }
 
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<ScrollbarThemeFluentMock> theme_;
 
  private:
@@ -107,6 +111,7 @@ class OverlayScrollbarThemeFluentTest : public ScrollbarThemeFluentTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  ScopedMockOverlayScrollbars mock_overlay_scrollbar_;
 };
 
 // Test that the scrollbar's thickness scales appropriately with the thumb's
@@ -175,30 +180,64 @@ TEST_P(ScrollbarThemeFluentTest, HorizontalScrollbarPartsSizes) {
                                    scrollbar_thickness));
 }
 
+// The test verifies that the track/buttons paint is not invalidated when
+// the thumb position changes. Aura scrollbars change arrow buttons color
+// when the scroll offset changes from and to the min/max scroll offset.
+// Fluent scrollbars do not change the arrow buttons color in this case.
+TEST_P(ScrollbarThemeFluentTest, ScrollbarTrackPartInvalidationTest) {
+  Scrollbar* scrollbar = Scrollbar::CreateForTesting(
+      mock_scrollable_area(), kVerticalScrollbar, &(theme_->GetInstance()));
+  ON_CALL(*mock_scrollable_area(), VerticalScrollbar())
+      .WillByDefault(Return(scrollbar));
+
+  scrollbar->SetFrameRect(
+      gfx::Rect(0, 0, ScrollbarThickness(), kScrollbarLength));
+  scrollbar->ClearTrackNeedsRepaint();
+
+  // Verifies that when the thumb position changes from min offset, the track
+  // invalidation is not triggered.
+  mock_scrollable_area()->SetScrollOffset(
+      ScrollOffset(0, 10), mojom::blink::ScrollType::kCompositor);
+  EXPECT_FALSE(scrollbar->TrackNeedsRepaint());
+
+  // Verifies that when the thumb position changes from a non-zero offset,
+  // the track invalidation is not triggered.
+  mock_scrollable_area()->SetScrollOffset(
+      ScrollOffset(0, 20), mojom::blink::ScrollType::kCompositor);
+  EXPECT_FALSE(scrollbar->TrackNeedsRepaint());
+
+  // Verifies that when the thumb position changes back to 0 (min) offset,
+  // the track invalidation is not triggered.
+  mock_scrollable_area()->SetScrollOffset(
+      ScrollOffset(0, 0), mojom::blink::ScrollType::kCompositor);
+  EXPECT_FALSE(scrollbar->TrackNeedsRepaint());
+}
+
 // Test that Scrollbar objects are correctly sized with Overlay Fluent theme
 // parts.
 TEST_P(OverlayScrollbarThemeFluentTest, OverlaySetsCorrectTrackAndInsetSize) {
   // Some OSes keep fluent scrollbars disabled even if the feature flag is set
   // to enable them.
-  if (ui::IsFluentScrollbarEnabled()) {
-    EXPECT_TRUE(theme_->UsesOverlayScrollbars());
-    Scrollbar* horizontal_scrollbar = Scrollbar::CreateForTesting(
-        mock_scrollable_area(), kHorizontalScrollbar, &(theme_->GetInstance()));
-    int scrollbar_thickness = ScrollbarThickness();
-    horizontal_scrollbar->SetFrameRect(gfx::Rect(
-        0, kOffsetFromViewport, kScrollbarLength, scrollbar_thickness));
-
-    // Check that ThumbOffset() calculation is correct.
-    EXPECT_EQ(ThumbThickness() + 2 * ThumbOffset(), scrollbar_thickness);
-
-    const gfx::Rect track_rect = theme_->TrackRect(*horizontal_scrollbar);
-    EXPECT_EQ(track_rect,
-              gfx::Rect(theme_->ButtonLength(*horizontal_scrollbar),
-                        kOffsetFromViewport, TrackLength(*horizontal_scrollbar),
-                        scrollbar_thickness));
-  } else {
+  if (!ui::IsFluentScrollbarEnabled()) {
     EXPECT_FALSE(theme_->UsesOverlayScrollbars());
+    return;
   }
+
+  EXPECT_TRUE(theme_->UsesOverlayScrollbars());
+  Scrollbar* horizontal_scrollbar = Scrollbar::CreateForTesting(
+      mock_scrollable_area(), kHorizontalScrollbar, &(theme_->GetInstance()));
+  int scrollbar_thickness = ScrollbarThickness();
+  horizontal_scrollbar->SetFrameRect(
+      gfx::Rect(0, kOffsetFromViewport, kScrollbarLength, scrollbar_thickness));
+
+  // Check that ThumbOffset() calculation is correct.
+  EXPECT_EQ(ThumbThickness() + 2 * ThumbOffset(), scrollbar_thickness);
+
+  const gfx::Rect track_rect = theme_->TrackRect(*horizontal_scrollbar);
+  EXPECT_EQ(track_rect,
+            gfx::Rect(theme_->ButtonLength(*horizontal_scrollbar),
+                      kOffsetFromViewport, TrackLength(*horizontal_scrollbar),
+                      scrollbar_thickness));
 }
 
 // Same as ScrollbarThemeFluentTest.ScrollbarThicknessScalesProperly, but for

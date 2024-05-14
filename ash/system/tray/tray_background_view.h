@@ -43,8 +43,9 @@ class ASH_EXPORT TrayBackgroundView : public views::Button,
                                       public ShelfBackgroundAnimatorObserver,
                                       public TrayBubbleView::Delegate,
                                       public VirtualKeyboardModel::Observer {
+  METADATA_HEADER(TrayBackgroundView, views::Button)
+
  public:
-  METADATA_HEADER(TrayBackgroundView);
 
   // Inherit from this class to be notified of events that happen for a specific
   // `TrayBackgroundView`.
@@ -337,13 +338,13 @@ class ASH_EXPORT TrayBackgroundView : public views::Button,
   void StartPulseAnimationCoolDownTimer();
 
   // The shelf containing the system tray for this view.
-  raw_ptr<Shelf, ExperimentalAsh> shelf_;
+  raw_ptr<Shelf> shelf_;
 
   // The catalog name, used to record metrics on feature integrations.
   const TrayBackgroundViewCatalogName catalog_name_;
 
   // Convenience pointer to the contents view.
-  raw_ptr<TrayContainer, ExperimentalAsh> tray_container_;
+  raw_ptr<TrayContainer> tray_container_;
 
   // A separate layer for ripple aimation.
   std::unique_ptr<ui::Layer> ripple_layer_;

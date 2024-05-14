@@ -179,12 +179,12 @@ base::Value::Dict NetLogFailureParam(int net_error,
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::unique_ptr<ClientSocketHandle> connection,
     WebSocketStream::ConnectDelegate* connect_delegate,
-    bool using_proxy,
+    bool is_for_get_to_http_proxy,
     std::vector<std::string> requested_sub_protocols,
     std::vector<std::string> requested_extensions,
     WebSocketStreamRequestAPI* request,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
-    : state_(std::move(connection), using_proxy),
+    : state_(std::move(connection), is_for_get_to_http_proxy),
       connect_delegate_(connect_delegate),
       requested_sub_protocols_(std::move(requested_sub_protocols)),
       requested_extensions_(std::move(requested_extensions)),
@@ -400,9 +400,10 @@ WebSocketBasicHandshakeStream::RenewStreamForAuth() {
   state_.DeleteParser();
 
   auto handshake_stream = std::make_unique<WebSocketBasicHandshakeStream>(
-      state_.ReleaseConnection(), connect_delegate_, state_.using_proxy(),
-      std::move(requested_sub_protocols_), std::move(requested_extensions_),
-      stream_request_, websocket_endpoint_lock_manager_);
+      state_.ReleaseConnection(), connect_delegate_,
+      state_.is_for_get_to_http_proxy(), std::move(requested_sub_protocols_),
+      std::move(requested_extensions_), stream_request_,
+      websocket_endpoint_lock_manager_);
 
   stream_request_->OnBasicHandshakeStreamCreated(handshake_stream.get());
 
@@ -490,7 +491,7 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
         // helpful, so use a different error message.
         if (headers->GetHttpVersion() == HttpVersion(0, 9)) {
           OnFailure("Error during WebSocket handshake: Invalid status line",
-                    ERR_FAILED, absl::nullopt);
+                    ERR_FAILED, std::nullopt);
         } else {
           OnFailure(base::StringPrintf("Error during WebSocket handshake: "
                                        "Unexpected response code: %d",
@@ -503,13 +504,13 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
   } else {
     if (rv == ERR_EMPTY_RESPONSE) {
       OnFailure("Connection closed before receiving a handshake response", rv,
-                absl::nullopt);
+                std::nullopt);
       result_ = HandshakeResult::EMPTY_RESPONSE;
       return rv;
     }
     OnFailure(
         base::StrCat({"Error during WebSocket handshake: ", ErrorToString(rv)}),
-        rv, absl::nullopt);
+        rv, std::nullopt);
     // Some error codes (for example ERR_CONNECTION_CLOSED) get changed to OK at
     // higher levels. To prevent an unvalidated connection getting erroneously
     // upgraded, don't pass through the status code unchanged if it is
@@ -549,14 +550,14 @@ int WebSocketBasicHandshakeStream::ValidateUpgradeResponse(
     return OK;
   }
   OnFailure("Error during WebSocket handshake: " + failure_message, ERR_FAILED,
-            absl::nullopt);
+            std::nullopt);
   return ERR_INVALID_RESPONSE;
 }
 
 void WebSocketBasicHandshakeStream::OnFailure(
     const std::string& message,
     int net_error,
-    absl::optional<int> response_code) {
+    std::optional<int> response_code) {
   net_log_.AddEvent(net::NetLogEventType::WEBSOCKET_UPGRADE_FAILURE,
                     [&] { return NetLogFailureParam(net_error, message); });
   // Avoid connection reuse if auth did not happen.

@@ -39,6 +39,9 @@ import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -71,9 +74,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
@@ -96,10 +96,9 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @EnableFeatures({
     ChromeFeatureList.WEB_FEED,
-    ChromeFeatureList.BOOKMARKS_REFRESH,
     UiAccessibilityFeatures.START_SURFACE_ACCESSIBILITY_CHECK
 })
-@DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
+@DisableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
 public class TabbedAppMenuPropertiesDelegateUnitTest {
     // Constants defining flags that determines multi-window menu items visibility.
     private static final boolean TAB_M = true; // multiple tabs
@@ -251,6 +250,8 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
             R.id.new_incognito_tab_menu_id,
             R.id.divider_line_id,
             R.id.open_history_menu_id,
+            R.id.quick_delete_menu_id,
+            R.id.quick_delete_divider_line_id,
             R.id.downloads_menu_id,
             R.id.all_bookmarks_menu_id,
             R.id.recent_tabs_menu_id,
@@ -438,7 +439,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     public void getFooterResourceId_dseOn_returnsWebFeedMenuItem() {
         setUpMocksForWebFeedFooter();
         when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(true);
-        when(mPrefService.getBoolean(Pref.ENABLE_SNIPPETS_BY_DSE)).thenReturn(true);
 
         assertEquals(
                 "Footer Resource ID should be web_feed_main_menu_item.",
@@ -451,7 +451,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     public void getFooterResourceId_signedOutUser_dseOn_doesNotReturnWebFeedMenuItem() {
         setUpMocksForWebFeedFooter();
         when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(false);
-        when(mPrefService.getBoolean(Pref.ENABLE_SNIPPETS_BY_DSE)).thenReturn(true);
 
         assertNotEquals(
                 "Footer Resource ID should not be web_feed_main_menu_item.",
@@ -465,6 +464,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         when(mTab.getOriginalUrl()).thenReturn(JUnitTestGURLs.EXAMPLE_URL);
         when(mOfflinePageUtils.isOfflinePage(mTab)).thenReturn(false);
         when(mIdentityManager.hasPrimaryAccount(anyInt())).thenReturn(true);
+        when(mPrefService.getBoolean(Pref.ENABLE_SNIPPETS_BY_DSE)).thenReturn(true);
     }
 
     private void setUpMocksForPageMenu() {

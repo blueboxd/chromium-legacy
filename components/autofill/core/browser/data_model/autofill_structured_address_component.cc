@@ -11,6 +11,7 @@
 
 #include "base/feature_list.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -81,22 +82,28 @@ std::ostream& operator<<(std::ostream& os, VerificationStatus status) {
   return os;
 }
 
-AddressComponent::AddressComponent(ServerFieldType storage_type,
+AddressComponent::AddressComponent(FieldType storage_type,
                                    SubcomponentsList subcomponents,
                                    unsigned int merge_mode)
     : value_verification_status_(VerificationStatus::kNoStatus),
       storage_type_(storage_type),
       merge_mode_(merge_mode) {
   subcomponents_ = std::move(subcomponents);
-  for (const auto& child : subcomponents_) {
+  for (AddressComponent* child : subcomponents_) {
     child->SetParent(this);
   }
 }
 
 AddressComponent::~AddressComponent() = default;
 
-ServerFieldType AddressComponent::GetStorageType() const {
+FieldType AddressComponent::GetStorageType() const {
   return storage_type_;
+}
+
+FieldType AddressComponent::GetFallbackType(FieldType field_type) const {
+  CHECK(IsSupportedType(field_type));
+  // TODO(crbug.com/1464568): Add logic for i18n fallback types.
+  return field_type;
 }
 
 std::string AddressComponent::GetStorageTypeName() const {
@@ -174,7 +181,7 @@ std::u16string AddressComponent::GetCommonCountry(
                                                                 : u"";
 }
 
-bool AddressComponent::IsValueForTypeValid(ServerFieldType field_type,
+bool AddressComponent::IsValueForTypeValid(FieldType field_type,
                                            bool wipe_if_not) {
   AddressComponent* node_for_type = GetNodeForType(field_type);
   if (!node_for_type) {
@@ -187,10 +194,13 @@ bool AddressComponent::IsValueForTypeValid(ServerFieldType field_type,
   return validity_status;
 }
 
-void AddressComponent::RegisterChildNode(
-    std::unique_ptr<AddressComponent> child) {
-  child->SetParent(this);
-  subcomponents_.push_back(std::move(child));
+void AddressComponent::RegisterChildNode(AddressComponent* child,
+                                         bool set_as_parent_of_child) {
+  subcomponents_.push_back(child);
+
+  if (set_as_parent_of_child) {
+    child->SetParent(this);
+  }
 }
 
 VerificationStatus AddressComponent::GetVerificationStatus() const {
@@ -203,8 +213,8 @@ const std::u16string& AddressComponent::GetValue() const {
   return base::EmptyString16();
 }
 
-absl::optional<std::u16string> AddressComponent::GetCanonicalizedValue() const {
-  return absl::nullopt;
+std::optional<std::u16string> AddressComponent::GetCanonicalizedValue() const {
+  return std::nullopt;
 }
 
 bool AddressComponent::IsValueAssigned() const {
@@ -223,23 +233,25 @@ void AddressComponent::UnsetValue() {
   sorted_normalized_tokens_.reset();
 }
 
-bool AddressComponent::IsSupportedType(ServerFieldType field_type) const {
+bool AddressComponent::IsSupportedType(FieldType field_type) const {
   return field_type == storage_type_ ||
          GetAdditionalSupportedFieldTypes().contains(field_type);
 }
 
-void AddressComponent::GetSupportedTypes(
-    ServerFieldTypeSet* supported_types) const {
+bool AddressComponent::IsValueReadOnly() const {
+  return false;
+}
+
+void AddressComponent::GetSupportedTypes(FieldTypeSet* supported_types) const {
   return AddressComponent::GetTypes(/*storable_only=*/false, supported_types);
 }
 
-void AddressComponent::GetStorableTypes(
-    ServerFieldTypeSet* supported_types) const {
+void AddressComponent::GetStorableTypes(FieldTypeSet* supported_types) const {
   return AddressComponent::GetTypes(/*storable_only=*/true, supported_types);
 }
 
 void AddressComponent::GetTypes(bool storable_only,
-                                ServerFieldTypeSet* supported_types) const {
+                                FieldTypeSet* supported_types) const {
   // A proper AddressComponent tree contains every type only once.
   CHECK(supported_types->find(storage_type_) == supported_types->end())
       << "The AddressComponent already contains a node that supports this "
@@ -248,39 +260,38 @@ void AddressComponent::GetTypes(bool storable_only,
   supported_types->insert(storage_type_);
   if (!storable_only) {
     supported_types->insert_all(GetAdditionalSupportedFieldTypes());
+    // Include synthesized types in the list of supported (not storable) types.
+    for (const AddressComponent* synthesized_node :
+         synthesized_subcomponents_) {
+      supported_types->insert(synthesized_node->GetStorageType());
+    }
   }
 
-  for (auto& subcomponent : subcomponents_) {
+  for (AddressComponent* subcomponent : subcomponents_) {
     subcomponent->GetTypes(storable_only, supported_types);
   }
 }
 
-std::optional<ServerFieldType> AddressComponent::GetStorableTypeOf(
-    ServerFieldType type) const {
-  if (IsSupportedType(type)) {
-    return storage_type_;
-  }
-  for (const std::unique_ptr<AddressComponent>& subcomponent : subcomponents_) {
-    if (auto storeable_type = subcomponent->GetStorableTypeOf(type)) {
-      return storeable_type;
-    }
+std::optional<FieldType> AddressComponent::GetStorableTypeOf(
+    FieldType type) const {
+  if (const AddressComponent* node = GetNodeForType(type)) {
+    return node->GetStorageType();
   }
   return std::nullopt;
 }
 
-const ServerFieldTypeSet AddressComponent::GetAdditionalSupportedFieldTypes()
-    const {
-  constexpr ServerFieldTypeSet additional_supported_field_types;
+const FieldTypeSet AddressComponent::GetAdditionalSupportedFieldTypes() const {
+  constexpr FieldTypeSet additional_supported_field_types;
   return additional_supported_field_types;
 }
 
 void AddressComponent::SetValueForOtherSupportedType(
-    ServerFieldType field_type,
+    FieldType field_type,
     const std::u16string& value,
     const VerificationStatus& status) {}
 
 std::u16string AddressComponent::GetValueForOtherSupportedType(
-    ServerFieldType field_type) const {
+    FieldType field_type) const {
   return {};
 }
 
@@ -302,7 +313,7 @@ std::u16string AddressComponent::GetFormatString() const {
   // Otherwise, the canonical format string is the concatenation of all
   // subcomponents by their natural order.
   std::vector<std::string> format_pieces;
-  for (const auto& subcomponent : subcomponents_) {
+  for (const AddressComponent* subcomponent : subcomponents_) {
     std::string format_piece = GetPlaceholderToken(
         FieldTypeToStringView(subcomponent->GetStorageType()));
     format_pieces.emplace_back(std::move(format_piece));
@@ -310,21 +321,21 @@ std::u16string AddressComponent::GetFormatString() const {
   return base::ASCIIToUTF16(base::JoinString(format_pieces, " "));
 }
 
-std::vector<ServerFieldType> AddressComponent::GetSubcomponentTypes() const {
-  std::vector<ServerFieldType> subcomponent_types;
+std::vector<FieldType> AddressComponent::GetSubcomponentTypes() const {
+  std::vector<FieldType> subcomponent_types;
   subcomponent_types.reserve(subcomponents_.size());
-  for (const auto& subcomponent : subcomponents_) {
+  for (const AddressComponent* subcomponent : subcomponents_) {
     subcomponent_types.emplace_back(subcomponent->GetStorageType());
   }
   return subcomponent_types;
 }
 
 bool AddressComponent::SetValueForType(
-    ServerFieldType field_type,
+    FieldType field_type,
     const std::u16string& value,
     const VerificationStatus& verification_status) {
   AddressComponent* node_for_type = GetNodeForType(field_type);
-  if (!node_for_type) {
+  if (!node_for_type || node_for_type->IsValueReadOnly()) {
     return false;
   }
   node_for_type->GetStorageType() == field_type
@@ -335,7 +346,7 @@ bool AddressComponent::SetValueForType(
 }
 
 bool AddressComponent::SetValueForTypeAndResetSubstructure(
-    ServerFieldType field_type,
+    FieldType field_type,
     const std::u16string& value,
     const VerificationStatus& verification_status) {
   AddressComponent* node_for_type = GetNodeForType(field_type);
@@ -356,7 +367,7 @@ void AddressComponent::UnsetAddressComponentAndItsSubcomponents() {
 }
 
 void AddressComponent::UnsetSubcomponents() {
-  for (auto& component : subcomponents_) {
+  for (AddressComponent* component : subcomponents_) {
     component->UnsetAddressComponentAndItsSubcomponents();
   }
 }
@@ -367,7 +378,8 @@ void AddressComponent::FillTreeGaps() {
   }
 
   bool has_empty_child = base::ranges::any_of(
-      Subcomponents(), [](const auto& c) { return c->GetValue().empty(); });
+      Subcomponents(),
+      [](const AddressComponent* c) { return c->GetValue().empty(); });
 
   // If the current node is not empty and at least one child is empty, we can
   // try filling the empty children by parsing the value on the current node.
@@ -375,7 +387,7 @@ void AddressComponent::FillTreeGaps() {
     TryParseValueAndAssignSubcomponentsRespectingSetValues();
   }
 
-  for (auto& component : subcomponents_) {
+  for (AddressComponent* component : subcomponents_) {
     component->FillTreeGaps();
   }
 
@@ -390,13 +402,20 @@ void AddressComponent::FillTreeGaps() {
 }
 
 const AddressComponent* AddressComponent::GetNodeForType(
-    ServerFieldType field_type) const {
+    FieldType field_type) const {
   // Check if the current node supports `field_type`. If so return the node.
   if (IsSupportedType(field_type)) {
     return this;
   }
+
+  // Check if the requested node is one the synthesized subcomponents.
+  for (const AddressComponent* synthesized_node : synthesized_subcomponents_) {
+    if (synthesized_node->GetStorageType() == field_type) {
+      return synthesized_node;
+    }
+  }
   // Check if any of the descendants of the node support `field_type`
-  for (const auto& subcomponent : subcomponents_) {
+  for (const AddressComponent* subcomponent : subcomponents_) {
     if (const AddressComponent* matched_subcomponent =
             subcomponent->GetNodeForType(field_type);
         matched_subcomponent) {
@@ -406,13 +425,12 @@ const AddressComponent* AddressComponent::GetNodeForType(
   return nullptr;
 }
 
-AddressComponent* AddressComponent::GetNodeForType(ServerFieldType field_type) {
+AddressComponent* AddressComponent::GetNodeForType(FieldType field_type) {
   return const_cast<AddressComponent*>(
       const_cast<const AddressComponent*>(this)->GetNodeForType(field_type));
 }
 
-std::u16string AddressComponent::GetValueForType(
-    ServerFieldType field_type) const {
+std::u16string AddressComponent::GetValueForType(FieldType field_type) const {
   const AddressComponent* node_for_type = GetNodeForType(field_type);
   if (!node_for_type) {
     return {};
@@ -423,7 +441,7 @@ std::u16string AddressComponent::GetValueForType(
 }
 
 std::u16string AddressComponent::GetValueForComparisonForType(
-    ServerFieldType field_type,
+    FieldType field_type,
     const AddressComponent& other) const {
   const AddressComponent* node_for_type = GetNodeForType(field_type);
   if (!node_for_type) {
@@ -437,14 +455,19 @@ std::u16string AddressComponent::GetValueForComparisonForType(
 }
 
 VerificationStatus AddressComponent::GetVerificationStatusForType(
-    ServerFieldType field_type) const {
+    FieldType field_type) const {
   const AddressComponent* node_for_type = GetNodeForType(field_type);
   return node_for_type ? node_for_type->GetVerificationStatus()
                        : VerificationStatus::kNoStatus;
 }
 
-bool AddressComponent::UnsetValueForTypeIfSupported(
-    ServerFieldType field_type) {
+FieldType AddressComponent::GetFallbackTypeForType(FieldType field_type) const {
+  const AddressComponent* node_for_type = GetNodeForType(field_type);
+  return node_for_type ? node_for_type->GetFallbackType(field_type)
+                       : field_type;
+}
+
+bool AddressComponent::UnsetValueForTypeIfSupported(FieldType field_type) {
   AddressComponent* node_for_type = GetNodeForType(field_type);
   if (!node_for_type || field_type != node_for_type->GetStorageType()) {
     return false;
@@ -461,14 +484,13 @@ AddressComponent::GetParseRegularExpressionsByRelevance() const {
 void AddressComponent::ParseValueAndAssignSubcomponents() {
   // Set the values of all subcomponents to the empty string and set the
   // verification status to kParsed.
-  for (auto& subcomponent : subcomponents_) {
+  for (AddressComponent* subcomponent : subcomponents_) {
     subcomponent->SetValue(std::u16string(), VerificationStatus::kParsed);
   }
 
   bool parsing_successful =
       base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel) &&
-              GroupTypeOfServerFieldType(GetStorageType()) ==
-                  FieldTypeGroup::kAddress
+              GroupTypeOfFieldType(GetStorageType()) == FieldTypeGroup::kAddress
           ? ParseValueAndAssignSubcomponentsByI18nParsingRules()
           : ParseValueAndAssignSubcomponentsByRegularExpressions();
 
@@ -510,8 +532,7 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
 void AddressComponent::
     TryParseValueAndAssignSubcomponentsRespectingSetValues() {
   if (base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel) &&
-      GroupTypeOfServerFieldType(GetStorageType()) ==
-          FieldTypeGroup::kAddress) {
+      GroupTypeOfFieldType(GetStorageType()) == FieldTypeGroup::kAddress) {
     const AddressCountryCode country_code = AddressCountryCode(
         base::UTF16ToUTF8(GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY)));
 
@@ -553,9 +574,10 @@ bool AddressComponent::IsValueCompatibleWithDescendants(
     return AreStringTokenCompatible(GetValue(), value);
   }
 
-  return base::ranges::all_of(Subcomponents(), [value](const auto& c) {
-    return c->IsValueCompatibleWithDescendants(value);
-  });
+  return base::ranges::all_of(
+      Subcomponents(), [value](const AddressComponent* c) {
+        return c->IsValueCompatibleWithDescendants(value);
+      });
 }
 
 bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpression(
@@ -634,7 +656,7 @@ bool AddressComponent::AssignParsedValuesToSubcomponentsRespectingSetValues(
     return false;
   }
   // Make sure that parsing matches non-empty values.
-  for (auto& subcomponent : Subcomponents()) {
+  for (AddressComponent* subcomponent : Subcomponents()) {
     if (!subcomponent->GetValue().empty()) {
       auto it = values->find(subcomponent->GetStorageTypeName());
       if (it == values->end() ||
@@ -646,7 +668,7 @@ bool AddressComponent::AssignParsedValuesToSubcomponentsRespectingSetValues(
 
   // Parsing was successful and results from the result map can be written
   // to the structure.
-  for (auto& subcomponent : Subcomponents()) {
+  for (AddressComponent* subcomponent : Subcomponents()) {
     auto it = values->find(subcomponent->GetStorageTypeName());
     if (subcomponent->GetValue().empty() && it != values->end()) {
       const std::u16string parsed_value = base::UTF8ToUTF16(it->second);
@@ -660,9 +682,15 @@ bool AddressComponent::AssignParsedValuesToSubcomponentsRespectingSetValues(
 }
 
 bool AddressComponent::AllDescendantsAreEmpty() const {
-  return base::ranges::all_of(Subcomponents(), [](const auto& c) {
+  return base::ranges::all_of(Subcomponents(), [](const AddressComponent* c) {
     return c->GetValue().empty() && c->AllDescendantsAreEmpty();
   });
+}
+
+void AddressComponent::WipeRawPtrsForDestruction() {
+  subcomponents_.clear();
+  synthesized_subcomponents_.clear();
+  parent_ = nullptr;
 }
 
 bool AddressComponent::IsValueCompatibleWithAncestors(
@@ -682,9 +710,10 @@ bool AddressComponent::IsStructureValid() const {
   // overlapping portion of the unstructured string, but it guarantees that all
   // information in the components is contained in the unstructured
   // representation.
-  return base::ranges::all_of(Subcomponents(), [this](const auto& c) {
-    return AreStringTokenCompatible(c->GetValue(), GetValue());
-  });
+  return base::ranges::all_of(
+      Subcomponents(), [this](const AddressComponent* c) {
+        return AreStringTokenCompatible(c->GetValue(), GetValue());
+      });
 }
 
 bool AddressComponent::WipeInvalidStructure() {
@@ -825,6 +854,16 @@ bool AddressComponent::CompleteFullTree() {
   }
 }
 
+void AddressComponent::GenerateTreeSynthesizedNodes() {
+  for (AddressComponent* subcomponent : subcomponents_) {
+    subcomponent->GenerateTreeSynthesizedNodes();
+  }
+
+  for (AddressComponent* synthesized_component : synthesized_subcomponents_) {
+    synthesized_component->FormatValueFromSubcomponents();
+  }
+}
+
 void AddressComponent::RecursivelyCompleteTree() {
   if (IsAtomic())
     return;
@@ -835,7 +874,7 @@ void AddressComponent::RecursivelyCompleteTree() {
     ParseValueAndAssignSubcomponents();
 
   // First call completion on all subcomponents.
-  for (auto& subcomponent : subcomponents_) {
+  for (AddressComponent* subcomponent : subcomponents_) {
     subcomponent->RecursivelyCompleteTree();
   }
 
@@ -849,7 +888,7 @@ int AddressComponent::
     MaximumNumberOfAssignedAddressComponentsOnNodeToLeafPaths() const {
   int result = 0;
 
-  for (auto& subcomponent : subcomponents_) {
+  for (AddressComponent* subcomponent : subcomponents_) {
     result = std::max(
         result,
         subcomponent
@@ -885,13 +924,13 @@ void AddressComponent::RecursivelyUnsetParsedAndFormattedValues() {
        GetVerificationStatus() == VerificationStatus::kParsed))
     UnsetValue();
 
-  for (auto& component : subcomponents_) {
+  for (AddressComponent* component : subcomponents_) {
     component->RecursivelyUnsetParsedAndFormattedValues();
   }
 }
 
 void AddressComponent::RecursivelyUnsetSubcomponents() {
-  for (auto& subcomponent : subcomponents_) {
+  for (AddressComponent* subcomponent : subcomponents_) {
     subcomponent->UnsetValue();
     subcomponent->RecursivelyUnsetSubcomponents();
   }
@@ -913,6 +952,12 @@ void AddressComponent::MergeVerificationStatuses(
     subcomponents_[i]->MergeVerificationStatuses(
         *newer_component.subcomponents_.at(i));
   }
+}
+
+void AddressComponent::RegisterSynthesizedSubcomponent(
+    AddressComponent* synthesized_component) {
+  synthesized_component->SetParent(this);
+  synthesized_subcomponents_.push_back(synthesized_component);
 }
 
 const std::vector<AddressToken> AddressComponent::GetSortedTokens() const {
@@ -950,9 +995,9 @@ bool AddressComponent::IsMergeableWithComponent(
            std::u16string::npos);
 
   if (merge_mode_ & kMergeBasedOnCanonicalizedValues) {
-    absl::optional<std::u16string> older_canonical_value =
+    std::optional<std::u16string> older_canonical_value =
         GetCanonicalizedValue();
-    absl::optional<std::u16string> newer_canonical_value =
+    std::optional<std::u16string> newer_canonical_value =
         newer_component.GetCanonicalizedValue();
 
     bool older_has_canonical_value = older_canonical_value.has_value();
@@ -984,13 +1029,13 @@ bool AddressComponent::IsMergeableWithComponent(
 
   if ((merge_mode_ & (kRecursivelyMergeTokenEquivalentValues |
                       kRecursivelyMergeSingleTokenSubset)) &&
-      token_comparison_result.status == MATCH) {
+      token_comparison_result.status == SortedTokenComparisonStatus::kMatch) {
     return true;
   }
 
   if ((merge_mode_ & (kReplaceSubset | kReplaceSuperset)) &&
       (token_comparison_result.OneIsSubset() ||
-       token_comparison_result.status == MATCH)) {
+       token_comparison_result.status == SortedTokenComparisonStatus::kMatch)) {
     return true;
   }
 
@@ -1091,13 +1136,14 @@ bool AddressComponent::MergeWithComponent(
   // Use the recursive merge strategy for token equivalent values if the
   // corresponding mode is active.
   if ((merge_mode_ & kRecursivelyMergeTokenEquivalentValues) &&
-      (token_comparison_result.status == MATCH)) {
+      (token_comparison_result.status == SortedTokenComparisonStatus::kMatch)) {
     return MergeTokenEquivalentComponent(newer_component);
   }
 
   // Replace the subset with the superset if the corresponding mode is active.
   if ((merge_mode_ & kReplaceSubset) && token_comparison_result.OneIsSubset()) {
-    if (token_comparison_result.status == SUBSET &&
+    if (token_comparison_result.status ==
+            SortedTokenComparisonStatus::kSubset &&
         newer_component_has_better_or_equal_status) {
       CopyFrom(newer_component);
     }
@@ -1107,14 +1153,16 @@ bool AddressComponent::MergeWithComponent(
   // Replace the superset with the subset if the corresponding mode is active.
   if ((merge_mode_ & kReplaceSuperset) &&
       token_comparison_result.OneIsSubset()) {
-    if (token_comparison_result.status == SUPERSET)
+    if (token_comparison_result.status ==
+        SortedTokenComparisonStatus::kSuperset) {
       CopyFrom(newer_component);
+    }
     return true;
   }
 
   // If the tokens are already equivalent, use the more recently used one.
   if ((merge_mode_ & (kReplaceSuperset | kReplaceSubset)) &&
-      token_comparison_result.status == MATCH) {
+      token_comparison_result.status == SortedTokenComparisonStatus::kMatch) {
     if (newer_was_more_recently_used &&
         newer_component_has_better_or_equal_status) {
       CopyFrom(newer_component);
@@ -1162,8 +1210,8 @@ bool AddressComponent::MergeWithComponent(
        value_newer.find(value) != std::u16string::npos);
 
   if (merge_mode_ & kMergeBasedOnCanonicalizedValues) {
-    absl::optional<std::u16string> canonical_value = GetCanonicalizedValue();
-    absl::optional<std::u16string> other_canonical_value =
+    std::optional<std::u16string> canonical_value = GetCanonicalizedValue();
+    std::optional<std::u16string> other_canonical_value =
         newer_component.GetCanonicalizedValue();
 
     bool this_has_canonical_value = canonical_value.has_value();
@@ -1393,7 +1441,7 @@ void AddressComponent::ConsumeAdditionalToken(
   }
 
   // Try the first free subcomponent.
-  for (auto& subcomponent : subcomponents_) {
+  for (AddressComponent* subcomponent : subcomponents_) {
     if (subcomponent->GetValue().empty()) {
       subcomponent->SetValue(token_value, VerificationStatus::kParsed);
       return;
@@ -1428,8 +1476,8 @@ bool AddressComponent::MergeSubsetComponent(
   for (size_t i = 0; i < subcomponents_.size(); i++) {
     CHECK_EQ(subcomponents_[i]->GetStorageType(),
              subset_subcomponents.at(i)->GetStorageType());
-    std::unique_ptr<AddressComponent>& subcomponent = subcomponents_[i];
-    const auto& subset_subcomponent = subset_subcomponents.at(i);
+    AddressComponent* subcomponent = subcomponents_[i];
+    const AddressComponent* subset_subcomponent = subset_subcomponents.at(i);
 
     std::u16string additional_token;
 
@@ -1455,7 +1503,8 @@ bool AddressComponent::MergeSubsetComponent(
     }
 
     // If the tokens are the equivalent, they can directly be merged.
-    if (subtoken_comparison_result.status == MATCH) {
+    if (subtoken_comparison_result.status ==
+        SortedTokenComparisonStatus::kMatch) {
       subcomponent->MergeTokenEquivalentComponent(*subset_subcomponent);
       continue;
     }
@@ -1501,7 +1550,7 @@ int AddressComponent::GetStructureVerificationScore() const {
       result += 1000;
       break;
   }
-  for (const auto& component : subcomponents_) {
+  for (const AddressComponent* component : subcomponents_) {
     result += component->GetStructureVerificationScore();
   }
 

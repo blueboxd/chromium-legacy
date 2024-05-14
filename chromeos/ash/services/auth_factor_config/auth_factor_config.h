@@ -5,8 +5,11 @@
 #ifndef CHROMEOS_ASH_SERVICES_AUTH_FACTOR_CONFIG_AUTH_FACTOR_CONFIG_H_
 #define CHROMEOS_ASH_SERVICES_AUTH_FACTOR_CONFIG_AUTH_FACTOR_CONFIG_H_
 
+#include <optional>
+
 #include "base/containers/enum_set.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ref.h"
 #include "chromeos/ash/components/login/auth/auth_factor_editor.h"
 #include "chromeos/ash/components/login/auth/public/authentication_error.h"
 #include "chromeos/ash/services/auth_factor_config/chrome_browser_delegates.h"
@@ -31,12 +34,19 @@ class AuthFactorConfig : public mojom::AuthFactorConfig {
     // Injects a callback that gets invoked after knowledge factor
     // is added.
     void SetAddKnowledgeFactorCallback(base::OnceClosure callback) {
-      auth_factor_config_.SetAddKnowledgeFactorCallbackForTesting(
+      auth_factor_config_->SetAddKnowledgeFactorCallbackForTesting(
           std::move(callback));
     }
 
+    // Instructs AuthFactorConfig not to inform
+    // UserDirectoryIntegrityManager about added factors.
+    void SetSkipUserIntegrityNotification(bool skip_notification) {
+      auth_factor_config_->SetSkipUserIntegrityNotificationForTesting(
+          skip_notification);
+    }
+
    private:
-    AuthFactorConfig& auth_factor_config_;
+    const raw_ref<AuthFactorConfig> auth_factor_config_;
   };
 
   using AuthFactorSet = base::EnumSet<mojom::AuthFactor,
@@ -124,7 +134,9 @@ class AuthFactorConfig : public mojom::AuthFactorConfig {
       const std::string& auth_token,
       std::unique_ptr<UserContext> context,
       std::optional<AuthenticationError> error);
+
   void SetAddKnowledgeFactorCallbackForTesting(base::OnceClosure callback);
+  void SetSkipUserIntegrityNotificationForTesting(bool skip_notification);
 
   raw_ptr<QuickUnlockStorageDelegate> quick_unlock_storage_;
   // This instance is held by browser process (see in_process_instances)
@@ -138,6 +150,7 @@ class AuthFactorConfig : public mojom::AuthFactorConfig {
 
   // Used for testing, invoked when a knowledge factor is added.
   base::OnceClosure add_knowledge_factor_callback_;
+  std::optional<bool> skip_user_integrity_notification_;
 
   base::WeakPtrFactory<AuthFactorConfig> weak_factory_{this};
 };

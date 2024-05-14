@@ -303,8 +303,7 @@ class NetworkMetricsHelperTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
-  raw_ptr<ShillServiceClient::TestInterface,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<ShillServiceClient::TestInterface, DanglingUntriaged>
       shill_service_client_;
   TestingPrefServiceSimple profile_prefs_;
   TestingPrefServiceSimple local_state_;
@@ -702,7 +701,7 @@ TEST_F(NetworkMetricsHelperTest, CellularPSim) {
 }
 
 TEST_F(NetworkMetricsHelperTest, VPN) {
-  const std::vector<const std::string> kProviders{{
+  const std::vector<std::string> kProviders{{
       shill::kProviderIKEv2,
       shill::kProviderL2tpIpsec,
       shill::kProviderArcVpn,

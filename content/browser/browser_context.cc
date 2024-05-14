@@ -213,7 +213,7 @@ void BrowserContext::DeliverPushMessage(
     const GURL& origin,
     int64_t service_worker_registration_id,
     const std::string& message_id,
-    absl::optional<std::string> payload,
+    std::optional<std::string> payload,
     base::OnceCallback<void(blink::mojom::PushEventStatus)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingRouter::DeliverMessage(
@@ -320,6 +320,14 @@ BrowserContext::RetrieveInProgressDownloadManager() {
 void BrowserContext::WriteIntoTrace(
     perfetto::TracedProto<ChromeBrowserContext> proto) const {
   perfetto::WriteIntoTracedProto(std::move(proto), impl());
+}
+
+ResourceContext* BrowserContext::GetResourceContext() const {
+  return impl()->GetResourceContext();
+}
+
+base::WeakPtr<BrowserContext> BrowserContext::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 //////////////////////////////////////////////////////////////////////////////

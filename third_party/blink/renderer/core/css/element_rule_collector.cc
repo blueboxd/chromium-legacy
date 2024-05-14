@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
+#include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
@@ -870,17 +871,6 @@ DISABLE_CFI_PERF bool ElementRuleCollector::CollectMatchingRulesInternal(
       }
     }
   }
-  if (SelectorChecker::MatchesSpatialNavigationInterestPseudoClass(element)) {
-    for (const auto bundle : match_request.AllRuleSets()) {
-      if (CollectMatchingRulesForList<stop_at_first_match>(
-              bundle.rule_set->SpatialNavigationInterestPseudoClassRules(),
-              match_request, bundle.rule_set, bundle.style_sheet_index,
-              checker) &&
-          stop_at_first_match) {
-        return true;
-      }
-    }
-  }
   if (element.GetDocument().documentElement() == element) {
     for (const auto bundle : match_request.AllRuleSets()) {
       if (CollectMatchingRulesForList<stop_at_first_match>(
@@ -1095,8 +1085,10 @@ void ElementRuleCollector::SortAndTransferMatchedRules(
              AdjustLinkMatchType(inside_link_, rule_data->LinkMatchType()),
          .valid_property_filter =
              rule_data->GetValidPropertyFilter(matching_ua_rules_),
+         .signal = rule_data->Selector().GetSignal(),
          .layer_order = matched_rule.LayerOrder(),
-         .is_inline_style = is_vtt_embedded_style});
+         .is_inline_style = is_vtt_embedded_style,
+         .is_invisible = rule_data->Selector().IsInvisible()});
   }
 
   if (tracker) {
@@ -1164,6 +1156,10 @@ void ElementRuleCollector::DidMatchRule(
 
       if (!matching_ua_rules_) {
         result_.SetHasNonUaHighlightPseudoStyles();
+      }
+
+      if (container_query) {
+        result_.SetHighlightsDependOnSizeContainerQueries();
       }
 
       if (dynamic_pseudo == kPseudoIdHighlight) {

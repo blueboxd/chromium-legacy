@@ -168,6 +168,7 @@ component("gl") {
 
     # ANGLE includes are used cross-platform.
     "//third_party/angle:includes",
+    "//ui/base:ozone_buildflags",
     "//ui/gfx/mojom",
   ]
   public_deps = [
@@ -241,7 +242,6 @@ component("gl") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/ozone:buildflags" ]
     if (use_egl && !is_fuchsia) {
       data_deps += [
         "//third_party/angle:libEGL",
@@ -310,7 +310,6 @@ component("gl") {
       "hdr_metadata_helper_win.h",
       "swap_chain_presenter.cc",
       "swap_chain_presenter.h",
-      "vsync_observer.h",
       "vsync_provider_win.cc",
       "vsync_provider_win.h",
       "vsync_thread_win.cc",
@@ -401,7 +400,7 @@ component("gl") {
 
     deps += [ ":gl_jni_headers" ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//third_party/angle:angle_gpu_info_util" ]
   }
 }
@@ -496,10 +495,6 @@ static_library("test_support") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-
-    if (is_chromeos) {
-      deps += [ "//ui/gfx/linux:gbm" ]
-    }
   }
 
   # If the run-time search path isn't set properly when we use ANGLE with its

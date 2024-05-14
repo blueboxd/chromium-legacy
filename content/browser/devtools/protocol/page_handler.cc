@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -58,7 +59,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/filename_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -209,13 +209,12 @@ bool CanExecuteGlobalCommands(
 
 }  // namespace
 
-PageHandler::PageHandler(
-    EmulationHandler* emulation_handler,
-    BrowserHandler* browser_handler,
-    bool allow_unsafe_operations,
-    bool is_trusted,
-    absl::optional<url::Origin> navigation_initiator_origin,
-    bool may_read_local_files)
+PageHandler::PageHandler(EmulationHandler* emulation_handler,
+                         BrowserHandler* browser_handler,
+                         bool allow_unsafe_operations,
+                         bool is_trusted,
+                         std::optional<url::Origin> navigation_initiator_origin,
+                         bool may_read_local_files)
     : DevToolsDomainHandler(Page::Metainfo::domainName),
       allow_unsafe_operations_(allow_unsafe_operations),
       is_trusted_(is_trusted),
@@ -772,8 +771,12 @@ Response PageHandler::ResetNavigationHistory() {
     return response;
 
   NavigationController& controller = host_->frame_tree()->controller();
-  controller.DeleteNavigationEntries(base::BindRepeating(&ReturnTrue));
-  return Response::Success();
+  if (controller.CanPruneAllButLastCommitted()) {
+    controller.DeleteNavigationEntries(base::BindRepeating(&ReturnTrue));
+    return Response::Success();
+  } else {
+    return Response::ServerError("History cannot be pruned");
+  }
 }
 
 void PageHandler::CaptureSnapshot(
@@ -887,7 +890,7 @@ void PageHandler::CaptureScreenshot(
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        std::move(absl::get<BitmapEncoder>(encoder)),
                        gfx::Size(), gfx::Size(), blink::DeviceEmulationParams(),
-                       absl::nullopt),
+                       std::nullopt),
         false);
     return;
   }
@@ -948,7 +951,7 @@ void PageHandler::CaptureScreenshot(
     modified_params.viewport_offset.Scale(widget_host_device_scale_factor);
   }
 
-  absl::optional<blink::web_pref::WebPreferences> maybe_original_web_prefs;
+  std::optional<blink::web_pref::WebPreferences> maybe_original_web_prefs;
   if (capture_beyond_viewport.value_or(false)) {
     blink::web_pref::WebPreferences original_web_prefs =
         host_->render_view_host()->GetDelegate()->GetOrCreateWebPreferences();
@@ -1237,7 +1240,7 @@ void PageHandler::ScreenshotCaptured(
     const gfx::Size& original_view_size,
     const gfx::Size& requested_image_size,
     const blink::DeviceEmulationParams& original_emulation_params,
-    const absl::optional<blink::web_pref::WebPreferences>&
+    const std::optional<blink::web_pref::WebPreferences>&
         maybe_original_web_prefs,
     const gfx::Image& image) {
   if (original_view_size.width()) {
@@ -1626,6 +1629,10 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       NOTREACHED_NORETURN();
     case WebSchedulerTrackedFeature::kSmartCard:
       return Page::BackForwardCacheNotRestoredReasonEnum::SmartCard;
+    case WebSchedulerTrackedFeature::kLiveMediaStreamTrack:
+      return Page::BackForwardCacheNotRestoredReasonEnum::LiveMediaStreamTrack;
+    case WebSchedulerTrackedFeature::kUnloadHandler:
+      return Page::BackForwardCacheNotRestoredReasonEnum::UnloadHandler;
   }
 }
 
@@ -1826,6 +1833,8 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kWebTransport:
     case WebSchedulerTrackedFeature::kIndexedDBEvent:
     case WebSchedulerTrackedFeature::kSmartCard:
+    case WebSchedulerTrackedFeature::kLiveMediaStreamTrack:
+    case WebSchedulerTrackedFeature::kUnloadHandler:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
     case WebSchedulerTrackedFeature::kPortal:
     case WebSchedulerTrackedFeature::kWebNfc:

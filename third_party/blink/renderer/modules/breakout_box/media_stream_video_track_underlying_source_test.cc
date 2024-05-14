@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_monitor.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 using testing::_;
@@ -84,7 +85,7 @@ class MediaStreamVideoTrackUnderlyingSourceTest : public testing::Test {
 
  protected:
   void PushFrame(
-      const absl::optional<base::TimeDelta>& timestamp = absl::nullopt) {
+      const std::optional<base::TimeDelta>& timestamp = std::nullopt) {
     const scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateBlackFrame(gfx::Size(10, 5));
     if (timestamp)
@@ -110,6 +111,7 @@ class MediaStreamVideoTrackUnderlyingSourceTest : public testing::Test {
     return media_stream_source;
   }
 
+  test::TaskEnvironment task_environment_;
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   const raw_ptr<PushableMediaStreamVideoSource, ExperimentalRenderer>
       pushable_video_source_;

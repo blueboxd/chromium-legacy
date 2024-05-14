@@ -10,6 +10,7 @@
 
 #import "base/apple/bundle_locations.h"
 #import "base/apple/foundation_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/scoped_observation.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
@@ -17,8 +18,10 @@
 #import "components/infobars/core/confirm_infobar_delegate.h"
 #import "components/infobars/core/infobar.h"
 #import "components/infobars/core/infobar_manager.h"
+#import "components/prefs/pref_service.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/browser/infobars/model/infobar_utils.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -26,7 +29,7 @@
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/models/image_model.h"
 #import "ui/gfx/image/image.h"
@@ -160,7 +163,7 @@ class UpgradeInfoBarDismissObserver
     scoped_observation_.Reset();
   }
 
-  UpgradeInfoBarDelegate* infobar_delegate_;
+  raw_ptr<UpgradeInfoBarDelegate> infobar_delegate_;
   __weak UpgradeCenter* dismiss_delegate_;
   __strong NSString* tab_id_;
   base::ScopedObservation<infobars::InfoBarManager,
@@ -253,27 +256,25 @@ class UpgradeInfoBarDismissObserver
 }
 
 - (BOOL)isCurrentVersionObsolete {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSString* nextVersion = [defaults stringForKey:kIOSChromeNextVersionKey];
-  if (nextVersion) {
-    const base::Version& current_version = version_info::GetVersion();
-    const std::string upgrade = base::SysNSStringToUTF8(nextVersion);
-    return current_version < base::Version(upgrade);
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  const std::string nextVersion =
+      prefService->GetString(kIOSChromeNextVersionKey);
+  if (nextVersion.empty()) {
+    return NO;
   }
-  return NO;
+  const base::Version& current_version = version_info::GetVersion();
+  return current_version < base::Version(nextVersion);
 }
 
 - (BOOL)infoBarShownRecently {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSDate* lastDisplayDate = base::apple::ObjCCast<NSDate>(
-      [defaults objectForKey:kLastInfobarDisplayTimeKey]);
-  if (!lastDisplayDate) {
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  const base::Time lastDisplayTime =
+      prefService->GetTime(kLastInfobarDisplayTimeKey);
+  if (lastDisplayTime == base::Time()) {
     return NO;
   }
-
-  // Absolute value is to ensure the infobar won't be suppressed forever if the
+  // Magnitude is to ensure the infobar won't be suppressed forever if the
   // clock temporarily jumps to the distant future.
-  const base::Time lastDisplayTime = base::Time::FromNSDate(lastDisplayDate);
   return (base::Time::Now() - lastDisplayTime).magnitude() <
          kInfobarDisplayInterval;
 }
@@ -354,13 +355,8 @@ class UpgradeInfoBarDismissObserver
   [self hideUpgradeInfoBars];
 
   if (shouldUpgrade) {
-    NSString* urlString = [[NSUserDefaults standardUserDefaults]
-        valueForKey:kIOSChromeUpgradeURLKey];
-    if (!urlString) {
-      return;  // Missing URL, no upgrade possible.
-    }
-
-    GURL URL = GURL(base::SysNSStringToUTF8(urlString));
+    PrefService* prefService = GetApplicationContext()->GetLocalState();
+    GURL URL = GURL(prefService->GetString(kIOSChromeUpgradeURLKey));
     if (!URL.is_valid()) {
       return;
     }
@@ -372,7 +368,7 @@ class UpgradeInfoBarDismissObserver
       [self.handler openURLInNewTab:command];
     } else {
       // This URL scheme is not understood, ask the system to open it.
-      NSURL* launchURL = [NSURL URLWithString:urlString];
+      NSURL* launchURL = net::NSURLWithGURL(URL);
       if (launchURL) {
         [[UIApplication sharedApplication] openURL:launchURL
                                            options:@{}
@@ -394,9 +390,8 @@ class UpgradeInfoBarDismissObserver
 #if DCHECK_IS_ON()
   _inCallback = NO;
 #endif
-
-  [[NSUserDefaults standardUserDefaults] setObject:[NSDate date]
-                                            forKey:kLastInfobarDisplayTimeKey];
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->SetTime(kLastInfobarDisplayTimeKey, base::Time::Now());
 }
 
 - (void)hideUpgradeInfoBars {
@@ -436,20 +431,18 @@ class UpgradeInfoBarDismissObserver
     return;
   }
 
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
 
   // Reset the display clock when the version changes.
-  NSString* newVersionString = base::SysUTF8ToNSString(details.next_version);
-  NSString* previousVersionString =
-      [defaults stringForKey:kIOSChromeNextVersionKey];
-  if (!previousVersionString ||
-      ![previousVersionString isEqualToString:newVersionString]) {
-    [defaults removeObjectForKey:kLastInfobarDisplayTimeKey];
+  const std::string newVersionString = details.next_version;
+  const std::string previousVersionString =
+      prefService->GetString(kIOSChromeNextVersionKey);
+  if (previousVersionString != newVersionString) {
+    prefService->ClearPref(kLastInfobarDisplayTimeKey);
   }
 
-  [defaults setValue:base::SysUTF8ToNSString(upgradeUrl.spec())
-              forKey:kIOSChromeUpgradeURLKey];
-  [defaults setValue:newVersionString forKey:kIOSChromeNextVersionKey];
+  prefService->SetString(kIOSChromeUpgradeURLKey, upgradeUrl.spec());
+  prefService->SetString(kIOSChromeNextVersionKey, newVersionString);
 
   if ([self shouldShowInfoBar]) {
     [self showUpgradeInfoBars];
@@ -458,20 +451,24 @@ class UpgradeInfoBarDismissObserver
 
 - (void)resetForTests {
   [[UpgradeCenter sharedInstance] hideUpgradeInfoBars];
+
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  [defaults removeObjectForKey:kIOSChromeNextVersionKey];
-  [defaults removeObjectForKey:kIOSChromeUpgradeURLKey];
-  [defaults removeObjectForKey:kLastInfobarDisplayTimeKey];
   [defaults removeObjectForKey:kIOSChromeUpToDateKey];
+
   [_clients removeAllObjects];
+
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->ClearPref(kIOSChromeNextVersionKey);
+  prefService->ClearPref(kIOSChromeUpgradeURLKey);
+  prefService->ClearPref(kLastInfobarDisplayTimeKey);
 }
 
 - (void)setLastDisplayToPast {
   const base::Time pastDate =
       base::Time::Now() - kInfobarDisplayInterval - base::Seconds(1);
 
-  [[NSUserDefaults standardUserDefaults] setObject:pastDate.ToNSDate()
-                                            forKey:kLastInfobarDisplayTimeKey];
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->SetTime(kLastInfobarDisplayTimeKey, pastDate);
 }
 
 @end

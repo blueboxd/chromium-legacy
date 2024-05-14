@@ -471,19 +471,18 @@ void LayoutTheme::AdjustSliderContainerStyle(
     ComputedStyleBuilder& builder) const {
   DCHECK(IsSliderContainer(element));
 
-  if (RuntimeEnabledFeatures::
-          NonStandardAppearanceValueSliderVerticalEnabled() &&
-      builder.EffectiveAppearance() == kSliderVerticalPart) {
+  if (RuntimeEnabledFeatures::FormControlsVerticalWritingModeSupportEnabled() &&
+      !IsHorizontalWritingMode(builder.GetWritingMode())) {
+    builder.SetTouchAction(TouchAction::kPanX);
+    // If FormControlsVerticalWritingModeDirectionSupport disabled, then it is
+    // always RTL because the slider value increases up even in LTR.
+  } else if (RuntimeEnabledFeatures::
+                 NonStandardAppearanceValueSliderVerticalEnabled() &&
+             builder.EffectiveAppearance() == kSliderVerticalPart) {
     builder.SetTouchAction(TouchAction::kPanX);
     builder.SetWritingMode(WritingMode::kVerticalRl);
     // It's always in RTL because the slider value increases up even in LTR.
     builder.SetDirection(TextDirection::kRtl);
-  } else if (RuntimeEnabledFeatures::
-                 FormControlsVerticalWritingModeSupportEnabled() &&
-             !IsHorizontalWritingMode(builder.GetWritingMode())) {
-    builder.SetTouchAction(TouchAction::kPanX);
-    // If FormControlsVerticalWritingModeDirectionSupport disabled, then it is
-    // always RTL because the slider value increases up even in LTR.
     if (!RuntimeEnabledFeatures::
             FormControlsVerticalWritingModeDirectionSupportEnabled()) {
       builder.SetDirection(TextDirection::kRtl);
@@ -591,8 +590,11 @@ void LayoutTheme::SystemFont(CSSValueID system_font_id,
   font_description.SetGenericFamily(FontDescription::kNoFamily);
 }
 
+// TODO(crbug.com/1231644): Use color_provider to get the system colors if
+// available.
 Color LayoutTheme::SystemColor(CSSValueID css_value_id,
-                               mojom::blink::ColorScheme color_scheme) const {
+                               mojom::blink::ColorScheme color_scheme,
+                               const ui::ColorProvider* color_provider) const {
   if (!WebTestSupport::IsRunningWebTest() && InForcedColorsMode())
     return SystemColorFromNativeTheme(css_value_id, color_scheme);
   return DefaultSystemColor(css_value_id, color_scheme);
@@ -774,7 +776,7 @@ Color LayoutTheme::SystemColorFromNativeTheme(
     default:
       return DefaultSystemColor(css_value_id, color_scheme);
   }
-  const absl::optional<SkColor> system_color =
+  const std::optional<SkColor> system_color =
       WebThemeEngineHelper::GetNativeThemeEngine()->GetSystemColor(theme_color);
   if (system_color)
     return Color::FromSkColor((system_color.value()));
@@ -783,20 +785,24 @@ Color LayoutTheme::SystemColorFromNativeTheme(
 
 Color LayoutTheme::PlatformTextSearchHighlightColor(
     bool active_match,
-    mojom::blink::ColorScheme color_scheme) const {
+    mojom::blink::ColorScheme color_scheme,
+    const ui::ColorProvider* color_provider) const {
   if (active_match) {
     if (InForcedColorsMode())
-      return GetTheme().SystemColor(CSSValueID::kHighlight, color_scheme);
+      return GetTheme().SystemColor(CSSValueID::kHighlight, color_scheme,
+                                    color_provider);
     return Color(255, 150, 50);  // Orange.
   }
-  return Color(255, 255, 0);     // Yellow.
+  return Color(255, 255, 0);  // Yellow.
 }
 
 Color LayoutTheme::PlatformTextSearchColor(
     bool active_match,
-    mojom::blink::ColorScheme color_scheme) const {
+    mojom::blink::ColorScheme color_scheme,
+    const ui::ColorProvider* color_provider) const {
   if (InForcedColorsMode() && active_match)
-    return GetTheme().SystemColor(CSSValueID::kHighlighttext, color_scheme);
+    return GetTheme().SystemColor(CSSValueID::kHighlighttext, color_scheme,
+                                  color_provider);
   return Color::kBlack;
 }
 
@@ -805,8 +811,13 @@ Color LayoutTheme::TapHighlightColor() {
 }
 
 void LayoutTheme::SetCustomFocusRingColor(const Color& c) {
+  const bool changed =
+      !has_custom_focus_ring_color_ || custom_focus_ring_color_ != c;
   custom_focus_ring_color_ = c;
   has_custom_focus_ring_color_ = true;
+  if (changed) {
+    Page::PlatformColorsChanged();
+  }
 }
 
 Color LayoutTheme::FocusRingColor(

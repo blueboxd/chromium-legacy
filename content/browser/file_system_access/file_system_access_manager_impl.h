@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_MANAGER_IMPL_H_
 
+#include <optional>
+
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
@@ -29,6 +31,7 @@
 #include "content/public/browser/file_system_access_entry_factory.h"
 #include "content/public/browser/file_system_access_permission_context.h"
 #include "content/public/browser/file_system_access_permission_grant.h"
+#include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -36,7 +39,6 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_access_handle_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_capacity_allocation_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_data_transfer_token.mojom.h"
@@ -122,7 +124,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   // context for this request.
   void GetSandboxedFileSystem(
       const BindingContext& binding_context,
-      const absl::optional<storage::BucketLocator>& bucket,
+      const std::optional<storage::BucketLocator>& bucket,
       GetSandboxedFileSystemCallback callback);
 
   // blink::mojom::FileSystemAccessManager:
@@ -171,7 +173,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   void ResolveTransferToken(
       mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
           transfer_token,
-      base::OnceCallback<void(absl::optional<storage::FileSystemURL>)> callback)
+      base::OnceCallback<void(std::optional<storage::FileSystemURL>)> callback)
       override;
 
   // Creates a new FileSystemAccessFileHandleImpl for a given url. Assumes the
@@ -338,7 +340,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   }
 
   void SetFilePickerResultForTesting(
-      absl::optional<FileSystemChooser::ResultEntry> result_entry) {
+      std::optional<FileSystemChooser::ResultEntry> result_entry) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     auto_file_picker_result_for_test_ = result_entry;
   }
@@ -589,6 +591,8 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       FileSystemAccessPermissionContext::HandleType type,
       const base::FilePath& root_permission_path);
 
+  void FilePickerDeactivated(GlobalRenderFrameHostId global_rfh_id);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   const scoped_refptr<storage::FileSystemContext> context_;
@@ -659,7 +663,10 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
            storage::FileSystemURL::Comparator>
       directory_ids_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  absl::optional<FileSystemChooser::ResultEntry>
+  std::set<GlobalRenderFrameHostId> rfhs_with_active_file_pickers_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  std::optional<FileSystemChooser::ResultEntry>
       auto_file_picker_result_for_test_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The shared lock type for SyncAccessHandle's `readonly` mode.

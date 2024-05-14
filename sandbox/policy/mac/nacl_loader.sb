@@ -12,7 +12,9 @@
 ; sem_init(), et.al.
 (allow ipc-posix-sem)
 
-(allow user-preference-read)
+(if (>= os-version 1009)
+  (allow user-preference-read)
+)
 
 (allow iokit-get-properties
   (iokit-registry-entry-class "IORegisterForSystemPower"))

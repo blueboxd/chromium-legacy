@@ -86,6 +86,14 @@
 // Programmatically dismisses settings screen.
 + (void)dismissSettings;
 
+// Stops primes performance metrics logging by calling into the
+// internal framework (should only be used by performance tests)
++ (void)primesStopLogging;
+
+// Takes a snapshot of memory usage by calling into the internal
+// framework (should only be used by performance tests)
++ (void)primesTakeMemorySnapshot:(NSString*)eventName;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Selects tab with given index in current mode (incognito or main
@@ -342,9 +350,6 @@
 
 #pragma mark - Sync Utilities (EG2)
 
-// Clears fake sync server data if the server is running.
-+ (void)clearSyncServerData;
-
 // Signs in with `identity` without sync consent.
 + (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity;
 
@@ -382,6 +387,14 @@
 // Tears down the fake sync server used by the SyncServiceImpl and restores the
 // real one.
 + (void)tearDownFakeSyncServer;
+
+// Clears fake sync server data if the server is running.
++ (void)clearFakeSyncServerData;
+
+// Ensures that all of the FakeServer's data is persisted to disk. This is
+// useful before app restarts, where otherwise the FakeServer may not get to do
+// its usual on-destruction flush.
++ (void)flushFakeSyncServerToDisk;
 
 // Gets the number of entities of the given `type`.
 + (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type;
@@ -595,6 +608,9 @@
 // contains the preferences that are shared between all browser states.
 + (void)setStringValue:(NSString*)value forLocalStatePref:(NSString*)prefName;
 
+// Sets the value of a string user pref in the original browser state.
++ (void)setStringValue:(NSString*)value forUserPref:(NSString*)prefName;
+
 // Sets the bool value for the local state pref with `prefName`. Local State
 // contains the preferences that are shared between all browser states.
 + (void)setBoolValue:(BOOL)value forLocalStatePref:(NSString*)prefName;
@@ -695,11 +711,6 @@
 
 // Copies a chrome:// URL that doesn't require internet connection.
 + (void)copyURLToPasteBoard;
-
-#pragma mark - Default Search Engine Choice Screen Utilities
-
-// Returns YES if the search engine choice screen will be shown.
-+ (BOOL)IsSearchEngineChoiceScreenEnabledFre;
 
 #pragma mark - First Run Utilities
 

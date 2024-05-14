@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/payments/test_payments_network_interface.h"
 
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 #include "base/json/json_reader.h"
@@ -15,7 +16,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill::payments {
 
@@ -54,7 +54,7 @@ void TestPaymentsNetworkInterface::UnmaskCard(
   unmask_request_ = unmask_request;
 }
 
-void TestPaymentsNetworkInterface::GetUploadDetails(
+void TestPaymentsNetworkInterface::GetCardUploadDetails(
     const std::vector<AutofillProfile>& addresses,
     const int detected_values,
     const std::vector<ClientBehaviorConstants>& client_behavior_signals,
@@ -81,10 +81,11 @@ void TestPaymentsNetworkInterface::GetUploadDetails(
 }
 
 void TestPaymentsNetworkInterface::UploadCard(
-    const payments::PaymentsNetworkInterface::UploadRequestDetails& request_details,
-    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            const PaymentsNetworkInterface::UploadCardResponseDetails&)>
-        callback) {
+    const payments::PaymentsNetworkInterface::UploadCardRequestDetails&
+        request_details,
+    base::OnceCallback<void(
+        AutofillClient::PaymentsRpcResult,
+        const PaymentsNetworkInterface::UploadCardResponseDetails&)> callback) {
   upload_card_addresses_ = request_details.profiles;
   client_behavior_signals_ = request_details.client_behavior_signals;
   std::move(callback).Run(AutofillClient::PaymentsRpcResult::kSuccess,
@@ -206,7 +207,7 @@ void TestPaymentsNetworkInterface::SetUseLegalMessageWithMultipleLinesInGetUploa
 }
 
 std::unique_ptr<base::Value::Dict> TestPaymentsNetworkInterface::LegalMessage() {
-  absl::optional<base::Value> parsed_json;
+  std::optional<base::Value> parsed_json;
   if (use_invalid_legal_message_) {
     // Legal message is invalid because it's missing the url.
     parsed_json = base::JSONReader::Read(

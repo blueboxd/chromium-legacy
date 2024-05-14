@@ -34,7 +34,7 @@ ALIGNMENT_ORDER = [
     'FilterOperations',
     'DynamicRangeLimit',
     'ComputedGridTrackList',
-    'absl::optional<gfx::Size>',
+    'std::optional<gfx::Size>',
     'double',
     # Aligns like a pointer (can be 32 or 64 bits)
     'NamedGridLinesMap',
@@ -59,12 +59,12 @@ ALIGNMENT_ORDER = [
     'TextDecorationThickness',
     'StyleAspectRatio',
     'StyleIntrinsicLength',
-    'absl::optional<StyleScrollbarColor>',
-    'absl::optional<StyleOverflowClipMargin>',
+    'std::optional<StyleScrollbarColor>',
+    'std::optional<StyleOverflowClipMargin>',
     # Compressed builds a Member can be 32 bits, vs. a pointer will be 64.
     'Member',
     # Aligns like float
-    'absl::optional<Length>',
+    'std::optional<Length>',
     'StyleInitialLetter',
     'StyleOffsetRotation',
     'TransformOrigin',
@@ -652,7 +652,9 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
             'computed_style_base.cc':
             self.generate_base_computed_style_cpp,
             'computed_style_base_constants.h':
-            self.generate_base_computed_style_constants,
+            self.generate_base_computed_style_constants_h,
+            'computed_style_base_constants.cc':
+            self.generate_base_computed_style_constants_cc,
         }
 
     @template_expander.use_jinja(
@@ -689,7 +691,16 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
 
     @template_expander.use_jinja(
         'core/style/templates/computed_style_base_constants.h.tmpl')
-    def generate_base_computed_style_constants(self):
+    def generate_base_computed_style_constants_h(self):
+        return {
+            'input_files': self._input_files,
+            'properties': self._properties,
+            'enums': self._generated_enums,
+        }
+
+    @template_expander.use_jinja(
+        'core/style/templates/computed_style_base_constants.cc.tmpl')
+    def generate_base_computed_style_constants_cc(self):
         return {
             'input_files': self._input_files,
             'properties': self._properties,

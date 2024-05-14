@@ -126,6 +126,14 @@ chromium-metrics-reviews@google.com.
   </int>
 </enum>
 
+<enum name="TabOrganizationUserChoice">
+  <int value="0" label="No Choice">
+    The session was destroyed before the organization had a choice.
+  </int>
+  <int value="1" label="Accepted">User accepted the organization.</int>
+  <int value="2" label="Rejected">User rejected the organization.</int>
+</enum>
+
 <enum name="TabRestoreMethod">
   <int value="0" label="TabState"/>
   <int value="1" label="CriticalPersistedTabData"/>
@@ -183,6 +191,12 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Switch to tab from filtered search tab list"/>
 </enum>
 
+<enum name="TabStateFlatBufferDeserializeResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure Unknown Reason"/>
+  <int value="2" label="Failure IndexOutOfBoundsException"/>
+</enum>
+
 <enum name="TabStatus">
   <int value="0" label="Memory resident"/>
   <int value="1" label="Evicted and reloaded"/>
@@ -196,10 +210,6 @@ chromium-metrics-reviews@google.com.
   <int value="9" label="Stopped due to page loading when backgrounding"/>
   <int value="10" label="Evicted due to page loading when backgrounding"/>
   <int value="11" label="Evicted due to OS terminating the renderer."/>
-</enum>
-
-<enum name="TabStripFailureContext">
-  <int value="0" label="New tab failed to open"/>
 </enum>
 
 </enums>

@@ -55,6 +55,7 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using base::android::RunRunnableAndroid;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStringArray;
@@ -494,6 +495,10 @@ void WebContentsAndroid::SetAudioMuted(JNIEnv* env, jboolean mute) {
   web_contents_->SetAudioMuted(mute);
 }
 
+jboolean WebContentsAndroid::IsAudioMuted(JNIEnv* env) {
+  return web_contents_->IsAudioMuted();
+}
+
 jboolean WebContentsAndroid::FocusLocationBarByDefault(JNIEnv* env) {
   return web_contents_->FocusLocationBarByDefault();
 }
@@ -863,7 +868,7 @@ void WebContentsAndroid::OnScaleFactorChanged(JNIEnv* env) {
     // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
     web_contents_->SendScreenRects();
     rwhva->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                       absl::nullopt);
+                                       std::nullopt);
   }
 }
 

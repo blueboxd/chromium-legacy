@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.browserservices.TestTrustedWebActivity
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +34,7 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityClientWrappers;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsIntentTestUtils;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppComponent;
@@ -41,7 +43,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
-import org.chromium.payments.mojom.DigitalGoods.GetDetails_Response;
 import org.chromium.payments.mojom.ItemDetails;
 import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.url.GURL;
@@ -131,17 +132,14 @@ public class DigitalGoodsTest {
         CallbackHelper helper = new CallbackHelper();
         impl.getDetails(
                 new String[] {"id1"},
-                new GetDetails_Response() {
-                    @Override
-                    public void call(Integer responseCode, ItemDetails[] details) {
-                        assertEquals(0, responseCode.intValue());
-                        assertEquals("id1", details[0].itemId);
-                        assertEquals("Item 1", details[0].title);
-                        assertEquals("Desc 1", details[0].description);
-                        assertEquals("GBP", details[0].price.currency);
-                        assertEquals("10", details[0].price.value);
-                        helper.notifyCalled();
-                    }
+                (int responseCode, ItemDetails[] details) -> {
+                    assertEquals(0, responseCode);
+                    assertEquals("id1", details[0].itemId);
+                    assertEquals("Item 1", details[0].title);
+                    assertEquals("Desc 1", details[0].description);
+                    assertEquals("GBP", details[0].price.currency);
+                    assertEquals("10", details[0].price.value);
+                    helper.notifyCalled();
                 });
         helper.waitForFirst();
     }
@@ -171,7 +169,11 @@ public class DigitalGoodsTest {
 
         mClient.connectAndExecute(
                 Uri.parse(TWA_SERVICE_SCOPE),
-                (origin1, service) ->
+                new TrustedWebActivityClient.ExecutionCallback() {
+                    @Override
+                    public void onConnected(
+                            Origin origin, TrustedWebActivityClientWrappers.Connection service)
+                            throws RemoteException {
                         service.sendExtraCommand(
                                 COMMAND_SET_RESPONSE,
                                 response,
@@ -181,7 +183,12 @@ public class DigitalGoodsTest {
                                             @NonNull String callbackName, @Nullable Bundle args) {
                                         helper.notifyCalled();
                                     }
-                                }));
+                                });
+                    }
+
+                    @Override
+                    public void onNoTwaFound() {}
+                });
         helper.waitForFirst();
     }
 

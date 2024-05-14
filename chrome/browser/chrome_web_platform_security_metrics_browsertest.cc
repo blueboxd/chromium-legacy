@@ -21,9 +21,16 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "pdf/buildflags.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom.h"
 #include "third_party/blink/public/common/features.h"
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "base/test/with_feature_override.h"
+#include "pdf/pdf_features.h"
+#endif
 
 namespace {
 const int kWasmPageSize = 1 << 16;
@@ -45,27 +52,7 @@ class ChromeWebPlatformSecurityMetricsBrowserTest : public policy::PolicyTest {
   ChromeWebPlatformSecurityMetricsBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         http_server_(net::EmbeddedTestServer::TYPE_HTTP) {
-    features_.InitWithFeatures(
-        {
-            // Enabled:
-            network::features::kCrossOriginOpenerPolicy,
-            // SharedArrayBuffer is needed for these tests.
-            features::kSharedArrayBuffer,
-            // Some PNA worker feature relies on this.
-            // TODO(https://crbug.com/1430451): Remove this once PNA for workers
-            // metric logging doesn't rely on kPlzDedicatedWorker
-            blink::features::kPlzDedicatedWorker,
-        },
-        {
-            // Disabled because some subtests set document.domain and this
-            // feature flag prevents that:
-            blink::features::kOriginAgentClusterDefaultEnabled,
-
-            // Disabled, because the ORBv02* subtests rely on a counter that
-            // no longer works with ORB "v0.2". (Those subtests should be
-            // removed once "v0.2" launches.)
-            network::features::kOpaqueResponseBlockingV02,
-        });
+    features_.InitWithFeatures(GetEnabledFeatures(), GetDisabledFeatures());
   }
 
   content::WebContents* web_contents() const {
@@ -143,7 +130,25 @@ class ChromeWebPlatformSecurityMetricsBrowserTest : public policy::PolicyTest {
     }
   }
 
-  void SetUpORBMetricsTest(bool onload, bool onerror);
+  virtual std::vector<base::test::FeatureRef> GetEnabledFeatures() const {
+    return {
+        network::features::kCrossOriginOpenerPolicy,
+        // SharedArrayBuffer is needed for these tests.
+        features::kSharedArrayBuffer,
+        // Some PNA worker feature relies on this.
+        // TODO(https://crbug.com/1430451): Remove this once PNA for workers
+        // metric logging doesn't rely on kPlzDedicatedWorker
+        blink::features::kPlzDedicatedWorker,
+    };
+  }
+
+  virtual std::vector<base::test::FeatureRef> GetDisabledFeatures() const {
+    return {
+        // Disabled because some subtests set document.domain and this
+        // feature flag prevents that:
+        blink::features::kOriginAgentClusterDefaultEnabled,
+    };
+  }
 
  private:
   void SetUpOnMainThread() final {
@@ -580,7 +585,15 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
       {"ws:*", "ws://example.com", 0, 0},
       {"wss:*", "wss://example.com", 0, 0},
       // Feature should be logged if matched with wildcard.
-      {"*", "ftp://example.com", 0, 1},
+      {
+          "*",
+          "ftp://example.com",
+          0,
+          base::FeatureList::IsEnabled(
+              network::features::kCspStopMatchingWildcardDirectivesToFtp)
+              ? 0
+              : 1,
+      },
       {"*", "ws://example.com", 1, 0},
       {"*", "wss://example.com", 1, 0},
   };
@@ -2581,8 +2594,43 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   CheckCounter(WebFeature::kCrossWindowAccessToBrowserGeneratedDocument, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
+#if BUILDFLAG(ENABLE_PDF)
+class ChromeWebPlatformSecurityMetricsBrowserPdfTest
+    : public base::test::WithFeatureOverride,
+      public ChromeWebPlatformSecurityMetricsBrowserTest {
+ public:
+  ChromeWebPlatformSecurityMetricsBrowserPdfTest()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfOopif),
+        ChromeWebPlatformSecurityMetricsBrowserTest() {}
+
+  bool UseOopif() const { return GetParam(); }
+
+  std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
+    std::vector<base::test::FeatureRef> enabled =
+        ChromeWebPlatformSecurityMetricsBrowserTest::GetEnabledFeatures();
+    if (UseOopif()) {
+      enabled.push_back(chrome_pdf::features::kPdfOopif);
+    }
+    return enabled;
+  }
+
+  std::vector<base::test::FeatureRef> GetDisabledFeatures() const override {
+    std::vector<base::test::FeatureRef> disabled =
+        ChromeWebPlatformSecurityMetricsBrowserTest::GetDisabledFeatures();
+    if (!UseOopif()) {
+      disabled.push_back(chrome_pdf::features::kPdfOopif);
+    }
+    return disabled;
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(ChromeWebPlatformSecurityMetricsBrowserPdfTest,
                        CrossWindowAccessToPluginDocument) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   EXPECT_TRUE(content::NavigateToURL(web_contents(),
                                      https_server().GetURL("/empty.html")));
 
@@ -2615,6 +2663,12 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   )"));
 }
 
+// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// launches.
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    ChromeWebPlatformSecurityMetricsBrowserPdfTest);
+#endif
+
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
                        CSPEESameOriginWithSameCSPHeader) {
   GURL url = http_server().GetURL("a.test",
@@ -2639,68 +2693,5 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
 //
 // Added by:
 // https://chromium-review.googlesource.com/c/chromium/src/+/2122140
-
-// Test ORB "v0.2" compatibility impact metrics. We'll reuse the same setup
-// four times the same setup, except with different event handlers being set.
-void ChromeWebPlatformSecurityMetricsBrowserTest::SetUpORBMetricsTest(
-    bool onload,
-    bool onerror) {
-  constexpr base::StringPiece probe = R"(
-    const img = document.createElement("img");
-    if ($2) img.onload = _ => 2+2;
-    if ($3) img.onerror = _ => 3+3;
-    img.src = $1;
-    document.body.appendChild(img);
-  )";
-  EXPECT_TRUE(content::NavigateToURL(
-      web_contents(), https_server().GetURL("a.test", "/defaultresponse")));
-  EXPECT_TRUE(content::ExecJs(
-      web_contents(),
-      content::JsReplace(probe,
-                         // A cross-origin resource that will be ORB-blocked.
-                         https_server().GetURL("b.test", "/nosniff.xml"),
-                         onload, onerror)));
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
-                       ORBv02WithoutEventHandlers) {
-  SetUpORBMetricsTest(false, false);
-  CheckCounter(WebFeature::kORBBlockWithoutAnyEventHandler, 1);
-  CheckCounter(WebFeature::kORBBlockWithAnyEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithOnErrorButWithoutOnLoadEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadButWithoutOnErrorEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadAndOnErrorEventHandler, 0);
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
-                       ORBv02WithOnLoad) {
-  SetUpORBMetricsTest(true, false);
-  CheckCounter(WebFeature::kORBBlockWithoutAnyEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithAnyEventHandler, 1);
-  CheckCounter(WebFeature::kORBBlockWithOnErrorButWithoutOnLoadEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadButWithoutOnErrorEventHandler, 1);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadAndOnErrorEventHandler, 0);
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
-                       ORBv02WithOnError) {
-  SetUpORBMetricsTest(false, true);
-  CheckCounter(WebFeature::kORBBlockWithoutAnyEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithAnyEventHandler, 1);
-  CheckCounter(WebFeature::kORBBlockWithOnErrorButWithoutOnLoadEventHandler, 1);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadButWithoutOnErrorEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadAndOnErrorEventHandler, 0);
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
-                       ORBv02WithOnLoadAndOnError) {
-  SetUpORBMetricsTest(true, true);
-  CheckCounter(WebFeature::kORBBlockWithoutAnyEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithAnyEventHandler, 1);
-  CheckCounter(WebFeature::kORBBlockWithOnErrorButWithoutOnLoadEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadButWithoutOnErrorEventHandler, 0);
-  CheckCounter(WebFeature::kORBBlockWithOnLoadAndOnErrorEventHandler, 1);
-}
 
 }  // namespace

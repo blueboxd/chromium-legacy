@@ -227,6 +227,12 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
     return will_establish_consumer_ownership_;
   }
 
+  // Returns if the device is managed according to the device settings.
+  bool IsDeviceManaged() const;
+
+  // Returns if the device policy is loaded and contains the DM token.
+  bool HasDmToken() const;
+
   // Adds an observer.
   void AddObserver(Observer* observer);
   // Removes an observer.
@@ -278,8 +284,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Processes pending callbacks from GetOwnershipStatusAsync().
   void RunPendingOwnershipStatusCallbacks();
 
-  raw_ptr<SessionManagerClient, ExperimentalAsh> session_manager_client_ =
-      nullptr;
+  raw_ptr<SessionManagerClient> session_manager_client_ = nullptr;
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
   Status store_status_ = STORE_SUCCESS;

@@ -90,12 +90,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
       DeleteSessionOnlyCookiesCallback callback) override;
   void AddCookieChangeListener(
       const GURL& url,
-      const absl::optional<std::string>& name,
+      const std::optional<std::string>& name,
       mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
   void AddGlobalChangeListener(
       mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
   void CloneInterface(
       mojo::PendingReceiver<mojom::CookieManager> new_interface) override;
+  void SetPreCommitCallbackDelayForTesting(base::TimeDelta delay) override;
 
   size_t GetClientsBoundForTesting() const { return receivers_.size(); }
   size_t GetListenersRegisteredForTesting() const {

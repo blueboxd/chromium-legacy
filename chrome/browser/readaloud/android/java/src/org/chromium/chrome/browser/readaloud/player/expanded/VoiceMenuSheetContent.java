@@ -13,6 +13,8 @@ import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.UNKNO
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.readaloud.player.InteractionHandler;
 import org.chromium.chrome.browser.readaloud.player.PlayerProperties;
@@ -25,6 +27,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 /** Bottom sheet content for Read Aloud voices menu. */
 class VoiceMenuSheetContent extends MenuSheetContent {
@@ -49,23 +52,50 @@ class VoiceMenuSheetContent extends MenuSheetContent {
     }
 
     void setVoices(List<PlaybackVoice> voices) {
-        assert voices != null : "Can't populate voice menu with null voice list. Invalid language?";
         mMenu.clearItems();
+        if (voices == null || voices.isEmpty()) {
+            mVoices = new PlaybackVoice[0];
+            return;
+        }
         mVoices = new PlaybackVoice[voices.size()];
 
         int id = 0;
+        String displayLocale = null;
         for (PlaybackVoice voice : voices) {
+            if (id == 0 || isDifferentLocale(voice, voices.get(id - 1))) {
+                displayLocale =
+                        new Locale(voice.getLanguage(), voice.getAccentRegionCode())
+                                .getDisplayName();
+            } else {
+                displayLocale = null;
+            }
             MenuItem item =
                     mMenu.addItem(
-                            id, /* iconId= */ 0, voice.getDescription(), MenuItem.Action.RADIO);
+                            id,
+                            /* iconId= */ 0,
+                            voice.getDisplayName(),
+                            displayLocale,
+                            MenuItem.Action.RADIO);
             item.addPlayButton();
+            String secondLine = getAttributesString(voice);
+            if (secondLine != null) {
+                item.setSecondLine(secondLine);
+            }
             mVoices[id] = voice;
             mVoiceIdToMenuItemId.put(voice.getVoiceId(), id);
             ++id;
         }
     }
 
+    private boolean isDifferentLocale(PlaybackVoice current, PlaybackVoice previous) {
+        return (!current.getLanguage().equals(previous.getLanguage())
+                || !current.getAccentRegionCode().equals(previous.getAccentRegionCode()));
+    }
+
     void setVoiceSelection(String voiceId) {
+        if (mVoices.length == 0) {
+            return;
+        }
         Integer maybeId = mVoiceIdToMenuItemId.get(voiceId);
         int id = 0;
 
@@ -119,10 +149,63 @@ class VoiceMenuSheetContent extends MenuSheetContent {
         }
     }
 
+    // BottomSheetContent
+    @Override
+    public int getSheetContentDescriptionStringId() {
+        // "Voice menu"
+        // Automatically appended: "Swipe down to close."
+        return R.string.readaloud_voice_menu_description;
+    }
+
     private void onItemSelected(int itemId) {
         if (mInteractionHandler == null) {
             return;
         }
         mInteractionHandler.onVoiceSelected(mVoices[itemId]);
+    }
+
+    @Nullable
+    private String getAttributesString(PlaybackVoice voice) {
+        String pitch = getPitchString(voice);
+        String tone = getToneString(voice);
+        if (pitch == null || tone == null) {
+            return null;
+        }
+        return mContext.getResources().getString(R.string.readaloud_voice_description, pitch, tone);
+    }
+
+    @Nullable
+    private String getPitchString(PlaybackVoice voice) {
+        return getStringOrNull(
+                switch (voice.getPitch()) {
+                    case PlaybackVoice.Pitch.LOW -> R.string.readaloud_pitch_low;
+                    case PlaybackVoice.Pitch.MID -> R.string.readaloud_pitch_mid;
+                    default -> 0;
+                });
+    }
+
+    @Nullable
+    private String getToneString(PlaybackVoice voice) {
+        return getStringOrNull(
+                switch (voice.getTone()) {
+                    case PlaybackVoice.Tone.BOLD -> R.string.readaloud_tone_bold;
+                    case PlaybackVoice.Tone.CALM -> R.string.readaloud_tone_calm;
+                    case PlaybackVoice.Tone.STEADY -> R.string.readaloud_tone_steady;
+                    case PlaybackVoice.Tone.SMOOTH -> R.string.readaloud_tone_smooth;
+                    case PlaybackVoice.Tone.RELAXED -> R.string.readaloud_tone_relaxed;
+                    case PlaybackVoice.Tone.WARM -> R.string.readaloud_tone_warm;
+                    case PlaybackVoice.Tone.SERENE -> R.string.readaloud_tone_serene;
+                    case PlaybackVoice.Tone.GENTLE -> R.string.readaloud_tone_gentle;
+                    case PlaybackVoice.Tone.BRIGHT -> R.string.readaloud_tone_bright;
+                    case PlaybackVoice.Tone.BREEZY -> R.string.readaloud_tone_breezy;
+                    case PlaybackVoice.Tone.SOOTHING -> R.string.readaloud_tone_soothing;
+                    case PlaybackVoice.Tone.PEACEFUL -> R.string.readaloud_tone_peaceful;
+                    default -> 0;
+                });
+    }
+
+    @Nullable
+    private String getStringOrNull(int id) {
+        return id != 0 ? mContext.getResources().getString(id) : null;
     }
 }

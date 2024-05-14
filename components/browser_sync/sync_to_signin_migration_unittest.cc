@@ -12,9 +12,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -31,9 +33,14 @@ class SyncToSigninMigrationTestBase {
  public:
   explicit SyncToSigninMigrationTestBase(bool migration_feature_enabled) {
     if (migration_feature_enabled) {
-      features_.InitAndEnableFeature(kMigrateSyncingUserToSignedIn);
+      features_.InitWithFeatures(
+          /*enabled_features=*/{syncer::kReplaceSyncPromosWithSignInPromos,
+                                switches::kMigrateSyncingUserToSignedIn},
+          /*disabled_features=*/{});
     } else {
-      features_.InitAndDisableFeature(kMigrateSyncingUserToSignedIn);
+      features_.InitWithFeatures(
+          /*enabled_features=*/{syncer::kReplaceSyncPromosWithSignInPromos},
+          /*disabled_features=*/{switches::kMigrateSyncingUserToSignedIn});
     }
 
     signin::IdentityManager::RegisterProfilePrefs(pref_service_.registry());
@@ -106,6 +113,7 @@ TEST_F(SyncToSigninMigrationTest, SyncActive) {
 
   // Save the above state to prefs.
   RecordStateToPrefs();
+  ASSERT_TRUE(sync_prefs_->IsInitialSyncFeatureSetupComplete());
 
   // Before the migration, there are no per-account selected types.
   ASSERT_TRUE(
@@ -122,6 +130,9 @@ TEST_F(SyncToSigninMigrationTest, SyncActive) {
   EXPECT_EQ(pref_service_.GetString(prefs::kGoogleServicesAccountId), gaia_id);
   // But not syncing anymore.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  EXPECT_FALSE(sync_prefs_->IsInitialSyncFeatureSetupComplete());
+#endif
   // The fact that the user was migrated should be recorded in prefs.
   EXPECT_EQ(pref_service_.GetString(
                 prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn),
@@ -304,6 +315,42 @@ TEST_F(SyncToSigninMigrationTest, SyncInitializing) {
   EXPECT_EQ(pref_service_.user_prefs_store()->GetValues(), all_prefs);
 }
 
+TEST_F(SyncToSigninMigrationTest, UndoFeaturePreventsMigration) {
+  base::test::ScopedFeatureList undo_feature;
+  undo_feature.InitAndEnableFeature(
+      switches::kUndoMigrationOfSyncingUserToSignedIn);
+
+  // Everything is active.
+  ASSERT_EQ(sync_service_.GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  ASSERT_TRUE(sync_service_.HasSyncConsent());
+  ASSERT_TRUE(sync_service_.GetActiveDataTypes().HasAll(
+      {syncer::BOOKMARKS, syncer::PASSWORDS, syncer::READING_LIST}));
+
+  // Save the above state to prefs.
+  RecordStateToPrefs();
+
+  // Take a copy of all current pref values, to verify that the migration
+  // doesn't modify any of them.
+  const base::Value::Dict all_prefs =
+      pref_service_.user_prefs_store()->GetValues();
+
+  base::HistogramTester histograms;
+
+  // Trigger the migration.
+  MaybeMigrateSyncingUserToSignedIn(fake_profile_dir_.GetPath(),
+                                    &pref_service_);
+
+  // Even though the user would be eligible, the "undo" feature should have
+  // prevented the migration from happening. (And since there was nothing to
+  // undo, it shouldn't have had any effect either.)
+  EXPECT_EQ(pref_service_.user_prefs_store()->GetValues(), all_prefs);
+
+  histograms.ExpectUniqueSample(
+      "Sync.SyncToSigninMigrationDecision",
+      /*SyncToSigninMigrationDecision::kUndoNotNecessary*/ 7, 1);
+}
+
 // Fixture for tests covering migration metrics. The test param determines
 // whether the feature flag is enabled or not.
 class SyncToSigninMigrationMetricsTest : public SyncToSigninMigrationTestBase,
@@ -343,6 +390,13 @@ TEST_P(SyncToSigninMigrationMetricsTest, SyncAndAllDataTypesActive) {
           : /*SyncToSigninMigrationDecision::kDontMigrateFlagDisabled*/ 5;
   histograms.ExpectUniqueSample("Sync.SyncToSigninMigrationDecision",
                                 expected_decision, 1);
+  if (IsMigrationEnabled()) {
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 1);
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 1);
+  } else {
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 0);
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 0);
+  }
   // All the data type migrations should run - in "DryRun" mode if the feature
   // flag is disabled.
   std::string infix = GetTypeDecisionHistogramInfix();
@@ -390,6 +444,13 @@ TEST_P(SyncToSigninMigrationMetricsTest, SyncActiveButNotDataTypes) {
           : /*SyncToSigninMigrationDecision::kDontMigrateFlagDisabled*/ 5;
   histograms.ExpectUniqueSample("Sync.SyncToSigninMigrationDecision",
                                 expected_decision, 1);
+  if (IsMigrationEnabled()) {
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 1);
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 1);
+  } else {
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 0);
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 0);
+  }
 
   std::string infix = GetTypeDecisionHistogramInfix();
   // Bookmarks was active, so its migration should run.
@@ -429,6 +490,8 @@ TEST_P(SyncToSigninMigrationMetricsTest, SyncStatusPrefsUnset) {
   histograms.ExpectUniqueSample(
       "Sync.SyncToSigninMigrationDecision",
       /*SyncToSigninMigrationDecision::kDontMigrateSyncStatusUndefined*/ 3, 1);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 0);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 0);
   histograms.ExpectTotalCount(
       "Sync.SyncToSigninMigrationDecision.DryRun.BOOKMARK", 0);
   histograms.ExpectTotalCount(
@@ -463,6 +526,8 @@ TEST_P(SyncToSigninMigrationMetricsTest, NotSignedIn) {
   histograms.ExpectUniqueSample(
       "Sync.SyncToSigninMigrationDecision",
       /*SyncToSigninMigrationDecision::kDontMigrateNotSignedIn*/ 1, 1);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 0);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 0);
   histograms.ExpectTotalCount(
       "Sync.SyncToSigninMigrationDecision.DryRun.BOOKMARK", 0);
   histograms.ExpectTotalCount(
@@ -498,6 +563,8 @@ TEST_P(SyncToSigninMigrationMetricsTest, SyncTransport) {
   histograms.ExpectUniqueSample(
       "Sync.SyncToSigninMigrationDecision",
       /*SyncToSigninMigrationDecision::kDontMigrateNotSyncing*/ 2, 1);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 0);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 0);
   histograms.ExpectTotalCount(
       "Sync.SyncToSigninMigrationDecision.DryRun.BOOKMARK", 0);
   histograms.ExpectTotalCount(
@@ -535,6 +602,13 @@ TEST_P(SyncToSigninMigrationMetricsTest, SyncPaused) {
           : /*SyncToSigninMigrationDecision::kDontMigrateFlagDisabled*/ 5;
   histograms.ExpectUniqueSample("Sync.SyncToSigninMigrationDecision",
                                 expected_decision, 1);
+  if (IsMigrationEnabled()) {
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 1);
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 1);
+  } else {
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 0);
+    histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 0);
+  }
 
   // However, the individual data types were by definition not active and so
   // should not be migrated.
@@ -572,6 +646,8 @@ TEST_P(SyncToSigninMigrationMetricsTest, SyncInitializing) {
       "Sync.SyncToSigninMigrationDecision",
       /*SyncToSigninMigrationDecision::kDontMigrateSyncStatusInitializing*/ 4,
       1);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationOutcome", 0);
+  histograms.ExpectTotalCount("Sync.SyncToSigninMigrationTime", 0);
   histograms.ExpectTotalCount(
       "Sync.SyncToSigninMigrationDecision.DryRun.BOOKMARK", 0);
   histograms.ExpectTotalCount(
@@ -902,6 +978,166 @@ TEST_F(SyncToSigninMigrationDataTypesTest, MovePasswords_FolderNotWritable) {
       -base::File::FILE_ERROR_ACCESS_DENIED, 1);
 }
 #endif  // BUILDFLAG(IS_POSIX)
+
+// A test fixture that performs the SyncToSignin migration, then enables the
+// "undo migration" feature.
+class SyncToSigninMigrationUndoTest : public SyncToSigninMigrationTestBase,
+                                      public testing::Test {
+ public:
+  SyncToSigninMigrationUndoTest()
+      : SyncToSigninMigrationTestBase(
+            /*migration_feature_enabled=*/true) {}
+
+  void SetUp() override {
+    // Everything is active.
+    ASSERT_EQ(sync_service_.GetTransportState(),
+              syncer::SyncService::TransportState::ACTIVE);
+    ASSERT_TRUE(sync_service_.HasSyncConsent());
+    ASSERT_TRUE(sync_service_.GetActiveDataTypes().HasAll(
+        {syncer::BOOKMARKS, syncer::PASSWORDS, syncer::READING_LIST}));
+
+    // Save the above state to prefs.
+    RecordStateToPrefs();
+
+    // Run the migration, so that there is something to undo.
+    MaybeMigrateSyncingUserToSignedIn(fake_profile_dir_.GetPath(),
+                                      &pref_service_);
+
+    undo_feature_.InitAndEnableFeature(
+        switches::kUndoMigrationOfSyncingUserToSignedIn);
+  }
+
+ private:
+  base::test::ScopedFeatureList undo_feature_;
+};
+
+TEST_F(SyncToSigninMigrationUndoTest, UndoesMigration) {
+  // The user is in the migrated state - signed-in:
+  ASSERT_FALSE(
+      pref_service_.GetString(prefs::kGoogleServicesAccountId).empty());
+  ASSERT_EQ(pref_service_.GetString(prefs::kGoogleServicesAccountId),
+            sync_service_.GetAccountInfo().gaia);
+  // Not syncing:
+  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+  ASSERT_TRUE(
+      pref_service_.GetString(prefs::kGoogleServicesLastSyncingGaiaId).empty());
+  ASSERT_TRUE(pref_service_.GetString(prefs::kGoogleServicesLastSyncingUsername)
+                  .empty());
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  ASSERT_FALSE(sync_prefs_->IsInitialSyncFeatureSetupComplete());
+#endif
+  // Marked as "migrated":
+  ASSERT_EQ(pref_service_.GetString(
+                prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn),
+            sync_service_.GetAccountInfo().gaia);
+  ASSERT_EQ(pref_service_.GetString(
+                prefs::kGoogleServicesSyncingUsernameMigratedToSignedIn),
+            sync_service_.GetAccountInfo().email);
+
+  // Trigger the "undo" migration.
+  MaybeMigrateSyncingUserToSignedIn(fake_profile_dir_.GetPath(),
+                                    &pref_service_);
+
+  // The migration should've been undone, and the user should be back in the
+  // "syncing" state.
+  ASSERT_FALSE(
+      pref_service_.GetString(prefs::kGoogleServicesAccountId).empty());
+  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+  EXPECT_TRUE(sync_prefs_->IsInitialSyncFeatureSetupComplete());
+  // The "last syncing user" prefs should also have been restored.
+  EXPECT_EQ(pref_service_.GetString(prefs::kGoogleServicesLastSyncingGaiaId),
+            sync_service_.GetAccountInfo().gaia);
+  EXPECT_EQ(pref_service_.GetString(prefs::kGoogleServicesLastSyncingUsername),
+            sync_service_.GetAccountInfo().email);
+  // And the "was migrated" prefs should've been cleared.
+  EXPECT_TRUE(
+      pref_service_
+          .GetString(prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn)
+          .empty());
+  EXPECT_TRUE(
+      pref_service_
+          .GetString(prefs::kGoogleServicesSyncingUsernameMigratedToSignedIn)
+          .empty());
+}
+
+TEST_F(SyncToSigninMigrationUndoTest, Idempotent) {
+  // Trigger the "undo" migration.
+  MaybeMigrateSyncingUserToSignedIn(fake_profile_dir_.GetPath(),
+                                    &pref_service_);
+
+  // The user is now back in the "syncing" state.
+  ASSERT_FALSE(
+      pref_service_.GetString(prefs::kGoogleServicesAccountId).empty());
+  ASSERT_TRUE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+  ASSERT_TRUE(
+      pref_service_
+          .GetString(prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn)
+          .empty());
+
+  // Take a copy of all current pref values, to verify that the second undo
+  // attempt doesn't modify any of them.
+  const base::Value::Dict all_prefs =
+      pref_service_.user_prefs_store()->GetValues();
+
+  // Trigger the (undo) migration again - it should have no further effect.
+  MaybeMigrateSyncingUserToSignedIn(fake_profile_dir_.GetPath(),
+                                    &pref_service_);
+
+  // The prefs should be unmodified.
+  EXPECT_EQ(pref_service_.user_prefs_store()->GetValues(), all_prefs);
+}
+
+TEST_F(SyncToSigninMigrationUndoTest, DoesNotUndoMigrationIfSignedOut) {
+  // The user is in the "migrated" state - signed-in, not syncing, marked as
+  // migrated.
+  ASSERT_FALSE(
+      pref_service_.GetString(prefs::kGoogleServicesAccountId).empty());
+  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+  ASSERT_FALSE(
+      pref_service_
+          .GetString(prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn)
+          .empty());
+
+  // The account gets signed out.
+  pref_service_.ClearPref(prefs::kGoogleServicesAccountId);
+
+  // Trigger the "undo" migration.
+  MaybeMigrateSyncingUserToSignedIn(fake_profile_dir_.GetPath(),
+                                    &pref_service_);
+
+  // The migration should NOT have been undone, since the account isn't signed
+  // in anymore.
+  ASSERT_TRUE(pref_service_.GetString(prefs::kGoogleServicesAccountId).empty());
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+}
+
+TEST_F(SyncToSigninMigrationUndoTest, DoesNotUndoMigrationIfDiffentAccount) {
+  // The user is in the "migrated" state - signed-in, not syncing, marked as
+  // migrated.
+  ASSERT_FALSE(
+      pref_service_.GetString(prefs::kGoogleServicesAccountId).empty());
+  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+  ASSERT_FALSE(
+      pref_service_
+          .GetString(prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn)
+          .empty());
+
+  // The account gets signed out, and a different account signed in.
+  pref_service_.SetString(prefs::kGoogleServicesAccountId, "different_gaia");
+  ASSERT_NE(pref_service_.GetString(prefs::kGoogleServicesAccountId),
+            pref_service_.GetString(
+                prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn));
+
+  // Trigger the "undo" migration.
+  MaybeMigrateSyncingUserToSignedIn(fake_profile_dir_.GetPath(),
+                                    &pref_service_);
+
+  // The migration should NOT have been undone, since a different account is
+  // signed in now.
+  ASSERT_EQ(pref_service_.GetString(prefs::kGoogleServicesAccountId),
+            "different_gaia");
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+}
 
 }  // namespace
 }  // namespace browser_sync

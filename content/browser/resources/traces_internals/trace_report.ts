@@ -10,12 +10,14 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './icons.html.js';
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {BigBuffer} from 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-webui.js';
-import {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
+import type {BigBuffer} from 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-webui.js';
+import type {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
+import type {Token} from 'chrome://resources/mojo/mojo/public/mojom/base/token.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './trace_report.html.js';
-import {ClientTraceReport, SkipUploadReason} from './trace_report.mojom-webui.js';
+import type {ClientTraceReport} from './trace_report.mojom-webui.js';
+import {SkipUploadReason} from './trace_report.mojom-webui.js';
 import {TraceReportBrowserProxy} from './trace_report_browser_proxy.js';
 import {Notification, NotificationTypeEnum} from './trace_report_list.js';
 
@@ -69,8 +71,7 @@ export class TraceReportElement extends PolymerElement {
     // Get the text field
     assert(this.trace.uuid.high);
     assert(this.trace.uuid.low);
-    navigator.clipboard.writeText(
-        `${this.trace.uuid.high}-${this.trace.uuid.low}`);
+    navigator.clipboard.writeText(`${this.tokenToString_(this.trace.uuid)}`);
   }
 
   private onCopyScenarioClick_(): void {
@@ -155,11 +156,10 @@ export class TraceReportElement extends PolymerElement {
     const {trace} =
         await this.traceReportProxy_.handler.downloadTrace(this.trace.uuid);
     if (trace !== null) {
-      this.downloadData_(
-          `${this.trace.uuid.high}-${this.trace.uuid.low}.gz`, trace);
+      this.downloadData_(`${this.tokenToString_(this.trace.uuid)}.gz`, trace);
     } else {
-      this.dispatchToast_(`Failed to download trace ${this.trace.uuid.high}-${
-          this.trace.uuid.low}.`);
+      this.dispatchToast_(
+          `Failed to download trace ${this.tokenToString_(this.trace.uuid)}.`);
     }
     this.isLoading = false;
   }
@@ -167,7 +167,7 @@ export class TraceReportElement extends PolymerElement {
   private downloadData_(fileName: string, data: BigBuffer): void {
     if (data.invalidBuffer) {
       this.dispatchToast_(`Invalid buffer received for ${
-          this.trace.uuid.high}-${this.trace.uuid.low}.`);
+          this.tokenToString_(this.trace.uuid)}.`);
       return;
     }
     try {
@@ -187,7 +187,7 @@ export class TraceReportElement extends PolymerElement {
       downloadUrl(fileName, url);
     } catch (e) {
       this.dispatchToast_(`Unable to create blob from trace data for ${
-          this.trace.uuid.high}-${this.trace.uuid.low}.`);
+          this.tokenToString_(this.trace.uuid)}.`);
     }
   }
 
@@ -197,7 +197,9 @@ export class TraceReportElement extends PolymerElement {
         await this.traceReportProxy_.handler.deleteSingleTrace(this.trace.uuid);
     if (!success) {
       this.dispatchToast_(
-          `Failed to delete ${this.trace.uuid.high}-${this.trace.uuid.low}.`);
+          `Failed to delete ${this.tokenToString_(this.trace.uuid)}.`);
+    } else {
+      this.dispatchReloadRequest_();
     }
     this.isLoading = false;
   }
@@ -208,14 +210,20 @@ export class TraceReportElement extends PolymerElement {
         await this.traceReportProxy_.handler.userUploadSingleTrace(
             this.trace.uuid);
     if (!success) {
-      this.dispatchToast_(`Failed to upload trace ${this.trace.uuid.high}-${
-          this.trace.uuid.low}.`);
+      this.dispatchToast_(
+          `Failed to upload trace ${this.tokenToString_(this.trace.uuid)}.`);
+    } else {
+      this.dispatchReloadRequest_();
     }
     this.isLoading = false;
   }
 
-  private uploadStateEqual(value1: number, value2: UploadState): boolean {
+  private uploadStateEqual(value1: UploadState, value2: UploadState): boolean {
     return value1 === value2;
+  }
+
+  private tokenToString_(token: Token): string {
+    return `${token.high.toString(16)}-${token.low.toString(16)}`;
   }
 
   private dispatchToast_(message: string): void {
@@ -223,6 +231,18 @@ export class TraceReportElement extends PolymerElement {
       bubbles: true,
       composed: true,
       detail: new Notification(NotificationTypeEnum.ERROR, message),
+    }));
+  }
+
+  private isDownloadDisabled_(isLoading: boolean, uploadState: UploadState):
+      boolean {
+    return isLoading || uploadState === UploadState.UPLOADED;
+  }
+
+  private dispatchReloadRequest_(): void {
+    this.dispatchEvent(new CustomEvent('refresh-traces-request', {
+      bubbles: true,
+      composed: true,
     }));
   }
 }

@@ -7,6 +7,7 @@
 #import <algorithm>
 
 #import "base/check_op.h"
+#import "base/memory/raw_ptr.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model_observer.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/web/common/features.h"
@@ -21,7 +22,7 @@ class ScopedIncrementer {
   ~ScopedIncrementer() { --(*counter_); }
 
  private:
-  size_t* counter_;
+  raw_ptr<size_t> counter_;
 };
 }
 
@@ -108,7 +109,7 @@ void FullscreenModel::SetCollapsedTopToolbarHeight(CGFloat height) {
 }
 
 CGFloat FullscreenModel::GetCollapsedTopToolbarHeight() const {
-  return GetFreezeToolbarHeight() ? 0 : collapsed_top_toolbar_height_;
+  return collapsed_top_toolbar_height_;
 }
 
 void FullscreenModel::SetExpandedTopToolbarHeight(CGFloat height) {
@@ -127,7 +128,7 @@ void FullscreenModel::SetExpandedTopToolbarHeight(CGFloat height) {
 }
 
 CGFloat FullscreenModel::GetExpandedTopToolbarHeight() const {
-  return GetFreezeToolbarHeight() ? 0 : expanded_top_toolbar_height_;
+  return expanded_top_toolbar_height_;
 }
 
 void FullscreenModel::SetExpandedBottomToolbarHeight(CGFloat height) {
@@ -289,24 +290,6 @@ void FullscreenModel::SetWebViewSafeAreaInsets(UIEdgeInsets safe_area_insets) {
 
 UIEdgeInsets FullscreenModel::GetWebViewSafeAreaInsets() const {
   return safe_area_insets_;
-}
-
-void FullscreenModel::SetFreezeToolbarHeight(bool freeze_toolbar_height) {
-  if (freeze_toolbar_height_ == freeze_toolbar_height) {
-    return;
-  }
-  freeze_toolbar_height_ = freeze_toolbar_height;
-  if (base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault)) {
-    base_offset_ = NAN;
-  }
-  ScopedIncrementer toolbar_height_incrementer(&observer_callback_count_);
-  for (auto& observer : observers_) {
-    observer.FullscreenModelToolbarHeightsUpdated(this);
-  }
-}
-
-bool FullscreenModel::GetFreezeToolbarHeight() const {
-  return freeze_toolbar_height_;
 }
 
 void FullscreenModel::SetForceFullscreenMode(bool force_fullscreen_mode) {

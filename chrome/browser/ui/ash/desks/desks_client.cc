@@ -8,10 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/session/session_controller.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
@@ -35,6 +36,7 @@
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_instance.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_observer.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -52,6 +54,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/window_properties.h"
@@ -144,6 +147,14 @@ class LacrosAppWindowObserver : public apps::BrowserAppInstanceObserver {
   ~LacrosAppWindowObserver() override = default;
 
   // BrowserAppInstanceObserver:
+  void OnBrowserWindowAdded(
+      const apps::BrowserWindowInstance& instance) override {
+    if (chromeos::features::IsDeskProfilesEnabled()) {
+      instance.window->SetProperty(ash::kLacrosProfileId,
+                                   instance.lacros_profile_id);
+    }
+  }
+
   void OnBrowserAppAdded(const apps::BrowserAppInstance& instance) override {
     if (!instance.app_id.empty()) {
       app_ids_by_window_[instance.window] = instance.app_id;
@@ -240,7 +251,7 @@ class DesksClient::LaunchPerformanceTracker
   // Pointer back to the owning templates client. This is done to facilitate
   // this object's removal from the mapping of template id's to trackers after
   // this object has recorded its metric.
-  raw_ptr<DesksClient, ExperimentalAsh> templates_client_;
+  raw_ptr<DesksClient> templates_client_;
 
   base::ScopedObservation<app_restore::AppRestoreInfo,
                           app_restore::AppRestoreInfo::Observer>
@@ -869,7 +880,7 @@ void DesksClient::RemoveLaunchPerformanceTracker(
 
 aura::Window* DesksClient::GetWindowByBrowserSessionId(
     SessionID browser_session_id) {
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser->session_id() == browser_session_id)
       return browser->window()->GetNativeWindow();
   }

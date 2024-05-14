@@ -7,14 +7,13 @@
 #include <stddef.h>
 
 #include <set>
+#include <string_view>
 
 #include "base/memory/raw_ref.h"
-#include "base/strings/string_piece.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_frame_visitor.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -116,7 +115,7 @@ void FrameContentWatcher::NotifyBrowserOfChange() {
     return;
   }
 
-  std::set<base::StringPiece> transitive_selectors;
+  std::set<std::string_view> transitive_selectors;
   for (blink::WebFrame* frame = top_frame; frame;
        frame = frame->TraverseNext()) {
     if (frame->IsWebLocalFrame() &&
@@ -131,8 +130,9 @@ void FrameContentWatcher::NotifyBrowserOfChange() {
   }
 
   std::vector<std::string> selector_strings;
-  for (const base::StringPiece& selector : transitive_selectors)
+  for (std::string_view selector : transitive_selectors) {
     selector_strings.push_back(std::string(selector));
+  }
 
   ExtensionFrameHelper::Get(render_frame())
       ->GetLocalFrameHost()

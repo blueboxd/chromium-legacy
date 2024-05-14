@@ -96,8 +96,7 @@ const net::HttpRequestHeaders GetDiscourseContext(
   std::string serialized;
   proto.SerializeToString(&serialized);
 
-  std::string encoded_context;
-  base::Base64Encode(serialized, &encoded_context);
+  std::string encoded_context = base::Base64Encode(serialized);
   // The server memoizer expects a web-safe encoding.
   std::replace(encoded_context.begin(), encoded_context.end(), '+', '-');
   std::replace(encoded_context.begin(), encoded_context.end(), '/', '_');
@@ -127,7 +126,7 @@ void ContextualSearchDelegateImpl::GatherAndSaveSurroundingText(
   blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback
       get_text_callback = base::BindOnce(
           &ContextualSearchDelegateImpl::OnTextSurroundingSelectionAvailable,
-          AsWeakPtr(), context, callback);
+          weak_ptr_factory_.GetWeakPtr(), context, callback);
   if (!context)
     return;
 
@@ -449,7 +448,7 @@ void ContextualSearchDelegateImpl::DecodeSearchTermFromJsonResponse(
   const std::string& proper_json =
       contains_xssi_escape ? response.substr(sizeof(kXssiEscape) - 1)
                            : response;
-  absl::optional<base::Value> root = base::JSONReader::Read(proper_json);
+  std::optional<base::Value> root = base::JSONReader::Read(proper_json);
   if (!root) {
     return;
   }
@@ -536,7 +535,7 @@ void ContextualSearchDelegateImpl::DecodeSearchTermFromJsonResponse(
   // Contextual Cards V5+ integration can provide the primary card tag, so
   // clients can tell what kind of card they have received.
   // TODO(donnd): make sure this works with a non-integer or missing value!
-  absl::optional<int> maybe_coca_card_tag =
+  std::optional<int> maybe_coca_card_tag =
       dict->FindInt(kContextualSearchCardTag);
   if (coca_card_tag && maybe_coca_card_tag)
     *coca_card_tag = *maybe_coca_card_tag;

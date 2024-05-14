@@ -63,6 +63,11 @@ views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents);
 
+// As above, but with an owned widget.
+std::unique_ptr<views::Widget> ShowWebModalDialogViewsOwned(
+    views::WidgetDelegate* dialog,
+    content::WebContents* initiator_web_contents);
+
 // Create a widget for |dialog| that is modal to |web_contents|.
 // The modal type of |dialog->GetModalType()| must be ui::MODAL_TYPE_CHILD.
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
@@ -102,6 +107,9 @@ views::Widget* ShowWebModal(std::unique_ptr<ui::DialogModel> dialog_model,
 // True if the platform supports global screen coordinates. This is typically
 // supported by most platforms except linux-wayland.
 bool SupportsGlobalScreenCoordinates();
+
+// True if the platform clips child widgets to their parent's viewport.
+bool PlatformClipsChildrenToViewport();
 
 }  // namespace constrained_window
 

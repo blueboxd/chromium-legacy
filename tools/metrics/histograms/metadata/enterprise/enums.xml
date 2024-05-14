@@ -26,17 +26,6 @@ chromium-metrics-reviews@google.com.
 
 <enums>
 
-<enum name="ActiveDirectoryDomainJoinType">
-  <summary>
-    This list corresponds to the ways device could be joined to the Active
-    Directory domain.
-  </summary>
-  <int value="0" label="Joined without streamline configuration"/>
-  <int value="1"
-      label="Had streamline configuration set but did not unlock it"/>
-  <int value="2" label="Joined using streamline configuration"/>
-</enum>
-
 <enum name="BooleanWarned">
   <int value="0" label="Not Warned"/>
   <int value="1" label="Warned"/>
@@ -327,6 +316,16 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Use Another Account button clicked"/>
 </enum>
 
+<enum name="EnrollmentRecoveryOnBootAction">
+  <summary>
+    The action taken on boot when enrollment recovery is marked in the local
+    state.
+  </summary>
+  <int value="0" label="Proceed with recovery"/>
+  <int value="1" label="False flag, the device policy is good"/>
+  <int value="2" label="Device without serial number, skip recovery"/>
+</enum>
+
 <enum name="EnterpriseAccountStatus">
   <summary>Account status fetched before enrollment process starts.</summary>
   <int value="0" label="Unknown account"/>
@@ -472,6 +471,14 @@ chromium-metrics-reviews@google.com.
   <int value="909" label="SERVICE_INVALID_PACKAGED_DEVICE_FOR_KIOSK"/>
 </enum>
 
+<enum name="EnterpriseDlpFileAccessDefaultAction">
+  <summary>Type of action triggering a default file access behaviour.</summary>
+  <int value="0" label="Creating file access in MyFiles"/>
+  <int value="1" label="Not creating file access in MyFiles"/>
+  <int value="2" label="Creating file access outside of MyFiles"/>
+  <int value="3" label="Not creating file access outside of MyFiles"/>
+</enum>
+
 <enum name="EnterpriseDlpPolicyCrOSAdaptorError">
   <summary>
     Type of errors triggered by the adaptor usage in the ChromeOS Data Leak
@@ -544,6 +551,15 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="kMove"/>
   <int value="6" label="kOpen"/>
   <int value="7" label="kShare"/>
+</enum>
+
+<enum name="EnterpriseDlpPolicyLevel">
+  <summary>Restriction level enforced by Data Leak Prevention policy.</summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Report"/>
+  <int value="2" label="Warn"/>
+  <int value="3" label="Block"/>
+  <int value="4" label="Allow"/>
 </enum>
 
 <enum name="EnterpriseDlpPolicyRestriction">
@@ -1781,7 +1797,6 @@ chromium-metrics-reviews@google.com.
   <int value="979" label="LocalFontsBlockedForUrls"/>
   <int value="980" label="ProjectorDogfoodForFamilyLinkEnabled"/>
   <int value="981" label="UrlParamFilterEnabled"/>
-  <int value="982" label="ScreenTimeEnabled"/>
   <int value="983" label="DefaultClipboardSetting"/>
   <int value="984" label="ClipboardAllowedForUrls"/>
   <int value="985" label="ClipboardBlockedForUrls"/>
@@ -1833,8 +1848,7 @@ chromium-metrics-reviews@google.com.
   <int value="1029" label="AllowWebAuthnWithBrokenTlsCerts"/>
   <int value="1030" label="ExtensionManifestV2Availability"/>
   <int value="1031" label="OffsetParentNewSpecBehaviorEnabled"/>
-  <int value="1032"
-      label="OBSOLETE_SendMouseEventsDisabledFormControlsEnabled"/>
+  <int value="1032" label="SendMouseEventsDisabledFormControlsEnabled"/>
   <int value="1033" label="BruschettaVMConfiguration"/>
   <int value="1034" label="DnsOverHttpsSalt"/>
   <int value="1035" label="DnsOverHttpsTemplatesWithIdentifiers"/>
@@ -1901,7 +1915,6 @@ chromium-metrics-reviews@google.com.
   <int value="1095" label="InsecureHashesInTLSHandshakesEnabled"/>
   <int value="1096" label="DeviceLoginScreenGeolocationAccessLevel"/>
   <int value="1097" label="DeviceReportNetworkEvents"/>
-  <int value="1098" label="SafeBrowsingExtensionProtectionAllowed"/>
   <int value="1099" label="ShowDisplaySizeScreenEnabled"/>
   <int value="1100" label="EssentialSearchEnabled"/>
   <int value="1101" label="LegacyTechReportAllowlist"/>
@@ -1932,9 +1945,6 @@ chromium-metrics-reviews@google.com.
   <int value="1125" label="ArcVmDataMigrationStrategy"/>
   <int value="1126" label="AccessibilityPerformanceFilteringAllowed"/>
   <int value="1127" label="RemoteAccessHostAllowEnterpriseFileTransfer"/>
-  <int value="1128" label="DefaultMidiSetting"/>
-  <int value="1129" label="MidiAllowedForUrls"/>
-  <int value="1130" label="MidiBlockedForUrls"/>
   <int value="1131" label="GlanceablesEnabled"/>
   <int value="1132" label="DeviceAuthenticationURLBlocklist"/>
   <int value="1133" label="DeviceAuthenticationURLAllowlist"/>
@@ -1987,12 +1997,45 @@ chromium-metrics-reviews@google.com.
   <int value="1181" label="NativeHostsExecutablesLaunchDirectly"/>
   <int value="1182" label="FeedbackSurveysEnabled"/>
   <int value="1183" label="DeskAPIDeskSaveAndShareEnabled"/>
-  <int value="1184" label="OopPrintDriversEnabled"/>
+  <int value="1184" label="OopPrintDriversAllowed"/>
   <int value="1185" label="DeviceHardwareVideoDecodingEnabled"/>
-  <int value="1186" label="TabOrganizationAllowed"/>
-  <int value="1187" label="ComposeAllowed"/>
-  <int value="1188" label="WallpaperSearchAllowed"/>
+  <int value="1186" label="TabOrganizerSettings"/>
+  <int value="1187" label="HelpMeWriteSettings"/>
+  <int value="1188" label="CreateThemesSettings"/>
   <int value="1189" label="ListenToThisPageEnabled"/>
+  <int value="1190" label="AlwaysOnVpnPreConnectUrlAllowlist"/>
+  <int value="1191" label="CACertificates"/>
+  <int value="1192" label="CADistrustedCertificates"/>
+  <int value="1193" label="CAHintCertificates"/>
+  <int value="1194" label="DeviceLoginScreenTouchVirtualKeyboardEnabled"/>
+  <int value="1195" label="DeviceExtendedAutoUpdateEnabled"/>
+  <int value="1196" label="CAPlatformIntegrationEnabled"/>
+  <int value="1197" label="FloatingSsoEnabled"/>
+  <int value="1198" label="FloatingSsoDomainBlocklist"/>
+  <int value="1199" label="FloatingSsoDomainBlocklistExceptions"/>
+  <int value="1200" label="F11KeyModifier"/>
+  <int value="1201" label="F12KeyModifier"/>
+  <int value="1202" label="VirtualKeyboardSmartVisibilityEnabled"/>
+  <int value="1203" label="WebAnnotations"/>
+  <int value="1204" label="DeleteKeyModifier"/>
+  <int value="1205" label="HomeAndEndKeysModifier"/>
+  <int value="1206" label="PageUpAndPageDownKeysModifier"/>
+  <int value="1207" label="InsertKeyModifier"/>
+  <int value="1208" label="ToolbarAvatarLabelSettings"/>
+  <int value="1209" label="DeviceWeeklyScheduledSuspend"/>
+  <int value="1210" label="RemoteAccessHostAllowUrlForwarding"/>
+  <int value="1211" label="ScreenCaptureLocation"/>
+  <int value="1212" label="AllowDomainsForAppsList"/>
+  <int value="1213" label="ChromeForTestingAllowed"/>
+  <int value="1214" label="GoogleLocationServicesEnabled"/>
+  <int value="1215" label="ProvisionManagedClientCertificateForUser"/>
+  <int value="1216" label="LocalUserFilesAllowed"/>
+  <int value="1217" label="DevToolsGenAiSettings"/>
+  <int value="1218"
+      label="SubAppsAPIsAllowedWithoutGestureAndAuthorizationForOrigins"/>
+  <int value="1219" label="DefaultWebPrintingSetting"/>
+  <int value="1220" label="WebPrintingAllowedForUrls"/>
+  <int value="1221" label="WebPrintingBlockedForUrls"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">
@@ -2130,6 +2173,24 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Automatic public session"/>
   <int value="3" label="Manual kiosk session"/>
   <int value="4" label="Automatic kiosk session"/>
+</enum>
+
+<enum name="IdleTimeoutCase">
+  <int value="0" label="Foreground"/>
+  <int value="1" label="Background"/>
+</enum>
+
+<enum name="IdleTimeoutDialogEvent">
+  <int value="0" label="Idle timeout dialog shown"/>
+  <int value="1" label="Idle timeout dialog dismissed by user"/>
+  <int value="2" label="Idle timeout dialog expired"/>
+</enum>
+
+<enum name="IdleTimeoutLaunchScreenEvent">
+  <int value="0" label="Idle timeout launch screen shown"/>
+  <int value="1"
+      label="Idle timeout launch screen dismissed after action completion"/>
+  <int value="2" label="Idle timeout launch screen expired"/>
 </enum>
 
 <enum name="InvalidDevicePolicyFilesStatus">
@@ -2271,6 +2332,13 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="UnsupportedAccountTypeError"/>
   <int value="6" label="GetTokenError"/>
   <int value="7" label="GetUserInfoError"/>
+</enum>
+
+<enum name="StateKeysRetrievalErrorType">
+  <int value="0" label="No error"/>
+  <int value="1" label="Invalid response"/>
+  <int value="2" label="Communication error"/>
+  <int value="3" label="Missing identifiers"/>
 </enum>
 
 <enum name="SystemFeature">

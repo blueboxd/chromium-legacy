@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 
 #include "content/browser/interest_group/interest_group_caching_storage.h"
+
 #include <algorithm>
 #include <cstdint>
 
 #include "base/containers/flat_map.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "content/browser/interest_group/bidding_and_auction_server_key_fetcher.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/storage_interest_group.h"
@@ -26,6 +29,16 @@ bool CacheIsEnabled() {
   return !base::FeatureList::IsEnabled(
              features::kCookieDeprecationFacilitatedTesting) &&
          base::FeatureList::IsEnabled(features::kFledgeUseInterestGroupCache);
+}
+
+std::optional<content::SingleStorageInterestGroup>
+ConvertOptionalGroupToSingleStorageInterestGroup(
+    std::optional<content::StorageInterestGroup> possible_group) {
+  if (possible_group) {
+    return content::SingleStorageInterestGroup(
+        std::move(possible_group.value()));
+  }
+  return std::nullopt;
 }
 
 }  // namespace
@@ -69,6 +82,17 @@ StorageInterestGroups::StorageInterestGroups(
   for (const StorageInterestGroup& group : storage_interest_groups_) {
     expiry_ = std::min(expiry_, group.interest_group.expiry);
   }
+}
+
+std::optional<SingleStorageInterestGroup> StorageInterestGroups::FindGroup(
+    std::string_view name) {
+  for (const StorageInterestGroup& interest_group : storage_interest_groups_) {
+    if (interest_group.interest_group.name == name) {
+      SingleStorageInterestGroup output(this, &interest_group);
+      return output;
+    }
+  }
+  return std::nullopt;
 }
 
 StorageInterestGroups::~StorageInterestGroups() = default;
@@ -236,6 +260,22 @@ void InterestGroupCachingStorage::RecordInterestGroupWin(
       .WithArgs(group_key, std::move(ad_json));
 }
 
+void InterestGroupCachingStorage::RecordDebugReportLockout(
+    base::Time last_report_sent_time) {
+  interest_group_storage_
+      .AsyncCall(&InterestGroupStorage::RecordDebugReportLockout)
+      .WithArgs(last_report_sent_time);
+}
+
+void InterestGroupCachingStorage::RecordDebugReportCooldown(
+    const url::Origin& origin,
+    base::Time cooldown_start,
+    DebugReportCooldownType cooldown_type) {
+  interest_group_storage_
+      .AsyncCall(&InterestGroupStorage::RecordDebugReportCooldown)
+      .WithArgs(origin, cooldown_start, cooldown_type);
+}
+
 void InterestGroupCachingStorage::UpdateKAnonymity(
     const StorageInterestGroup::KAnonymityData& data) {
   // We do not know the affected owners without looking them up from the
@@ -249,7 +289,7 @@ void InterestGroupCachingStorage::UpdateKAnonymity(
 
 void InterestGroupCachingStorage::GetLastKAnonymityReported(
     const std::string& key,
-    base::OnceCallback<void(absl::optional<base::Time>)> callback) {
+    base::OnceCallback<void(std::optional<base::Time>)> callback) {
   interest_group_storage_
       .AsyncCall(&InterestGroupStorage::GetLastKAnonymityReported)
       .WithArgs(key)
@@ -267,12 +307,34 @@ void InterestGroupCachingStorage::UpdateLastKAnonymityReported(
 
 void InterestGroupCachingStorage::GetInterestGroup(
     const blink::InterestGroupKey& group_key,
-    base::OnceCallback<void(absl::optional<StorageInterestGroup>)> callback) {
-  // TODO(abigailkatcoff): This function could check the cache first for the
-  // group.
+    base::OnceCallback<void(std::optional<SingleStorageInterestGroup>)>
+        callback) {
+  if (CacheIsEnabled()) {
+    auto cached_groups_it = cached_interest_groups_.find(group_key.owner);
+    if (cached_groups_it != cached_interest_groups_.end()) {
+      scoped_refptr<StorageInterestGroups> groups =
+          cached_groups_it->second.get();
+      if (groups) {
+        std::optional<SingleStorageInterestGroup> output =
+            groups->FindGroup(group_key.name);
+        if (output &&
+            output.value()->interest_group.expiry < base::Time::Now()) {
+          output.reset();
+        }
+        base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), std::move(output)));
+        base::UmaHistogramBoolean("Ads.InterestGroup.GetInterestGroupCacheHit",
+                                  true);
+        return;
+      }
+    }
+    base::UmaHistogramBoolean("Ads.InterestGroup.GetInterestGroupCacheHit",
+                              false);
+  }
   interest_group_storage_.AsyncCall(&InterestGroupStorage::GetInterestGroup)
       .WithArgs(group_key)
-      .Then(std::move(callback));
+      .Then(base::BindOnce(&ConvertOptionalGroupToSingleStorageInterestGroup)
+                .Then(std::move(callback)));
 }
 
 void InterestGroupCachingStorage::GetAllInterestGroupOwners(
@@ -300,6 +362,16 @@ void InterestGroupCachingStorage::GetKAnonymityDataForUpdate(
   interest_group_storage_
       .AsyncCall(&InterestGroupStorage::GetKAnonymityDataForUpdate)
       .WithArgs(group_key)
+      .Then(std::move(callback));
+}
+
+void InterestGroupCachingStorage::GetDebugReportLockoutAndCooldowns(
+    base::flat_set<url::Origin> origins,
+    base::OnceCallback<void(std::optional<DebugReportLockoutAndCooldowns>)>
+        callback) {
+  return interest_group_storage_
+      .AsyncCall(&InterestGroupStorage::GetDebugReportLockoutAndCooldowns)
+      .WithArgs(std::move(origins))
       .Then(std::move(callback));
 }
 
@@ -366,6 +438,25 @@ void InterestGroupCachingStorage::UpdateInterestGroupPriorityOverrides(
   interest_group_storage_
       .AsyncCall(&InterestGroupStorage::UpdateInterestGroupPriorityOverrides)
       .WithArgs(group_key, std::move(update_priority_signals_overrides));
+}
+
+void InterestGroupCachingStorage::SetBiddingAndAuctionServerKeys(
+    const url::Origin& coordinator,
+    const std::vector<BiddingAndAuctionServerKey>& keys,
+    base::Time expiration) {
+  interest_group_storage_
+      .AsyncCall(&InterestGroupStorage::SetBiddingAndAuctionServerKeys)
+      .WithArgs(coordinator, keys, expiration);
+}
+void InterestGroupCachingStorage::GetBiddingAndAuctionServerKeys(
+    const url::Origin& coordinator,
+    base::OnceCallback<
+        void(std::pair<base::Time, std::vector<BiddingAndAuctionServerKey>>)>
+        callback) {
+  interest_group_storage_
+      .AsyncCall(&InterestGroupStorage::GetBiddingAndAuctionServerKeys)
+      .WithArgs(coordinator)
+      .Then(std::move(callback));
 }
 
 void InterestGroupCachingStorage::GetLastMaintenanceTimeForTesting(

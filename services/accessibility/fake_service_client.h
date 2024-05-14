@@ -16,6 +16,8 @@
 #include "services/accessibility/buildflags.h"
 #include "services/accessibility/public/mojom/accessibility_service.mojom.h"
 #include "services/accessibility/public/mojom/automation.mojom.h"
+#include "services/accessibility/public/mojom/automation_client.mojom.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 #if BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
 #include "services/accessibility/public/mojom/autoclick.mojom.h"
@@ -52,9 +54,16 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
 
   // ax::mojom::AccessibilityServiceClient:
   void BindAutomation(
-      mojo::PendingAssociatedRemote<ax::mojom::Automation> automation,
-      mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client)
-      override;
+      mojo::PendingAssociatedRemote<ax::mojom::Automation> automation) override;
+  void BindAutomationClient(mojo::PendingReceiver<ax::mojom::AutomationClient>
+                                automation_client) override;
+
+  // ax::mojom::AutomationClient:
+  void Enable(EnableCallback callback) override;
+  void Disable();
+  void EnableTree(const ui::AXTreeID& tree_id);
+  void PerformAction(const ui::AXActionData& data);
+
 #if BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
   void BindAccessibilityFileLoader(
       mojo::PendingReceiver<ax::mojom::AccessibilityFileLoader>
@@ -94,13 +103,15 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
   // ax::mojom::UserInput:
   void SendSyntheticKeyEventForShortcutOrNavigation(
       ax::mojom::SyntheticKeyEventPtr key_event) override;
+  void SendSyntheticMouseEvent(
+      ax::mojom::SyntheticMouseEventPtr mouse_event) override;
 
   // ax::mojom::UserInterface:
   void DarkenScreen(bool darken) override;
   void OpenSettingsSubpage(const std::string& subpage) override;
   void ShowConfirmationDialog(const std::string& title,
                               const std::string& description,
-                              const absl::optional<std::string>& cancel_name,
+                              const std::optional<std::string>& cancel_name,
                               ShowConfirmationDialogCallback callback) override;
   void SetFocusRings(std::vector<ax::mojom::FocusRingInfoPtr> focus_rings,
                      ax::mojom::AssistiveTechnologyType at_type) override;
@@ -134,7 +145,9 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
   void SendTtsUtteranceEvent(mojom::TtsEventPtr tts_event);
 
   void SetSyntheticKeyEventCallback(base::RepeatingCallback<void()> callback);
-  const std::vector<ax::mojom::SyntheticKeyEventPtr>& GetKeyEvents() const;
+  void SetSyntheticMouseEventCallback(base::RepeatingCallback<void()> callback);
+  const std::vector<mojom::SyntheticKeyEventPtr>& GetKeyEvents() const;
+  const std::vector<mojom::SyntheticMouseEventPtr>& GetMouseEvents() const;
 
   bool UserInterfaceIsBound() const;
   void SetDarkenScreenCallback(
@@ -149,6 +162,13 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
                                    SkColor color)> callback);
   void SetVirtualKeyboardVisibleCallback(
       base::RepeatingCallback<void(bool is_visible)> callback);
+
+  const ui::AXTreeID& desktop_tree_id() const { return desktop_tree_id_; }
+  void SendAccessibilityEvents(const ui::AXTreeID& tree_id,
+                               const std::vector<ui::AXTreeUpdate>& updates,
+                               const gfx::Point& mouse_location,
+                               const std::vector<ui::AXEvent>& events);
+
 #endif  // BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
   base::WeakPtr<FakeServiceClient> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -160,6 +180,8 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
 
   mojo::AssociatedRemoteSet<mojom::Automation> automation_remotes_;
   mojo::ReceiverSet<mojom::AutomationClient> automation_client_receivers_;
+
+  ui::AXTreeID desktop_tree_id_;
 #if BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
   mojo::ReceiverSet<ax::mojom::AutoclickClient> autoclick_client_recievers_;
   mojo::Remote<ax::mojom::Autoclick> autoclick_remote_;
@@ -169,17 +191,19 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
   mojo::ReceiverSet<mojom::SpeechRecognition> sr_receivers_;
   mojo::Remote<ax::mojom::SpeechRecognitionEventObserver> sr_event_observer_;
   base::RepeatingCallback<void()> speech_recognition_start_callback_;
-  absl::optional<std::string> speech_recognition_start_error_;
-  absl::optional<std::string> speech_recognition_stop_error_;
+  std::optional<std::string> speech_recognition_start_error_;
+  std::optional<std::string> speech_recognition_stop_error_;
 
   base::RepeatingCallback<void(const std::string&, mojom::TtsOptionsPtr)>
       tts_speak_callback_;
   mojo::ReceiverSet<mojom::Tts> tts_receivers_;
   mojo::Remote<ax::mojom::TtsUtteranceClient> tts_utterance_client_;
 
-  base::RepeatingCallback<void()> synthetic_key_event_callback_;
   mojo::ReceiverSet<mojom::UserInput> ui_receivers_;
-  std::vector<ax::mojom::SyntheticKeyEventPtr> key_events_;
+  base::RepeatingCallback<void()> synthetic_key_event_callback_;
+  base::RepeatingCallback<void()> synthetic_mouse_event_callback_;
+  std::vector<mojom::SyntheticKeyEventPtr> key_events_;
+  std::vector<mojom::SyntheticMouseEventPtr> mouse_events_;
 
   base::RepeatingCallback<void(bool darken)> darken_screen_callback_;
   base::RepeatingCallback<void(const std::string& subpage)>

@@ -23,6 +23,8 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.Features;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
@@ -30,7 +32,6 @@ import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.SyncService;
@@ -103,6 +104,17 @@ public class PriceTrackingFeaturesTest {
         setSignedInStatus(false);
         Assert.assertFalse(
                 PriceTrackingFeatures.isPriceTrackingEligible(Profile.getLastUsedRegularProfile()));
+    }
+
+    @UiThreadTest
+    @Test
+    @SmallTest
+    public void testIsPriceTrackingEligibleIncognitoProfile() {
+        OTRProfileID otrProfileID = OTRProfileID.createUnique("test:Incognito");
+        Profile incognitoProfile =
+                Profile.getLastUsedRegularProfile()
+                        .getOffTheRecordProfile(otrProfileID, /* createIfNeeded= */ true);
+        Assert.assertFalse(PriceTrackingFeatures.isPriceTrackingEligible(incognitoProfile));
     }
 
     @UiThreadTest

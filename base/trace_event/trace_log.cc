@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <string_view>
 #include <unordered_set>
 #include <utility>
 
@@ -29,7 +30,6 @@
 #include "base/process/process_metrics.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
@@ -1126,8 +1126,10 @@ void TraceLog::SetDisabledWhileLocked(uint8_t modes_to_disable) {
     // Release trace events lock, so observers can trigger trace events.
     AutoUnlock unlock(lock_);
     AutoLock lock2(observers_lock_);
-    for (auto* it : enabled_state_observers_)
+    for (base::trace_event::TraceLog::EnabledStateObserver* it :
+         enabled_state_observers_) {
       it->OnTraceLogDisabled();
+    }
     for (const auto& it : async_observers_) {
       it.second.task_runner->PostTask(
           FROM_HERE, BindOnce(&AsyncEnabledStateObserver::OnTraceLogDisabled,
@@ -2010,7 +2012,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
 #endif
 
   if (!process_labels_.empty()) {
-    std::vector<base::StringPiece> labels;
+    std::vector<std::string_view> labels;
     for (const auto& it : process_labels_)
       labels.push_back(it.second);
     AddMetadataEventWhileLocked(current_thread_id, "process_labels", "labels",
@@ -2095,6 +2097,11 @@ void TraceLog::OnSetProcessName(const std::string& process_name) {
     TrackEvent::SetTrackDescriptor(track, std::move(desc));
   }
 #endif
+}
+
+int TraceLog::GetNewProcessLabelId() {
+  AutoLock lock(lock_);
+  return next_process_label_id_++;
 }
 
 void TraceLog::UpdateProcessLabel(int label_id,
@@ -2234,8 +2241,10 @@ void TraceLog::OnStop(const perfetto::DataSourceBase::StopArgs& args) {
   }
 
   AutoLock lock(observers_lock_);
-  for (auto* it : enabled_state_observers_)
+  for (base::trace_event::TraceLog::EnabledStateObserver* it :
+       enabled_state_observers_) {
     it->OnTraceLogDisabled();
+  }
   for (const auto& it : async_observers_) {
     it.second.task_runner->PostTask(
         FROM_HERE, BindOnce(&AsyncEnabledStateObserver::OnTraceLogDisabled,

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_response_js_on.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_registration_response_js_on.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_authenticationresponsejson_registrationresponsejson.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -33,7 +34,7 @@ void OnIsUserVerifyingComplete(
   scoped_resolver->Release()->Resolve(available);
 }
 
-absl::optional<std::string> AuthenticatorAttachmentToString(
+std::optional<std::string> AuthenticatorAttachmentToString(
     mojom::blink::AuthenticatorAttachment authenticator_attachment) {
   switch (authenticator_attachment) {
     case mojom::blink::AuthenticatorAttachment::PLATFORM:
@@ -41,7 +42,7 @@ absl::optional<std::string> AuthenticatorAttachmentToString(
     case mojom::blink::AuthenticatorAttachment::CROSS_PLATFORM:
       return "cross-platform";
     case mojom::blink::AuthenticatorAttachment::NO_PREFERENCE:
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 }  // namespace
@@ -165,6 +166,16 @@ PublicKeyCredential::toJSON(ScriptState* script_state) const {
           }},
       response_json);
   return result;
+}
+
+// static
+const PublicKeyCredentialCreationOptions*
+PublicKeyCredential::parseCreationOptionsFromJSON(
+    ScriptState* script_state,
+    const PublicKeyCredentialCreationOptionsJSON* options,
+    ExceptionState& exception_state) {
+  return PublicKeyCredentialOptionsFromJSON(script_state, options,
+                                            exception_state);
 }
 
 void PublicKeyCredential::Trace(Visitor* visitor) const {

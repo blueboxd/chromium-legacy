@@ -49,15 +49,6 @@ const modelColors = new Map();
  */
 const targetFrameTime = 16667;
 
-// Graphics event types which are used in the model JSON data. These must match
-// the graphics event types in
-// chrome/browser/ash/arc/tracing/arc_tracing_graphics_model.h. To aid in
-// maintaining consistency, do not modify values once added - deprecation and
-// removal are allowed.
-const kExoSurfaceCommit = 206;
-const kChromeOSPresentationDone = 503;
-const kChromeOSSwapDone = 504;
-
 function initializeOverviewUi() {
   initializeUi(8 /* zoomLevel */, function() {
     // Update function.
@@ -176,7 +167,7 @@ function addModelHeader(model) {
   function setFPS(cssClass, type) {
     const fps = calculateFPS(
         getGraphicsEvents(model, type), model.information.duration);
-    header.getElementsByClassName(cssClass)[0].textContext = fps.toFixed(2);
+    header.getElementsByClassName(cssClass)[0].textContent = fps.toFixed(2);
   }
   setFPS('arc-tracing-app-fps', kExoSurfaceCommit);
   setFPS('arc-tracing-perceived-fps', kChromeOSPresentationDone);
@@ -191,7 +182,7 @@ function addModelHeader(model) {
   const cpuPower = getAveragePower(model, 10 /* kCpuPower */);
   const gpuPower = getAveragePower(model, 11 /* kGpuPower */);
   const memoryPower = getAveragePower(model, 12 /* kMemoryPower */);
-  if (cpuPower != -1 && gpuPower != -1 && memoryPower != -1) {
+  if (cpuPower !== -1 && gpuPower !== -1 && memoryPower !== -1) {
     totalPowerElement.parentNode.style.display = 'block';
     totalPowerElement.textContent =
         (cpuPower + gpuPower + memoryPower).toFixed(2);
@@ -493,11 +484,11 @@ function addFPSView(parent, resolution, duration, title, eventType) {
 function addFPSHistograms(parent, anchor, timeBasedView, eventTypes) {
   // Define the width of each bar based on number of models in view.
   let barWidth;
-  if (models.length == 1) {
+  if (models.length === 1) {
     barWidth = 20;
-  } else if (models.length == 2) {
+  } else if (models.length === 2) {
     barWidth = 15;
-  } else if (models.length == 3) {
+  } else if (models.length === 3) {
     barWidth = 12;
   } else {
     barWidth = 10;
@@ -569,7 +560,7 @@ function addFPSHistograms(parent, anchor, timeBasedView, eventTypes) {
       const events = getGraphicsEvents(models[m], eventTypes[t]);
       // Presort deltas between frames. Fastest one goes first.
       const deltas = createDeltaEvents(events);
-      if (deltas.events.length == 0) {
+      if (deltas.events.length === 0) {
         // Nothing to display.
         continue;
       }
@@ -623,7 +614,7 @@ function addFPSHistograms(parent, anchor, timeBasedView, eventTypes) {
 
         // Go the next basket or stop if this was last one.
         ++basketIndex;
-        if (basketIndex == basketFPSs.length) {
+        if (basketIndex === basketFPSs.length) {
           break;
         }
 
@@ -646,11 +637,11 @@ function addFPSHistograms(parent, anchor, timeBasedView, eventTypes) {
         if (timeBasedView) {
           barHeight = maxBarHeight * basketTimeValues[b] / basketTimeValueMax;
           let basketInfo = '';
-          if (b == 0) {
+          if (b === 0) {
             basketInfo =
                 'Frame time <= ' + (1000.0 / basketMinFPSs[b]).toFixed(1) +
                 'ms.';
-          } else if (b != basketFPSs.length - 1) {
+          } else if (b !== basketFPSs.length - 1) {
             basketInfo = 'Frame time range (' +
                 (1000.0 / basketMinFPSs[b - 1]).toFixed(1) + '..' +
                 (1000.0 / basketMinFPSs[b]).toFixed(1) + '] ms.';
@@ -665,7 +656,7 @@ function addFPSHistograms(parent, anchor, timeBasedView, eventTypes) {
         } else {
           barHeight = maxBarHeight * basketCountValues[b] / basketCountValueMax;
           let basketInfo = '';
-          if (b == 0) {
+          if (b === 0) {
             basketInfo = 'Frame FPS >= ' + basketMinFPSs[b].toString();
           } else {
             basketInfo = 'Frame FPS range (' + basketMinFPSs[b - 1].toString() +
@@ -696,8 +687,10 @@ function addFPSHistograms(parent, anchor, timeBasedView, eventTypes) {
  * @param {number} duration length of the chart in microseconds.
  * @param {string} title the title of the view
  * @param {number} eventType type of event whose rate to track
+ * @param {number} jankEventType type of event indicating a jank (optional)
  */
-function addDeltaView(parent, resolution, duration, title, eventType) {
+function addDeltaView(
+    parent, resolution, duration, title, eventType, jankEventType) {
   // time range from 0 to 67ms. 66.67ms is for 15 FPS.
   // 1 ms 1 pixel resolution.  Each grid lines correspond 1/120 FPS time update.
   const bands = createChart(
@@ -716,6 +709,14 @@ function addDeltaView(parent, resolution, duration, title, eventType) {
     const timeEvents = createDeltaEvents(events);
     attributes.color = modelColors.get(models[i]);
     bands.addChartSources([timeEvents], false /* smooth */, attributes);
+    if (jankEventType) {
+      // Offset each model's janks at a different y position, avoiding max and
+      // min positions (0 or 1), as these are awkward when the models are few.
+      const y = (i + 1) / (models.length + 1);
+      bands.addGlobal(
+          getGraphicsEvents(models[i], jankEventType), 'circle',
+          attributes.color, y);
+    }
   }
 }
 
@@ -767,7 +768,7 @@ function refreshModels() {
   $('arc-event-bands').textContent = '';
   $('arc-overview-tracing-models').textContent = '';
 
-  if (models.length == 0) {
+  if (models.length === 0) {
     return;
   }
 
@@ -790,14 +791,16 @@ function refreshModels() {
 
   addFPSView(parent, resolution, duration, 'App FPS', kExoSurfaceCommit);
   addDeltaView(
-      parent, resolution, duration, 'App commit time', kExoSurfaceCommit);
+      parent, resolution, duration, 'App commit time', kExoSurfaceCommit,
+      kExoSurfaceCommitJank);
   addDeltaView(
-      parent, resolution, duration, 'ChromeOS swap time', kChromeOSSwapDone);
+      parent, resolution, duration, 'ChromeOS swap time', kChromeOSSwapDone,
+      kChromeOSSwapJank);
   addFPSView(
       parent, resolution, duration, 'Perceived FPS', kChromeOSPresentationDone);
   addDeltaView(
       parent, resolution, duration, 'Perceived swap time',
-      kChromeOSPresentationDone);
+      kChromeOSPresentationDone, kChromeOSPerceivedJank);
 
   addFPSHistograms(
       parent, parent.lastChild, false /* timeBasedView */,
@@ -884,14 +887,14 @@ function addModel(model) {
  */
 function removeModel(model) {
   let index = models.indexOf(model);
-  if (index == -1) {
+  if (index === -1) {
     return;
   }
 
   models.splice(index, 1);
 
   index = takenColors.indexOf(modelColors.get(model));
-  if (index != -1) {
+  if (index !== -1) {
     takenColors.splice(index, 1);
   }
 

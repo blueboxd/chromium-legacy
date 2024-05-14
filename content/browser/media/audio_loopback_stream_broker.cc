@@ -49,7 +49,8 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
   // Notify the source that we are capturing from it.
   source_->AddLoopbackSink(this);
 
-  NotifyFrameHostOfAudioStreamStarted(render_process_id, render_frame_id);
+  NotifyFrameHostOfAudioStreamStarted(render_process_id, render_frame_id,
+                                      /*is_capturing=*/true);
 }
 
 AudioLoopbackStreamBroker::~AudioLoopbackStreamBroker() {
@@ -58,7 +59,8 @@ AudioLoopbackStreamBroker::~AudioLoopbackStreamBroker() {
   if (source_)
     source_->RemoveLoopbackSink(this);
 
-  NotifyFrameHostOfAudioStreamStopped(render_process_id(), render_frame_id());
+  NotifyFrameHostOfAudioStreamStopped(render_process_id(), render_frame_id(),
+                                      /*is_capturing=*/true);
 }
 
 void AudioLoopbackStreamBroker::CreateStream(
@@ -115,7 +117,7 @@ void AudioLoopbackStreamBroker::StreamCreated(
   renderer_factory_client_->StreamCreated(
       std::move(stream), std::move(client_receiver_), std::move(data_pipe),
       false /* |initially_muted|: Loopback streams are never muted. */,
-      absl::nullopt /* |stream_id|: Loopback streams don't have ids */);
+      std::nullopt /* |stream_id|: Loopback streams don't have ids */);
 }
 
 void AudioLoopbackStreamBroker::Cleanup() {

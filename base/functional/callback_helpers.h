@@ -36,23 +36,12 @@ struct IsBaseCallbackImpl<OnceCallback<R(Args...)>> : std::true_type {};
 template <typename R, typename... Args>
 struct IsBaseCallbackImpl<RepeatingCallback<R(Args...)>> : std::true_type {};
 
-template <typename T>
-struct IsOnceCallbackImpl : std::false_type {};
-
-template <typename R, typename... Args>
-struct IsOnceCallbackImpl<OnceCallback<R(Args...)>> : std::true_type {};
-
 }  // namespace internal
 
 // IsBaseCallback<T> is satisfied if and only if T is an instantiation of
 // base::OnceCallback<Signature> or base::RepeatingCallback<Signature>.
 template <typename T>
 concept IsBaseCallback = internal::IsBaseCallbackImpl<std::decay_t<T>>::value;
-
-// IsOnceCallback<T> is satisfied if and only if T is an instantiation of
-// base::OnceCallback<Signature>.
-template <typename T>
-concept IsOnceCallback = internal::IsOnceCallbackImpl<std::decay_t<T>>::value;
 
 namespace internal {
 
@@ -148,7 +137,7 @@ SplitOnceCallback(OnceCallback<void(Args...)> callback) {
 template <typename... Preargs, typename... Args>
 RepeatingCallback<void(Preargs..., Args...)> IgnoreArgs(
     RepeatingCallback<void(Args...)> callback) {
-  return callback ? BindRepeating(
+  return callback ? ::base::BindRepeating(
                         [](RepeatingCallback<void(Args...)> callback,
                            Preargs..., Args... args) {
                           std::move(callback).Run(std::forward<Args>(args)...);
@@ -161,7 +150,7 @@ RepeatingCallback<void(Preargs..., Args...)> IgnoreArgs(
 template <typename... Preargs, typename... Args>
 OnceCallback<void(Preargs..., Args...)> IgnoreArgs(
     OnceCallback<void(Args...)> callback) {
-  return callback ? BindOnce(
+  return callback ? ::base::BindOnce(
                         [](OnceCallback<void(Args...)> callback, Preargs...,
                            Args... args) {
                           std::move(callback).Run(std::forward<Args>(args)...);

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/scoped_a11y_override_window_setter.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -55,10 +55,14 @@ constexpr int kLeadingIconSize = 20;
 constexpr int kLeadingIconLeftPadding = 18;
 constexpr int kLeadingIconRightPadding = 14;
 
+// Inset for the focus ring around the dismiss button.
+constexpr int kDismissButtonFocusRingHaloInset = 1;
+
 // The label inside SystemToastStyle, which allows two lines at maximum.
 class SystemToastInnerLabel : public views::Label {
+  METADATA_HEADER(SystemToastInnerLabel, views::Label)
+
  public:
-  METADATA_HEADER(SystemToastInnerLabel);
   explicit SystemToastInnerLabel(const std::u16string& text)
       : views::Label(text) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -78,7 +82,7 @@ class SystemToastInnerLabel : public views::Label {
   ~SystemToastInnerLabel() override = default;
 };
 
-BEGIN_METADATA(SystemToastInnerLabel, views::Label)
+BEGIN_METADATA(SystemToastInnerLabel)
 END_METADATA
 
 // Returns the vertical padding for the layout given the presence of the dismiss
@@ -187,12 +191,12 @@ SystemToastStyle::SystemToastStyle(base::RepeatingClosure dismiss_callback,
 SystemToastStyle::~SystemToastStyle() = default;
 
 bool SystemToastStyle::ToggleA11yFocus() {
-  if (!dismiss_button_ ||
-      !Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
+  if (!dismiss_button_) {
     return false;
   }
 
   auto* focus_ring = views::FocusRing::Get(dismiss_button_);
+  focus_ring->SetHaloInset(kDismissButtonFocusRingHaloInset);
   focus_ring->SetOutsetFocusRingDisabled(true);
   focus_ring->SetHasFocusPredicate(base::BindRepeating(
       [](const SystemToastStyle* style, const views::View* view) {
@@ -242,7 +246,7 @@ void SystemToastStyle::UpdateInsideBorderInsets() {
   InvalidateLayout();
 }
 
-BEGIN_METADATA(SystemToastStyle, views::View)
+BEGIN_METADATA(SystemToastStyle)
 END_METADATA
 
 }  // namespace ash

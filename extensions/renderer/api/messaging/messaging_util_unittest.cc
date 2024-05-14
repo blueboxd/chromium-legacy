@@ -5,11 +5,13 @@
 #include "extensions/renderer/api/messaging/messaging_util.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/mojom/message_port.mojom-shared.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
@@ -193,13 +195,13 @@ TEST_F(MessagingUtilWithSystemTest, TestGetTargetIdFromExtensionContext) {
   RegisterExtension(extension);
 
   ScriptContext* script_context = CreateScriptContext(
-      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+      context, extension.get(), mojom::ContextType::kPrivilegedExtension);
   script_context->set_url(extension->url());
 
   std::string other_id(32, 'a');
   struct {
     v8::Local<v8::Value> passed_id;
-    base::StringPiece expected_id;
+    std::string_view expected_id;
     bool should_pass;
   } test_cases[] = {
       // If the extension ID is not provided, the bindings use the calling
@@ -211,7 +213,7 @@ TEST_F(MessagingUtilWithSystemTest, TestGetTargetIdFromExtensionContext) {
       {gin::StringToV8(isolate(), ""), extension->id(), true},
       {gin::StringToV8(isolate(), extension->id()), extension->id(), true},
       {gin::StringToV8(isolate(), other_id), other_id, true},
-      {gin::StringToV8(isolate(), "invalid id"), base::StringPiece(), false},
+      {gin::StringToV8(isolate(), "invalid id"), std::string_view(), false},
   };
 
   for (size_t i = 0; i < std::size(test_cases); ++i) {
@@ -233,20 +235,20 @@ TEST_F(MessagingUtilWithSystemTest, TestGetTargetIdFromWebContext) {
   v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context =
-      CreateScriptContext(context, nullptr, Feature::WEB_PAGE_CONTEXT);
+      CreateScriptContext(context, nullptr, mojom::ContextType::kWebPage);
   script_context->set_url(GURL("https://example.com"));
 
   std::string other_id(32, 'a');
   struct {
     v8::Local<v8::Value> passed_id;
-    base::StringPiece expected_id;
+    std::string_view expected_id;
     bool should_pass;
   } test_cases[] = {
       // A web page should always have to specify the extension id.
       {gin::StringToV8(isolate(), other_id), other_id, true},
-      {v8::Null(isolate()), base::StringPiece(), false},
-      {gin::StringToV8(isolate(), ""), base::StringPiece(), false},
-      {gin::StringToV8(isolate(), "invalid id"), base::StringPiece(), false},
+      {v8::Null(isolate()), std::string_view(), false},
+      {gin::StringToV8(isolate(), ""), std::string_view(), false},
+      {gin::StringToV8(isolate(), "invalid id"), std::string_view(), false},
   };
 
   for (size_t i = 0; i < std::size(test_cases); ++i) {
@@ -271,13 +273,13 @@ TEST_F(MessagingUtilWithSystemTest, TestGetTargetIdFromUserScriptContext) {
   RegisterExtension(extension);
 
   ScriptContext* script_context = CreateScriptContext(
-      context, extension.get(), Feature::USER_SCRIPT_CONTEXT);
+      context, extension.get(), mojom::ContextType::kUserScript);
   script_context->set_url(extension->url());
 
   std::string other_id(32, 'a');
   struct {
     v8::Local<v8::Value> passed_id;
-    base::StringPiece expected_id;
+    std::string_view expected_id;
     bool should_pass;
   } test_cases[] = {
       // If the extension ID is not provided, the bindings use the calling
@@ -289,7 +291,7 @@ TEST_F(MessagingUtilWithSystemTest, TestGetTargetIdFromUserScriptContext) {
       {gin::StringToV8(isolate(), ""), extension->id(), true},
       {gin::StringToV8(isolate(), extension->id()), extension->id(), true},
       // User scripts may not target other extensions.
-      {gin::StringToV8(isolate(), other_id), base::StringPiece(), false},
+      {gin::StringToV8(isolate(), other_id), std::string_view(), false},
   };
 
   for (size_t i = 0; i < std::size(test_cases); ++i) {

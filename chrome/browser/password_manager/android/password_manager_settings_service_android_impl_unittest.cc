@@ -9,8 +9,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/test/with_feature_override.h"
 #include "chrome/browser/password_manager/android/fake_password_manager_lifecycle_helper.h"
 #include "chrome/browser/password_manager/android/password_settings_updater_android_bridge_helper.h"
 #include "components/password_manager/core/browser/features/password_features.h"
@@ -208,18 +206,19 @@ void PasswordManagerSettingsServiceAndroidImplBaseTest::RegisterPrefs() {
   test_pref_service_.registry()->RegisterBooleanPref(
       password_manager::prefs::kOfferToSavePasswordsEnabledGMS, true);
   test_pref_service_.registry()->RegisterBooleanPref(
-      password_manager::prefs::kSavePasswordsSuspendedByError, false);
-  test_pref_service_.registry()->RegisterBooleanPref(
       password_manager::prefs::kAutoSignInEnabledGMS, true);
   test_pref_service_.registry()->RegisterStringPref(
       ::prefs::kGoogleServicesLastSyncingUsername, kTestAccount);
   test_pref_service_.registry()->RegisterBooleanPref(
       password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
       false);
+  test_pref_service_.registry()->RegisterIntegerPref(
+      password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
 }
 
-// The tests in this suite start with the
-// `UnifiedPasswordManagerLocalPasswordsAndroidNoMigration` feature disabled.
+// This suite starts with the pref `kPasswordsUseUPMLocalAndSeparateStores` off.
 class PasswordManagerSettingsServiceAndroidImplTest
     : public PasswordManagerSettingsServiceAndroidImplBaseTest {};
 
@@ -910,81 +909,6 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
 }
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       OverrideOfferToSaveForError) {
-  InitializeSettingsService(/*password_sync_enabled=*/true,
-                            /*setting_sync_enabled=*/true);
-  pref_service()->SetUserPref(
-      password_manager::prefs::kCredentialsEnableService, base::Value(true));
-  pref_service()->SetUserPref(
-      password_manager::prefs::kOfferToSavePasswordsEnabledGMS,
-      base::Value(true));
-  pref_service()->SetBoolean(
-      password_manager::prefs::kSavePasswordsSuspendedByError, true);
-
-  EXPECT_FALSE(settings_service()->IsSettingEnabled(
-      PasswordManagerSetting::kOfferToSavePasswords));
-
-  histogram_tester()->ExpectUniqueSample(
-      "PasswordManager.PasswordSavingDisabledDueToGMSCoreError", true, 1);
-}
-
-TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       OfferToSaveForErrorWhenNotSyncing) {
-  InitializeSettingsService(/*password_sync_enabled=*/false,
-                            /*setting_sync_enabled=*/true);
-  pref_service()->SetUserPref(
-      password_manager::prefs::kCredentialsEnableService, base::Value(true));
-  pref_service()->SetUserPref(
-      password_manager::prefs::kOfferToSavePasswordsEnabledGMS,
-      base::Value(true));
-  pref_service()->SetBoolean(
-      password_manager::prefs::kSavePasswordsSuspendedByError, true);
-  EXPECT_TRUE(settings_service()->IsSettingEnabled(
-      PasswordManagerSetting::kOfferToSavePasswords));
-  histogram_tester()->ExpectUniqueSample(
-      "PasswordManager.PasswordSavingDisabledDueToGMSCoreError", false, 1);
-}
-
-TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       OfferToSaveForErrorWhenManagedNotSyncing) {
-  InitializeSettingsService(/*password_sync_enabled=*/false,
-                            /*setting_sync_enabled=*/true);
-  pref_service()->SetUserPref(
-      password_manager::prefs::kCredentialsEnableService, base::Value(true));
-  pref_service()->SetUserPref(
-      password_manager::prefs::kOfferToSavePasswordsEnabledGMS,
-      base::Value(true));
-  pref_service()->SetBoolean(
-      password_manager::prefs::kSavePasswordsSuspendedByError, true);
-  pref_service()->SetManagedPref(
-      password_manager::prefs::kCredentialsEnableService, base::Value(true));
-  EXPECT_TRUE(settings_service()->IsSettingEnabled(
-      PasswordManagerSetting::kOfferToSavePasswords));
-  histogram_tester()->ExpectUniqueSample(
-      "PasswordManager.PasswordSavingDisabledDueToGMSCoreError", false, 1);
-}
-
-TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
-       IgnoreOverrideOfferToSaveForErrorWhenUnenrolled) {
-  InitializeSettingsService(/*password_sync_enabled=*/false,
-                            /*setting_sync_enabled=*/true);
-  pref_service()->SetUserPref(
-      password_manager::prefs::kCredentialsEnableService, base::Value(true));
-  pref_service()->SetUserPref(
-      password_manager::prefs::kOfferToSavePasswordsEnabledGMS,
-      base::Value(true));
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
-  pref_service()->SetBoolean(
-      password_manager::prefs::kSavePasswordsSuspendedByError, true);
-  EXPECT_TRUE(settings_service()->IsSettingEnabled(
-      PasswordManagerSetting::kOfferToSavePasswords));
-  histogram_tester()->ExpectUniqueSample(
-      "PasswordManager.PasswordSavingDisabledDueToGMSCoreError", false, 1);
-}
-
-TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
        TestDontMigrateSettingsOnReenrollingIntoUPM) {
   SetPasswordsSync(true);
 
@@ -1030,19 +954,16 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTest,
   sync_service()->FireStateChanged();
 }
 
-// The tests in this suite start with the feature
-// `UnifiedPasswordManagerLocalPasswordsAndroidNoMigration` enabled.
+// This suite starts with the pref `kPasswordsUseUPMLocalAndSeparateStores` on.
 class PasswordManagerSettingsServiceAndroidImplTestLocalUsers
     : public PasswordManagerSettingsServiceAndroidImplBaseTest {
  protected:
-  PasswordManagerSettingsServiceAndroidImplTestLocalUsers()
-      : feature_list_(
-            password_manager::features::
-                kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration) {}
-  base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
+  PasswordManagerSettingsServiceAndroidImplTestLocalUsers() {
+    pref_service()->SetInteger(
+        password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+        static_cast<int>(
+            password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOn));
+  }
 };
 
 TEST_F(PasswordManagerSettingsServiceAndroidImplTestLocalUsers,
@@ -1057,9 +978,6 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTestLocalUsers,
                              false);
   pref_service()->SetBoolean(
       password_manager::prefs::kOfferToSavePasswordsEnabledGMS, true);
-
-  pref_service()->SetBoolean(
-      password_manager::prefs::kSavePasswordsSuspendedByError, true);
 
   EXPECT_TRUE(settings_service()->IsSettingEnabled(
       PasswordManagerSetting::kOfferToSavePasswords));
@@ -1077,8 +995,6 @@ TEST_F(PasswordManagerSettingsServiceAndroidImplTestLocalUsers,
   pref_service()->SetBoolean(
       password_manager::prefs::kOfferToSavePasswordsEnabledGMS, false);
 
-  pref_service()->SetBoolean(
-      password_manager::prefs::kSavePasswordsSuspendedByError, true);
   pref_service()->SetManagedPref(
       password_manager::prefs::kCredentialsEnableService, base::Value(true));
 

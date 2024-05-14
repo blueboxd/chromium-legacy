@@ -5,9 +5,10 @@
 #include "ash/wm/window_state.h"
 
 #include <absl/cleanup/cleanup.h>
+#include <optional>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/metrics/pip_uma.h"
 #include "ash/public/cpp/app_types_util.h"
@@ -18,6 +19,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/bounds_tracker/window_bounds_tracker.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/float/float_controller.h"
@@ -26,6 +28,7 @@
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -214,21 +217,47 @@ bool ShouldConsiderDivider(aura::Window* window) {
   SplitViewController* split_view_controller =
       SplitViewController::Get(window->GetRootWindow());
   return split_view_controller->InSplitViewMode() &&
-         split_view_controller->split_view_divider();
+         split_view_controller->split_view_divider()->divider_widget();
 }
 
-float GetCurrentSnapRatio(aura::Window* window) {
+// Returns the snap ratio for the given `window` and `snap_event`.
+// - In tablet mode, window will snap to the prefixed snap ratios and some
+// adjustments will be made to account for window minimum size if needed. See
+// `SplitViewController::FindClosestPositionRatio()` for more details;
+// - In clamshell mode, window can be snapped with an arbitrary snap ratio and
+// we need to consider the window minimum size and adjust the window snap ratio
+// before committing the snap event if needed.
+float GetTargetSnapRatio(aura::Window* window,
+                         const WindowSnapWMEvent* snap_event) {
+  if (Shell::Get()->IsInTabletMode()) {
+    return snap_event->snap_ratio();
+  }
+
+  const gfx::Rect work_area(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window->GetRootWindow()));
+  const bool is_horizontal = IsLayoutHorizontal(window);
+  const float window_minimum_length =
+      GetMinimumWindowLength(window, is_horizontal);
+  const float snap_ratio = snap_event->snap_ratio();
+  return std::max(window_minimum_length /
+                      (is_horizontal ? work_area.width() : work_area.height()),
+                  snap_ratio);
+}
+
+// This applies after the wm event has been applied and window bounds have been
+// modified.
+float AdjustCurrentSnapRatio(aura::Window* window,
+                             const gfx::Rect& target_bounds) {
   gfx::Rect maximized_bounds =
       screen_util::GetMaximizedWindowBoundsInParent(window);
   const int divider_delta =
       ShouldConsiderDivider(window) ? kSplitviewDividerShortSideLength / 2 : 0;
   if (IsLayoutHorizontal(window)) {
-    return static_cast<float>(window->GetTargetBounds().width() +
-                              divider_delta) /
+    return static_cast<float>(target_bounds.width() + divider_delta) /
            static_cast<float>(maximized_bounds.width());
   }
-  return static_cast<float>(window->GetTargetBounds().height() +
-                            divider_delta) /
+  return static_cast<float>(target_bounds.height() + divider_delta) /
          static_cast<float>(maximized_bounds.height());
 }
 
@@ -272,6 +301,15 @@ void ReportAshPipAndroidPipUseTime(base::TimeDelta duration) {
 void SaveWindowForWindowRestore(WindowState* window_state) {
   if (auto* controller = WindowRestoreController::Get())
     controller->SaveWindow(window_state);
+}
+
+bool ShouldSetExplicitOpaqueRegionsForOcclusion(WindowState* window_state) {
+  // If the window manager manages the window opacity, set the opaque regions
+  // explicitly if the window must be transparent (e.g. has rounded corners).
+  return chromeos::ShouldWindowStateHaveRoundedCorners(
+             window_state->GetStateType()) &&
+         window_state->window()->GetProperty(
+             ash::kWindowManagerManagesOpacityKey);
 }
 
 }  // namespace
@@ -521,12 +559,11 @@ void WindowState::OnWMEvent(const WMEvent* event) {
     return;
   }
 
-  const WindowSnapWMEvent* snap_event = event->AsSnapEvent();
-
-  if (snap_event) {
+  if (const WindowSnapWMEvent* snap_event = event->AsSnapEvent()) {
     // Save `event` requested snap ratio.
-    const float target_snap_ratio = snap_event->snap_ratio();
+    const float target_snap_ratio = GetTargetSnapRatio(window_, snap_event);
     snap_ratio_ = std::make_optional(target_snap_ratio);
+    snap_action_source_ = std::make_optional(snap_event->snap_action_source());
     if (IsPartial(target_snap_ratio)) {
       partial_start_time_ = base::TimeTicks::Now();
     } else {
@@ -549,23 +586,6 @@ void WindowState::OnWMEvent(const WMEvent* event) {
   // the window has a minimum size requirement.
   if (event->IsBoundsEvent()) {
     UpdateSnapRatio();
-  }
-
-  if (snap_event && IsSnapped()) {
-    const WindowSnapActionSource snap_action_source =
-        snap_event->snap_action_source();
-    if (features::IsFasterSplitScreenSetupEnabled() &&
-        !Shell::Get()->IsInTabletMode()) {
-      // SplitViewController will start the partial overview session, no need
-      // for SplitViewOverviewSession.
-      // TODO(sophiewen): See if checking tablet mode is necessary.
-      window_util::MaybeStartSplitViewOverview(window_, snap_action_source);
-      return;
-    }
-
-    if (IsSnapGroupEnabledInClamshellMode()) {
-      SnapGroupController::Get()->OnWindowSnapped(window_, snap_action_source);
-    }
   }
 }
 
@@ -664,7 +684,12 @@ std::unique_ptr<WindowState::State> WindowState::SetStateObject(
 void WindowState::UpdateSnapRatio() {
   if (!IsSnapped())
     return;
-  snap_ratio_ = std::make_optional(GetCurrentSnapRatio(window_));
+  ForceUpdateSnapRatio(window_->GetTargetBounds());
+}
+
+void WindowState::ForceUpdateSnapRatio(const gfx::Rect& target_bounds) {
+  snap_ratio_ =
+      std::make_optional(AdjustCurrentSnapRatio(window_, target_bounds));
   // If the snap ratio was adjusted, partial may have ended.
   MaybeRecordPartialDuration();
 }
@@ -706,13 +731,18 @@ bool WindowState::IsInImmersiveFullscreen() const {
   return window_->GetProperty(kImmersiveIsActive);
 }
 
-void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
+void WindowState::SetBoundsChangedByUser(bool bounds_changed_by_user) {
   bounds_changed_by_user_ = bounds_changed_by_user;
   if (bounds_changed_by_user) {
     pre_auto_manage_window_bounds_.reset();
     pre_added_to_workspace_window_bounds_.reset();
     persistent_window_info_of_display_removal_.reset();
     persistent_window_info_of_screen_rotation_.reset();
+  }
+
+  if (auto* window_bounds_tracker = Shell::Get()->window_bounds_tracker()) {
+    window_bounds_tracker->SetWindowBoundsChangedByUser(window_,
+                                                        bounds_changed_by_user);
   }
 }
 
@@ -843,12 +873,6 @@ void WindowState::SetAndClearRestoreBounds() {
 
 WindowState::WindowState(aura::Window* window)
     : window_(window),
-      bounds_changed_by_user_(false),
-      unminimize_to_restore_bounds_(false),
-      hide_shelf_when_fullscreen_(true),
-      autohide_shelf_when_maximized_or_fullscreen_(false),
-      cached_z_order_(ui::ZOrderLevel::kNormal),
-      ignore_property_change_(false),
       current_state_(
           new DefaultState(chromeos::ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
@@ -926,9 +950,7 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
 
   if (window_->GetProperty(ash::kWindowManagerManagesOpacityKey)) {
     const gfx::Size& size = window_->bounds().size();
-    // WindowManager manages the window opacity. Make it opaque unless
-    // the window has rounded corners.
-    if (chromeos::ShouldWindowStateHaveRoundedCorners(GetStateType())) {
+    if (ShouldSetExplicitOpaqueRegionsForOcclusion(this)) {
       window_->SetTransparent(true);
       window_->SetOpaqueRegionsForOcclusion({gfx::Rect(size)});
     } else {
@@ -965,6 +987,10 @@ void WindowState::OnPostPipStateChange(WindowStateType old_window_state_type) {
     wm::SetWindowVisibilityAnimationType(
         window_, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
   }
+}
+
+void WindowState::SetBoundsDirectForTesting(const gfx::Rect& bounds) {
+  SetBoundsDirect(bounds);
 }
 
 void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
@@ -1015,7 +1041,18 @@ void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
   gfx::Rect work_area_in_parent =
       screen_util::GetDisplayWorkAreaBoundsInParent(window_);
   gfx::Rect child_bounds(bounds);
-  AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
+
+  if (window_->GetType() == aura::client::WINDOW_TYPE_NORMAL) {
+    // Normal windows should have the top of the bounds visible.
+    AdjustBoundsToEnsureWindowVisibility(work_area_in_parent, 0, 0,
+                                         &child_bounds);
+  } else {
+    // Other types of window can have the top of the bounds outside
+    // of the screen, but we still require their size to be smaller
+    // than the screen.
+    AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
+  }
+
   SetBoundsDirect(child_bounds);
 }
 
@@ -1346,8 +1383,8 @@ void WindowState::OnWindowBoundsChanged(aura::Window* window,
                                         const gfx::Rect& new_bounds,
                                         ui::PropertyChangeReason reason) {
   CHECK_EQ(window_, window);
-  if (window_->GetTransparent() && IsNormalStateType() &&
-      window_->GetProperty(ash::kWindowManagerManagesOpacityKey)) {
+  if (window_->GetTransparent() &&
+      ShouldSetExplicitOpaqueRegionsForOcclusion(this)) {
     window_->SetOpaqueRegionsForOcclusion({gfx::Rect(new_bounds.size())});
   }
 

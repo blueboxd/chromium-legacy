@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -39,7 +40,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/webapps/webapp_registry.h"
@@ -47,13 +47,15 @@
 
 namespace {
 
+using ::privacy_sandbox::tracking_protection::
+    TrackingProtectionOnboardingStatus;
 constexpr char kTestEmail[] = "test@test.com";
-
-}  // namespace
 
 class PrivacySandboxSettingsDelegateTest : public testing::Test {
  public:
   PrivacySandboxSettingsDelegateTest() {
+    local_state_ = std::make_unique<ScopedTestingLocalState>(
+        TestingBrowserProcess::GetGlobal());
     profile_ = IdentityTestEnvironmentProfileAdaptor::
         CreateProfileForIdentityTestEnvironment();
     adapter_ =
@@ -93,6 +95,7 @@ class PrivacySandboxSettingsDelegateTest : public testing::Test {
   signin::IdentityTestEnvironment* identity_test_env() {
     return adapter_->identity_test_env();
   }
+  ScopedTestingLocalState* local_state() { return local_state_.get(); }
   TestingProfile* profile() { return profile_.get(); }
   sync_preferences::TestingPrefServiceSyncable* prefs() {
     return profile()->GetTestingPrefService();
@@ -105,6 +108,7 @@ class PrivacySandboxSettingsDelegateTest : public testing::Test {
   content::BrowserTaskEnvironment browser_task_environment_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor> adapter_;
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<tpcd::experiment::MockExperimentManager> experiment_manager_;
   std::unique_ptr<PrivacySandboxSettingsDelegate> delegate_;
@@ -288,19 +292,19 @@ struct CookieDeprecationExperimentEligibilityTestCase {
 #if BUILDFLAG(IS_ANDROID)
   bool exclude_pwa_twa_installed = true;
 #endif
-  absl::optional<bool> is_subject_to_enterprise_policies;
+  std::optional<bool> is_subject_to_enterprise_policies;
   content_settings::CookieControlsMode cookie_controls_mode_pref =
       content_settings::CookieControlsMode::kOff;
   ContentSetting cookie_content_setting = ContentSetting::CONTENT_SETTING_ALLOW;
   bool tracking_protection_3pcd_enabled_pref = false;
   bool privacy_sandbox_eea_notice_acknowledged_pref = false;
   bool privacy_sandbox_row_notice_acknowledged_pref = false;
-  absl::optional<base::Time> install_date = kValidInstallDate;
+  std::optional<base::Time> install_date = kValidInstallDate;
 #if BUILDFLAG(IS_ANDROID)
   std::vector<std::string> origins_with_installed_app;
 #endif
   // The eligibility before the set up, which should be sticky.
-  absl::optional<bool> expected_eligible_before;
+  std::optional<bool> expected_eligible_before;
   bool expected_eligible;
   TpcdExperimentEligibility::Reason expected_current_eligibility;
 };
@@ -369,7 +373,7 @@ const CookieDeprecationExperimentEligibilityTestCase
         },
         {
             .privacy_sandbox_eea_notice_acknowledged_pref = true,
-            .install_date = absl::nullopt,
+            .install_date = std::nullopt,
             .expected_eligible = false,
             .expected_current_eligibility =
                 TpcdExperimentEligibility::Reason::kNewUser,
@@ -443,8 +447,7 @@ class CookieDeprecationExperimentEligibilityTest
       public ::testing::WithParamInterface<
           CookieDeprecationExperimentEligibilityTestCase> {
  public:
-  CookieDeprecationExperimentEligibilityTest()
-      : local_state_(TestingBrowserProcess::GetGlobal()) {
+  CookieDeprecationExperimentEligibilityTest() {
 #if BUILDFLAG(IS_ANDROID)
     auto webapp_registry = std::make_unique<MockWebappRegistry>();
     webapp_registry_ = webapp_registry.get();
@@ -468,7 +471,6 @@ class CookieDeprecationExperimentEligibilityTest
                                         account_info);
   }
 
-  ScopedTestingLocalState local_state_;
 #if BUILDFLAG(IS_ANDROID)
   raw_ptr<MockWebappRegistry> webapp_registry_;
 #endif
@@ -492,7 +494,7 @@ TEST_F(PrivacySandboxSettingsDelegateTest, IsEligible) {
 
   const struct {
     const char* description;
-    absl::optional<bool> is_eligible;
+    std::optional<bool> is_eligible;
     bool expected_eligible;
   } kTestCases[] = {
       {
@@ -526,22 +528,20 @@ TEST_P(CookieDeprecationExperimentEligibilityTest, IsEligible) {
   feature_list()->InitAndEnableFeatureWithParameters(
       features::kCookieDeprecationFacilitatedTesting,
       {{"use_profile_filtering", "true"},
-        {"force_eligible", test_case.force_eligible ? "true" : "false"},
-        {tpcd::experiment::kExclude3PCBlockedName,
-         test_case.exclude_3pc_blocked ? "true" : "false"},
-        {tpcd::experiment::kExcludeNotSeenAdsAPIsNoticeName,
-         test_case.exclude_not_seen_notice ? "true" : "false"},
-        {tpcd::experiment::kExcludeDasherAccountName,
-         test_case.exclude_dasher_account ? "true" : "false"},
-        {tpcd::experiment::kExcludeNewUserName,
-         test_case.exclude_new_user ? "true" : "false"},
-        {tpcd::experiment::kInstallTimeForNewUserName,
-         test_case.install_time_new_user},
+       {"force_eligible", test_case.force_eligible ? "true" : "false"},
+       {tpcd::experiment::kExclude3PCBlockedName,
+        test_case.exclude_3pc_blocked ? "true" : "false"},
+       {tpcd::experiment::kExcludeNotSeenAdsAPIsNoticeName,
+        test_case.exclude_not_seen_notice ? "true" : "false"},
+       {tpcd::experiment::kExcludeDasherAccountName,
+        test_case.exclude_dasher_account ? "true" : "false"},
+       {tpcd::experiment::kExcludeNewUserName,
+        test_case.exclude_new_user ? "true" : "false"},
+       {tpcd::experiment::kInstallTimeForNewUserName,
+        test_case.install_time_new_user},
 #if BUILDFLAG(IS_ANDROID)
-        {
-          tpcd::experiment::kExcludePwaOrTwaInstalledName,
-              test_case.exclude_pwa_twa_installed ? "true" : "false"
-        }
+       {tpcd::experiment::kExcludePwaOrTwaInstalledName,
+        test_case.exclude_pwa_twa_installed ? "true" : "false"}
 #endif
       });
 
@@ -570,8 +570,8 @@ TEST_P(CookieDeprecationExperimentEligibilityTest, IsEligible) {
   cookie_settings()->SetDefaultCookieSetting(test_case.cookie_content_setting);
 
   if (test_case.install_date.has_value()) {
-    local_state_.Get()->SetInt64(metrics::prefs::kInstallDate,
-                                 test_case.install_date->ToTimeT());
+    local_state()->Get()->SetInt64(metrics::prefs::kInstallDate,
+                                   test_case.install_date->ToTimeT());
   }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -691,37 +691,41 @@ TEST_P(CookieDeprecationLabelAllowedTest, IsClientEligibleChecked) {
 
 TEST_P(CookieDeprecationLabelAllowedTest, OnboardingStatusChecked) {
   const struct {
-    privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus
-        onboarding_status;
+    TrackingProtectionOnboardingStatus onboarding_status;
     bool need_onboarding = false;
     bool expected_allowed;
   } kTestCases[] = {
       {
-          .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
-              OnboardingStatus::kIneligible,
+          .onboarding_status = TrackingProtectionOnboardingStatus::kIneligible,
           .expected_allowed = false,
       },
       {
-          .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
-              OnboardingStatus::kEligible,
+          .onboarding_status = TrackingProtectionOnboardingStatus::kEligible,
           .need_onboarding = false,
           .expected_allowed = true,
       },
       {
-          .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
-              OnboardingStatus::kEligible,
+          .onboarding_status = TrackingProtectionOnboardingStatus::kEligible,
           .need_onboarding = true,
           .expected_allowed = false,
       },
       {
-          .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
-              OnboardingStatus::kOnboarded,
+          .onboarding_status = TrackingProtectionOnboardingStatus::kRequested,
           .need_onboarding = false,
           .expected_allowed = true,
       },
       {
-          .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
-              OnboardingStatus::kOnboarded,
+          .onboarding_status = TrackingProtectionOnboardingStatus::kRequested,
+          .need_onboarding = true,
+          .expected_allowed = true,
+      },
+      {
+          .onboarding_status = TrackingProtectionOnboardingStatus::kOnboarded,
+          .need_onboarding = false,
+          .expected_allowed = true,
+      },
+      {
+          .onboarding_status = TrackingProtectionOnboardingStatus::kOnboarded,
           .need_onboarding = true,
           .expected_allowed = true,
       },
@@ -747,13 +751,18 @@ TEST_P(CookieDeprecationLabelAllowedTest, OnboardingStatusChecked) {
     if (disable_3pcs) {
       prefs()->SetInteger(prefs::kTrackingProtectionOnboardingStatus,
                           static_cast<int>(test_case.onboarding_status));
-    } else {
+      EXPECT_EQ(delegate()->IsCookieDeprecationLabelAllowed(),
+                test_case.expected_allowed);
+    } else if (test_case.onboarding_status !=
+               TrackingProtectionOnboardingStatus::
+                   kRequested)  // Silent Onboarding can never be combined with
+                                // the requested status.
+    {
       prefs()->SetInteger(prefs::kTrackingProtectionSilentOnboardingStatus,
                           static_cast<int>(test_case.onboarding_status));
+      EXPECT_EQ(delegate()->IsCookieDeprecationLabelAllowed(),
+                test_case.expected_allowed);
     }
-
-    EXPECT_EQ(delegate()->IsCookieDeprecationLabelAllowed(),
-              test_case.expected_allowed);
 
     feature_list()->Reset();
   }
@@ -850,3 +859,5 @@ INSTANTIATE_TEST_SUITE_P(
     ThirdPartyCookiesBlockedByCookieDeprecationExperimentTest,
     ::testing::ValuesIn(
         kThirdPartyCookiesBlockedByCookieDeprecationExperimentTestCases));
+
+}  // namespace

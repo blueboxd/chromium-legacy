@@ -15,8 +15,8 @@ import * as BrowserDebugger from 'devtools/panels/browser_debugger/browser_debug
 
   TestRunner.addResult('Adding global listener.');
   await TestRunner.evaluateInPagePromise('window.addEventListener(\'touchstart\', () => console.log);');
-  await UI.ViewManager.ViewManager.instance().showView('sources.globalListeners');
-  const globalListenersPane = BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane.instance();
+  await UI.ViewManager.ViewManager.instance().showView('sources.global-listeners');
+  const globalListenersPane = UI.Context.Context.instance().flavor(BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane);
   const eventListenersView = globalListenersPane.eventListenersView;
 
   TestRunner.addResult('Dumping event listeners view:');

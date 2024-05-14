@@ -35,6 +35,7 @@ TAG_SPECIALIZATIONS = {
             'android-r',
             'android-s',
             'android-t',
+            'android-u',
         ],
         'chromeos': [],
         'fuchsia': [],
@@ -52,6 +53,7 @@ TAG_SPECIALIZATIONS = {
         'win': [
             'win8',
             'win10',
+            'win11',
         ],
     },
     'BROWSER_TAGS': {
@@ -108,7 +110,9 @@ TAG_SPECIALIZATIONS = {
             'nvidia-0x1cb3',
             'nvidia-0x2184',
         ],
-        'qualcomm': [],
+        'qualcomm': [
+            'qualcomm-0x41333430',
+        ],
     },
 }
 
@@ -202,7 +206,8 @@ TAG_HEADER = """\
 #         renderer-software ]
 # Driver
 # tags: [ mesa_lt_19.1
-#         mesa_ge_21.0 ]
+#         mesa_ge_21.0
+#         nvidia_ge_31.0.15.4601 nvidia_lt_31.0.15.4601 ]
 # ASan
 # tags: [ asan no-asan ]
 # Display Server

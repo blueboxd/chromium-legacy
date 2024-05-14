@@ -82,7 +82,8 @@ class DnsLatencyRoutineTest : public ::testing::Test {
   }
 
   void SetUpDnsLatencyRoutine() {
-    dns_latency_routine_ = std::make_unique<DnsLatencyRoutine>();
+    dns_latency_routine_ = std::make_unique<DnsLatencyRoutine>(
+        mojom::RoutineCallSource::kDiagnosticsUI);
     dns_latency_routine_->set_network_context_for_testing(
         fake_network_context_.get());
     dns_latency_routine_->set_profile_for_testing(test_profile_);
@@ -127,7 +128,7 @@ class DnsLatencyRoutineTest : public ::testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<FakeNetworkContext> fake_network_context_;
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> test_profile_;
+  raw_ptr<Profile, DanglingUntriaged> test_profile_;
   std::unique_ptr<FakeTickClock> fake_tick_clock_;
   session_manager::SessionManager session_manager_;
   TestingProfileManager profile_manager_;

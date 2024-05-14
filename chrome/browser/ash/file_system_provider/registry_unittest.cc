@@ -24,8 +24,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
-namespace file_system_provider {
+namespace ash::file_system_provider {
 namespace {
 
 const char kTemporaryOrigin[] =
@@ -96,7 +95,7 @@ class FileSystemProviderRegistryTest : public testing::Test {
  protected:
   FileSystemProviderRegistryTest() : profile_(nullptr) {}
 
-  ~FileSystemProviderRegistryTest() override {}
+  ~FileSystemProviderRegistryTest() override = default;
 
   void SetUp() override {
     profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -117,7 +116,7 @@ class FileSystemProviderRegistryTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  raw_ptr<TestingProfile, ExperimentalAsh> profile_;
+  raw_ptr<TestingProfile> profile_;
   std::unique_ptr<RegistryInterface> registry_;
   Watcher fake_watcher_;
 };
@@ -308,5 +307,4 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   EXPECT_EQ(fake_watcher_.last_tag, *last_tag);
 }
 
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider

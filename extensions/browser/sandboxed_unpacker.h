@@ -8,12 +8,13 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/install_index_helper.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
@@ -154,7 +155,7 @@ class SandboxedUnpacker : public ImageSanitizer::Client {
   // requires the id and base64-encoded public key (for insertion into the
   // 'key' field of the manifest.json file).
   void StartWithCrx(const CRXFileInfo& crx_info);
-  void StartWithDirectory(const std::string& extension_id,
+  void StartWithDirectory(const ExtensionId& extension_id,
                           const std::string& public_key_base64,
                           const base::FilePath& directory);
 
@@ -204,7 +205,7 @@ class SandboxedUnpacker : public ImageSanitizer::Client {
   void UnpackExtensionSucceeded(base::Value::Dict manifest);
 
   // Helper which calls ReportFailure.
-  void ReportUnpackExtensionFailed(base::StringPiece error);
+  void ReportUnpackExtensionFailed(std::string_view error);
 
   // Implementation of ImageSanitizer::Client:
   data_decoder::DataDecoder* GetDataDecoder() override;

@@ -5,10 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_SESSIONS_LEGACY_SESSION_RESTORATION_SERVICE_H_
 #define IOS_CHROME_BROWSER_SESSIONS_LEGACY_SESSION_RESTORATION_SERVICE_H_
 
+#include <map>
 #include <set>
 
 #include "base/files/file_path.h"
-#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
@@ -17,9 +17,6 @@
 
 @class SessionServiceIOS;
 @class WebSessionStateCache;
-namespace sessions {
-class TabRestoreService;
-}  // namespace sessions
 
 // Implementation of SessionRestorationService that wraps the legacy API
 // (SessionRestorationBrowserAgent and SessionServiceIOS). Used when the
@@ -34,8 +31,7 @@ class LegacySessionRestorationService final : public SessionRestorationService,
       bool is_pinned_tabs_enabled,
       const base::FilePath& storage_path,
       SessionServiceIOS* session_service_ios,
-      WebSessionStateCache* web_session_state_cache,
-      sessions::TabRestoreService* tab_restore_service);
+      WebSessionStateCache* web_session_state_cache);
 
   ~LegacySessionRestorationService() final;
 
@@ -49,6 +45,10 @@ class LegacySessionRestorationService final : public SessionRestorationService,
   void ScheduleSaveSessions() final;
   void SetSessionID(Browser* browser, const std::string& identifier) final;
   void LoadSession(Browser* browser) final;
+  void LoadWebStateStorage(Browser* browser,
+                           web::WebState* web_state,
+                           WebStateStorageCallback callback) final;
+  void AttachBackup(Browser* browser, Browser* backup) final;
   void Disconnect(Browser* browser) final;
   std::unique_ptr<web::WebState> CreateUnrealizedWebState(
       Browser* browser,
@@ -58,6 +58,7 @@ class LegacySessionRestorationService final : public SessionRestorationService,
   void InvokeClosureWhenBackgroundProcessingDone(
       base::OnceClosure closure) final;
   void PurgeUnassociatedData(base::OnceClosure closure) final;
+  bool PlaceholderTabsEnabled() const final;
 
   // SessionRestorationObserver implementation.
   void WillStartSessionRestoration(Browser* browser) final;
@@ -90,12 +91,12 @@ class LegacySessionRestorationService final : public SessionRestorationService,
   // Service used to manage WKWebView native session storage.
   __strong WebSessionStateCache* web_session_state_cache_ = nil;
 
-  // Pointer to the TabRestoreService used to report closed tabs if the
-  // session migration fails.
-  raw_ptr<sessions::TabRestoreService> tab_restore_service_ = nullptr;
-
   // Set of observed Browser objects.
   std::set<Browser*> browsers_;
+
+  // Bi-directional mapping of observed Browser and their backup.
+  std::map<Browser*, Browser*> browsers_to_backup_;
+  std::map<Browser*, Browser*> backups_to_browser_;
 };
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_LEGACY_SESSION_RESTORATION_SERVICE_H_

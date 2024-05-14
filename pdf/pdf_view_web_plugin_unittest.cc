@@ -214,6 +214,7 @@ class FakePdfViewWebPluginClient : public PdfViewWebPlugin::Client {
           });
       return associated_loader;
     });
+    ON_CALL(*this, GetIsolate).WillByDefault(Return(GetBlinkIsolate()));
     ON_CALL(*this, GetEmbedderOriginString)
         .WillByDefault(
             Return("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/"));
@@ -238,6 +239,8 @@ class FakePdfViewWebPluginClient : public PdfViewWebPlugin::Client {
               (blink::WebPluginContainer*),
               (override));
   MOCK_METHOD(blink::WebPluginContainer*, PluginContainer, (), (override));
+
+  MOCK_METHOD(v8::Isolate*, GetIsolate, (), (override));
 
   MOCK_METHOD(net::SiteForCookies, SiteForCookies, (), (const override));
 

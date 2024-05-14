@@ -41,9 +41,9 @@ class ASH_EXPORT AnchoredNudge : public display::DisplayObserver,
                                  public ShelfObserver,
                                  public ShellObserver,
                                  public views::BubbleDialogDelegateView {
- public:
-  METADATA_HEADER(AnchoredNudge);
+  METADATA_HEADER(AnchoredNudge, views::BubbleDialogDelegateView)
 
+ public:
   explicit AnchoredNudge(AnchoredNudgeData& nudge_data);
   AnchoredNudge(const AnchoredNudge&) = delete;
   AnchoredNudge& operator=(const AnchoredNudge&) = delete;
@@ -84,14 +84,22 @@ class ASH_EXPORT AnchoredNudge : public display::DisplayObserver,
   // Sets the default anchor rect for nudges that do not have an `anchor_view`.
   void SetDefaultAnchorRect();
 
-  const std::string& id() { return id_; }
+  const std::string& id() const { return id_; }
+
+  NudgeCatalogName catalog_name() const { return catalog_name_; }
 
  private:
   // Unique id used to find and dismiss the nudge through the manager.
   const std::string id_;
 
+  // Used to identify nudges that share an id but have different catalog names.
+  const NudgeCatalogName catalog_name_;
+
   // Whether the nudge should set its arrow based on shelf alignment.
   const bool anchored_to_shelf_;
+
+  // Whether the nudge should set its bounds anchored by its corners.
+  const bool is_corner_anchored_;
 
   // Owned by the views hierarchy. Contents view of the anchored nudge.
   raw_ptr<SystemNudgeView> system_nudge_view_ = nullptr;

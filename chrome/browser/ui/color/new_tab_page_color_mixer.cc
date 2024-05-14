@@ -232,20 +232,6 @@ void AddGeneratedThemeComprehensiveColors(ui::ColorMixer& mixer) {
                    /* 90% opacity */ 0.9 * SK_AlphaOPAQUE);
   mixer[kColorNewTabPageText] = SelectBasedOnDarkInput(
       element_background_color, gfx::kGoogleGrey200, gfx::kGoogleGrey900);
-
-  if (base::FeatureList::IsEnabled(
-          ntp_features::kNtpComprehensiveThemeRealbox)) {
-    ui::ColorTransform background_color =
-        ui::GetColorWithMaxContrast(primary_foreground_color);
-    mixer[kColorRealboxBackground] = element_background_color;
-    mixer[kColorRealboxBackgroundHovered] = {
-        kColorToolbarBackgroundSubtleEmphasisHovered};
-    mixer[kColorRealboxForeground] = primary_foreground_color;
-    const ui::ColorTransform secondary_foreground_color =
-        SelectBasedOnWhiteNtpBackground(gfx::kGoogleGrey700,
-                                        primary_foreground_color);
-    mixer[kColorRealboxPlaceholder] = secondary_foreground_color;
-  }
 }
 
 // Dialog colors currently track the native theme and not the browser theme.
@@ -344,6 +330,8 @@ void AddNewTabPageColorMixer(ui::ColorProvider* provider,
   mixer[kColorNewTabPageTextLight] =
       IncreaseLightness(kColorNewTabPageText, 0.40);
 
+  mixer[kColorRealboxAnswerIconBackground] = {SkColorSetRGB(0xD3, 0xE3, 0xFD)};
+  mixer[kColorRealboxAnswerIconForeground] = {SkColorSetRGB(0x04, 0x1E, 0x49)};
   mixer[kColorRealboxBackground] = {SK_ColorWHITE};
   mixer[kColorRealboxBackgroundHovered] = {SK_ColorWHITE};
   mixer[kColorRealboxBorder] = {
@@ -356,10 +344,15 @@ void AddNewTabPageColorMixer(ui::ColorProvider* provider,
   mixer[kColorRealboxResultsBackgroundHovered] =
       ui::SetAlpha(gfx::kGoogleGrey900,
                    /* 10% opacity */ 0.1 * SK_AlphaOPAQUE);
-  mixer[kColorRealboxResultsControlBackgroundHovered] =
-      ui::SetAlpha(gfx::kGoogleGrey900, /* 10% opacity */ 0.1 * SK_AlphaOPAQUE);
+  mixer[kColorRealboxResultsButtonHover] = {
+      kColorRealboxResultsBackgroundHovered};
 
+  mixer[kColorRealboxResultsActionChip] = {SkColorSetRGB(0xA8, 0xC7, 0xFA)};
+  mixer[kColorRealboxResultsActionChipIcon] = {SkColorSetRGB(0x0B, 0x57, 0xD0)};
+  mixer[kColorRealboxResultsActionChipFocusOutline] = {
+      SkColorSetRGB(0x0B, 0x57, 0xD0)};
   mixer[kColorRealboxResultsDimSelected] = {gfx::kGoogleGrey700};
+  mixer[kColorRealboxResultsFocusIndicator] = {gfx::kGoogleBlue600};
   mixer[kColorRealboxResultsForeground] = {SK_ColorBLACK};
   mixer[kColorRealboxResultsForegroundDimmed] = {gfx::kGoogleGrey700};
   mixer[kColorRealboxResultsIconSelected] = {gfx::kGoogleGrey700};
@@ -371,36 +364,6 @@ void AddNewTabPageColorMixer(ui::ColorProvider* provider,
   mixer[kColorRealboxShadow] =
       ui::SetAlpha(gfx::kGoogleGrey900,
                    (dark_mode ? /* % opacity */ 0.32 : 0.28) * SK_AlphaOPAQUE);
-
-  if (base::FeatureList::IsEnabled(
-          ntp_features::kNtpComprehensiveThemeRealbox)) {
-    if (dark_mode) {
-      mixer[kColorRealboxBackground] = {kColorToolbarBackgroundSubtleEmphasis};
-      mixer[kColorRealboxBackgroundHovered] = {
-          kColorToolbarBackgroundSubtleEmphasisHovered};
-    }
-
-    mixer[kColorRealboxForeground] = {ui::kColorTextfieldForeground};
-    mixer[kColorRealboxPlaceholder] = {kColorOmniboxTextDimmed};
-    mixer[kColorRealboxResultsBackground] = {kColorOmniboxResultsBackground};
-    mixer[kColorRealboxResultsBackgroundHovered] = {
-        kColorOmniboxResultsBackgroundHovered};
-    mixer[kColorRealboxResultsControlBackgroundHovered] = ui::SetAlpha(
-        ui::SelectBasedOnDarkInput(kColorRealboxBackground, gfx::kGoogleGrey200,
-                                   gfx::kGoogleGrey900),
-        /* 10% opacity */ 0.1 * SK_AlphaOPAQUE);
-    mixer[kColorRealboxResultsDimSelected] = {
-        kColorOmniboxResultsTextDimmedSelected};
-    mixer[kColorRealboxResultsForeground] = {kColorOmniboxText};
-    mixer[kColorRealboxResultsForegroundDimmed] = {
-        kColorOmniboxResultsTextDimmed};
-    mixer[kColorRealboxResultsIcon] = {kColorOmniboxResultsIcon};
-    mixer[kColorRealboxResultsIconSelected] = {
-        kColorOmniboxResultsIconSelected};
-    mixer[kColorRealboxResultsUrl] = {kColorOmniboxResultsUrl};
-    mixer[kColorRealboxResultsUrlSelected] = {kColorOmniboxResultsUrlSelected};
-    mixer[kColorRealboxSearchIconBackground] = {kColorOmniboxResultsIcon};
-  }
 
   AddWebThemeNewTabPageColors(mixer, dark_mode);
 

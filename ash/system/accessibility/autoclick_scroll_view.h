@@ -73,14 +73,14 @@ class AutoclickScrollView : public views::View {
 
  private:
   // views::View:
-  void Layout() override;
+  void Layout(PassKey) override;
 
   // Unowned. Owned by views hierarchy.
-  raw_ptr<AutoclickScrollButton, ExperimentalAsh> scroll_up_button_;
-  raw_ptr<AutoclickScrollButton, ExperimentalAsh> scroll_down_button_;
-  raw_ptr<AutoclickScrollButton, ExperimentalAsh> scroll_left_button_;
-  raw_ptr<AutoclickScrollButton, ExperimentalAsh> scroll_right_button_;
-  raw_ptr<AutoclickScrollCloseButton, ExperimentalAsh> close_scroll_button_;
+  raw_ptr<AutoclickScrollButton> scroll_up_button_;
+  raw_ptr<AutoclickScrollButton> scroll_down_button_;
+  raw_ptr<AutoclickScrollButton> scroll_left_button_;
+  raw_ptr<AutoclickScrollButton> scroll_right_button_;
+  raw_ptr<AutoclickScrollCloseButton> close_scroll_button_;
 };
 
 }  // namespace ash

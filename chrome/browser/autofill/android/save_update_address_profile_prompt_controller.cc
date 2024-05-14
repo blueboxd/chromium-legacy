@@ -89,7 +89,7 @@ std::u16string SaveUpdateAddressProfilePromptController::GetSourceNotice(
       profile_.source() != AutofillProfile::Source::kAccount) {
     return std::u16string();
   }
-  absl::optional<AccountInfo> account =
+  std::optional<AccountInfo> account =
       identity_manager->FindExtendedAccountInfo(
           identity_manager->GetPrimaryAccountInfo(
               signin::ConsentLevel::kSignin));
@@ -149,8 +149,7 @@ SaveUpdateAddressProfilePromptController::GetNegativeButtonText() {
 std::u16string SaveUpdateAddressProfilePromptController::GetAddress() {
   if (is_migration_to_account_) {
     const std::u16string name =
-        profile_.GetInfo(NAME_FULL_WITH_HONORIFIC_PREFIX,
-                         g_browser_process->GetApplicationLocale());
+        profile_.GetInfo(NAME_FULL, g_browser_process->GetApplicationLocale());
     const std::u16string address = profile_.GetInfo(
         ADDRESS_HOME_LINE1, g_browser_process->GetApplicationLocale());
     const std::u16string separator =

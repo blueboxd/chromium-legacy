@@ -132,10 +132,12 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
 
   auto progress_indicator = std::make_unique<ProgressBar>();
   progress_indicator->SetPreferredHeight(kProgressIndicatorHeight);
-  progress_indicator->SetPreferredCornerRadii(absl::nullopt);
+  progress_indicator->SetPreferredCornerRadii(std::nullopt);
   progress_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
   progress_indicator->SetVisible(false);
   progress_indicator->GetViewAccessibility().OverrideIsIgnored(true);
+  progress_indicator->SetProperty(views::kElementIdentifierKey,
+                                  kProgressIndicatorElementId);
   progress_indicator_ = AddChildView(std::move(progress_indicator));
 }
 
@@ -346,13 +348,25 @@ void BubbleFrameView::InsertClientView(ClientView* client_view) {
       : AddChildView(client_view);
 }
 
+void BubbleFrameView::UpdateWindowRoundedCorners() {
+  // BubbleFrameView makes the frame round by drawing a rounded border.
+  // Additionally, it rounds `footnote_container_` if present; it makes the
+  // client view contents rounded (if needed) by either applying rounded corners
+  // to the client view layer or applying a mask.  However, certain
+  // implementations of the client view may need to do additional work to have a
+  // rounded window.
+  GetWidget()->client_view()->UpdateWindowRoundedCorners(GetCornerRadius());
+}
+
 void BubbleFrameView::SetTitleView(std::unique_ptr<View> title_view) {
   DCHECK(title_view);
-  delete default_title_;
-  default_title_ = nullptr;
-  delete custom_title_;
-  custom_title_ = title_view.get();
-  title_container_->AddChildViewAt(title_view.release(), 0);
+  if (default_title_) {
+    title_container_->RemoveChildViewT(default_title_.ExtractAsDangling());
+  }
+  if (custom_title_) {
+    title_container_->RemoveChildViewT(custom_title_.ExtractAsDangling());
+  }
+  custom_title_ = title_container_->AddChildViewAt(std::move(title_view), 0);
 }
 
 void BubbleFrameView::UpdateSubtitle() {
@@ -438,7 +452,7 @@ void BubbleFrameView::UpdateMainImage() {
   }
 }
 
-void BubbleFrameView::SetProgress(absl::optional<double> progress) {
+void BubbleFrameView::SetProgress(std::optional<double> progress) {
   bool visible = progress.has_value();
   progress_indicator_->SetVisible(visible);
   progress_indicator_->GetViewAccessibility().OverrideIsIgnored(!visible);
@@ -447,11 +461,11 @@ void BubbleFrameView::SetProgress(absl::optional<double> progress) {
   }
 }
 
-absl::optional<double> BubbleFrameView::GetProgress() const {
+std::optional<double> BubbleFrameView::GetProgress() const {
   if (progress_indicator_->GetVisible()) {
     return progress_indicator_->GetValue();
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 gfx::Size BubbleFrameView::CalculatePreferredSize() const {
@@ -492,7 +506,7 @@ gfx::Size BubbleFrameView::GetMaximumSize() const {
 #endif
 }
 
-void BubbleFrameView::Layout() {
+void BubbleFrameView::Layout(PassKey) {
   // The title margins may not be set, but make sure that's only the case when
   // there's no title.
   DCHECK(!title_margins_.IsEmpty() ||
@@ -559,9 +573,9 @@ void BubbleFrameView::Layout() {
   }
 
   // TODO(tapted): Layout() should skip more surrounding code when !HasTitle().
-  // Currently DCHECKs fail since title_insets is 0 when there is no title.
-  // Skip checking if bounds is empty, as async bounds setting during bubble
-  // creation may cause unreliable layout results.
+  // Currently DCHECKs fail since title_insets is 0 when there is no title. Skip
+  // checking if bounds is empty, as async bounds setting during bubble creation
+  // may cause unreliable layout results.
   if (DCHECK_IS_ON() && HasTitle() && !bounds.IsEmpty()) {
     const gfx::Insets title_insets =
         GetTitleLabelInsetsFromFrame() + GetInsets();
@@ -597,7 +611,7 @@ void BubbleFrameView::Layout() {
   }
 
   // Lay out the client view.
-  NonClientFrameView::Layout();
+  LayoutSuperclass<NonClientFrameView>(this);
 }
 
 void BubbleFrameView::OnThemeChanged() {
@@ -662,9 +676,10 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   if (footnote_container_)
     footnote_container_->SetCornerRadius(border->corner_radius());
 
+  // Update the background, which relies on the border. First set it to null to
+  // avoid dangling pointers, and then update it.
+  SetBackground(nullptr);
   SetBorder(std::move(border));
-
-  // Update the background, which relies on the border.
   SetBackground(std::make_unique<views::BubbleBackground>(bubble_border_));
 }
 
@@ -679,8 +694,7 @@ gfx::Insets BubbleFrameView::GetContentMargins() const {
 
 void BubbleFrameView::SetHeaderView(std::unique_ptr<View> view) {
   if (header_view_) {
-    delete header_view_;
-    header_view_ = nullptr;
+    RemoveChildViewT(header_view_.ExtractAsDangling());
   }
 
   if (view) {
@@ -692,8 +706,9 @@ void BubbleFrameView::SetHeaderView(std::unique_ptr<View> view) {
 
 void BubbleFrameView::SetFootnoteView(std::unique_ptr<View> view) {
   // Remove the old footnote container.
-  delete footnote_container_;
-  footnote_container_ = nullptr;
+  if (footnote_container_) {
+    RemoveChildViewT(footnote_container_.ExtractAsDangling());
+  }
   if (view) {
     int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
     footnote_container_ = AddChildView(std::make_unique<FootnoteContainerView>(
@@ -853,6 +868,10 @@ void BubbleFrameView::ResetViewShownTimeStampForTesting() {
   input_protector_.ResetForTesting();
 }
 
+gfx::Insets BubbleFrameView::GetClientViewInsets() const {
+  return GetClientInsetsForFrameWidth(GetContentsBounds().width());
+}
+
 gfx::Rect BubbleFrameView::GetAvailableScreenBounds(
     const gfx::Rect& rect) const {
   // The bubble attempts to fit within the current screen bounds.
@@ -931,8 +950,8 @@ void BubbleFrameView::MirrorArrowIfOutOfBounds(
     gfx::Rect mirror_bounds =
         bubble_border_->GetBounds(anchor_rect, client_size);
     // Restore the original arrow if mirroring doesn't show more of the bubble.
-    // Otherwise it should invoke parent's Layout() to layout the content based
-    // on the new bubble border.
+    // Otherwise it should direct the parent to layout the content based on the
+    // new bubble border.
     if (GetOverflowLength(available_bounds, mirror_bounds, vertical) >=
         GetOverflowLength(available_bounds, window_bounds, vertical)) {
       bubble_border_->set_arrow(arrow);
@@ -1194,7 +1213,7 @@ std::unique_ptr<Label> BubbleFrameView::CreateLabelWithContextAndStyle(
 }
 
 BEGIN_METADATA(BubbleFrameView)
-ADD_PROPERTY_METADATA(absl::optional<double>, Progress)
+ADD_PROPERTY_METADATA(std::optional<double>, Progress)
 ADD_PROPERTY_METADATA(gfx::Insets, ContentMargins)
 ADD_PROPERTY_METADATA(gfx::Insets, FootnoteMargins)
 ADD_PROPERTY_METADATA(BubbleFrameView::PreferredArrowAdjustment,
@@ -1208,5 +1227,7 @@ END_METADATA
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(BubbleFrameView,
                                       kMinimizeButtonElementId);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(BubbleFrameView, kCloseButtonElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(BubbleFrameView,
+                                      kProgressIndicatorElementId);
 
 }  // namespace views

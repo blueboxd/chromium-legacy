@@ -92,9 +92,9 @@ std::unique_ptr<views::ImageButton> CreateZoomButton(
 }
 
 class ZoomValue : public views::Label {
- public:
-  METADATA_HEADER(ZoomValue);
+  METADATA_HEADER(ZoomValue, views::Label)
 
+ public:
   explicit ZoomValue(const content::WebContents* web_contents)
       : Label(std::u16string(),
               views::style::CONTEXT_LABEL,
@@ -133,7 +133,7 @@ class ZoomValue : public views::Label {
   const int max_width_;
 };
 
-BEGIN_METADATA(ZoomValue, views::Label)
+BEGIN_METADATA(ZoomValue)
 END_METADATA
 
 bool IsBrowserFullscreen(Browser* browser) {
@@ -376,9 +376,11 @@ void ZoomBubbleView::Init() {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int spacing =
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+  gfx::Insets inset_border_insets =
+      provider->GetInsetsMetric(INSETS_TOAST) - margins();
+  inset_border_insets.set_top_bottom(0, 0);
   auto box_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      provider->GetInsetsMetric(INSETS_TOAST) - margins(), spacing);
+      views::BoxLayout::Orientation::kHorizontal, inset_border_insets, spacing);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   box_layout->set_cross_axis_alignment(
@@ -608,3 +610,6 @@ Browser* ZoomBubbleView::GetBrowser() const {
 ZoomBubbleView::ZoomBubbleExtensionInfo::ZoomBubbleExtensionInfo() {}
 
 ZoomBubbleView::ZoomBubbleExtensionInfo::~ZoomBubbleExtensionInfo() {}
+
+BEGIN_METADATA(ZoomBubbleView)
+END_METADATA

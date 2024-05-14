@@ -37,19 +37,20 @@ class DisplayOverlayController;
 // |----------------------------------|
 // ||"Buttons let..."|                |
 // |----------------------------------|
-// ||"Selected key"       |key labels||
-// ||"key"                            |
-// |----------------------------------|
 // |  |"Choose your button type:"   | |
 // |  |feature_tile|  |feature_title| |
 // |  |            |  |             | |
 // |----------------------------------|
+// ||"Selected key"       |key labels||
+// ||"key"                            |
+// |----------------------------------|
 // -----------------------------------|
-// ||         Delete button          ||
+// ||           Done button          ||
 // +----------------------------------+
 class ButtonOptionsMenu : public ArrowContainer, public TouchInjectorObserver {
+  METADATA_HEADER(ButtonOptionsMenu, ArrowContainer)
+
  public:
-  METADATA_HEADER(ButtonOptionsMenu);
   ButtonOptionsMenu(DisplayOverlayController* controller, Action* action);
   ButtonOptionsMenu(const ButtonOptionsMenu&) = delete;
   ButtonOptionsMenu& operator=(const ButtonOptionsMenu&) = delete;
@@ -62,19 +63,19 @@ class ButtonOptionsMenu : public ArrowContainer, public TouchInjectorObserver {
  private:
   friend class ButtonOptionsMenuTest;
   friend class EditLabelTest;
-  friend class EditingListTest;
+  friend class OverlayViewTestBase;
 
   void Init();
 
   // Add UI components.
   void AddHeader();
   void AddEditTitle();
-  void AddActionEdit();
   void AddActionSelection();
-  void AddDeleteButton();
+  void AddActionEdit();
+  void AddDoneButton();
 
   // Functions related to buttons.
-  void OnDeleteButtonPressed();
+  void OnTrashButtonPressed();
   void OnDoneButtonPressed();
   void OnButtonLabelAssignmentPressed();
 
@@ -82,14 +83,13 @@ class ButtonOptionsMenu : public ArrowContainer, public TouchInjectorObserver {
   void OnActionRemoved(const Action& action) override;
   void OnActionTypeChanged(Action* action, Action* new_action) override;
   void OnActionInputBindingUpdated(const Action& action) override;
-  void OnActionNameUpdated(const Action& action) override;
   void OnActionNewStateRemoved(const Action& action) override;
 
   // DisplayOverlayController owns this class, no need to deallocate.
   const raw_ptr<DisplayOverlayController> controller_ = nullptr;
   raw_ptr<Action, DanglingUntriaged> action_ = nullptr;
 
-  raw_ptr<ash::IconButton> done_button_ = nullptr;
+  raw_ptr<ash::IconButton> trash_button_ = nullptr;
   raw_ptr<ActionTypeButtonGroup> button_group_ = nullptr;
   raw_ptr<ActionEditView, DisableDanglingPtrDetection> action_edit_ = nullptr;
   raw_ptr<views::Label> action_name_label_ = nullptr;

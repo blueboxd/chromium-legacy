@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/keep_alive_url_loader.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/loader/keep_alive_attribution_request_helper.h"
 #include "content/browser/renderer_host/mixed_content_checker.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -308,7 +310,7 @@ struct KeepAliveURLLoader::StoredURLLoad {
   struct ResponseData {
     ResponseData(network::mojom::URLResponseHeadPtr response_head,
                  mojo::ScopedDataPipeConsumerHandle body_handle,
-                 absl::optional<mojo_base::BigBuffer> cached_metadata)
+                 std::optional<mojo_base::BigBuffer> cached_metadata)
         : head(std::move(response_head)),
           body(std::move(body_handle)),
           metadata(std::move(cached_metadata)) {}
@@ -321,7 +323,7 @@ struct KeepAliveURLLoader::StoredURLLoad {
     // The original body handle not yet passed to renderer.
     mojo::ScopedDataPipeConsumerHandle body;
     // The original cached metadata not yet passed to renderer.
-    absl::optional<mojo_base::BigBuffer> metadata;
+    std::optional<mojo_base::BigBuffer> metadata;
   };
 
   // Stores all intermediate redirect data received from `OnReceiveRedirect()`.
@@ -331,8 +333,8 @@ struct KeepAliveURLLoader::StoredURLLoad {
   std::unique_ptr<ResponseData> response = nullptr;
   // Stores the completion status received from `OnComplete()` for later use in
   // renderer.
-  absl::optional<network::URLLoaderCompletionStatus> completion_status =
-      absl::nullopt;
+  std::optional<network::URLLoaderCompletionStatus> completion_status =
+      std::nullopt;
   // Tells whether any of the above field has been used (forwarded to renderer).
   bool forwarding = false;
 };
@@ -348,7 +350,9 @@ KeepAliveURLLoader::KeepAliveURLLoader(
     WeakDocumentPtr weak_document_ptr,
     BrowserContext* browser_context,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
-    base::PassKey<KeepAliveURLLoaderService>)
+    base::PassKey<KeepAliveURLLoaderService>,
+    std::unique_ptr<KeepAliveAttributionRequestHelper>
+        attribution_request_helper)
     : request_id_(request_id),
       devtools_request_id_(base::UnguessableToken::Create().ToString()),
       options_(options),
@@ -361,7 +365,8 @@ KeepAliveURLLoader::KeepAliveURLLoader(
       weak_document_ptr_(std::move(weak_document_ptr)),
       browser_context_(browser_context),
       initial_url_(resource_request.url),
-      last_url_(resource_request.url) {
+      last_url_(resource_request.url),
+      attribution_request_helper_(std::move(attribution_request_helper)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(network_loader_factory_);
   CHECK(policy_container_host_);
@@ -476,12 +481,12 @@ void KeepAliveURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const absl::optional<GURL>& new_url) {
+    const std::optional<GURL>& new_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::FollowRedirect", "request_id",
               request_id_, "url", new_url);
 
-  if (new_url != absl::nullopt) {
+  if (new_url != std::nullopt) {
     mojo::ReportBadMessage(
         "Unexpected `new_url` in KeepAliveURLLoader::FollowRedirect(): "
         "must be null");
@@ -592,6 +597,12 @@ void KeepAliveURLLoader::OnReceiveRedirect(
     }
   }
 
+  if (attribution_request_helper_) {
+    attribution_request_helper_->OnReceiveRedirect(head->headers.get(),
+                                                   head->trigger_verifications,
+                                                   redirect_info.new_url);
+  }
+
   // Stores the redirect data for later use by renderer.
   stored_url_load_->redirects.emplace(
       std::make_unique<StoredURLLoad::RedirectData>(redirect_info,
@@ -663,13 +674,13 @@ void KeepAliveURLLoader::OnReceiveRedirect(
   // `OnReceiveResponse()`.
   loader_->FollowRedirect(modified.removed_headers, modified.modified_headers,
                           modified.modified_cors_exempt_headers,
-                          /*new_url=*/absl::nullopt);
+                          /*new_url=*/std::nullopt);
 }
 
 void KeepAliveURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response,
     mojo::ScopedDataPipeConsumerHandle body,
-    absl::optional<mojo_base::BigBuffer> cached_metadata) {
+    std::optional<mojo_base::BigBuffer> cached_metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::OnReceiveResponse", "request_id",
               request_id_, "url", last_url_);
@@ -689,15 +700,16 @@ void KeepAliveURLLoader::OnReceiveResponse(
     }
   }
 
+  if (attribution_request_helper_) {
+    attribution_request_helper_->OnReceiveResponse(
+        response->headers.get(), response->trigger_verifications);
+    attribution_request_helper_.reset();
+  }
+
   // In case the renderer is alive, the stored response data will be forwarded
   // at the end of `ForwardURLLoad()`.
   stored_url_load_->response = std::make_unique<StoredURLLoad::ResponseData>(
       std::move(response), std::move(body), std::move(cached_metadata));
-
-  // TODO(crbug.com/1422645): Ensure that attributionsrc response handling is
-  // migrated to browser process here so that it works even when renderer is
-  // disconnected.
-  // For now, it happens in the renderer after response is forwarded.
 
   if (IsRendererConnected()) {
     // Starts to forward the stored redirects/response to renderer.

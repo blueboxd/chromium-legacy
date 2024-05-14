@@ -72,6 +72,8 @@ std::string GetPermissionString(PermissionType permission) {
       return "VR";
     case PermissionType::AR:
       return "AR";
+    case PermissionType::SMART_CARD:
+      return "SmartCard";
     case PermissionType::STORAGE_ACCESS_GRANT:
       return "StorageAccess";
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
@@ -84,6 +86,10 @@ std::string GetPermissionString(PermissionType permission) {
       return "DisplayCapture";
     case PermissionType::TOP_LEVEL_STORAGE_ACCESS:
       return "TopLevelStorageAccess";
+    case PermissionType::CAPTURED_SURFACE_CONTROL:
+      return "CapturedSurfaceControl";
+    case PermissionType::WEB_PRINTING:
+      return "WebPrinting";
     case PermissionType::NUM:
       NOTREACHED();
       return std::string();
@@ -92,7 +98,7 @@ std::string GetPermissionString(PermissionType permission) {
   return std::string();
 }
 
-absl::optional<mojom::PermissionsPolicyFeature>
+std::optional<mojom::PermissionsPolicyFeature>
 PermissionTypeToPermissionsPolicyFeature(PermissionType permission) {
   switch (permission) {
     case PermissionType::GEOLOCATION:
@@ -119,6 +125,10 @@ PermissionTypeToPermissionsPolicyFeature(PermissionType permission) {
       return mojom::PermissionsPolicyFeature::kWebXr;
     case PermissionType::AR:
       return mojom::PermissionsPolicyFeature::kWebXr;
+    case PermissionType::SMART_CARD:
+      return mojom::PermissionsPolicyFeature::kSmartCard;
+    case PermissionType::WEB_PRINTING:
+      return mojom::PermissionsPolicyFeature::kWebPrinting;
     case PermissionType::STORAGE_ACCESS_GRANT:
       return mojom::PermissionsPolicyFeature::kStorageAccessAPI;
     case PermissionType::TOP_LEVEL_STORAGE_ACCESS:
@@ -129,6 +139,8 @@ PermissionTypeToPermissionsPolicyFeature(PermissionType permission) {
       return mojom::PermissionsPolicyFeature::kLocalFonts;
     case PermissionType::DISPLAY_CAPTURE:
       return mojom::PermissionsPolicyFeature::kDisplayCapture;
+    case PermissionType::CAPTURED_SURFACE_CONTROL:
+      return mojom::PermissionsPolicyFeature::kCapturedSurfaceControl;
 
     case PermissionType::PERIODIC_BACKGROUND_SYNC:
     case PermissionType::DURABLE_STORAGE:
@@ -143,14 +155,14 @@ PermissionTypeToPermissionsPolicyFeature(PermissionType permission) {
     case PermissionType::NFC:
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
     case PermissionType::NOTIFICATIONS:
-      return absl::nullopt;
+      return std::nullopt;
 
     case PermissionType::NUM:
       NOTREACHED();
-      return absl::nullopt;
+      return std::nullopt;
   }
   NOTREACHED();
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 const std::vector<PermissionType>& GetAllPermissionTypes() {
@@ -173,7 +185,7 @@ const std::vector<PermissionType>& GetAllPermissionTypes() {
   return *kAllPermissionTypes;
 }
 
-absl::optional<PermissionType> PermissionDescriptorToPermissionType(
+std::optional<PermissionType> PermissionDescriptorToPermissionType(
     const PermissionDescriptorPtr& descriptor) {
   return PermissionDescriptorInfoToPermissionType(
       descriptor->name,
@@ -187,7 +199,7 @@ absl::optional<PermissionType> PermissionDescriptorToPermissionType(
           descriptor->extension->get_clipboard()->has_user_gesture);
 }
 
-absl::optional<PermissionType> PermissionDescriptorInfoToPermissionType(
+std::optional<PermissionType> PermissionDescriptorInfoToPermissionType(
     mojom::PermissionName name,
     bool midi_sysex,
     bool camera_ptz,
@@ -209,7 +221,7 @@ absl::optional<PermissionType> PermissionDescriptorInfoToPermissionType(
       return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
 #else
       NOTIMPLEMENTED();
-      return absl::nullopt;
+      return std::nullopt;
 #endif  // defined(ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION)
     case PermissionName::DURABLE_STORAGE:
       return PermissionType::DURABLE_STORAGE;
@@ -262,9 +274,11 @@ absl::optional<PermissionType> PermissionDescriptorInfoToPermissionType(
       return PermissionType::DISPLAY_CAPTURE;
     case PermissionName::TOP_LEVEL_STORAGE_ACCESS:
       return PermissionType::TOP_LEVEL_STORAGE_ACCESS;
+    case PermissionName::CAPTURED_SURFACE_CONTROL:
+      return PermissionType::CAPTURED_SURFACE_CONTROL;
 
       NOTREACHED();
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 

@@ -22,9 +22,9 @@ class DownloadBubbleNavigationHandler;
 // a compact representation of downloads that recently completed.
 class DownloadBubblePartialView : public DownloadBubblePrimaryView,
                                   public views::FocusChangeListener {
- public:
-  METADATA_HEADER(DownloadBubblePartialView);
+  METADATA_HEADER(DownloadBubblePartialView, DownloadBubblePrimaryView)
 
+ public:
   DownloadBubblePartialView(
       base::WeakPtr<Browser> browser,
       base::WeakPtr<DownloadBubbleUIController> bubble_controller,
@@ -41,6 +41,7 @@ class DownloadBubblePartialView : public DownloadBubblePrimaryView,
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
+  bool IsPartialView() const override;
 
   // views::FocusChangeListener:
   void OnWillChangeFocus(views::View* before, views::View* now) override;

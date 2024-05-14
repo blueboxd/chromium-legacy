@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/render_frame_impl.h"
+
 #include <stdint.h>
 
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -12,6 +15,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/protected_memory_buildflags.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -23,7 +27,9 @@
 #include "build/build_config.h"
 #include "content/common/features.h"
 #include "content/common/renderer.mojom.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/local_frame_host_interceptor.h"
@@ -34,7 +40,6 @@
 #include "content/renderer/document_state.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/navigation_state.h"
-#include "content/renderer/render_frame_impl.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -43,10 +48,11 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
@@ -57,10 +63,12 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_v8_value_converter.h"
 #include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_v8_features.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/display/screen_info.h"
 #include "ui/display/screen_infos.h"
@@ -77,8 +85,10 @@ constexpr int32_t kSubframeRouteId = 20;
 constexpr int32_t kSubframeWidgetRouteId = 21;
 
 const char kParentFrameHTML[] = "Parent frame <iframe name='frame'></iframe>";
+const char kSimpleScriptHtml[] = "<script>var x = 1;</script>";
 
 const char kAutoplayTestOrigin[] = "https://www.google.com";
+
 }  // namespace
 
 // RenderFrameImplTest creates a RenderFrameImpl that is a child of the
@@ -108,6 +118,7 @@ class RenderFrameImplTest : public RenderViewTest {
   }
 
   void LoadChildFrame() {
+    child_frame_token_ = blink::LocalFrameToken();
     mojom::CreateFrameWidgetParamsPtr widget_params =
         mojom::CreateFrameWidgetParams::New();
     widget_params->routing_id = kSubframeWidgetRouteId;
@@ -160,15 +171,15 @@ class RenderFrameImplTest : public RenderViewTest {
                  std::move(remote_main_frame_interfaces));
     MockPolicyContainerHost mock_policy_container_host;
     RenderFrameImpl::CreateFrame(
-        *agent_scheduling_group_, blink::LocalFrameToken(), kSubframeRouteId,
+        *agent_scheduling_group_, child_frame_token_, kSubframeRouteId,
         TestRenderFrame::CreateStubFrameReceiver(),
         TestRenderFrame::CreateStubBrowserInterfaceBrokerRemote(),
         TestRenderFrame::CreateStubAssociatedInterfaceProviderRemote(),
         /*web_view=*/nullptr,
-        /*previous_frame_token=*/absl::nullopt,
-        /*opener_frame_token=*/absl::nullopt,
+        /*previous_frame_token=*/std::nullopt,
+        /*opener_frame_token=*/std::nullopt,
         /*parent_frame_token=*/remote_child_token,
-        /*previous_sibling_frame_token=*/absl::nullopt,
+        /*previous_sibling_frame_token=*/std::nullopt,
         base::UnguessableToken::Create(),
         blink::mojom::TreeScopeType::kDocument,
         std::move(frame_replication_state), std::move(widget_params),
@@ -196,8 +207,9 @@ class RenderFrameImplTest : public RenderViewTest {
   }
 
   TestRenderFrame& child_frame() const {
-    return CHECK_DEREF(static_cast<TestRenderFrame*>(
-        RenderFrameImpl::FromRoutingID(kSubframeRouteId)));
+    return CHECK_DEREF(
+        static_cast<TestRenderFrame*>(RenderFrameImpl::FromWebFrame(
+            blink::WebLocalFrame::FromFrameToken(child_frame_token_))));
   }
 
   blink::WebFrameWidget* frame_widget() const {
@@ -218,6 +230,7 @@ class RenderFrameImplTest : public RenderViewTest {
 
  private:
   mojo::AssociatedRemote<blink::mojom::Widget> widget_remote_;
+  blink::LocalFrameToken child_frame_token_;
 };
 
 class RenderFrameTestObserver : public RenderFrameObserver {
@@ -404,6 +417,24 @@ TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
 
   static_cast<mojom::Frame*>(&child_frame())
       ->Delete(mojom::FrameDeleteIntention::kNotMainFrame);
+}
+
+TEST_F(RenderFrameImplTest, NoCrashOnReceiveTitleWhenNavigatingToJavascript) {
+  LoadHTML(
+      "<html>"
+      "  <everything id='outer'>"
+      "    <title><empty></title>"
+      "    <body>"
+      "      <iframe id='iframe'></iframe>"
+      "      <script>"
+      "        iframe.contentWindow.onunload = () => {"
+      "          document.adoptNode(outer);"
+      "        };"
+      "        window.location = 'javascript:\"PASS.\"';"
+      "      </script>"
+      "    </body>"
+      "  </everything>"
+      "</html> ");
 }
 
 TEST_F(RenderFrameImplTest, AutoplayFlags) {
@@ -601,7 +632,7 @@ class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
     receiver_.WaitForIncomingCall();
   }
 
-  const absl::optional<SourceAnnotation>& ping_source() const {
+  const std::optional<SourceAnnotation>& ping_source() const {
     return ping_source_;
   }
 
@@ -612,7 +643,7 @@ class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
 
  private:
   mojo::Receiver<mojom::FrameHostTestInterface> receiver_{this};
-  absl::optional<SourceAnnotation> ping_source_;
+  std::optional<SourceAnnotation> ping_source_;
 };
 
 // RenderFrameObserver that issues FrameHostTestInterface interface requests
@@ -732,8 +763,8 @@ class ScopedNewFrameInterfaceProviderExerciser {
  public:
   explicit ScopedNewFrameInterfaceProviderExerciser(
       FrameCreationObservingRendererClient* frame_creation_observer,
-      const absl::optional<std::string>& html_override_for_first_load =
-          absl::nullopt)
+      const std::optional<std::string>& html_override_for_first_load =
+          std::nullopt)
       : frame_creation_observer_(frame_creation_observer),
         html_override_for_first_load_(html_override_for_first_load) {
     frame_creation_observer_->set_callback(base::BindRepeating(
@@ -800,11 +831,11 @@ class ScopedNewFrameInterfaceProviderExerciser {
   raw_ptr<FrameCreationObservingRendererClient, ExperimentalRenderer>
       frame_creation_observer_;
   raw_ptr<TestRenderFrame, ExperimentalRenderer> frame_ = nullptr;
-  absl::optional<std::string> html_override_for_first_load_;
+  std::optional<std::string> html_override_for_first_load_;
   GURL first_committed_url_;
 
-  absl::optional<FrameCommitWaiter> frame_commit_waiter_;
-  absl::optional<FrameHostTestInterfaceRequestIssuer> test_request_issuer_;
+  std::optional<FrameCommitWaiter> frame_commit_waiter_;
+  std::optional<FrameHostTestInterfaceRequestIssuer> test_request_issuer_;
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver_for_initial_empty_document_;
@@ -1230,5 +1261,165 @@ TEST_F(RenderFrameImplTest, ContentSettingsSameDocumentNavigation) {
   EXPECT_FALSE(HasText(GetMainFrame(), "JS_DISABLED"));
   EXPECT_TRUE(HasText(GetMainFrame(), "JS_ENABLED"));
 }
+
+class RenderFrameImplMojoJsTest : public RenderViewTest {
+ public:
+  RenderFrameImplMojoJsTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kEnableMojoJSProtectedMemory);
+  }
+
+  void SetUp() override {
+    RenderViewTest::SetUp();
+    EXPECT_TRUE(GetMainRenderFrame()->IsMainFrame());
+  }
+
+  void TearDown() override {
+#if defined(LEAK_SANITIZER)
+    // Do this before shutting down V8 in RenderViewTest::TearDown().
+    // http://crbug.com/328552
+    __lsan_do_leak_check();
+#endif
+    RenderViewTest::TearDown();
+  }
+
+  TestRenderFrame* GetMainRenderFrame() {
+    return static_cast<TestRenderFrame*>(RenderViewTest::GetMainRenderFrame());
+  }
+
+  // Gets the main world script context for the test main frame and returns if
+  // MojoJS bindings are enabled.
+  bool IsMojoJsEnabledForScriptContext() {
+    v8::Isolate* isolate = Isolate();
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> local_v8_context =
+        GetMainFrame()->MainWorldScriptContext();
+
+    return blink::WebV8Features::IsMojoJSEnabledForTesting(local_v8_context);
+  }
+
+  // Method used to validate the final stage protected memory check in
+  // ContextFeatureSettings::isMojoJSEnabled constructs a scenario where
+  // the |enable_mojo_js_| value of the ContextFeatureSettings is tampered with
+  // directly before being used. We expect this to crash.
+  void ContextFeatureSettingsEnableMojoJsTampered() {
+    v8::Isolate* isolate = Isolate();
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> local_v8_context =
+        GetMainFrame()->MainWorldScriptContext();
+
+    // Use |WebV8Features::EnableMojoJSForTesting| to enable the MojoJS bindings
+    // while bypassing the earlier protected memory checks. This mimics an
+    // attacker tampering with the |enable_mojo_js_| value of the
+    // ContextFeatureSettings.
+    blink::WebV8Features::EnableMojoJSWithoutSecurityChecksForTesting(
+        local_v8_context);
+
+    // Use |WebV8Features::isMojoJSEnabledForTesting| to manually access
+    // |ContextFeatureSettings::isMojoEnabled()| This is used to mimic a
+    // scenario where an attacker manages to directly tamper with
+    // |enable_mojo_js_| before the |ContextFeatureSettings::isMojoJSEnabled()|
+    // is called to determine if the bindings is enabled. This validates the
+    // final protected memory check and should crash.
+    blink::WebV8Features::IsMojoJSEnabledForTesting(local_v8_context);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verifies enabling MojoJS bindings via allowing the
+// BINDINGS_POLICY_MOJO_WEB_UI binding.
+TEST_F(RenderFrameImplMojoJsTest, AllowMojoWebUIBindings) {
+  GetMainRenderFrame()->AllowBindings(BINDINGS_POLICY_MOJO_WEB_UI);
+  LoadHTML(kSimpleScriptHtml);
+
+  // Expect no crash and MojoJs bindings are enabled in the context.
+  EXPECT_TRUE(IsMojoJsEnabledForScriptContext());
+}
+
+// Verifies enabling MojoJS bindings via EnableMojoJsBindings method.
+TEST_F(RenderFrameImplMojoJsTest, EnableMojoJSBindings) {
+  GetMainRenderFrame()->EnableMojoJsBindings(
+      content::mojom::ExtraMojoJsFeatures::New());
+  LoadHTML(kSimpleScriptHtml);
+
+  // Expect no crash and MojoJs bindings are enabled in the context.
+  EXPECT_TRUE(IsMojoJsEnabledForScriptContext());
+}
+
+// Verifies enabling MojoJS bindings via directly enabling mojo
+TEST_F(RenderFrameImplMojoJsTest, EnableMojoJSBindingsWithBroker) {
+  GetMainRenderFrame()->EnableMojoJsBindingsWithBroker(
+      TestRenderFrame::CreateStubBrowserInterfaceBrokerRemote());
+  LoadHTML(kSimpleScriptHtml);
+
+  // Expect no crash and MojoJs bindings are enabled in the context.
+  EXPECT_TRUE(IsMojoJsEnabledForScriptContext());
+}
+
+#if BUILDFLAG(PROTECTED_MEMORY_ENABLED)
+using RenderFrameImplMojoJsDeathTest = RenderFrameImplMojoJsTest;
+// Verifies that tampering with enabled_bindings_ to enable MojoJS bindings
+// crashes.
+TEST_F(RenderFrameImplMojoJsDeathTest, EnabledBindingsTampered) {
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+  // Should CHECK fail due to the bindings value differing from the protected
+  // memory value.
+  BASE_EXPECT_DEATH(
+      {
+        GetMainRenderFrame()->enabled_bindings_ |= BINDINGS_POLICY_MOJO_WEB_UI;
+
+        LoadHTML(kSimpleScriptHtml);
+      },
+      "Check failed: \\*mojo_js_allowed_");
+}
+
+// Verifies that tampering with enable_mojo_js_bindings_ to enable MojoJS
+// bindings crashes.
+TEST_F(RenderFrameImplMojoJsDeathTest, EnableMojoJsBindingsTampered) {
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+  // Should CHECK fail due to the bindings value differing from the protected
+  // memory value.
+  BASE_EXPECT_DEATH(
+      {
+        GetMainRenderFrame()->enable_mojo_js_bindings_ = true;
+
+        LoadHTML(kSimpleScriptHtml);
+      },
+      "Check failed: \\*mojo_js_allowed_");
+}
+
+// Verifies that tampering with mojo_js_interface_broker_ to enable MojoJS
+// bindings crashes.
+TEST_F(RenderFrameImplMojoJsDeathTest, MojoJsInterfaceBrokerTampered) {
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+  // Should CHECK fail due to the bindings value differing from the protected
+  // memory value.
+  BASE_EXPECT_DEATH(
+      {
+        GetMainRenderFrame()->mojo_js_interface_broker_ =
+            TestRenderFrame::CreateStubBrowserInterfaceBrokerRemote();
+
+        LoadHTML(kSimpleScriptHtml);
+      },
+      "Check failed: \\*mojo_js_allowed_");
+}
+
+// Verifies that tampering with mojo_js_interface_broker_ to enable MojoJS
+// bindings crashes.
+TEST_F(RenderFrameImplMojoJsDeathTest,
+       ContextFeatureSettingsEnableMojoJsTampered) {
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+  // Should CHECK fail due to the bindings value differing from the protected
+  // memory value.
+  BASE_EXPECT_DEATH(ContextFeatureSettingsEnableMojoJsTampered(),
+                    "Check failed: \\*mojo_js_allowed_");
+}
+#endif  //  BUILDFLAG(PROTECTED_MEMORY_ENABLED)
 
 }  // namespace content

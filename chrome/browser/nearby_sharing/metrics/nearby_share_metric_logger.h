@@ -37,7 +37,7 @@ class NearbyShareMetricLogger : public NearbySharingService::Observer {
                           nearby::connections::mojom::Medium medium) override;
 
  private:
-  absl::optional<base::TimeTicks> discovery_start_time_;
+  std::optional<base::TimeTicks> discovery_start_time_;
   base::flat_map<base::UnguessableToken, base::TimeDelta>
       share_target_scan_to_discover_delta_;
   base::flat_map<base::UnguessableToken, base::TimeTicks>
@@ -52,7 +52,7 @@ class NearbyShareMetricLogger : public NearbySharingService::Observer {
       share_target_upgrade_time_;
   base::flat_map<base::UnguessableToken, nearby::connections::mojom::Medium>
       share_target_medium_;
-  base::flat_map<base::UnguessableToken, uint> transfer_size_;
+  base::flat_map<base::UnguessableToken, int64_t> transfer_size_;
   base::flat_map<base::UnguessableToken, float> transfer_progress_;
 };
 

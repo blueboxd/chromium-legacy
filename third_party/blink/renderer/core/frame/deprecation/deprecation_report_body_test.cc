@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation_report_body.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
 
 namespace {
 
 TEST(DeprecationReportBodyJSONTest, noAnticipatedRemoval) {
-  DeprecationReportBody body("test_id", absl::nullopt, "test_message");
+  test::TaskEnvironment task_environment;
+  DeprecationReportBody body("test_id", std::nullopt, "test_message");
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
   V8ObjectBuilder builder(script_state);
@@ -34,6 +37,7 @@ TEST(DeprecationReportBodyJSONTest, noAnticipatedRemoval) {
 }
 
 TEST(DeprecationReportBodyJSONTest, actualAnticipatedRemoval) {
+  test::TaskEnvironment task_environment;
   DeprecationReportBody body(
       "test_id", base::Time::FromMillisecondsSinceUnixEpoch(1575950400000),
       "test_message");

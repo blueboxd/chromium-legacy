@@ -4,7 +4,7 @@
 
 #include "ash/system/accessibility/floating_accessibility_view.h"
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
@@ -51,7 +51,7 @@ class DynamicRowView : public views::View {
   // views::View:
   void ChildVisibilityChanged(views::View* child) override {
     bool any_visible = false;
-    for (auto* view : children()) {
+    for (views::View* view : children()) {
       any_visible |= view->GetVisible();
     }
     SetVisible(any_visible);
@@ -134,7 +134,7 @@ void FloatingAccessibilityBubbleView::GetAccessibleNodeData(
   TrayBubbleView::GetAccessibleNodeData(node_data);
 }
 
-BEGIN_METADATA(FloatingAccessibilityBubbleView, TrayBubbleView)
+BEGIN_METADATA(FloatingAccessibilityBubbleView)
 END_METADATA
 
 FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
@@ -321,7 +321,7 @@ void FloatingAccessibilityView::OnKeyboardVisibilityChanged(bool visible) {
     delegate_->OnDetailedMenuEnabled(false);
 }
 
-BEGIN_METADATA(FloatingAccessibilityView, views::BoxLayoutView)
+BEGIN_METADATA(FloatingAccessibilityView)
 END_METADATA
 
 }  // namespace ash

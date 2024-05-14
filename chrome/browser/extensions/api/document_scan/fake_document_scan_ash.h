@@ -33,6 +33,8 @@ class FakeDocumentScanAsh : public crosapi::mojom::DocumentScan {
   void OpenScanner(const std::string& client_id,
                    const std::string& scanner_id,
                    OpenScannerCallback callback) override;
+  void GetOptionGroups(const std::string& scanner_handle,
+                       GetOptionGroupsCallback callback) override;
   void CloseScanner(const std::string& scanner_handle,
                     CloseScannerCallback callback) override;
   void StartPreparedScan(const std::string& scanner_handle,
@@ -43,8 +45,6 @@ class FakeDocumentScanAsh : public crosapi::mojom::DocumentScan {
   void SetOptions(const std::string& scanner_handle,
                   std::vector<crosapi::mojom::OptionSettingPtr> options,
                   SetOptionsCallback callback) override;
-  void GetOptionGroups(const std::string& scanner_handle,
-                       GetOptionGroupsCallback callback) override;
   void CancelScan(const std::string& job_handle,
                   CancelScanCallback callback) override;
 
@@ -57,10 +57,17 @@ class FakeDocumentScanAsh : public crosapi::mojom::DocumentScan {
 
  private:
   struct OpenScannerState {
+    OpenScannerState();
+    OpenScannerState(const std::string& client_id,
+                     const std::string& connection_string);
+    ~OpenScannerState();
+
     std::string client_id;
     std::string connection_string;
+    std::optional<std::string> job_handle;
   };
 
+  size_t handle_count_ = 0;  // How many times a handle has been issued.
   std::vector<std::string> scanner_names_;
   std::optional<std::vector<std::string>> scan_data_;
   std::vector<crosapi::mojom::ScannerInfoPtr> scanners_;

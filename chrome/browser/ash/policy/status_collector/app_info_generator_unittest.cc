@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/publisher_host.h"
-#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -188,7 +187,7 @@ class AppInfoGeneratorTest : public ::testing::Test {
     profile_builder.SetProfileName(account_id.GetUserEmail());
     auto profile = profile_builder.Build();
     user_manager_->AddUserWithAffiliationAndTypeAndProfile(
-        account_id, is_affiliated, user_manager::UserType::USER_TYPE_REGULAR,
+        account_id, is_affiliated, user_manager::UserType::kRegular,
         profile.get());
     return profile;
   }
@@ -206,7 +205,7 @@ class AppInfoGeneratorTest : public ::testing::Test {
     app_service_test_.SetUp(profile_.get());
 
     auto* provider = web_app::FakeWebAppProvider::Get(profile_.get());
-    provider->SetRunSubsystemStartupTasks(true);
+    provider->SetStartSystemOnStart(true);
     provider->Start();
 
     app_registrar_ = &provider->GetRegistrarMutable();
@@ -276,9 +275,8 @@ class AppInfoGeneratorTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   AccountId account_id_;
   std::unique_ptr<TestingProfile> profile_;
-  raw_ptr<web_app::WebAppRegistrarMutable, ExperimentalAsh> app_registrar_;
-  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  raw_ptr<web_app::WebAppRegistrarMutable> app_registrar_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged> user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   TestingPrefServiceSimple pref_service_;
 

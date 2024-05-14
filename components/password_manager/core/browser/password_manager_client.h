@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/language_code.h"
@@ -78,6 +79,7 @@ class WebAuthnCredManDelegate;
 
 namespace password_manager {
 
+class AffiliationService;
 class FieldInfoManager;
 class PasswordFeatureManager;
 class PasswordFormManagerForUI;
@@ -89,17 +91,6 @@ class PasswordReuseManager;
 class PasswordStoreInterface;
 class WebAuthnCredentialsDelegate;
 struct PasswordForm;
-
-enum class SyncState {
-  kNotSyncing,
-  kSyncingNormalEncryption,
-  kSyncingWithCustomPassphrase,
-  // Sync is disabled but the user is signed in and opted in to passwords
-  // account storage.
-  kAccountPasswordsActiveNormalEncryption,
-  // Same as above but the account has a custom passphrase set.
-  kAccountPasswordsActiveWithCustomPassphrase,
-};
 
 enum class ErrorMessageFlowType { kSaveFlow, kFillFlow };
 
@@ -274,7 +265,8 @@ class PasswordManagerClient {
   // Currently only implemented on Android.
   virtual void UpdateCredentialCache(
       const url::Origin& origin,
-      const std::vector<const PasswordForm*>& best_matches,
+      const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
+          best_matches,
       bool is_blocklisted);
 
   // Called when a password is saved in an automated fashion. Embedder may
@@ -292,9 +284,11 @@ class PasswordManagerClient {
   // implementation is a noop. |was_autofilled_on_pageload| contains information
   // if password form was autofilled on pageload.
   virtual void PasswordWasAutofilled(
-      const std::vector<const PasswordForm*>& best_matches,
+      const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
+          best_matches,
       const url::Origin& origin,
-      const std::vector<const PasswordForm*>* federated_matches,
+      const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>*
+          federated_matches,
       bool was_autofilled_on_pageload);
 
   // Sends username/password from |preferred_match| for filling in the http auth
@@ -329,6 +323,9 @@ class PasswordManagerClient {
   // Gets the sync service associated with this client.
   virtual const syncer::SyncService* GetSyncService() const = 0;
 
+  // Gets the affiliation service associated with this client.
+  virtual AffiliationService* GetAffiliationService() = 0;
+
   // Returns the profile PasswordStore associated with this instance.
   virtual PasswordStoreInterface* GetProfilePasswordStore() const = 0;
 
@@ -337,10 +334,6 @@ class PasswordManagerClient {
 
   // Returns the PasswordReuseManager associated with this instance.
   virtual PasswordReuseManager* GetPasswordReuseManager() const = 0;
-
-  // Reports whether and how passwords are synced in the embedder. The default
-  // implementation always returns kNotSyncing.
-  virtual SyncState GetPasswordSyncState() const;
 
   // Returns true if last navigation page had HTTP error i.e 5XX or 4XX
   virtual bool WasLastNavigationHTTPError() const;
@@ -486,6 +479,10 @@ class PasswordManagerClient {
   // Returns the WebAuthnCredManDelegate for the driver.
   virtual webauthn::WebAuthnCredManDelegate*
   GetWebAuthnCredManDelegateForDriver(PasswordManagerDriver* driver);
+
+  // Marks all credentials that have been loaded for this page and have been
+  // received via the password sharing feature as notified.
+  virtual void MarkSharedCredentialsAsNotified(const GURL& url);
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Returns the Chrome channel for the installation.

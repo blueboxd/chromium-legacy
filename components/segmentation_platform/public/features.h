@@ -86,6 +86,9 @@ BASE_DECLARE_FEATURE(kSegmentationPlatformTabResumptionRanker);
 // Feature flag for enabling ios module ranker.
 BASE_DECLARE_FEATURE(kSegmentationPlatformIosModuleRanker);
 
+// Feature flag for enabling android home module ranker.
+BASE_DECLARE_FEATURE(kSegmentationPlatformAndroidHomeModuleRanker);
+
 // Feature flag for controlling sampling of training data collection.
 BASE_DECLARE_FEATURE(kSegmentationPlatformTimeDelaySampling);
 
@@ -94,6 +97,10 @@ BASE_DECLARE_FEATURE(kSegmentationPlatformCollectTabRankData);
 
 // Feature flag for intoroducing delay while initializing models at startup.
 BASE_DECLARE_FEATURE(kSegmentationPlatformModelInitializationDelay);
+
+// Feature flag for turning of signal database cache.
+BASE_DECLARE_FEATURE(kSegmentationPlatformSignalDbCache);
+
 }  // namespace segmentation_platform::features
 
 #endif  // COMPONENTS_SEGMENTATION_PLATFORM_PUBLIC_FEATURES_H_

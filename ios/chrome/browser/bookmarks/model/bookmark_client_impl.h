@@ -43,7 +43,6 @@ class BookmarkClientImpl : public power_bookmarks::BookmarkClientBase {
 
   // bookmarks::BookmarkClient:
   void Init(bookmarks::BookmarkModel* model) override;
-  bool AreFoldersForAccountStorageAllowed() override;
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
@@ -55,8 +54,12 @@ class BookmarkClientImpl : public power_bookmarks::BookmarkClientBase {
   bool CanSetPermanentNodeTitle(
       const bookmarks::BookmarkNode* permanent_node) override;
   bool IsNodeManaged(const bookmarks::BookmarkNode* node) override;
-  std::string EncodeBookmarkSyncMetadata() override;
-  void DecodeBookmarkSyncMetadata(
+  std::string EncodeLocalOrSyncableBookmarkSyncMetadata() override;
+  std::string EncodeAccountBookmarkSyncMetadata() override;
+  void DecodeLocalOrSyncableBookmarkSyncMetadata(
+      const std::string& metadata_str,
+      const base::RepeatingClosure& schedule_save_closure) override;
+  void DecodeAccountBookmarkSyncMetadata(
       const std::string& metadata_str,
       const base::RepeatingClosure& schedule_save_closure) override;
   void OnBookmarkNodeRemovedUndoable(

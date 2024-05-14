@@ -31,7 +31,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_service_utils.h"
 #import "components/sync/service/sync_user_settings.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_metrics.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
@@ -79,7 +79,7 @@
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -211,16 +211,8 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 // Number of insecure passwords.
 @property(assign) NSInteger insecurePasswordsCount;
 
-// Stores the most recently created or updated Affiliated Group.
-@property(nonatomic, assign) std::optional<password_manager::AffiliatedGroup>
-    mostRecentlyUpdatedAffiliatedGroup;
-
-// Stores the most recently created or updated password form.
-@property(nonatomic, assign) std::optional<password_manager::CredentialUIEntry>
-    mostRecentlyUpdatedPassword;
-
 // Stores the item which has form attribute's username and site equivalent to
-// that of `mostRecentlyUpdatedPassword`.
+// that of `mostRecentlyUpdatedCred`.
 @property(nonatomic, weak) TableViewItem* mostRecentlyUpdatedItem;
 
 // YES, if the user triggered a password check by tapping on the "Check Now"
@@ -291,6 +283,8 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   BOOL _searchPasswordsUserActionWasRecorded;
   // Whether or not the Password Manager widget promo should be shown.
   BOOL _shouldShowPasswordManagerWidgetPromo;
+  // Stores the most recently created or updated password form.
+  std::optional<password_manager::CredentialUIEntry> _mostRecentlyUpdatedCred;
 }
 
 @synthesize manageAccountLinkItem = _manageAccountLinkItem;
@@ -336,11 +330,9 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   _reauthenticationModule = reauthenticationModule;
 }
 
-// TODO(crbug.com/1358978): Receive AffiliatedGroup object instead of a
-// CredentialUIEntry. Store into mostRecentlyUpdatedAffiliatedGroup.
 - (void)setMostRecentlyUpdatedPasswordDetails:
     (const password_manager::CredentialUIEntry&)credential {
-  self.mostRecentlyUpdatedPassword = credential;
+  _mostRecentlyUpdatedCred = credential;
 }
 
 #pragma mark - UIViewController
@@ -372,10 +364,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   searchBar.delegate = self;
   searchBar.backgroundColor = UIColor.clearColor;
   searchBar.accessibilityIdentifier = kPasswordsSearchBarID;
-
-  // TODO(crbug.com/1268684): Explicitly set the background color for the search
-  // bar to match with the color of navigation bar in iOS 13/14 to work around
-  // an iOS issue.
 
   // UIKit needs to know which controller will be presenting the
   // searchController. If we don't add this trying to dismiss while
@@ -760,11 +748,20 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 
-  if (self.mostRecentlyUpdatedAffiliatedGroup) {
-    if (self.mostRecentlyUpdatedAffiliatedGroup->GetDisplayName() ==
-        affiliatedGroup.GetDisplayName()) {
+  if (_mostRecentlyUpdatedCred) {
+    // Find the affiliated group item with a credential on the same sign-on
+    // realm as the most recently updated credential.
+    auto groupCreds = affiliatedGroup.GetCredentials();
+    auto mostRecentlyUpdatedCred = *_mostRecentlyUpdatedCred;
+    auto pred = [&mostRecentlyUpdatedCred](
+                    const password_manager::CredentialUIEntry& entry) {
+      return mostRecentlyUpdatedCred.GetFirstSignonRealm() ==
+             entry.GetFirstSignonRealm();
+    };
+    if (auto it = std::find_if(groupCreds.begin(), groupCreds.end(), pred);
+        it != groupCreds.end()) {
       self.mostRecentlyUpdatedItem = passwordItem;
-      self.mostRecentlyUpdatedAffiliatedGroup = std::nullopt;
+      _mostRecentlyUpdatedCred = std::nullopt;
     }
   }
   return passwordItem;

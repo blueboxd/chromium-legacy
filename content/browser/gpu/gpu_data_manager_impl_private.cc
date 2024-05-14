@@ -578,6 +578,15 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
     BUILDFLAG(IS_CHROMEOS_ASH)
     CHECK(false) << "GPU acceleration is required on certain platforms!";
 #endif
+  } else if (features::IsSkiaGraphiteEnabled(command_line)) {
+    // If Graphite is enabled, fall back to Ganesh only on platforms that do not
+    // support software compositing. Otherwise, fall back directly to software.
+    // TODO(b/323953910): Eliminate this fallback on each platform once Graphite
+    // stability is sufficient on that platform.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+    fallback_modes_.push_back(gpu::GpuMode::HARDWARE_GL);
+#endif
+    fallback_modes_.push_back(gpu::GpuMode::HARDWARE_GRAPHITE);
   } else {
     // On Fuchsia Vulkan must be used when it's enabled by the WebEngine
     // embedder. Falling back to SW compositing in that case is not supported.
@@ -606,7 +615,7 @@ void GpuDataManagerImplPrivate::BlocklistWebGLForTesting() {
     else
       gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusEnabled;
   }
-  UpdateGpuFeatureInfo(gpu_feature_info, absl::nullopt);
+  UpdateGpuFeatureInfo(gpu_feature_info, std::nullopt);
   NotifyGpuInfoUpdate();
 }
 
@@ -625,6 +634,7 @@ std::vector<std::string> GpuDataManagerImplPrivate::GetDawnInfoList() const {
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
+    case gpu::GpuMode::HARDWARE_GRAPHITE:
     case gpu::GpuMode::HARDWARE_VULKAN:
       return true;
     case gpu::GpuMode::SWIFTSHADER:
@@ -1044,7 +1054,7 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
 
 void GpuDataManagerImplPrivate::UpdateGpuInfo(
     const gpu::GPUInfo& gpu_info,
-    const absl::optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu) {
+    const std::optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu) {
 #if BUILDFLAG(IS_WIN)
   // If GPU process crashes and launches again, GPUInfo will be sent back from
   // the new GPU process again, and may overwrite the DX12, Vulkan, DxDiagNode
@@ -1272,7 +1282,7 @@ void GpuDataManagerImplPrivate::UpdateDawnInfo(
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    const absl::optional<gpu::GpuFeatureInfo>&
+    const std::optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
   gpu_feature_info_ = gpu_feature_info;
 #if !BUILDFLAG(IS_FUCHSIA)
@@ -1385,6 +1395,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   std::string use_gl;
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
+    case gpu::GpuMode::HARDWARE_GRAPHITE:
     case gpu::GpuMode::HARDWARE_VULKAN:
       use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
       break;
@@ -1449,6 +1460,18 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
   if (gpu_mode_ != gpu::GpuMode::HARDWARE_VULKAN)
     gpu_preferences->use_vulkan = gpu::VulkanImplementationName::kNone;
 #endif
+
+  if (!HardwareAccelerationEnabled()) {
+    gpu_preferences->gr_context_type = gpu::GrContextType::kNone;
+  } else if (gpu_mode_ != gpu::GpuMode::HARDWARE_GRAPHITE) {
+    // Recompute the `gr_context_type` pref with Graphite explicitly disabled,
+    // as it may currently be set to Graphite.
+    auto command_line_with_graphite_disabled(*command_line);
+    command_line_with_graphite_disabled.AppendSwitch(
+        switches::kDisableSkiaGraphite);
+    gpu_preferences->gr_context_type =
+        gpu::gles2::ParseGrContextType(&command_line_with_graphite_disabled);
+  }
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
@@ -1460,6 +1483,7 @@ void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
 bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
+    case gpu::GpuMode::HARDWARE_GRAPHITE:
     case gpu::GpuMode::HARDWARE_VULKAN:
       return true;
     default:
@@ -1468,7 +1492,7 @@ bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
 }
 
 void GpuDataManagerImplPrivate::OnGpuBlocked() {
-  absl::optional<gpu::GpuFeatureInfo> gpu_feature_info_for_hardware_gpu;
+  std::optional<gpu::GpuFeatureInfo> gpu_feature_info_for_hardware_gpu;
   if (gpu_feature_info_.IsInitialized())
     gpu_feature_info_for_hardware_gpu = gpu_feature_info_;
   gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfoWithNoGpu();

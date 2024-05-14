@@ -7,6 +7,7 @@
 
 #include "ash/ambient/model/ambient_weather_model.h"
 #include "ash/ambient/model/ambient_weather_model_observer.h"
+#include "ash/ash_export.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -24,8 +25,10 @@ class AmbientViewDelegate;
 class TimeView;
 
 // Container for displaying a glanceable clock and weather info.
-class GlanceableInfoView : public views::View,
-                           public AmbientWeatherModelObserver {
+class ASH_EXPORT GlanceableInfoView : public views::View,
+                                      public AmbientWeatherModelObserver {
+  METADATA_HEADER(GlanceableInfoView, views::View)
+
  public:
   class Delegate {
    public:
@@ -34,8 +37,6 @@ class GlanceableInfoView : public views::View,
     // Returns the color for time and temperature text in |GlanceableInfoView|.
     virtual SkColor GetTimeTemperatureFontColor() = 0;
   };
-
-  METADATA_HEADER(GlanceableInfoView);
 
   GlanceableInfoView(
       AmbientViewDelegate* delegate,
@@ -52,9 +53,12 @@ class GlanceableInfoView : public views::View,
   // AmbientWeatherModelObserver:
   void OnWeatherInfoUpdated() override;
 
-  void Show();
+  void ShowWeather();
 
   int GetTimeFontDescent();
+
+  bool IsWeatherConditionIconSetForTesting() const;
+  bool IsTemperatureSetForTesting() const;
 
  private:
   void InitLayout();
@@ -62,14 +66,14 @@ class GlanceableInfoView : public views::View,
   std::u16string GetTemperatureText() const;
 
   // View for the time info. Owned by the view hierarchy.
-  raw_ptr<TimeView, ExperimentalAsh> time_view_ = nullptr;
+  raw_ptr<TimeView> time_view_ = nullptr;
 
   // Views for weather icon and temperature.
-  raw_ptr<views::ImageView, ExperimentalAsh> weather_condition_icon_ = nullptr;
-  raw_ptr<views::Label, ExperimentalAsh> temperature_ = nullptr;
+  raw_ptr<views::ImageView> weather_condition_icon_ = nullptr;
+  raw_ptr<views::Label> temperature_ = nullptr;
 
   // Owned by |AmbientController|.
-  const raw_ptr<AmbientViewDelegate, ExperimentalAsh> delegate_ = nullptr;
+  const raw_ptr<AmbientViewDelegate> delegate_ = nullptr;
 
   // Unowned. Must out live |GlancealeInfoView|.
   raw_ptr<GlanceableInfoView::Delegate> const glanceable_info_view_delegate_ =

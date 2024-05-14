@@ -36,6 +36,8 @@ using ::chromeos::kFrameInactiveColorKey;
 // different scaling strategy than the rest of the frame such
 // as caption buttons.
 class HeaderView::HeaderContentView : public views::View {
+  METADATA_HEADER(HeaderContentView, views::View)
+
  public:
   explicit HeaderContentView(HeaderView* header_view)
       : header_view_(header_view) {}
@@ -58,10 +60,13 @@ class HeaderView::HeaderContentView : public views::View {
   }
 
  private:
-  raw_ptr<HeaderView, ExperimentalAsh> header_view_;
+  raw_ptr<HeaderView> header_view_;
   views::PaintInfo::ScaleType scale_type_ =
       views::PaintInfo::ScaleType::kScaleWithEdgeSnapping;
 };
+
+BEGIN_METADATA(HeaderView, HeaderContentView, views::View)
+END_METADATA
 
 HeaderView::HeaderView(views::Widget* target_widget,
                        views::NonClientFrameView* frame_view)
@@ -113,9 +118,9 @@ int HeaderView::GetPreferredOnScreenHeight() {
 }
 
 int HeaderView::GetPreferredHeight() {
-  // Calculating the preferred height requires at least one Layout().
+  // Calculating the preferred height requires at least one layout.
   if (!did_layout_)
-    Layout();
+    DeprecatedLayoutImmediately();
   return frame_header_->GetHeaderHeightForPainting();
 }
 
@@ -139,7 +144,7 @@ void HeaderView::SetAvatarIcon(const gfx::ImageSkia& avatar) {
     avatar_icon_->SetImage(avatar);
   }
   frame_header_->SetLeftHeaderView(avatar_icon_);
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void HeaderView::UpdateCaptionButtons() {
@@ -149,7 +154,7 @@ void HeaderView::UpdateCaptionButtons() {
   UpdateBackButton();
   UpdateCenterButton();
 
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void HeaderView::SetWidthInPixels(int width_in_pixels) {
@@ -166,7 +171,7 @@ void HeaderView::SetHeaderCornerRadius(int radius) {
   frame_header_->SetHeaderCornerRadius(radius);
 }
 
-void HeaderView::Layout() {
+void HeaderView::Layout(PassKey) {
   did_layout_ = true;
   header_content_view_->SetBoundsRect(GetLocalBounds());
   frame_header_->LayoutHeader();
@@ -178,7 +183,7 @@ void HeaderView::ChildPreferredSizeChanged(views::View* child) {
 
   // May be null during view initialization.
   if (parent())
-    parent()->Layout();
+    parent()->DeprecatedLayoutImmediately();
 }
 
 bool HeaderView::IsDrawn() const {
@@ -236,17 +241,17 @@ void HeaderView::OnDisplayTabletStateChanged(display::TabletState state) {
     case display::TabletState::kInTabletMode:
       UpdateCaptionButtonsVisibility();
       caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
-      parent()->Layout();
+      parent()->DeprecatedLayoutImmediately();
       if (target_widget_) {
-        target_widget_->non_client_view()->Layout();
+        target_widget_->non_client_view()->DeprecatedLayoutImmediately();
       }
       break;
     case display::TabletState::kInClamshellMode:
       UpdateCaptionButtonsVisibility();
       caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
-      parent()->Layout();
+      parent()->DeprecatedLayoutImmediately();
       if (target_widget_)
-        target_widget_->non_client_view()->Layout();
+        target_widget_->non_client_view()->DeprecatedLayoutImmediately();
       break;
     case display::TabletState::kEnteringTabletMode:
       break;
@@ -284,14 +289,14 @@ void HeaderView::OnImmersiveRevealStarted() {
     // The immersive layer should always be top.
     layer()->parent()->StackAtTop(layer());
   }
-  parent()->Layout();
+  parent()->DeprecatedLayoutImmediately();
 }
 
 void HeaderView::OnImmersiveRevealEnded() {
   fullscreen_visible_fraction_ = 0;
   if (add_layer_for_immersive_)
     DestroyLayer();
-  parent()->Layout();
+  parent()->DeprecatedLayoutImmediately();
 }
 
 void HeaderView::OnImmersiveFullscreenEntered() {
@@ -314,7 +319,7 @@ void HeaderView::OnImmersiveFullscreenExited() {
 void HeaderView::SetVisibleFraction(double visible_fraction) {
   if (fullscreen_visible_fraction_ != visible_fraction) {
     fullscreen_visible_fraction_ = visible_fraction;
-    parent()->Layout();
+    parent()->DeprecatedLayoutImmediately();
   }
 }
 
@@ -331,7 +336,7 @@ std::vector<gfx::Rect> HeaderView::GetVisibleBoundsInScreen() const {
 }
 
 void HeaderView::Relayout() {
-  parent()->Layout();
+  parent()->DeprecatedLayoutImmediately();
 }
 
 void HeaderView::PaintHeaderContent(gfx::Canvas* canvas) {
@@ -381,7 +386,7 @@ void HeaderView::UpdateCaptionButtonsVisibility() {
   caption_button_container_->SetVisible(should_paint_);
 }
 
-BEGIN_METADATA(HeaderView, views::View)
+BEGIN_METADATA(HeaderView)
 END_METADATA
 
 }  // namespace chromeos

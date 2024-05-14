@@ -7,14 +7,17 @@
 #import "base/functional/bind.h"
 #import "base/logging.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/time/time.h"
 #import "base/types/expected.h"
-#import "components/plus_addresses/features.h"
+#import "build/branding_buildflags.h"
+#import "components/grit/components_resources.h"
 #import "components/plus_addresses/plus_address_metrics.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/plus_addresses/ui/plus_address_bottom_sheet_constants.h"
 #import "ios/chrome/browser/plus_addresses/ui/plus_address_bottom_sheet_delegate.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
@@ -43,20 +46,52 @@ NSAttributedString* DescriptionMessage() {
     NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
     NSFontAttributeName :
         [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
-    NSLinkAttributeName : base::SysUTF8ToNSString(
-        plus_addresses::kPlusAddressManagementUrl.Get()),
+    // Opening management page is handled by the delegate.
+    NSLinkAttributeName : @"",
   };
 
   return AttributedStringFromStringWithLink(message, text_attributes,
                                             link_attributes);
 }
+
+// Generate the error message with link to report error for displaying on the
+// bottom sheet.
+NSAttributedString* ErrorMessage() {
+  NSDictionary* text_attributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
+  };
+  NSString* message = l10n_util::GetNSString(
+      IDS_PLUS_ADDRESS_MODAL_REPORT_ERROR_INSTRUCTION_IOS);
+  NSDictionary* link_attributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
+    // Opening error report page is handled by the delegate.
+    NSLinkAttributeName : @"",
+  };
+
+  return AttributedStringFromStringWithLink(message, text_attributes,
+                                            link_attributes);
+}
+
+// Returns the image that should be used for the PlusAddress logo.
+UIImage* PlusAddressesLogo() {
+  // IDR_PLUS_ADDRESS_LOGO only exists in official builds.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return NativeImage(IDR_PLUS_ADDRESS_LOGO);
+#else
+  return DefaultSymbolTemplateWithPointSize(kMailFillSymbol, kImageSize);
+#endif
+}
+
 }  // namespace
 
 @interface PlusAddressBottomSheetViewController () <
     ConfirmationAlertActionHandler,
     UIAdaptivePresentationControllerDelegate,
     UITextViewDelegate>
-
 @end
 
 @implementation PlusAddressBottomSheetViewController {
@@ -67,8 +102,19 @@ NSAttributedString* DescriptionMessage() {
   __weak id<BrowserCoordinatorCommands> _browserCoordinatorHandler;
   // The label that will display the reserved plus address, once it is ready.
   UILabel* _reservedPlusAddressLabel;
+  // The description of plus address that will be displayed on the bottom sheet.
+  UITextView* _description;
+  // The error message with error report instruction that will be shown when
+  // error occurs.
+  UITextView* _errorMessage;
   // A loading spinner to indicate to the user that an action is in progress.
   UIActivityIndicatorView* _activityIndicator;
+  // Record of the time the bottom sheet is shown.
+  base::Time _bottomSheetShownTime;
+  // Error that occurred while bottom sheet is showing.
+  std::optional<
+      plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus>
+      _bottomSheetErrorStatus;
 }
 
 - (instancetype)initWithDelegate:(id<PlusAddressBottomSheetDelegate>)delegate
@@ -88,7 +134,7 @@ NSAttributedString* DescriptionMessage() {
   // Set the properties read by the super when constructing the
   // views in `-[ConfirmationAlertViewController viewDidLoad]`.
   [self setupAboveTitleView];
-  self.image = DefaultSymbolTemplateWithPointSize(kMailFillSymbol, kImageSize);
+  self.image = PlusAddressesLogo();
   self.imageHasFixedSize = true;
   self.titleString = l10n_util::GetNSString(IDS_PLUS_ADDRESS_MODAL_TITLE);
   self.primaryActionString =
@@ -106,10 +152,12 @@ NSAttributedString* DescriptionMessage() {
   NSString* primaryEmailAddress = [_delegate primaryEmailAddress];
   UILabel* primaryAddressLabel =
       [self primaryEmailAddressView:primaryEmailAddress];
-  UITextView* description = [self descriptionView:DescriptionMessage()];
+  _description = [self descriptionView:DescriptionMessage()];
+  _errorMessage = [self errorMessageViewWithMessage:ErrorMessage()];
   UIStackView* verticalStack = [[UIStackView alloc] initWithArrangedSubviews:@[
-    description, primaryAddressLabel, _reservedPlusAddressLabel
+    _description, primaryAddressLabel, _reservedPlusAddressLabel, _errorMessage
   ]];
+  _errorMessage.hidden = YES;
   verticalStack.axis = UILayoutConstraintAxisVertical;
   verticalStack.spacing = 0;
   verticalStack.distribution = UIStackViewDistributionFill;
@@ -130,6 +178,7 @@ NSAttributedString* DescriptionMessage() {
   [_delegate reservePlusAddress];
   plus_addresses::PlusAddressMetrics::RecordModalEvent(
       plus_addresses::PlusAddressMetrics::PlusAddressModalEvent::kModalShown);
+  _bottomSheetShownTime = base::Time::Now();
 }
 
 #pragma mark - ConfirmationAlertActionHandler
@@ -147,9 +196,7 @@ NSAttributedString* DescriptionMessage() {
 - (void)confirmationAlertSecondaryAction {
   // The cancel button was tapped, which dismisses the bottom sheet.
   // Call out to the command handler to hide the view and stop the coordinator.
-  plus_addresses::PlusAddressMetrics::RecordModalEvent(
-      plus_addresses::PlusAddressMetrics::PlusAddressModalEvent::
-          kModalCanceled);
+  [self dismiss];
   [_browserCoordinatorHandler dismissPlusAddressBottomSheet];
 }
 
@@ -161,31 +208,41 @@ NSAttributedString* DescriptionMessage() {
 }
 
 - (void)didConfirmPlusAddress {
+  plus_addresses::PlusAddressMetrics::RecordModalShownDuration(
+      plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus::
+          kModalConfirmed,
+      base::Time::Now() - _bottomSheetShownTime);
   [_activityIndicator stopAnimating];
   [_browserCoordinatorHandler dismissPlusAddressBottomSheet];
 }
 
-- (void)notifyError {
+- (void)notifyError:
+    (plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus)
+        status {
   // With any error, whether during the reservation step or the confirmation
   // step, disable submission of the modal.
+  _bottomSheetErrorStatus = status;
   self.primaryActionButton.enabled = NO;
-  _reservedPlusAddressLabel.text =
-      l10n_util::GetNSString(IDS_PLUS_ADDRESS_MODAL_ERROR_MESSAGE);
+  _reservedPlusAddressLabel.hidden = YES;
+  _errorMessage.hidden = NO;
   [_activityIndicator stopAnimating];
 }
 
 #pragma mark - UITextViewDelegate
 
-// Handle click to the user's google account settings. Note that `URL` is
-// currently ignored, as the only available link has only one possible function.
+// Handle click on URLs on the bottomsheet.
+// TODO(crbug.com/1467623) Add primaryActionForTextItem: when this method is
+// deprecated after ios 17 (detail on UITextItem.h).
 - (BOOL)textView:(UITextView*)textView
     shouldInteractWithURL:(NSURL*)URL
                   inRange:(NSRange)characterRange
               interaction:(UITextItemInteraction)interaction {
-  CHECK([URL.absoluteString
-      isEqual:base::SysUTF8ToNSString(
-                  plus_addresses::kPlusAddressManagementUrl.Get())]);
-  [_browserCoordinatorHandler showPlusAddressManagementPage];
+  CHECK(textView == _errorMessage || textView == _description);
+  if (textView == _errorMessage) {
+    [_delegate openNewTab:PlusAddressURLType::kErrorReport];
+  } else {
+    [_delegate openNewTab:PlusAddressURLType::kManagement];
+  }
   [_browserCoordinatorHandler dismissPlusAddressBottomSheet];
   // Returns NO as the app is handling the opening of the URL.
   return NO;
@@ -197,10 +254,7 @@ NSAttributedString* DescriptionMessage() {
     (UIPresentationController*)presentationController {
   // TODO(crbug.com/1467623): separate out the cancel click from other exit
   // patterns, on all platforms.
-  plus_addresses::PlusAddressMetrics::RecordModalEvent(
-      plus_addresses::PlusAddressMetrics::PlusAddressModalEvent::
-          kModalCanceled);
-  [_browserCoordinatorHandler dismissPlusAddressBottomSheet];
+  [self dismiss];
 }
 
 #pragma mark - Private
@@ -251,17 +305,28 @@ NSAttributedString* DescriptionMessage() {
   descriptionView.editable = NO;
   descriptionView.delegate = self;
   descriptionView.backgroundColor = [UIColor clearColor];
-  descriptionView.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
   descriptionView.adjustsFontForContentSizeCategory = YES;
   descriptionView.translatesAutoresizingMaskIntoConstraints = NO;
   descriptionView.textContainerInset = UIEdgeInsetsZero;
-  descriptionView.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  descriptionView.linkTextAttributes =
-      @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
   descriptionView.attributedText = description;
   descriptionView.textAlignment = NSTextAlignmentCenter;
   return descriptionView;
+}
+
+- (UITextView*)errorMessageViewWithMessage:(NSAttributedString*)message {
+  UITextView* errorMessageView = CreateUITextViewWithTextKit1();
+  errorMessageView.accessibilityIdentifier =
+      kPlusAddressModalErrorMessageAccessibilityIdentifier;
+  errorMessageView.scrollEnabled = NO;
+  errorMessageView.editable = NO;
+  errorMessageView.delegate = self;
+  errorMessageView.backgroundColor = [UIColor clearColor];
+  errorMessageView.adjustsFontForContentSizeCategory = YES;
+  errorMessageView.translatesAutoresizingMaskIntoConstraints = NO;
+  errorMessageView.textContainerInset = UIEdgeInsetsZero;
+  errorMessageView.attributedText = message;
+  errorMessageView.textAlignment = NSTextAlignmentCenter;
+  return errorMessageView;
 }
 
 - (void)setupAboveTitleView {
@@ -276,6 +341,23 @@ NSAttributedString* DescriptionMessage() {
   container.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(container, _activityIndicator);
   self.aboveTitleView = container;
+}
+
+- (void)dismiss {
+  plus_addresses::PlusAddressMetrics::RecordModalEvent(
+      plus_addresses::PlusAddressMetrics::PlusAddressModalEvent::
+          kModalCanceled);
+  if (_bottomSheetErrorStatus.has_value()) {
+    plus_addresses::PlusAddressMetrics::RecordModalShownDuration(
+        _bottomSheetErrorStatus.value(),
+        base::Time::Now() - _bottomSheetShownTime);
+  } else {
+    plus_addresses::PlusAddressMetrics::RecordModalShownDuration(
+        plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus::
+            kModalCanceled,
+        base::Time::Now() - _bottomSheetShownTime);
+  }
+  [_browserCoordinatorHandler dismissPlusAddressBottomSheet];
 }
 
 @end

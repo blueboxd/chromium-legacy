@@ -196,7 +196,8 @@ OsSettingsProvider::OsSettingsProvider(
     Profile* profile,
     ash::settings::SearchHandler* search_handler,
     const ash::settings::Hierarchy* hierarchy)
-    : profile_(profile),
+    : SearchProvider(SearchCategory::kSettings),
+      profile_(profile),
       search_handler_(search_handler),
       hierarchy_(hierarchy) {
   DCHECK(profile_);
@@ -309,8 +310,8 @@ void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
   // changed.
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (update.ReadinessChanged() || update.IconKeyChanged()) {
-    proxy->LoadIcon(update.AppType(), web_app::kOsSettingsAppId,
-                    apps::IconType::kStandard, kAppIconDimension,
+    proxy->LoadIcon(web_app::kOsSettingsAppId, apps::IconType::kStandard,
+                    kAppIconDimension,
                     /*allow_placeholder_icon=*/false,
                     base::BindOnce(&OsSettingsProvider::OnLoadIcon,
                                    weak_factory_.GetWeakPtr(),

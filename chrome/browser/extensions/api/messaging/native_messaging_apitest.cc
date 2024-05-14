@@ -26,6 +26,7 @@
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/test/extension_background_page_waiter.h"
 #include "extensions/test/result_catcher.h"
 
@@ -176,7 +177,7 @@ IN_PROC_BROWSER_TEST_P(NativeMessagingApiTest,
 
 base::CommandLine CreateNativeMessagingConnectCommandLine(
     const std::string& connect_id,
-    const std::string& extension_id =
+    const ExtensionId& extension_id =
         ScopedTestNativeMessagingHost::kExtensionId) {
   base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
   command_line.AppendSwitchASCII(switches::kNativeMessagingConnectExtension,
@@ -233,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, MAYBE_Success) {
     FAIL() << catcher.message();
   }
   size_t tabs = 0;
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     tabs += browser->tab_strip_model()->count();
   }
   EXPECT_EQ(1u, tabs);
@@ -270,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, UnsupportedByNativeHost) {
     FAIL() << catcher.message();
   }
   size_t tabs = 0;
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     tabs += browser->tab_strip_model()->count();
   }
   EXPECT_EQ(1u, tabs);
@@ -487,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchBackgroundModeApiTest,
     FAIL() << catcher_->message();
   }
   size_t tabs = 0;
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     tabs += browser->tab_strip_model()->count();
   }
   EXPECT_EQ(0u, tabs);

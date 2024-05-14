@@ -1,15 +1,15 @@
 <style include="md-select settings-shared input-device-settings-shared">
-  iron-list {
-    max-height: 50vh;
+  #menuContainer {
+    display: table;
     width: 200px;
   }
 
-  #menuContainer {
+  iron-dropdown {
     background-color: var(--cros-bg-color-elevation-3);
     border-radius: 2px;
     box-shadow: var(--cr-elevation-3);
-    outline: 1px solid var(--cros-separator-color);
-    display: table;
+    max-height: 50vh;
+    overflow: auto;
   }
 
   .label-container {
@@ -29,15 +29,18 @@
     width: 168px;
   }
 </style>
-<div tabindex="0" id="selectDropdown"
+<div tabindex="0" id="selectDropdown" role="button"
     class="md-select label-container"
     on-click="showDropdownMenu_">
   <template is="dom-if" if="[[remappedToKeyCombination_]]">
     <template is="dom-repeat" items="[[inputKeys_]]">
       <template is="dom-if" if="[[getIconIdForKey_(item)]]">
-        <iron-icon icon="[[getIconIdForKey_(item)]]"
-            aria-hidden="true">
-        </iron-icon>
+        <div aria-label="[[getAriaLabelForIcon(item)]]" role="img">
+          <iron-icon icon="[[getIconIdForKey_(item)]]"
+              has-launcher-button="[[hasLauncherButton]]"
+              aria-hidden="true">
+          </iron-icon>
+        </div>
       </template>
       <template is="dom-if" if="[[!getIconIdForKey_(item)]]">
         <span>[[item]]</span>
@@ -49,14 +52,14 @@
   </template>
 </div>
 <iron-dropdown opened="[[shouldShowDropdownMenu_]]"
-    no-cancel-on-outside-click>
+    no-cancel-on-outside-click
+    focus-target="[[focusTarget_]]"
+    dynamic-align>
   <div id="menuContainer" slot="dropdown-content">
-    <iron-list items="[[menu]]">
-      <template>
-        <customize-button-dropdown-item option="[[item]]"
-            selected="[[isItemSelected_(item, selectedItem)]]">
-        </customize-button-dropdown-item>
-      </template>
-    </iron-list>
+    <template is="dom-repeat" items="[[menu]]">
+      <customize-button-dropdown-item option="[[item]]"
+          selected="[[isItemSelected_(item, selectedItem)]]">
+      </customize-button-dropdown-item>
+    </template>
   </div>
 </iron-dropdown>

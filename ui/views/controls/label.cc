@@ -223,11 +223,11 @@ void Label::SetEnabledColor(SkColor color) {
   OnPropertyChanged(&requested_enabled_color_, kPropertyEffectsPaint);
 }
 
-absl::optional<ui::ColorId> Label::GetEnabledColorId() const {
+std::optional<ui::ColorId> Label::GetEnabledColorId() const {
   return enabled_color_id_;
 }
 
-void Label::SetEnabledColorId(absl::optional<ui::ColorId> enabled_color_id) {
+void Label::SetEnabledColorId(std::optional<ui::ColorId> enabled_color_id) {
   if (enabled_color_id_ == enabled_color_id)
     return;
 
@@ -257,7 +257,7 @@ void Label::SetBackgroundColor(SkColor color) {
 }
 
 void Label::SetBackgroundColorId(
-    absl::optional<ui::ColorId> background_color_id) {
+    std::optional<ui::ColorId> background_color_id) {
   if (background_color_id_ == background_color_id)
     return;
 
@@ -546,7 +546,7 @@ size_t Label::GetRequiredLines() const {
   return full_text_->GetNumLines();
 }
 
-std::u16string Label::GetDisplayTextForTesting() {
+const std::u16string Label::GetDisplayTextForTesting() const {
   MaybeBuildDisplayText();
   return display_text_ ? display_text_->GetDisplayText() : std::u16string();
 }
@@ -1306,7 +1306,7 @@ void Label::UpdateColorsFromTheme() {
   if (enabled_color_id_.has_value()) {
     requested_enabled_color_ = color_provider->GetColor(*enabled_color_id_);
   } else if (!enabled_color_set_) {
-    const absl::optional<SkColor> cascading_color =
+    const std::optional<SkColor> cascading_color =
         GetCascadingProperty(this, kCascadingLabelEnabledColor);
     requested_enabled_color_ =
         cascading_color.value_or(GetColorProvider()->GetColor(

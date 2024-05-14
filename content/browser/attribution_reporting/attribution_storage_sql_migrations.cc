@@ -316,7 +316,7 @@ bool To56(sql::Database& db) {
 
     proto::AttributionReadOnlySourceData msg;
     SetReadOnlySourceData(
-        *event_report_windows,
+        &*event_report_windows,
         attribution_reporting::MaxEventLevelReports(*source_type), msg);
 
     set_statement.Reset(/*clear_bound_vars=*/true);
@@ -368,9 +368,44 @@ bool To56(sql::Database& db) {
   return true;
 }
 
+[[nodiscard]] bool MaybeMigrateTo57(AttributionStorageSql& storage,
+                                    sql::Database& db,
+                                    sql::MetaTable& meta_table,
+                                    int old_version) {
+  if (meta_table.GetVersionNumber() != old_version) {
+    return true;
+  }
+
+  AttributionStorageSql::DeletionCounts counts;
+  // Performs its own per item transaction when deleting.
+  storage.VerifyReports(&counts);
+  base::UmaHistogramCounts100000("Conversions.CorruptSourcesDeletedOnMigration",
+                                 counts.sources);
+  base::UmaHistogramCounts100000("Conversions.CorruptReportsDeletedOnMigration",
+                                 counts.reports);
+
+  sql::Transaction transaction(&db);
+
+  return transaction.Begin() &&                             //
+         SetVersionNumbers(meta_table, old_version + 1) &&  //
+         transaction.Commit();
+}
+
+// Version bump only: We avoid having to populate the new trigger_data proto
+// field for existing sources by treating absence of the field as equivalent to
+// specifying the default trigger-data cardinality for the source's source
+// type. We nonetheless bump the DB version to ensure that browser
+// downgrades do not result in this new field being ignored for sources
+// that *do* use non-default trigger data, because we raze the DB if the
+// version is too new.
+bool To58(sql::Database&) {
+  return true;
+}
+
 }  // namespace
 
-bool UpgradeAttributionStorageSqlSchema(sql::Database& db,
+bool UpgradeAttributionStorageSqlSchema(AttributionStorageSql& storage,
+                                        sql::Database& db,
                                         sql::MetaTable& meta_table) {
   base::ThreadTicks start_timestamp;
   if (base::ThreadTicks::IsSupported()) {
@@ -383,12 +418,14 @@ bool UpgradeAttributionStorageSqlSchema(sql::Database& db,
   bool ok = MaybeMigrate(db, meta_table, 52, &To53) &&  //
             MaybeMigrate(db, meta_table, 53, &To54) &&  //
             MaybeMigrate(db, meta_table, 54, &To55) &&  //
-            MaybeMigrate(db, meta_table, 55, &To56);
+            MaybeMigrate(db, meta_table, 55, &To56) &&  //
+            MaybeMigrateTo57(storage, db, meta_table, 56) &&
+            MaybeMigrate(db, meta_table, 57, &To58);
   if (!ok) {
     return false;
   }
 
-  static_assert(AttributionStorageSql::kCurrentVersionNumber == 56,
+  static_assert(AttributionStorageSql::kCurrentVersionNumber == 58,
                 "Add migration(s) above.");
 
   if (base::ThreadTicks::IsSupported()) {

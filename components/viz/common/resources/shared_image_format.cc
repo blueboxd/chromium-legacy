@@ -5,13 +5,13 @@
 #include "components/viz/common/resources/shared_image_format.h"
 
 #include <compare>
+#include <optional>
 #include <type_traits>
 
 #include "base/check_op.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
 namespace {
@@ -71,6 +71,8 @@ const char* SinglePlaneFormatToString(SharedImageFormat format) {
     return "NV12A_LEGACY";
   } else if (format == LegacyMultiPlaneFormat::kP010) {
     return "P010_LEGACY";
+  } else if (format == SinglePlaneFormat::kR_F16) {
+    return "R_F16";
   }
   NOTREACHED_NORETURN();
 }
@@ -90,6 +92,7 @@ int BitsPerPixelForTrueSinglePlaneFormat(SharedImageFormat format) {
   } else if (format == SinglePlaneFormat::kRGBA_4444 ||
              format == SinglePlaneFormat::kRGB_565 ||
              format == SinglePlaneFormat::kLUMINANCE_F16 ||
+             format == SinglePlaneFormat::kR_F16 ||
              format == SinglePlaneFormat::kR_16 ||
              format == SinglePlaneFormat::kBGR_565 ||
              format == SinglePlaneFormat::kRG_88) {
@@ -126,6 +129,8 @@ const char* PlaneConfigToString(SharedImageFormat::PlaneConfig plane) {
       return "Y_UV";
     case SharedImageFormat::PlaneConfig::kY_UV_A:
       return "Y_UV_A";
+    case SharedImageFormat::PlaneConfig::kY_U_V_A:
+      return "Y_U_V_A";
   }
 }
 
@@ -200,6 +205,8 @@ int SharedImageFormat::NumberOfPlanes() const {
       return 2;
     case PlaneConfig::kY_UV_A:
       return 3;
+    case PlaneConfig::kY_U_V_A:
+      return 4;
   }
 }
 
@@ -207,7 +214,7 @@ bool SharedImageFormat::IsValidPlaneIndex(int plane_index) const {
   return plane_index >= 0 && plane_index < NumberOfPlanes();
 }
 
-absl::optional<size_t> SharedImageFormat::MaybeEstimatedPlaneSizeInBytes(
+std::optional<size_t> SharedImageFormat::MaybeEstimatedPlaneSizeInBytes(
     int plane_index,
     const gfx::Size& size) const {
   DCHECK(!size.IsEmpty());
@@ -224,14 +231,14 @@ absl::optional<size_t> SharedImageFormat::MaybeEstimatedPlaneSizeInBytes(
         BitsPerPixelForTrueSinglePlaneFormat(*this);
     bits_per_row *= size.width();
     if (!bits_per_row.IsValid()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     base::CheckedNumeric<size_t> estimated_bytes =
         ConvertBitsToBytes(bits_per_row.ValueOrDie());
     estimated_bytes *= size.height();
     if (!estimated_bytes.IsValid()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     return estimated_bytes.ValueOrDie();
@@ -247,13 +254,13 @@ absl::optional<size_t> SharedImageFormat::MaybeEstimatedPlaneSizeInBytes(
   plane_estimated_bytes *= plane_size.width();
   plane_estimated_bytes *= plane_size.height();
   if (!plane_estimated_bytes.IsValid()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return plane_estimated_bytes.ValueOrDie();
 }
 
-absl::optional<size_t> SharedImageFormat::MaybeEstimatedSizeInBytes(
+std::optional<size_t> SharedImageFormat::MaybeEstimatedSizeInBytes(
     const gfx::Size& size) const {
   DCHECK(!size.IsEmpty());
 
@@ -267,15 +274,15 @@ absl::optional<size_t> SharedImageFormat::MaybeEstimatedSizeInBytes(
 
   base::CheckedNumeric<size_t> total_estimated_bytes = 0;
   for (int plane_index = 0; plane_index < NumberOfPlanes(); ++plane_index) {
-    absl::optional<size_t> plane_estimated_bytes =
+    std::optional<size_t> plane_estimated_bytes =
         MaybeEstimatedPlaneSizeInBytes(plane_index, size);
     if (!plane_estimated_bytes.has_value()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     total_estimated_bytes += plane_estimated_bytes.value();
     if (!total_estimated_bytes.IsValid()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
   }
 
@@ -297,12 +304,15 @@ gfx::Size SharedImageFormat::GetPlaneSize(int plane_index,
     return size;
   }
 
-  // Y plane is always size
+  // First plane is always Y plane and it is always size (not subsampled).
   if (plane_index == 0) {
     return size;
   }
   // A plane is always size
   if (plane_config() == PlaneConfig::kY_UV_A && plane_index == 2) {
+    return size;
+  }
+  if (plane_config() == PlaneConfig::kY_U_V_A && plane_index == 3) {
     return size;
   }
 
@@ -329,6 +339,7 @@ int SharedImageFormat::NumChannelsInPlane(int plane_index) const {
   switch (plane_config()) {
     case PlaneConfig::kY_U_V:
     case PlaneConfig::kY_V_U:
+    case PlaneConfig::kY_U_V_A:
       return 1;
     case PlaneConfig::kY_UV:
       return plane_index == 1 ? 2 : 1;
@@ -406,6 +417,7 @@ bool SharedImageFormat::HasAlpha() const {
     case PlaneConfig::kY_UV:
       return false;
     case PlaneConfig::kY_UV_A:
+    case PlaneConfig::kY_U_V_A:
       return true;
   }
 }
@@ -447,6 +459,7 @@ int SharedImageFormat::BitsPerPixel() const {
     case mojom::SingleplanarFormat::RGBA_4444:
     case mojom::SingleplanarFormat::RGB_565:
     case mojom::SingleplanarFormat::LUMINANCE_F16:
+    case mojom::SingleplanarFormat::R_F16:
     case mojom::SingleplanarFormat::R16_EXT:
     case mojom::SingleplanarFormat::BGR_565:
     case mojom::SingleplanarFormat::RG_88:

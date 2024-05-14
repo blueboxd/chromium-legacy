@@ -4,9 +4,10 @@
 
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 
+#import "base/check.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -338,6 +339,128 @@
   };
 }
 
+- (UIAction*)actionToAddTabsToNewGroupWithTabsNumber:(int)tabsNumber
+                                               block:(ProceduralBlock)block {
+  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+      << "You should not be able to create a tab group context menu action "
+         "outside the Tab Groups experiment.";
+  UIImage* image = DefaultSymbolWithPointSize(kNewTabGroupActionSymbol,
+                                              kSymbolActionPointSize);
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetPluralNSStringF(
+                                IDS_IOS_CONTENT_CONTEXT_ADDTABTONEWTABGROUP,
+                                tabsNumber)
+                      image:image
+                       type:MenuActionType::AddTabToNewGroup
+                      block:block];
+  return action;
+}
+
+- (UIMenu*)menuToAddTabToGroupWithGroupTitleAndIdentifiers:
+               (NSArray<GroupTitleAndIdentifier*>*)groupTitleAndIdentifiers
+                                                     block:(void (^)(NSString*))
+                                                               block {
+  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+      << "You should not be able to create a tab group context menu action "
+         "outside the Tab Groups experiment.";
+
+  UIImage* image = DefaultSymbolWithPointSize(kMoveTabToGroupActionSymbol,
+                                              kSymbolActionPointSize);
+
+  NSMutableArray<UIMenuElement*>* groupsMenu = [[NSMutableArray alloc] init];
+
+  for (GroupTitleAndIdentifier* groupTitleAndIdentifier in
+           groupTitleAndIdentifiers) {
+    NSString* groupID = [groupTitleAndIdentifier.groupID copy];
+    ProceduralBlock groupBlock = ^{
+      if (block) {
+        block(groupID);
+      }
+    };
+
+    UIAction* groupAction =
+        [self actionWithTitle:groupTitleAndIdentifier.groupTitle
+                        image:nil
+                         type:MenuActionType::AddTabToExistingGroup
+                        block:groupBlock];
+    [groupsMenu addObject:groupAction];
+  }
+
+  UIMenu* menu = [UIMenu menuWithTitle:@""
+                                 image:nil
+                            identifier:nil
+                               options:UIMenuOptionsDisplayInline
+                              children:groupsMenu];
+  ProceduralBlock addTabToNewGroupBlock = ^{
+    if (block) {
+      block(nil);
+    }
+  };
+  NSArray<UIMenuElement*>* addToGroupMenuElements = @[
+    [self actionToAddTabsToNewGroupWithTabsNumber:1
+                                            block:addTabToNewGroupBlock],
+    menu
+  ];
+
+  return [UIMenu menuWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_CONTENT_CONTEXT_ADDTABTOTABGROUP)
+                         image:image
+                    identifier:nil
+                       options:UIMenuOptionsSingleSelection
+                      children:addToGroupMenuElements];
+}
+
+- (UIAction*)actionToRenameTabGroupWithBlock:(ProceduralBlock)block {
+  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid));
+  UIImage* image =
+      DefaultSymbolWithPointSize(kEditActionSymbol, kSymbolActionPointSize);
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetNSString(
+                                IDS_IOS_CONTENT_CONTEXT_RENAMEGROUP)
+                      image:image
+                       type:MenuActionType::RenameTabGroup
+                      block:block];
+  return action;
+}
+
+- (UIAction*)actionToAddNewTabInGroupWithBlock:(ProceduralBlock)block {
+  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid));
+  UIImage* image = DefaultSymbolWithPointSize(kNewTabGroupActionSymbol,
+                                              kSymbolActionPointSize);
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetNSString(
+                                IDS_IOS_CONTENT_CONTEXT_NEWTABINGROUP)
+                      image:image
+                       type:MenuActionType::NewTabInGroup
+                      block:block];
+  return action;
+}
+
+- (UIAction*)actionToUngroupTabGroupWithBlock:(ProceduralBlock)block {
+  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid));
+  UIImage* image = DefaultSymbolWithPointSize(kUngroupTabGroupSymbol,
+                                              kSymbolActionPointSize);
+  UIAction* action = [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_UNGROUP)
+                image:image
+                 type:MenuActionType::UngroupTabGroup
+                block:block];
+  return action;
+}
+
+- (UIAction*)actionToCloseTabGroupWithBlock:(ProceduralBlock)block {
+  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid));
+  UIImage* image =
+      DefaultSymbolWithPointSize(kXMarkSymbol, kSymbolActionPointSize);
+  UIAction* action = [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_CLOSEGROUP)
+                image:image
+                 type:MenuActionType::ClaseTabGroup
+                block:block];
+  action.attributes = UIMenuElementAttributesDestructive;
+  return action;
+}
+
 #pragma mark - Private
 
 // Creates a UIAction instance for closing a tab with a provided `title`.
@@ -353,4 +476,7 @@
   return action;
 }
 
+@end
+
+@implementation GroupTitleAndIdentifier
 @end

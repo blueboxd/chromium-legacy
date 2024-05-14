@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "components/tpcd/metadata/metadata.pb.h"
+#include "components/tpcd/metadata/parser.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace tpcd::metadata {
@@ -17,6 +18,7 @@ Metadata MakeMetadataProtoFromVectorOfPair(
     MetadataEntry* me = metadata.add_metadata_entries();
     me->set_primary_pattern_spec(metadata_pair.first);
     me->set_secondary_pattern_spec(metadata_pair.second);
+    me->set_source(Parser::kSourceTest);
   }
   return metadata;
 }
@@ -28,10 +30,7 @@ std::string MakeBase64EncodedMetadata(
       MakeMetadataProtoFromVectorOfPair(metadata_pairs).SerializeAsString(),
       &compressed);
 
-  std::string encoded;
-  base::Base64Encode(compressed, &encoded);
-
-  return encoded;
+  return base::Base64Encode(compressed);
 }
 
 }  // namespace tpcd::metadata

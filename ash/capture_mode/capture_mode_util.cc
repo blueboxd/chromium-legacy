@@ -4,7 +4,7 @@
 
 #include "ash/capture_mode/capture_mode_util.h"
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
@@ -47,8 +47,8 @@ namespace ash::capture_mode_util {
 
 namespace {
 
-constexpr int kBannerViewTopRadius = 0;
-constexpr int kBannerViewBottomRadius = 8;
+constexpr float kBannerViewTopRadius = 0.0f;
+constexpr float kBannerViewBottomRadius = 8.0f;
 constexpr float kScaleUpFactor = 0.8f;
 
 // The app ID used for the capture mode privacy indicators.
@@ -238,7 +238,7 @@ void TriggerAccessibilityAlertSoon(const std::string& message) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &AccessibilityControllerImpl::TriggerAccessibilityAlertWithMessage,
+          &AccessibilityController::TriggerAccessibilityAlertWithMessage,
           Shell::Get()->accessibility_controller()->GetWeakPtr(), message));
 }
 
@@ -341,8 +341,7 @@ std::unique_ptr<views::View> CreateBannerView() {
           ? cros_tokens::kCrosSysPrimary
           : static_cast<ui::ColorId>(kColorAshControlBackgroundColorActive);
   banner_view->SetBackground(views::CreateThemedRoundedRectBackground(
-      background_color_id, kBannerViewTopRadius, kBannerViewBottomRadius,
-      /*for_border_thickness=*/0));
+      background_color_id, kBannerViewTopRadius, kBannerViewBottomRadius));
 
   views::ImageView* icon =
       banner_view->AddChildView(std::make_unique<views::ImageView>());

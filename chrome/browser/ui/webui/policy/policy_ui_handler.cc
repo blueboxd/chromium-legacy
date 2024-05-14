@@ -19,6 +19,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/i18n/time_formatting.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -46,6 +47,7 @@
 #include "chrome/browser/policy/value_provider/value_provider_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/webui/policy/policy_ui.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/branded_strings.h"
 #include "components/crx_file/id_util.h"
@@ -118,39 +120,41 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
   source->AddLocalizedStrings(policy::kPolicySources);
 
   static constexpr webui::LocalizedString kStrings[] = {
-    {"conflict", IDS_POLICY_LABEL_CONFLICT},
-    {"superseding", IDS_POLICY_LABEL_SUPERSEDING},
-    {"conflictValue", IDS_POLICY_LABEL_CONFLICT_VALUE},
-    {"supersededValue", IDS_POLICY_LABEL_SUPERSEDED_VALUE},
-    {"headerLevel", IDS_POLICY_HEADER_LEVEL},
-    {"headerName", IDS_POLICY_HEADER_NAME},
-    {"headerScope", IDS_POLICY_HEADER_SCOPE},
-    {"headerSource", IDS_POLICY_HEADER_SOURCE},
-    {"headerStatus", IDS_POLICY_HEADER_STATUS},
-    {"headerValue", IDS_POLICY_HEADER_VALUE},
-    {"warning", IDS_POLICY_HEADER_WARNING},
-    {"levelMandatory", IDS_POLICY_LEVEL_MANDATORY},
-    {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
-    {"error", IDS_POLICY_LABEL_ERROR},
-    {"deprecated", IDS_POLICY_LABEL_DEPRECATED},
-    {"future", IDS_POLICY_LABEL_FUTURE},
-    {"info", IDS_POLICY_LABEL_INFO},
-    {"ignored", IDS_POLICY_LABEL_IGNORED},
-    {"notSpecified", IDS_POLICY_NOT_SPECIFIED},
-    {"ok", IDS_POLICY_OK},
-    {"scopeDevice", IDS_POLICY_SCOPE_DEVICE},
-    {"scopeUser", IDS_POLICY_SCOPE_USER},
-    {"scopeAllUsers", IDS_POLICY_SCOPE_ALL_USERS},
-    {"title", IDS_POLICY_TITLE},
-    {"unknown", IDS_POLICY_UNKNOWN},
-    {"unset", IDS_POLICY_UNSET},
-    {"value", IDS_POLICY_LABEL_VALUE},
-    {"sourceDefault", IDS_POLICY_SOURCE_DEFAULT},
-    {"loadPoliciesDone", IDS_POLICY_LOAD_POLICIES_DONE},
-    {"loadingPolicies", IDS_POLICY_LOADING_POLICIES},
+      {"conflict", IDS_POLICY_LABEL_CONFLICT},
+      {"superseding", IDS_POLICY_LABEL_SUPERSEDING},
+      {"conflictValue", IDS_POLICY_LABEL_CONFLICT_VALUE},
+      {"supersededValue", IDS_POLICY_LABEL_SUPERSEDED_VALUE},
+      {"headerLevel", IDS_POLICY_HEADER_LEVEL},
+      {"headerName", IDS_POLICY_HEADER_NAME},
+      {"headerScope", IDS_POLICY_HEADER_SCOPE},
+      {"headerSource", IDS_POLICY_HEADER_SOURCE},
+      {"headerStatus", IDS_POLICY_HEADER_STATUS},
+      {"headerValue", IDS_POLICY_HEADER_VALUE},
+      {"warning", IDS_POLICY_HEADER_WARNING},
+      {"levelMandatory", IDS_POLICY_LEVEL_MANDATORY},
+      {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
+      {"error", IDS_POLICY_LABEL_ERROR},
+      {"deprecated", IDS_POLICY_LABEL_DEPRECATED},
+      {"future", IDS_POLICY_LABEL_FUTURE},
+      {"info", IDS_POLICY_LABEL_INFO},
+      {"ignored", IDS_POLICY_LABEL_IGNORED},
+      {"notSpecified", IDS_POLICY_NOT_SPECIFIED},
+      {"ok", IDS_POLICY_OK},
+      {"scopeDevice", IDS_POLICY_SCOPE_DEVICE},
+      {"scopeUser", IDS_POLICY_SCOPE_USER},
+      {"scopeAllUsers", IDS_POLICY_SCOPE_ALL_USERS},
+      {"title", IDS_POLICY_TITLE},
+      {"unknown", IDS_POLICY_UNKNOWN},
+      {"unset", IDS_POLICY_UNSET},
+      {"value", IDS_POLICY_LABEL_VALUE},
+      {"sourceDefault", IDS_POLICY_SOURCE_DEFAULT},
+      {"reloadingPolicies", IDS_POLICY_RELOADING_POLICIES},
+      {"reloadPoliciesDone", IDS_POLICY_RELOAD_POLICIES_DONE},
+      {"copyPoliciesDone", IDS_COPY_POLICIES_DONE},
+      {"exportPoliciesDone", IDS_EXPORT_POLICIES_JSON_DONE},
 #if !BUILDFLAG(IS_CHROMEOS)
-    {"reportUploading", IDS_REPORT_UPLOADING},
-    {"reportUploaded", IDS_REPORT_UPLOADED},
+      {"reportUploading", IDS_REPORT_UPLOADING},
+      {"reportUploaded", IDS_REPORT_UPLOADED},
 #endif  // !BUILDFLAG(IS_CHROMEOS)
   };
   source->AddLocalizedStrings(kStrings);
@@ -170,6 +174,10 @@ void PolicyUIHandler::RegisterMessages() {
       CreateDefaultPolicyValueAndStatusAggregator(Profile::FromWebUI(web_ui()));
   policy_value_and_status_observation_.Observe(
       policy_value_and_status_aggregator_.get());
+
+  schema_registry_observation_.Observe(Profile::FromWebUI(web_ui())
+                                           ->GetPolicySchemaRegistryService()
+                                           ->registry());
 
   web_ui()->RegisterMessageCallback(
       "exportPoliciesJSON",
@@ -229,6 +237,18 @@ void PolicyUIHandler::OnPolicyValueAndStatusChanged() {
   SendStatus();
 }
 
+void PolicyUIHandler::OnSchemaRegistryUpdated(bool has_new_schemas) {
+  SendSchema();
+}
+
+void PolicyUIHandler::SendSchema() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!IsJavascriptAllowed() || !PolicyUI::ShouldLoadTestPage(profile)) {
+    return;
+  }
+  FireWebUIListener("schema-updated", PolicyUI::GetSchema(profile));
+}
+
 void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {
   export_to_json_count_ += 1;
   if (!IsJavascriptAllowed()) {
@@ -244,6 +264,7 @@ void PolicyUIHandler::HandleListenPoliciesUpdates(
     const base::Value::List& args) {
   // Send initial policy values and status to UI page.
   AllowJavascript();
+  SendSchema();
   SendPolicies();
   SendStatus();
 }

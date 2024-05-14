@@ -28,12 +28,12 @@ namespace ash {
 // A view that mirrors the client area of a single (source) window.
 class ASH_EXPORT WindowMirrorView : public views::View,
                                     public aura::WindowObserver {
- public:
-  METADATA_HEADER(WindowMirrorView);
+  METADATA_HEADER(WindowMirrorView, views::View)
 
+ public:
   explicit WindowMirrorView(aura::Window* source,
                             bool show_non_client_view = false,
-                            bool sync_bounds = false);
+                            bool sync_bounds = true);
 
   WindowMirrorView(const WindowMirrorView&) = delete;
   WindowMirrorView& operator=(const WindowMirrorView&) = delete;
@@ -51,7 +51,7 @@ class ASH_EXPORT WindowMirrorView : public views::View,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
-  void Layout() override;
+  void Layout(PassKey) override;
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
   void OnVisibleBoundsChanged() override;
   void AddedToWidget() override;
@@ -72,10 +72,10 @@ class ASH_EXPORT WindowMirrorView : public views::View,
   gfx::Rect GetClientAreaBounds() const;
 
   // The original window that is being represented by |this|.
-  raw_ptr<aura::Window, ExperimentalAsh> source_;
+  raw_ptr<aura::Window> source_;
 
   // The window which contains this mirror view.
-  raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh> target_ = nullptr;
+  raw_ptr<aura::Window, DanglingUntriaged> target_ = nullptr;
 
   // Retains ownership of the mirror layer tree. This is lazily initialized
   // the first time the view becomes visible.

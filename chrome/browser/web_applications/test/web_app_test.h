@@ -41,21 +41,20 @@ class WebAppTest : public content::RenderViewHostTestHarness {
   explicit WebAppTest(WebAppTestTraits&&... traits)
       : content::RenderViewHostTestHarness(
             base::trait_helpers::Exclude<WithTestUrlLoaderFactory>::Filter(
-                traits)...),
-        shared_url_loader_factory_(
-            base::trait_helpers::HasTrait<WithTestUrlLoaderFactory,
-                                          WebAppTestTraits...>()
-                ? base::MakeRefCounted<
-                      network::WeakWrapperSharedURLLoaderFactory>(
-                      &test_url_loader_factory_)
-                : nullptr) {}
+                traits)...) {
+    shared_url_loader_factory_ =
+        base::trait_helpers::HasTrait<WithTestUrlLoaderFactory,
+                                      WebAppTestTraits...>()
+            ? test_url_loader_factory_.GetSafeWeakWrapper()
+            : nullptr;
+  }
 
   ~WebAppTest() override;
 
   void SetUp() override;
   void TearDown() override;
 
-  TestingProfile* profile() { return profile_.get(); }
+  TestingProfile* profile() const { return profile_.get(); }
   TestingProfileManager& profile_manager() { return testing_profile_manager_; }
 
   network::TestURLLoaderFactory& profile_url_loader_factory() {
@@ -68,7 +67,7 @@ class WebAppTest : public content::RenderViewHostTestHarness {
     return test_url_loader_factory_;
   }
 
-  web_app::FakeWebAppProvider& fake_provider();
+  web_app::FakeWebAppProvider& fake_provider() const;
 
  protected:
   // content::RenderViewHostTestHarness.
@@ -76,9 +75,9 @@ class WebAppTest : public content::RenderViewHostTestHarness {
 
  private:
   base::TimeTicks start_time_ = base::TimeTicks::Now();
+  network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_ =
       nullptr;
-  network::TestURLLoaderFactory test_url_loader_factory_;
 
   TestingProfileManager testing_profile_manager_{
       TestingBrowserProcess::GetGlobal()};

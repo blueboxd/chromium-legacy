@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(QuickOfficeForceFileDownloadEnabledBrowserTest,
   EXPECT_EQ(1u,
             download_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
-  std::vector<DownloadItem*> downloads;
+  std::vector<raw_ptr<DownloadItem, VectorExperimental>> downloads;
   download_manager->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
 
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(QuickOfficeForceFileDownloadDisabledBrowserTest,
   EXPECT_EQ(0u,
             download_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
-  std::vector<DownloadItem*> downloads;
+  std::vector<raw_ptr<DownloadItem, VectorExperimental>> downloads;
   download_manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
 }
@@ -351,6 +351,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DontMountVolumes()
             .NewDirectoryTree(),
         TestCase("fileDisplayWithoutDrive")
+            .DontMountVolumes()
+            .NewDirectoryTree(),
+        TestCase("fileDisplayWithoutDriveThenDisable")
             .DontMountVolumes()
             .NewDirectoryTree(),
         TestCase("fileDisplayWithHiddenVolume").NewDirectoryTree(),
@@ -407,8 +410,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive").DontMountVolumes(),
         TestCase("fileDisplayWithoutDrive").DontMountVolumes(),
-        // Test is failing (crbug.com/1097013)
-        // TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
         TestCase("fileDisplayWithHiddenVolume"),
         TestCase("fileDisplayMountWithFakeItemSelected"),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
@@ -625,11 +627,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkRenameDisabledForReadOnlyFile"),
         TestCase("checkRenameDisabledForReadOnlyFolder"),
         TestCase("checkContextMenuForRenameInput"),
-        TestCase("checkShareEnabledForReadWriteFile"),
-        TestCase("checkShareEnabledForReadOnlyDocument"),
-        TestCase("checkShareDisabledForStrictReadOnlyDocument"),
-        TestCase("checkShareEnabledForReadOnlyFile"),
-        TestCase("checkShareEnabledForReadOnlyFolder"),
         TestCase("checkCopyEnabledForReadWriteFile"),
         TestCase("checkCopyEnabledForReadOnlyDocument"),
         TestCase("checkCopyDisabledForStrictReadOnlyDocument"),
@@ -862,6 +859,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("directoryTreeExpandAndSelectedOnDragMove").NewDirectoryTree(),
         TestCase("directoryTreeClickDriveRootWhenMyDriveIsActive")
             .NewDirectoryTree(),
+        TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved")
+            .NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("directoryTreeActiveDirectory"),
         TestCase("directoryTreeSelectedDirectory"),
@@ -876,7 +875,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("directoryTreeExpandFolderOnNonDelayExpansionVolume"),
         TestCase("directoryTreeExpandFolderOnDelayExpansionVolume"),
         TestCase("directoryTreeExpandAndSelectedOnDragMove"),
-        TestCase("directoryTreeClickDriveRootWhenMyDriveIsActive")));
+        TestCase("directoryTreeClickDriveRootWhenMyDriveIsActive"),
+        TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
@@ -1376,16 +1376,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("restoreCurrentView")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    ShareAndManageDialog, /* share_and_manage_dialog.js */
+    ManageDialog, /* manage_dialog.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("shareDirectoryTeamDrive").NewDirectoryTree(),
-        TestCase("shareFileDrive").NewDirectoryTree(),
-        TestCase("shareDirectoryDrive").NewDirectoryTree(),
-        TestCase("shareHostedFileDrive").NewDirectoryTree(),
-        TestCase("shareFileTeamDrive").NewDirectoryTree(),
-        TestCase("shareHostedFileTeamDrive").NewDirectoryTree(),
-        TestCase("shareTeamDrive").NewDirectoryTree(),
         TestCase("manageFileDrive")
             .NewDirectoryTree()
             .FeatureIds({"screenplay-c8094019-e19b-4a03-8085-83bc29f1dad6"}),
@@ -1408,19 +1401,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .NewDirectoryTree()
             .FeatureIds({"screenplay-c8094019-e19b-4a03-8085-83bc29f1dad6"}),
         // Section end - browser tests for new directory tree
-        TestCase("shareFileDrive"),
-        TestCase("shareDirectoryDrive"),
-        TestCase("shareHostedFileDrive"),
         TestCase("manageHostedFileDrive")
             .FeatureIds({"screenplay-c8094019-e19b-4a03-8085-83bc29f1dad6"}),
         TestCase("manageFileDrive")
             .FeatureIds({"screenplay-c8094019-e19b-4a03-8085-83bc29f1dad6"}),
         TestCase("manageDirectoryDrive")
             .FeatureIds({"screenplay-c8094019-e19b-4a03-8085-83bc29f1dad6"}),
-        TestCase("shareFileTeamDrive"),
-        TestCase("shareDirectoryTeamDrive"),
-        TestCase("shareHostedFileTeamDrive"),
-        TestCase("shareTeamDrive"),
         TestCase("manageHostedFileTeamDrive")
             .FeatureIds({"screenplay-c8094019-e19b-4a03-8085-83bc29f1dad6"}),
         TestCase("manageFileTeamDrive")
@@ -1723,7 +1709,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("copyBetweenWindowsLocalToUsb").NewDirectoryTree(),
-        TestCase("copyBetweenWindowsUsbToLocal").NewDirectoryTree(),
+        // TODO(crbug.com/1523263): Re-enable this flaky test.
+        // TestCase("copyBetweenWindowsUsbToLocal").NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("copyBetweenWindowsLocalToDrive"),
         TestCase("copyBetweenWindowsLocalToUsb"),
@@ -1866,12 +1853,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("mountCrostini").NewDirectoryTree(),
+        TestCase("mountCrostiniWithSubFolder").NewDirectoryTree(),
         TestCase("enableDisableCrostini").NewDirectoryTree(),
         TestCase("sharePathWithCrostini")
             .NewDirectoryTree()
             .FeatureIds({"screenplay-122c00f8-9842-4666-8ca0-b6bf47454551"}),
         // Section end - browser tests for new directory tree
         TestCase("mountCrostini"),
+        TestCase("mountCrostiniWithSubFolder"),
         TestCase("enableDisableCrostini"),
         TestCase("sharePathWithCrostini")
             .FeatureIds({"screenplay-122c00f8-9842-4666-8ca0-b6bf47454551"}),
@@ -1925,9 +1914,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */
     FilesAppBrowserTest,
     ::testing::Values(
-#if !defined(ADDRESS_SANITIZER) && !defined(LEAK_SANITIZER)
         TestCase("recentsNested").NewDirectoryTree(),
-#endif
         TestCase("recentsFilterResetToAll").NewDirectoryTree(),
         TestCase("recentsA11yMessages")
             .NewDirectoryTree()
@@ -1983,6 +1970,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("recentsNested"),
         TestCase("recentsNoRenameForPlayFiles").EnableArc(),
         TestCase("recentsPlayFiles").EnableArc(),
+        TestCase("recentsSearchPlayFilesShowDownloads")
+            .EnableArc()
+            .EnableFSPsInRecents(),
         TestCase("recentsReadOnlyHidden"),
         TestCase("recentsRespectSearchWhenSwitchingFilter"),
         TestCase("recentsRespondToTimezoneChangeForGridView"),

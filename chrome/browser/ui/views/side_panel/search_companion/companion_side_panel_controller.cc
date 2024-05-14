@@ -6,6 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/companion/core/utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,9 +85,11 @@ void CompanionSidePanelController::CreateAndRegisterEntry() {
   auto* webui_allowlist = WebUIAllowlist::GetOrCreate(browser->profile());
   const url::Origin companion_origin = url::Origin::Create(
       GURL(chrome::kChromeUIUntrustedCompanionSidePanelURL));
+  // Allow third party cookies from companion and sign-in based flows.
   webui_allowlist->RegisterAutoGrantedThirdPartyCookies(
       companion_origin,
-      {ContentSettingsPattern::FromURL(GURL(GetHomepageURLForCompanion()))});
+      {ContentSettingsPattern::FromString("https://[*.]google.com"),
+       ContentSettingsPattern::FromURL(GURL(GetHomepageURLForCompanion()))});
 }
 
 void CompanionSidePanelController::DeregisterEntry() {

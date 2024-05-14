@@ -25,9 +25,15 @@ namespace {
 
 constexpr int kBubbleAnchorViewSizeDp = 100;
 
-class AnchorView : public views::View,
-                   public base::SupportsWeakPtr<AnchorView> {
+class AnchorView final : public views::View {
+ public:
+  base::WeakPtr<AnchorView> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
   METADATA_HEADER(AnchorView, views::View)
+  base::WeakPtrFactory<AnchorView> weak_ptr_factory_{this};
 };
 
 BEGIN_METADATA(AnchorView)
@@ -88,7 +94,7 @@ TEST_F(LoginRemoveAccountDialogTest, LongUserNameAndEmailLaidOutCorrectly) {
       "NedHasAReallyLongName StarkHasAReallyLongName";
   login_user_info.basic_user_info.display_email =
       "reallyreallyextralonggaianame@gmail.com";
-  login_user_info.basic_user_info.type = user_manager::USER_TYPE_REGULAR;
+  login_user_info.basic_user_info.type = user_manager::UserType::kRegular;
   login_user_info.is_device_owner = false;
   login_user_info.can_remove = true;
   auto* bubble = new LoginRemoveAccountDialog(

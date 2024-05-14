@@ -738,9 +738,9 @@ TEST_F(TabStripModelTest, TestTabHandlesStaticTabstrip) {
   EXPECT_TRUE(tabstrip.empty());
 
   tabstrip.AppendWebContents(CreateWebContentsWithID(1), true);
-  const TabHandle handle1 = tabstrip.GetTabHandleAt(0);
+  const tabs::TabHandle handle1 = tabstrip.GetTabHandleAt(0);
   tabstrip.AppendWebContents(CreateWebContentsWithID(2), true);
-  const TabHandle handle2 = tabstrip.GetTabHandleAt(1);
+  const tabs::TabHandle handle2 = tabstrip.GetTabHandleAt(1);
 
   EXPECT_EQ(0, tabstrip.GetIndexOfTab(handle1));
   EXPECT_EQ(handle1, tabstrip.GetTabHandleAt(0));
@@ -754,9 +754,9 @@ TEST_F(TabStripModelTest, TestTabHandlesMovingTabInSameTabstrip) {
   EXPECT_TRUE(tabstrip.empty());
 
   tabstrip.AppendWebContents(CreateWebContentsWithID(1), true);
-  const TabHandle handle1 = tabstrip.GetTabHandleAt(0);
+  const tabs::TabHandle handle1 = tabstrip.GetTabHandleAt(0);
   tabstrip.AppendWebContents(CreateWebContentsWithID(2), true);
-  const TabHandle handle2 = tabstrip.GetTabHandleAt(1);
+  const tabs::TabHandle handle2 = tabstrip.GetTabHandleAt(1);
 
   tabstrip.MoveWebContentsAt(0, 1, false);
 
@@ -772,7 +772,7 @@ TEST_F(TabStripModelTest, TestTabHandlesTabClosed) {
   EXPECT_TRUE(tabstrip.empty());
 
   tabstrip.AppendWebContents(CreateWebContentsWithID(1), true);
-  const TabHandle handle = tabstrip.GetTabHandleAt(0);
+  const tabs::TabHandle handle = tabstrip.GetTabHandleAt(0);
   tabstrip.AppendWebContents(CreateWebContentsWithID(2), true);
 
   tabstrip.CloseWebContentsAt(0, TabCloseTypes::CLOSE_NONE);
@@ -789,9 +789,58 @@ TEST_F(TabStripModelTest, TestTabHandlesOutOfBounds) {
   tabstrip.AppendWebContents(CreateWebContentsWithID(1), true);
   tabstrip.AppendWebContents(CreateWebContentsWithID(2), true);
 
-  EXPECT_EQ(TabStripModel::kNoTab, tabstrip.GetIndexOfTab(TabHandle::Null()));
+  EXPECT_EQ(TabStripModel::kNoTab,
+            tabstrip.GetIndexOfTab(tabs::TabHandle::Null()));
   EXPECT_DEATH_IF_SUPPORTED(tabstrip.GetTabHandleAt(2).Get(), "");
   EXPECT_DEATH_IF_SUPPORTED(tabstrip.GetTabHandleAt(-1).Get(), "");
+}
+
+TEST_F(TabStripModelTest, TestTabHandlesAcrossModels) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  tabstrip.AppendWebContents(CreateWebContentsWithID(1), true);
+  const tabs::TabHandle handle = tabstrip.GetTabHandleAt(0);
+  content::WebContents* raw_contents = handle.Get()->contents();
+  tabstrip.AppendWebContents(CreateWebContentsWithID(2), true);
+  content::WebContents* const opener = tabstrip.GetWebContentsAt(1);
+
+  ASSERT_EQ(0, tabstrip.GetIndexOfTab(handle));
+  ASSERT_EQ(handle, tabstrip.GetTabHandleAt(0));
+  ASSERT_EQ(&tabstrip, handle.Get()->owning_model());
+
+  tabstrip.SetOpenerOfWebContentsAt(0, opener);
+  ASSERT_EQ(opener, handle.Get()->opener());
+  tabstrip.SetTabPinned(0, true);
+  ASSERT_EQ(true, handle.Get()->pinned());
+  tabstrip.SetTabBlocked(0, true);
+  ASSERT_EQ(true, handle.Get()->blocked());
+
+  // Detach the tab, and the TabModel should continue to exist, but its state
+  // should get mostly reset.
+
+  std::unique_ptr<tabs::TabModel> owned_tab =
+      tabstrip.DetachTabAtForInsertion(0);
+  EXPECT_EQ(owned_tab.get(), handle.Get());
+  EXPECT_EQ(nullptr, handle.Get()->owning_model());
+
+  EXPECT_EQ(raw_contents, handle.Get()->contents());
+  EXPECT_EQ(nullptr, handle.Get()->opener());
+  EXPECT_EQ(false, handle.Get()->reset_opener_on_active_tab_change());
+  EXPECT_EQ(false, handle.Get()->pinned());
+  EXPECT_EQ(false, handle.Get()->blocked());
+
+  // Add it back into the tabstrip.
+
+  tabstrip.InsertDetachedTabAt(0, std::move(owned_tab), AddTabTypes::ADD_NONE);
+  EXPECT_EQ(&tabstrip, handle.Get()->owning_model());
+
+  EXPECT_EQ(raw_contents, handle.Get()->contents());
+  EXPECT_EQ(nullptr, handle.Get()->opener());
+  EXPECT_EQ(false, handle.Get()->reset_opener_on_active_tab_change());
+  EXPECT_EQ(false, handle.Get()->pinned());
+  EXPECT_EQ(false, handle.Get()->blocked());
 }
 
 TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
@@ -2992,6 +3041,17 @@ TEST_F(TabStripModelTest, CloseSelectedTabs) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, FirstTabIsActive) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+
+  // Add the first tab as a background tab.
+  strip.AppendWebContents(CreateWebContents(), /*foreground=*/false);
+
+  // The tab is still added as active, because it is the first tab.
+  EXPECT_EQ(0, strip.active_index());
+}
+
 TEST_F(TabStripModelTest, MultipleSelection) {
   typedef MockTabStripModelObserver::State State;
 
@@ -3011,10 +3071,13 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   // Selection and active tab change.
   strip.ActivateTabAt(3, TabStripUserGestureDetails(
                              TabStripUserGestureDetails::GestureType::kOther));
-  ASSERT_EQ(2, observer.GetStateCount());
-  ASSERT_EQ(observer.GetStateAt(0).action, MockTabStripModelObserver::ACTIVATE);
+  ASSERT_EQ(3, observer.GetStateCount());
+  ASSERT_EQ(observer.GetStateAt(0).action,
+            MockTabStripModelObserver::DEACTIVATE);
+  ASSERT_EQ(observer.GetStateAt(1).action, MockTabStripModelObserver::ACTIVATE);
   State s1(raw_contents3, 3, MockTabStripModelObserver::SELECT);
-  observer.ExpectStateEquals(1, s1);
+  s1.src_index = 0;
+  observer.ExpectStateEquals(2, s1);
   observer.ClearStates();
 
   // Adding all tabs to selection, active tab is now at 0.

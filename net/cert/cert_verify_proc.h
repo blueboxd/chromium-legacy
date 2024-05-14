@@ -15,7 +15,11 @@
 #include "crypto/crypto_buildflags.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
+#include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_verifier.h"
 #include "net/net_buildflags.h"
+#include "third_party/boringssl/src/pki/parsed_certificate.h"
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 #include "net/cert/internal/trust_store_chrome.h"
@@ -85,8 +89,10 @@ class NET_EXPORT CertVerifyProc
     ImplParams& operator=(ImplParams&& other);
 
     scoped_refptr<CRLSet> crl_set;
+    std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
+    scoped_refptr<net::CTPolicyEnforcer> ct_policy_enforcer;
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-    absl::optional<net::ChromeRootStoreData> root_store_data;
+    std::optional<net::ChromeRootStoreData> root_store_data;
 #endif
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
     bool use_chrome_root_store;
@@ -103,21 +109,30 @@ class NET_EXPORT CertVerifyProc
     InstanceParams(InstanceParams&&);
     InstanceParams& operator=(InstanceParams&& other);
 
-    // TODO(crbug.com/1477317): store these as ParsedCertificateList here so
-    // that it only needs to be done once since the same InstanceParams can be
-    // used to create a CertVerifyProc multiple times.
-
     // Additional trust anchors to consider during path validation. Ordinarily,
     // implementations of CertVerifier use trust anchors from the configured
     // system store. This is implementation-specific plumbing for passing
     // additional anchors through.
-    CertificateList additional_trust_anchors;
+    bssl::ParsedCertificateList additional_trust_anchors;
+
+    // Same as additional_trust_anchors, but embedded anchor constraints and
+    // NotBefore/NotAfter are enforced.
+    bssl::ParsedCertificateList
+        additional_trust_anchors_with_enforced_constraints;
 
     // Additional temporary certs to consider as intermediates during path
     // validation. Ordinarily, implementations of CertVerifier use intermediate
     // certs from the configured system store. This is implementation-specific
     // plumbing for passing additional intermediates through.
-    CertificateList additional_untrusted_authorities;
+    bssl::ParsedCertificateList additional_untrusted_authorities;
+
+    //  Additional SPKIs to consider as distrusted during path validation.
+    std::vector<std::vector<uint8_t>> additional_distrusted_spkis;
+
+    // If true, use the user-added certs in the system trust store for path
+    // validation.
+    // This only has an impact if the Chrome Root Store is being used.
+    bool include_system_trust_store = true;
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -144,6 +159,8 @@ class NET_EXPORT CertVerifyProc
   static scoped_refptr<CertVerifyProc> CreateBuiltinVerifyProc(
       scoped_refptr<CertNetFetcher> cert_net_fetcher,
       scoped_refptr<CRLSet> crl_set,
+      std::unique_ptr<CTVerifier> ct_verifier,
+      scoped_refptr<CTPolicyEnforcer> ct_policy_enforcer,
       const InstanceParams instance_params);
 #endif
 
@@ -154,6 +171,8 @@ class NET_EXPORT CertVerifyProc
   static scoped_refptr<CertVerifyProc> CreateBuiltinWithChromeRootStore(
       scoped_refptr<CertNetFetcher> cert_net_fetcher,
       scoped_refptr<CRLSet> crl_set,
+      std::unique_ptr<CTVerifier> ct_verifier,
+      scoped_refptr<CTPolicyEnforcer> ct_policy_enforcer,
       const ChromeRootStoreData* root_store_data,
       const InstanceParams instance_params);
 #endif
@@ -177,6 +196,9 @@ class NET_EXPORT CertVerifyProc
   //
   // |flags| is bitwise OR'd of VerifyFlags:
   //
+  // If |time_now| is set it will be used as the current time, otherwise the
+  // system time will be used.
+  //
   // If VERIFY_REV_CHECKING_ENABLED is set in |flags|, online certificate
   // revocation checking is performed (i.e. OCSP and downloading CRLs). CRLSet
   // based revocation checking is always enabled, regardless of this flag.
@@ -186,7 +208,8 @@ class NET_EXPORT CertVerifyProc
              const std::string& sct_list,
              int flags,
              CertVerifyResult* verify_result,
-             const NetLogWithSource& net_log);
+             const NetLogWithSource& net_log,
+             std::optional<base::Time> time_now = std::nullopt);
 
  protected:
   explicit CertVerifyProc(scoped_refptr<CRLSet> crl_set);
@@ -227,6 +250,11 @@ class NET_EXPORT CertVerifyProc
   // |verify_result->cert_status| should be non-zero, indicating an
   // error occurred.
   //
+  // If |time_now| is not nullopt, it will be used as the current time for
+  // certificate verification, if it is nullopt, the system time will be used
+  // instead. If a certificate verification fails with a NotBefore/NotAfter
+  // error when |time_now| is set, it will be retried with the system time.
+  //
   // On success, net::OK should be returned, with |verify_result| updated to
   // reflect the successfully verified chain.
   virtual int VerifyInternal(X509Certificate* cert,
@@ -235,7 +263,8 @@ class NET_EXPORT CertVerifyProc
                              const std::string& sct_list,
                              int flags,
                              CertVerifyResult* verify_result,
-                             const NetLogWithSource& net_log) = 0;
+                             const NetLogWithSource& net_log,
+                             std::optional<base::Time> time_now) = 0;
 
   // HasNameConstraintsViolation returns true iff one of |public_key_hashes|
   // (which are hashes of SubjectPublicKeyInfo structures) has name constraints

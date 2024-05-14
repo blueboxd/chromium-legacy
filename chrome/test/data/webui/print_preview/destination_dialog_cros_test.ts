@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DESTINATION_DIALOG_CROS_LOADING_TIMER_IN_MS, DestinationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PrinterSetupInfoMessageType, PrintPreviewDestinationDialogCrosElement, PrintPreviewPrinterSetupInfoCrosElement, RecentDestination} from 'chrome://print/print_preview.js';
+import type {Destination, DestinationStore, LocalDestinationInfo, PrintPreviewDestinationDialogCrosElement, RecentDestination} from 'chrome://print/print_preview.js';
+import {DESTINATION_DIALOG_CROS_LOADING_TIMER_IN_MS, makeRecentDestination, NativeLayerImpl, PrinterSetupInfoMessageType, PrintPreviewPrinterSetupInfoCrosElement} from 'chrome://print/print_preview.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
@@ -11,7 +12,8 @@ import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://
 import {MockTimer} from 'chrome://webui-test/mock_timer.js';
 import {eventToPromise, isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {NativeLayerCrosStub, setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
+import type {NativeLayerCrosStub} from './native_layer_cros_stub.js';
+import {setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
 import {NativeLayerStub} from './native_layer_stub.js';
 import {createDestinationStore, getDestinations, setupTestListenerElement} from './print_preview_test_utils.js';
 
@@ -266,6 +268,53 @@ suite('DestinationDialogCrosTest', function() {
       });
 
   // Test that the correct elements are displayed when the printer setup
+  // assistance flag is on and destination store has found destinations but
+  // is still searching for more.
+  test('PrinterSetupAssistanceHasDestinationsSearching', async () => {
+    nativeLayer.setSimulateNoResponseForGetPrinters(true);
+    // Set flag enabled.
+    loadTimeData.overrideValues({
+      isPrintPreviewSetupAssistanceEnabled: true,
+    });
+
+    document.body.appendChild(dialog);
+    await nativeLayer.whenCalled('getPrinterCapabilities');
+    destinationStore.startLoadAllDestinations();
+    dialog.show();
+    flush();
+
+    // Throbber should show while DestinationStore is still searching.
+    const throbber =
+        dialog.shadowRoot!.querySelector<HTMLElement>('.throbber-container');
+    assertTrue(!!throbber);
+    assertFalse(
+        throbber.hidden,
+        'Loading UI should display while DestinationStore is searching');
+
+    // Manage printers button hidden when there are valid destinations.
+    const managePrintersButton = dialog.shadowRoot!.querySelector<HTMLElement>(
+        'cr-button:not(.cancel-button)');
+    assertTrue(isVisible(managePrintersButton));
+
+    // Printer setup element should not be displayed when there are
+    // valid destinations.
+    const printerSetupInfo = dialog.shadowRoot!.querySelector<HTMLElement>(
+        'print-preview-printer-setup-info-cros')!;
+    assertTrue(printerSetupInfo.hidden);
+
+    // Destination list should display if there are valid destinations.
+    const destinationList =
+        dialog.shadowRoot!.querySelector<HTMLElement>('#printList');
+    assertTrue(isVisible(destinationList));
+
+    // Destination search box should be shown if there are valid
+    // destinations.
+    const searchBox = dialog.shadowRoot!.querySelector<HTMLElement>(
+        'print-preview-search-box');
+    assertTrue(isVisible(searchBox));
+  });
+
+  // Test that the correct elements are displayed when the printer setup
   // assistance flag is on and destination store has no destinations.
   test(
       'PrinterSetupAssistanceHasNoDestinations', async () => {
@@ -413,11 +462,11 @@ suite('DestinationDialogCrosTest', function() {
         flush();
 
         // Dialog should be visible with loading UI displayed.
-        const throbber = dialog.shadowRoot!.querySelector(
-                             '.throbber-container') as HTMLElement;
-        assertTrue(throbber !== null);
+        const throbber = dialog.shadowRoot!.querySelector<HTMLElement>(
+            '.throbber-container');
+        assertTrue(!!throbber);
         assertFalse(
-            throbber?.hidden,
+            throbber.hidden,
             'Loading UI should display while timer is running and ' +
                 'destinations have not loaded');
 
@@ -426,7 +475,7 @@ suite('DestinationDialogCrosTest', function() {
 
         // Dialog should be visible with loading UI displayed.
         assertFalse(
-            throbber?.hidden,
+            throbber.hidden,
             'Loading UI should display while destinations have not loaded');
 
         // Get destinations.
@@ -436,7 +485,7 @@ suite('DestinationDialogCrosTest', function() {
         // Loading UI should be hidden. Destination list and search box should
         // be visible.
         assertTrue(
-            throbber?.hidden,
+            throbber.hidden,
             'Loading UI should be hidden after timer is cleared and ' +
                 'destinations have loaded');
         assertTrue(
@@ -446,4 +495,30 @@ suite('DestinationDialogCrosTest', function() {
             isChildVisible(dialog, 'print-preview-search-box'),
             'Search-box should display');
       });
+
+  // Tests that the destination list starts hidden then will resize to display
+  // destinations once they are loaded.
+  test('NewDestinationsShowsAndResizesList', async () => {
+    await recreateElementAndFinishSetup(/*removeDestinations=*/ true);
+
+    // The list should start hidden and empty since there aren't destinations
+    // available.
+    const list =
+        dialog.shadowRoot!.querySelector('print-preview-destination-list')!;
+    let printerItems = list.shadowRoot!.querySelectorAll(
+        'print-preview-destination-list-item');
+    assertFalse(isVisible(list));
+    assertEquals(0, printerItems.length);
+
+    // Add destinations then trigger them to load.
+    nativeLayer.setLocalDestinations(localDestinations);
+    await destinationStore.reloadLocalPrinters();
+    flush();
+
+    // Now expect all the local destinations to be drawn.
+    printerItems = list.shadowRoot!.querySelectorAll(
+        'print-preview-destination-list-item');
+    assertTrue(isVisible(list));
+    assertEquals(6, printerItems.length);
+  });
 });

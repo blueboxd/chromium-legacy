@@ -9,8 +9,8 @@ import '../i18n_setup.js';
 import '../icons.html.js';
 import './safety_hub_module.js';
 
-import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import type {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import type {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
@@ -19,15 +19,19 @@ import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.j
 import {isUndoKeyboardEvent} from 'chrome://resources/js/util.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {MetricsBrowserProxy} from '../metrics_browser_proxy.js';
+import {MetricsBrowserProxyImpl, SafetyCheckUnusedSitePermissionsModuleInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverMixin, Router} from '../router.js';
-import {ContentSettingsTypes} from '../site_settings/constants.js';
+import type {Route} from '../router.js';
+import {RouteObserverMixin, Router} from '../router.js';
+import type {ContentSettingsTypes} from '../site_settings/constants.js';
 import {SiteSettingsMixin} from '../site_settings/site_settings_mixin.js';
 import {getLocalizationStringForContentType} from '../site_settings_page/site_settings_page_util.js';
 import {TooltipMixin} from '../tooltip_mixin.js';
 
-import {SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, SafetyHubEvent, UnusedSitePermissions} from './safety_hub_browser_proxy.js';
-import {SettingsSafetyHubModuleElement, SiteInfo} from './safety_hub_module.js';
+import type {SafetyHubBrowserProxy, UnusedSitePermissions} from './safety_hub_browser_proxy.js';
+import {SafetyHubBrowserProxyImpl, SafetyHubEvent} from './safety_hub_browser_proxy.js';
+import type {SettingsSafetyHubModuleElement, SiteInfo} from './safety_hub_module.js';
 import {getTemplate} from './unused_site_permissions_module.html.js';
 
 export interface SettingsSafetyHubUnusedSitePermissionsModuleElement {
@@ -141,6 +145,9 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
   private eventTracker_: EventTracker = new EventTracker();
   private browserProxy_: SafetyHubBrowserProxy =
       SafetyHubBrowserProxyImpl.getInstance();
+  private metricsBrowserProxy_: MetricsBrowserProxy =
+      MetricsBrowserProxyImpl.getInstance();
+
 
   override async connectedCallback() {
     this.addWebUiListener(
@@ -168,6 +175,12 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
       // Remove event listener when navigating away from the page.
       this.eventTracker_.removeAll();
       return;
+    }
+
+    if (this.sites_ !== null) {
+      this.metricsBrowserProxy_
+          .recordSafetyHubUnusedSitePermissionsModuleListCountHistogram(
+              this.sites_.length);
     }
 
     this.eventTracker_.add(
@@ -223,6 +236,10 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
         item.origin,
         this.browserProxy_.allowPermissionsAgainForUnusedSite.bind(
             this.browserProxy_, item.origin));
+
+    this.metricsBrowserProxy_
+        .recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram(
+            SafetyCheckUnusedSitePermissionsModuleInteractions.ALLOW_AGAIN);
   }
 
   private async onGotItClick_(e: Event) {
@@ -238,6 +255,10 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
     const toastText = await PluralStringProxyImpl.getInstance().getPluralString(
         'safetyCheckUnusedSitePermissionsToastBulkLabel', this.sites_.length);
     this.showUndoToast_(toastText);
+
+    this.metricsBrowserProxy_
+        .recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram(
+            SafetyCheckUnusedSitePermissionsModuleInteractions.ACKNOWLEDGE_ALL);
   }
 
   private onMoreActionClick_(e: Event) {
@@ -251,6 +272,10 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
     Router.getInstance().navigateTo(
         routes.SITE_SETTINGS, /* dynamicParams= */ undefined,
         /* removeSearch= */ true);
+
+    this.metricsBrowserProxy_
+        .recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram(
+            SafetyCheckUnusedSitePermissionsModuleInteractions.GO_TO_SETTINGS);
   }
 
   /* Repopulate the list when unused site permission list is updated. */
@@ -314,12 +339,20 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
         this.browserProxy_.undoAllowPermissionsAgainForUnusedSite(
             this.lastUnusedSitePermissionsAllowedAgain_);
         this.lastUnusedSitePermissionsAllowedAgain_ = null;
+        this.metricsBrowserProxy_
+            .recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram(
+                SafetyCheckUnusedSitePermissionsModuleInteractions
+                    .UNDO_ALLOW_AGAIN);
         break;
       case Action.GOT_IT:
         assert(this.lastUnusedSitePermissionsListAcknowledged_ !== null);
         this.browserProxy_.undoAcknowledgeRevokedUnusedSitePermissionsList(
             this.lastUnusedSitePermissionsListAcknowledged_);
         this.lastUnusedSitePermissionsListAcknowledged_ = null;
+        this.metricsBrowserProxy_
+            .recordSafetyHubUnusedSitePermissionsModuleInteractionsHistogram(
+                SafetyCheckUnusedSitePermissionsModuleInteractions
+                    .UNDO_ACKNOWLEDGE_ALL);
         break;
       default:
         assertNotReached();

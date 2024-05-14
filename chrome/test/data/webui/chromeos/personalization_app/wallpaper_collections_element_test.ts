@@ -4,7 +4,7 @@
 
 import 'chrome://personalization/strings.m.js';
 
-import {emptyState, GooglePhotosEnablementState, kDefaultImageSymbol, PersonalizationRouterElement, WallpaperActionName, WallpaperCollection, WallpaperCollectionsElement, WallpaperGridItemElement, WallpaperImage} from 'chrome://personalization/js/personalization_app.js';
+import {emptyState, GooglePhotosEnablementState, kDefaultImageSymbol, Paths, PersonalizationRouterElement, WallpaperActionName, WallpaperCollection, WallpaperCollectionsElement, WallpaperGridItemElement, WallpaperImage} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertGE, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -330,7 +330,11 @@ suite('WallpaperCollectionsElementTest', function() {
 
   for (const isTimeOfDayWallpaperEnabled of [false, true]) {
     test(`tile order time of day ${isTimeOfDayWallpaperEnabled}`, async () => {
-      loadTimeData.overrideValues({isTimeOfDayWallpaperEnabled});
+      loadTimeData.overrideValues({
+        isTimeOfDayWallpaperEnabled: isTimeOfDayWallpaperEnabled,
+        // SeaPen tile is tested seperately in later tests
+        isSeaPenEnabled: false,
+      });
       const timeOfDayCollectionId =
           loadTimeData.getString('timeOfDayWallpaperCollectionId');
 
@@ -514,6 +518,21 @@ suite('WallpaperCollectionsElementTest', function() {
     assertTrue(!!seaPenTile, 'SeaPen tile is present');
   });
 
+  test('click on SeaPen tile navigates to SeaPen page', async () => {
+    loadTimeData.overrideValues({isSeaPenEnabled: true});
+
+    wallpaperCollectionsElement = initElement(WallpaperCollectionsElement);
+    await waitAfterNextRender(wallpaperCollectionsElement);
+
+    await loadWallpapers(/* isTimeOfDayWallpaperEnabled= */ true);
+    wallpaperCollectionsElement.shadowRoot!
+        .querySelector<WallpaperGridItemElement>(
+            `${WallpaperGridItemElement.is}[data-sea-pen]`)
+        ?.click();
+    const path = await routerMock.whenCalled('goToRoute');
+    assertEquals(Paths.SEA_PEN_COLLECTION, path, 'navigates to SeaPen page');
+  });
+
   test('shows promoted tiles section with SeaPen', async () => {
     loadTimeData.overrideValues(
         {isSeaPenEnabled: true, isTimeOfDayWallpaperEnabled: true});
@@ -563,6 +582,10 @@ suite('WallpaperCollectionsElementTest', function() {
     assertTrue(
         promotedTiles[0]!.hasAttribute('data-sea-pen'),
         'expected sea pen promoted tile');
+
+    const experimentTag =
+        wallpaperCollectionsElement.shadowRoot!.getElementById('experimentTag');
+    assertTrue(!!experimentTag, 'expected experiment tag for Sea Pen tile');
   });
 
   test('shows time of day tile once', async () => {
@@ -599,5 +622,9 @@ suite('WallpaperCollectionsElementTest', function() {
             .querySelector<WallpaperGridItemElement>(`${
                 WallpaperGridItemElement.is}[data-is-time-of-day-collection]`);
     assertTrue(!!timeOfDayTile, 'time of day tile is shown');
+
+    const experimentTag =
+        wallpaperCollectionsElement.shadowRoot!.getElementById('experimentTag');
+    assertFalse(!!experimentTag, 'no experiment tag displayed');
   });
 });

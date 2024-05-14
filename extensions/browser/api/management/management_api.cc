@@ -40,6 +40,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -47,6 +48,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_handlers/replacement_apps.h"
 #include "extensions/common/manifest_url_handlers.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -525,7 +527,7 @@ void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
 }
 
 bool ManagementSetEnabledFunction::HasUnsupportedRequirements(
-    const std::string& extension_id) const {
+    const ExtensionId& extension_id) const {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
   return prefs->GetDisableReasons(extension_id) &
          disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT;
@@ -643,7 +645,7 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
 
   // A null extension() should only happen if the call is coming from WebUI or
   // the new Webstore which is a webpage the management API is exposed on.
-  DCHECK(extension() || source_context_type() == Feature::WEBUI_CONTEXT ||
+  DCHECK(extension() || source_context_type() == mojom::ContextType::kWebUi ||
          extension_urls::IsWebstoreDomain(source_url()));
 
   bool self_uninstall = extension() && extension_id() == target_extension_id_;

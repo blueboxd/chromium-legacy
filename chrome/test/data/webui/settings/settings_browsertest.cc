@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
+#include "build/config/coverage/buildflags.h"
 #include "chrome/browser/preloading/preloading_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
@@ -15,6 +15,7 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/blink/public/common/features_generated.h"
 
 class SettingsBrowserTest : public WebUIMochaBrowserTest {
  protected:
@@ -236,6 +237,12 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionIban) {
   RunTest("settings/payments_section_iban_test.js", "mocha.run()");
 }
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+IN_PROC_BROWSER_TEST_F(SettingsTest, PdfOcrToggle) {
+  RunTest("settings/pdf_ocr_toggle_test.js", "mocha.run()");
+}
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+
 IN_PROC_BROWSER_TEST_F(SettingsTest, PeoplePage) {
   RunTest("settings/people_page_test.js", "mocha.run()");
 }
@@ -267,10 +274,6 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, PerformanceMenu) {
   RunTest("settings/settings_performance_menu_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsTest, PreloadingPage) {
-  RunTest("settings/preloading_page_test.js", "mocha.run()");
-}
-
 IN_PROC_BROWSER_TEST_F(SettingsTest, ProtocolHandlers) {
   RunTest("settings/protocol_handlers_test.js", "mocha.run()");
 }
@@ -300,6 +303,10 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, SafetyCheckPage) {
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, Search) {
   RunTest("settings/search_settings_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsTest, SearchEngineEntry) {
+  RunTest("settings/search_engine_entry_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, SearchEngines) {
@@ -472,19 +479,8 @@ IN_PROC_BROWSER_TEST_F(SettingsAllSitesTest, DisableFirstPartySets) {
 }
 
 class SettingsBasicPageTest : public SettingsBrowserTest {
- protected:
-  SettingsBasicPageTest() {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {
-            {features::kSafetyHub, {}},
-            {features::kPerformanceSettingsPreloadingSubpage,
-             {{"use_v2_preloading_subpage", "true"}}},
-        },
-        {});
-  }
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{features::kSafetyHub};
 };
 
 // TODO(crbug.com/1298753): Flaky on all platforms.
@@ -570,9 +566,20 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, ExceptionsList) {
   RunTest("settings/cookies_page_test.js", "runMochaSuite('ExceptionsList')");
 }
 
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
+                       PreCookieSettingsUiAlignmentTest) {
+  RunTest("settings/cookies_page_test.js",
+          "runMochaSuite('PreCookieSettingsUiAlignmentTest')");
+}
+
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, FirstPartySetsUIDisabled) {
   RunTest("settings/cookies_page_test.js",
           "runMochaSuite('FirstPartySetsUIDisabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, IpProtectionToggle) {
+  RunTest("settings/cookies_page_test.js",
+          "runMochaSuite('IpProtectionToggle')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, TrackingProtectionSettings) {
@@ -619,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(SettingsPerformancePageTest, ExceptionList) {
 class SettingsPerformancePageMultistateTest : public SettingsBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
-      performance_manager::features::kHighEfficiencyMultistateMode};
+      performance_manager::features::kMemorySaverMultistateMode};
 };
 
 IN_PROC_BROWSER_TEST_F(SettingsPerformancePageMultistateTest, Controls) {
@@ -879,6 +886,9 @@ class SettingsPrivacyPageTest : public SettingsBrowserTest {
   SettingsPrivacyPageTest() {
     scoped_feature_list1_.InitWithFeatures(
         {permissions::features::kPermissionStorageAccessAPI,
+#if BUILDFLAG(IS_CHROMEOS)
+         blink::features::kWebPrinting,
+#endif
          features::kSafetyCheckNotificationPermissions, features::kSafetyHub},
         {});
     scoped_feature_list2_.InitAndEnableFeatureWithParameters(
@@ -900,6 +910,16 @@ class SettingsPrivacyPageTestNoTestingConfig : public SettingsPrivacyPageTest {
     command_line->AppendSwitch("disable-field-trial-config");
   }
 };
+
+// Tests that the content settings page for Web Printing is not shown by
+// default.
+class SettingsPrivacyPageTestWithoutWebPrinting : public SettingsBrowserTest {};
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTestWithoutWebPrinting,
+                       WebPrintingNotShown) {
+  RunTest("settings/privacy_page_test.js",
+          "runMochaSuite('WebPrintingNotShown')");
+}
 
 // TODO(crbug.com/1351019): Flaky on Linux Tests(dbg).
 #if BUILDFLAG(IS_LINUX)
@@ -1015,6 +1035,40 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacySandboxPageTest, AdMeasurementSubpage) {
           "runMochaSuite('AdMeasurementSubpage')");
 }
 
+class ProactiveTopicsBlockingTest : public SettingsPrivacySandboxPageTest {
+ protected:
+  ProactiveTopicsBlockingTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        privacy_sandbox::kPrivacySandboxProactiveTopicsBlocking);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ProactiveTopicsBlockingTest,
+                       TopicsSubpageWithProactiveTopicsBlockingEnabled) {
+  RunTest("settings/privacy_sandbox_page_test.js",
+          "runMochaSuite('TopicsSubpageWithProactiveTopicsBlockingEnabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(ProactiveTopicsBlockingTest, ManageTopics) {
+  RunTest("settings/privacy_sandbox_page_test.js",
+          "runMochaSuite('ManageTopics')");
+}
+
+IN_PROC_BROWSER_TEST_F(ProactiveTopicsBlockingTest,
+                       FledgeSubpageWithProactiveTopicsBlockingEnabled) {
+  RunTest("settings/privacy_sandbox_page_test.js",
+          "runMochaSuite('FledgeSubpageWithProactiveTopicsBlockingEnabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(ProactiveTopicsBlockingTest,
+                       ManageTopicsAndAdTopicsPageState) {
+  RunTest("settings/privacy_sandbox_page_test.js",
+          "runMochaSuite('ManageTopicsAndAdTopicsPageState')");
+}
+
 class SettingsReviewNotificationPermissionsTest : public SettingsBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
@@ -1093,7 +1147,13 @@ IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubModule) {
   RunTest("settings/safety_hub_module_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubPage) {
+#if BUILDFLAG(USE_JAVASCRIPT_COVERAGE)
+// TODO(crbug.com/1523686): Webviews don't work properly with JS coverage.
+#define MAYBE_SafetyHubPage DISABLED_SafetyHubPage
+#else
+#define MAYBE_SafetyHubPage SafetyHubPage
+#endif
+IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, MAYBE_SafetyHubPage) {
   RunTest("settings/safety_hub_page_test.js", "mocha.run()");
 }
 
@@ -1183,9 +1243,9 @@ IN_PROC_BROWSER_TEST_F(SettingsSpellCheckPageTest, OfficialBuild) {
 
 class SettingsSiteDetailsTest : public SettingsBrowserTest {};
 
-// Dabling on debug due to flaky timeout (crbug.com/825304,
-// crbug.com/1021219) and win10 x64 (crbug.com/1490294).
-#if !defined(NDEBUG) || (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86_64))
+// Disabling on debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
+// https://crbug.com/825304 - later for other platforms in crbug.com/1021219.
+#if !defined(NDEBUG)
 #define MAYBE_SiteDetails DISABLED_SiteDetails
 #else
 #define MAYBE_SiteDetails SiteDetails

@@ -8,11 +8,10 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.blink.mojom.Authenticator;
+import org.chromium.components.webauthn.WebauthnModeProvider.WebauthnMode;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
-import org.chromium.device.DeviceFeatureList;
-import org.chromium.device.DeviceFeatureMap;
 import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.Origin;
@@ -20,13 +19,20 @@ import org.chromium.url.Origin;
 /** Factory class registered to create Authenticators upon request. */
 public class AuthenticatorFactory implements InterfaceFactory<Authenticator> {
     private final RenderFrameHost mRenderFrameHost;
+    private final CreateConfirmationUiDelegate.Factory mConfirmationFactory;
 
-    public AuthenticatorFactory(RenderFrameHost renderFrameHost) {
+    public AuthenticatorFactory(
+            RenderFrameHost renderFrameHost,
+            CreateConfirmationUiDelegate.Factory confirmationFactory) {
         mRenderFrameHost = renderFrameHost;
+        mConfirmationFactory = confirmationFactory;
     }
 
     @Override
     public Authenticator createImpl() {
+        if (WebauthnModeProvider.getInstance().getWebauthnMode() == WebauthnMode.NONE) {
+            return null;
+        }
         if (mRenderFrameHost == null) {
             return null;
         }
@@ -44,16 +50,9 @@ public class AuthenticatorFactory implements InterfaceFactory<Authenticator> {
         if (context == null) {
             context = ContextUtils.getApplicationContext();
         }
-        AuthenticatorImpl.CreateConfirmationUiDelegate createConfirmationUiDelegate = null;
-        if (webContents.isIncognito()
-                && DeviceFeatureMap.isEnabled(
-                        DeviceFeatureList.WEBAUTHN_ANDROID_INCOGNITO_CONFIRMATION)) {
-            createConfirmationUiDelegate =
-                    (accept, reject) -> {
-                        var sheet = new AuthenticatorIncognitoConfirmationBottomsheet(webContents);
-                        return sheet.show(accept, reject);
-                    };
-        }
+
+        CreateConfirmationUiDelegate createConfirmationUiDelegate =
+                mConfirmationFactory == null ? null : mConfirmationFactory.create(webContents);
         Origin topOrigin = webContents.getMainFrame().getLastCommittedOrigin();
         return new AuthenticatorImpl(
                 context,

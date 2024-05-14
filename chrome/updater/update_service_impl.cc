@@ -8,6 +8,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -41,6 +42,7 @@
 #include "chrome/updater/cleanup_task.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/find_unregistered_apps_task.h"
 #include "chrome/updater/installer.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/policy/service.h"
@@ -55,6 +57,7 @@
 #include "chrome/updater/util/util.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/crx_update_item.h"
+#include "components/update_client/protocol_definition.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 
@@ -656,6 +659,10 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
 
   std::vector<base::OnceCallback<void(base::OnceClosure)>> new_tasks;
   new_tasks.push_back(
+      base::BindOnce(&FindUnregisteredAppsTask::Run,
+                     base::MakeRefCounted<FindUnregisteredAppsTask>(
+                         config_, GetUpdaterScope())));
+  new_tasks.push_back(
       base::BindOnce(&RemoveUninstalledAppsTask::Run,
                      base::MakeRefCounted<RemoveUninstalledAppsTask>(
                          config_, GetUpdaterScope())));
@@ -775,6 +782,7 @@ void UpdateServiceImpl::CheckForUpdate(
   if (!config_->GetUpdaterPersistedData()
            ->GetProductVersion(app_id)
            .IsValid()) {
+    VLOG(1) << __func__ << ": App not registered: " << app_id;
     std::move(callback).Run(Result::kInvalidArgument);
     return;
   }
@@ -834,7 +842,7 @@ void UpdateServiceImpl::UpdateAll(StateChangeCallback state_update,
   const auto app_ids = config_->GetUpdaterPersistedData()->GetAppIds();
   CHECK(base::Contains(
       app_ids, base::ToLowerASCII(kUpdaterAppId),
-      static_cast<std::string (*)(base::StringPiece)>(&base::ToLowerASCII)));
+      static_cast<std::string (*)(std::string_view)>(&base::ToLowerASCII)));
 
   const Priority priority = Priority::kBackground;
   ShouldBlockUpdateForMeteredNetwork(
@@ -883,10 +891,9 @@ void UpdateServiceImpl::Install(const RegistrationRequest& registration,
     // registration is removed later if the app install encounters an error.
     config_->GetUpdaterPersistedData()->RegisterApp(registration);
   } else {
-    // Update brand and ap.
+    // Update ap.
     RegistrationRequest request;
     request.app_id = registration.app_id;
-    request.brand_code = registration.brand_code;
     request.ap = registration.ap;
     config_->GetUpdaterPersistedData()->RegisterApp(request);
   }
@@ -1066,9 +1073,13 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
             install_data.brand = brand;
             install_data.requires_network_encryption = false;
             install_data.version = installer_version;
-            update_client->SendInstallPing(install_data, result.error == 0,
-                                           result.error, result.extended_error,
-                                           base::DoNothing());
+            update_client->SendPing(
+                install_data,
+                {.event_type = update_client::protocol_request::kEventInstall,
+                 .result = result.error == 0,
+                 .error_code = result.error,
+                 .extra_code1 = result.extended_error},
+                base::DoNothing());
 
             std::move(callback).Run(result.error == 0 ? Result::kSuccess
                                                       : Result::kInstallFailed);

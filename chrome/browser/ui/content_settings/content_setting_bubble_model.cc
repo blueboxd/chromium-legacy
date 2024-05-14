@@ -53,6 +53,7 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/permissions/constants.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_uma_util.h"
@@ -74,6 +75,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/device/public/cpp/geolocation/location_system_permission_status.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -91,7 +93,6 @@
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
-#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -278,7 +279,6 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_TITLE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_BLOCKED_CLIPBOARD_TITLE},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_TITLE},
-      {ContentSettingsType::MIDI, IDS_BLOCKED_MIDI_TITLE},
       {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_TITLE},
       {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_TITLE},
   };
@@ -287,7 +287,6 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_ON_DEVICE_SITE_DATA_TITLE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_TITLE},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_TITLE},
-      {ContentSettingsType::MIDI, IDS_ALLOWED_MIDI_TITLE},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_TITLE},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_TITLE},
   };
@@ -317,7 +316,6 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
       {ContentSettingsType::MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_MESSAGE},
-      {ContentSettingsType::MIDI, IDS_BLOCKED_MIDI_MESSAGE},
       {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_MESSAGE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_BLOCKED_CLIPBOARD_MESSAGE},
@@ -330,7 +328,6 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
   const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_ON_DEVICE_SITE_DATA_MESSAGE},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_MESSAGE},
-      {ContentSettingsType::MIDI, IDS_ALLOWED_MIDI_MESSAGE},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_MESSAGE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_ALLOWED_CLIPBOARD_MESSAGE},
@@ -631,7 +628,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_UNBLOCK},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_UNBLOCK},
-      {ContentSettingsType::MIDI, IDS_BLOCKED_MIDI_UNBLOCK},
       {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_UNBLOCK},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_BLOCKED_CLIPBOARD_UNBLOCK},
@@ -641,7 +637,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_ON_DEVICE_SITE_DATA_NO_ACTION},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_NO_ACTION},
-      {ContentSettingsType::MIDI, IDS_ALLOWED_MIDI_NO_ACTION},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_NO_ACTION},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_ALLOWED_CLIPBOARD_NO_ACTION},
@@ -670,7 +665,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_NO_ACTION},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_NO_ACTION},
-      {ContentSettingsType::MIDI, IDS_BLOCKED_MIDI_NO_ACTION},
       {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_NO_ACTION},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_BLOCKED_CLIPBOARD_NO_ACTION},
@@ -679,7 +673,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_ON_DEVICE_SITE_DATA_BLOCK},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_BLOCK},
-      {ContentSettingsType::MIDI, IDS_ALLOWED_MIDI_BLOCK},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_BLOCK},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_BLOCK},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_BLOCK},
@@ -777,7 +770,7 @@ void ContentSettingStorageAccessBubbleModel::CommitChanges() {
     auto* map = HostContentSettingsMapFactory::GetForProfile(GetProfile());
     content_settings::ContentSettingConstraints constraints;
     constraints.set_lifetime(
-        blink::features::kStorageAccessAPIExplicitPermissionLifetime.Get());
+        permissions::kStorageAccessAPIExplicitPermissionLifetime);
     map->SetNarrowestContentSetting(primary, secondary,
                                     ContentSettingsType::STORAGE_ACCESS,
                                     setting, constraints);
@@ -946,7 +939,7 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   state_ = content_settings->GetMicrophoneCameraState();
-  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  CHECK(CameraAccessed() || MicrophoneAccessed());
 
   if (CameraAccessed()) {
     content_settings->OnActivityIndicatorBubbleOpened(
@@ -1011,7 +1004,7 @@ ContentSettingMediaStreamBubbleModel::AsMediaStreamBubbleModel() {
 }
 
 void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
-  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  CHECK(CameraAccessed() || MicrophoneAccessed());
   if (!delegate())
     return;
 
@@ -1063,7 +1056,7 @@ bool ContentSettingMediaStreamBubbleModel::CameraBlocked() const {
 }
 
 void ContentSettingMediaStreamBubbleModel::SetIsUserModifiable() {
-  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  CHECK(CameraAccessed() || MicrophoneAccessed());
   PageSpecificContentSettings* page_content_settings =
       PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
 
@@ -1079,7 +1072,7 @@ void ContentSettingMediaStreamBubbleModel::SetIsUserModifiable() {
 }
 
 void ContentSettingMediaStreamBubbleModel::SetTitle() {
-  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  CHECK(CameraAccessed() || MicrophoneAccessed());
   int title_id = 0;
   if (MicrophoneBlocked() && CameraBlocked())
     title_id = IDS_MICROPHONE_CAMERA_BLOCKED_TITLE;
@@ -1094,12 +1087,12 @@ void ContentSettingMediaStreamBubbleModel::SetTitle() {
   else if (CameraAccessed())
     title_id = IDS_CAMERA_ACCESSED_TITLE;
   else
-    NOTREACHED();
+    NOTREACHED_NORETURN();
   set_title(l10n_util::GetStringUTF16(title_id));
 }
 
 void ContentSettingMediaStreamBubbleModel::SetMessage() {
-  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  CHECK(CameraAccessed() || MicrophoneAccessed());
   int message_id = 0;
   if (MicrophoneBlocked() && CameraBlocked())
     message_id = IDS_MICROPHONE_CAMERA_BLOCKED;
@@ -1114,7 +1107,7 @@ void ContentSettingMediaStreamBubbleModel::SetMessage() {
   else if (CameraAccessed())
     message_id = IDS_CAMERA_ACCESSED;
   else
-    NOTREACHED();
+    NOTREACHED_NORETURN();
   set_message(l10n_util::GetStringUTF16(message_id));
 }
 
@@ -1126,7 +1119,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   radio_group.url = url;
   const std::u16string& display_url = GetUrlForDisplay(GetProfile(), url);
 
-  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  CHECK(CameraAccessed() || MicrophoneAccessed());
   int radio_allow_label_id = 0;
   int radio_block_label_id = 0;
   if (state_.Has(PageSpecificContentSettings::kMicrophoneBlocked) ||
@@ -1283,7 +1276,7 @@ bool ContentSettingMediaStreamBubbleModel::ShouldShowSystemMediaPermissions() {
 }
 
 void ContentSettingMediaStreamBubbleModel::SetManageText() {
-  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  CHECK(CameraAccessed() || MicrophoneAccessed());
   set_manage_text(l10n_util::GetStringUTF16(IDS_MANAGE));
 }
 
@@ -1305,7 +1298,7 @@ ContentSettingGeolocationBubbleModel::ContentSettingGeolocationBubbleModel(
                                      web_contents,
                                      ContentSettingsType::GEOLOCATION) {
   SetCustomLink();
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
   // Get the stored geolocation content setting and the system permission state
   // to determine whether geolocation is blocked by a system permission.
   //
@@ -1326,25 +1319,23 @@ ContentSettingGeolocationBubbleModel::ContentSettingGeolocationBubbleModel(
     // the bubble to enable the user to trigger the system dialog.
     InitializeSystemGeolocationPermissionBubble();
   }
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 }
 
 ContentSettingGeolocationBubbleModel::~ContentSettingGeolocationBubbleModel() =
     default;
 
 void ContentSettingGeolocationBubbleModel::OnDoneButtonClicked() {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
   if (show_system_geolocation_bubble_) {
-#if BUILDFLAG(IS_MAC)
-    if (show_system_geolocation_bubble_) {
-      base::RecordAction(UserMetricsAction(
-          "ContentSettings.GeolocationDialog.OpenPreferencesClicked"));
-    }
+    base::RecordAction(UserMetricsAction(
+        "ContentSettings.GeolocationDialog.OpenPreferencesClicked"));
 
-    base::mac::OpenSystemSettingsPane(
-        base::mac::SystemSettingsPane::kPrivacySecurity_LocationServices);
-    return;
-#endif  // BUILDFLAG(IS_MAC)
+    auto* geolocation_manager = device::GeolocationManager::GetInstance();
+    DCHECK(geolocation_manager);
+    geolocation_manager->OpenSystemPermissionSetting();
   }
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 }
 
 void ContentSettingGeolocationBubbleModel::OnManageButtonClicked() {
@@ -1360,6 +1351,7 @@ void ContentSettingGeolocationBubbleModel::CommitChanges() {
 
 void ContentSettingGeolocationBubbleModel::
     InitializeSystemGeolocationPermissionBubble() {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_MAC)
   if (base::FeatureList::IsEnabled(features::kLocationPermissionsExperiment)) {
     set_title(l10n_util::GetStringUTF16(
@@ -1367,6 +1359,9 @@ void ContentSettingGeolocationBubbleModel::
   } else {
     set_title(l10n_util::GetStringUTF16(IDS_GEOLOCATION_TURNED_OFF_IN_MACOS));
   }
+#else
+  set_title(l10n_util::GetStringUTF16(IDS_GEOLOCATION_TURNED_OFF_IN_OS));
+#endif
 
   clear_message();
   AddListItem(ContentSettingBubbleModel::ListItem(
@@ -1377,7 +1372,7 @@ void ContentSettingGeolocationBubbleModel::
   set_done_button_text(l10n_util::GetStringUTF16(IDS_OPEN_SETTINGS_LINK));
   set_radio_group(RadioGroup());
   show_system_geolocation_bubble_ = true;
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 }
 
 void ContentSettingGeolocationBubbleModel::SetCustomLink() {
@@ -1863,7 +1858,6 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
     case ContentSettingsType::JAVASCRIPT:
     case ContentSettingsType::SOUND:
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
-    case ContentSettingsType::MIDI:
     case ContentSettingsType::MIDI_SYSEX:
     case ContentSettingsType::SENSORS:
       return std::make_unique<ContentSettingSingleRadioGroup>(

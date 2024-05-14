@@ -33,9 +33,6 @@ using HandleType = content::FileSystemAccessPermissionContext::HandleType;
 int GetMessageText(const FileRequestData& file_request_data) {
   switch (file_request_data.access) {
     case AccessType::kRead:
-      // TODO(crbug.com/1467574): Remove
-      // `kFileSystemAccessPersistentPermissions`
-      // flag after FSA Persistent Permissions feature launch.
       if (base::FeatureList::IsEnabled(
               features::kFileSystemAccessPersistentPermissions)) {
         return file_request_data.handle_type == HandleType::kDirectory
@@ -50,9 +47,6 @@ int GetMessageText(const FileRequestData& file_request_data) {
     case AccessType::kReadWrite:
       // Only difference between write and read-write access dialog is in button
       // label and dialog title.
-      // TODO(crbug.com/1467574): Remove
-      // `kFileSystemAccessPersistentPermissions`
-      // flag after FSA Persistent Permissions feature launch.
       if (base::FeatureList::IsEnabled(
               features::kFileSystemAccessPersistentPermissions)) {
         return file_request_data.handle_type == HandleType::kDirectory
@@ -148,10 +142,10 @@ std::unique_ptr<ui::DialogModel> CreateFileSystemAccessPermissionDialog(
                    file_request_data.path))}))
       .AddOkButton(
           std::move(accept_callback),
-          ui::DialogModelButton::Params().SetLabel(
+          ui::DialogModel::Button::Params().SetLabel(
               l10n_util::GetStringUTF16(GetButtonLabel(file_request_data))))
       .AddCancelButton(std::move(cancel_callbacks.first),
-                       ui::DialogModelButton::Params().SetId(kCancelButtonId))
+                       ui::DialogModel::Button::Params().SetId(kCancelButtonId))
       .SetCloseActionCallback(std::move(cancel_callbacks.second))
       .SetInitiallyFocusedField(kCancelButtonId);
   return dialog_builder.Build();

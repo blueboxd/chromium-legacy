@@ -4,6 +4,8 @@
 
 #include "media/gpu/v4l2/v4l2_video_decoder.h"
 
+#include <drm_fourcc.h>
+
 #include <algorithm>
 
 #include "base/containers/contains.h"
@@ -151,12 +153,12 @@ std::unique_ptr<VideoDecoderMixin> V4L2VideoDecoder::Create(
 }
 
 // static
-absl::optional<SupportedVideoDecoderConfigs>
+std::optional<SupportedVideoDecoderConfigs>
 V4L2VideoDecoder::GetSupportedConfigs() {
   auto device = base::MakeRefCounted<V4L2Device>();
   auto configs = device->GetSupportedDecodeProfiles(kSupportedInputFourccs);
   if (configs.empty())
-    return absl::nullopt;
+    return std::nullopt;
 
   return ConvertFromSupportedProfiles(configs,
 #if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
@@ -400,7 +402,7 @@ V4L2Status V4L2VideoDecoder::InitializeBackend() {
 
   constexpr bool kStateful = false;
   constexpr bool kStateless = true;
-  absl::optional<std::pair<bool, uint32_t>> api_and_format;
+  std::optional<std::pair<bool, uint32_t>> api_and_format;
   // Try both kStateful and kStateless APIs via |fourcc| and select the first
   // combination where Open()ing the |device_| works.
   for (const auto api : {kStateful, kStateless}) {
@@ -475,7 +477,8 @@ V4L2Status V4L2VideoDecoder::InitializeBackend() {
              << GetProfileName(profile_)
              << " and fourcc: " << FourccToString(input_format_fourcc_);
     backend_ = std::make_unique<V4L2StatelessVideoDecoderBackend>(
-        this, device_, profile_, color_space_, decoder_task_runner_);
+        this, device_, profile_, color_space_, decoder_task_runner_,
+        cdm_context_ref_ ? cdm_context_ref_->GetCdmContext() : nullptr);
   }
 
   if (!backend_->Initialize()) {
@@ -674,7 +677,7 @@ CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
       continue;
     }
 
-    absl::optional<struct v4l2_format> format =
+    std::optional<struct v4l2_format> format =
         output_queue_->TryFormat(pixfmt, size, 0);
     if (!format)
       continue;
@@ -690,9 +693,9 @@ CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
   CroStatus::Or<PixelLayoutCandidate> status_or_output_format =
       client_->PickDecoderOutputFormat(
           candidates, visible_rect, aspect_ratio_.GetNaturalSize(visible_rect),
-          /*output_size=*/absl::nullopt, num_codec_reference_frames,
+          /*output_size=*/std::nullopt, num_codec_reference_frames,
           /*use_protected=*/!!cdm_context_ref_, /*need_aux_frame_pool=*/false,
-          absl::nullopt);
+          std::nullopt);
   if (!status_or_output_format.has_value()) {
     VLOGF(1) << "Failed to pick an output format.";
     return std::move(status_or_output_format).error().code();
@@ -703,7 +706,7 @@ CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
   gfx::Size picked_size = std::move(output_format.size);
 
   // We successfully picked the output format. Now setup output format again.
-  absl::optional<struct v4l2_format> format =
+  std::optional<struct v4l2_format> format =
       output_queue_->SetFormat(fourcc.ToV4L2PixFmt(), picked_size, 0);
   DCHECK(format);
   gfx::Size adjusted_size(format->fmt.pix_mp.width, format->fmt.pix_mp.height);
@@ -721,7 +724,7 @@ CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
   // created by VideoFramePool.
   DmabufVideoFramePool* pool = client_->GetVideoFramePool();
   if (pool) {
-    absl::optional<GpuBufferLayout> layout = pool->GetGpuBufferLayout();
+    std::optional<GpuBufferLayout> layout = pool->GetGpuBufferLayout();
     if (!layout.has_value()) {
       VLOGF(1) << "Failed to get format from VFPool";
       return CroStatus::Codes::kFailedToChangeResolution;
@@ -736,9 +739,9 @@ CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
     }
 
     VLOGF(1) << "buffer modifier: " << std::hex << layout->modifier();
-    if (layout->modifier() &&
+    if (layout->modifier() != DRM_FORMAT_MOD_LINEAR &&
         layout->modifier() != gfx::NativePixmapHandle::kNoModifier) {
-      absl::optional<struct v4l2_format> modifier_format =
+      std::optional<struct v4l2_format> modifier_format =
           output_queue_->SetModifierFormat(layout->modifier(), picked_size);
       if (!modifier_format)
         return CroStatus::Codes::kFailedToChangeResolution;

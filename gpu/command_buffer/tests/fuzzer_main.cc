@@ -315,7 +315,7 @@ class CommandBufferSetup {
         gpu_preferences_(GetGpuPreferences()),
         share_group_(new gl::GLShareGroup),
         translator_cache_(gpu_preferences_) {
-    logging::SetMinLogLevel(logging::LOG_FATAL);
+    logging::SetMinLogLevel(logging::LOGGING_FATAL);
     CHECK(base::i18n::InitializeICU());
     base::CommandLine::Init(0, nullptr);
 
@@ -414,8 +414,8 @@ class CommandBufferSetup {
         context_state_.get(), shared_image_manager_.get(),
         /*memory_tracker=*/nullptr,
         /*is_for_display_compositor=*/false);
-    for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2; usage <= LAST_CLIENT_USAGE;
-         usage <<= 1) {
+    for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2_READ;
+         usage <= LAST_CLIENT_USAGE; usage <<= 1) {
       Mailbox::Name name;
       memset(name, 0, sizeof(name));
       name[0] = usage;

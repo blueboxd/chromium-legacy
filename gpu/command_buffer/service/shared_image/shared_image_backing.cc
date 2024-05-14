@@ -77,6 +77,7 @@ SharedImageBacking::SharedImageBacking(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
+    std::string debug_label,
     size_t estimated_size,
     bool is_thread_safe,
     std::optional<gfx::BufferUsage> buffer_usage)
@@ -87,6 +88,7 @@ SharedImageBacking::SharedImageBacking(
       surface_origin_(surface_origin),
       alpha_type_(alpha_type),
       usage_(usage),
+      debug_label_(std::move(debug_label)),
       estimated_size_(estimated_size),
       buffer_usage_(std::move(buffer_usage)) {
   DCHECK_CALLED_ON_VALID_THREAD(factory_thread_checker_);
@@ -140,15 +142,20 @@ base::trace_event::MemoryAllocatorDump* SharedImageBacking::OnMemoryDump(
     uint64_t client_tracing_id) {
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(dump_name);
+  auto byte_size = GetEstimatedSizeForMemoryDump();
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  GetEstimatedSizeForMemoryDump());
+                  byte_size);
 
   dump->AddString("type", "", GetName());
   dump->AddString("dimensions", "", size().ToString());
   dump->AddString("format", "", format().ToString());
   dump->AddString("usage", "", CreateLabelForSharedImageUsage(usage()));
+  dump->AddString("debug label", "", debug_label_);
   dump->AddScalar("purgeable", "bool", IsPurgeable());
+#if BUILDFLAG(IS_CHROMEOS)
+  dump->AddScalar("non_exo_size", "bool", IsImportedFromExo() ? 0 : byte_size);
+#endif
 
   // Add ownership edge to `client_guid` which expresses shared ownership with
   // the client process.
@@ -204,7 +211,8 @@ std::unique_ptr<DawnImageRepresentation> SharedImageBacking::ProduceDawn(
     MemoryTypeTracker* tracker,
     const wgpu::Device& device,
     wgpu::BackendType backend_type,
-    std::vector<wgpu::TextureFormat> view_formats) {
+    std::vector<wgpu::TextureFormat> view_formats,
+    scoped_refptr<SharedContextState> context_state) {
   return nullptr;
 }
 
@@ -403,6 +411,7 @@ ClearTrackingSharedImageBacking::ClearTrackingSharedImageBacking(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
+    std::string debug_label,
     size_t estimated_size,
     bool is_thread_safe,
     std::optional<gfx::BufferUsage> buffer_usage)
@@ -413,6 +422,7 @@ ClearTrackingSharedImageBacking::ClearTrackingSharedImageBacking(
                          surface_origin,
                          alpha_type,
                          usage,
+                         std::move(debug_label),
                          estimated_size,
                          is_thread_safe,
                          std::move(buffer_usage)) {}
@@ -450,6 +460,10 @@ gfx::GpuMemoryBufferHandle SharedImageBacking::GetGpuMemoryBufferHandle() {
 }
 
 bool SharedImageBacking::IsPurgeable() const {
+  return false;
+}
+
+bool SharedImageBacking::IsImportedFromExo() {
   return false;
 }
 

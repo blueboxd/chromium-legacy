@@ -29,6 +29,7 @@
 #include "chrome/browser/privacy_sandbox/tracking_protection_onboarding_factory.h"
 #include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
@@ -86,7 +87,6 @@
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/compose/buildflags.h"
-#include "components/compose/core/browser/compose_features.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -98,6 +98,7 @@
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
 #include "components/search_engines/search_engine_choice_utils.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/features.h"
@@ -184,6 +185,10 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/ui/webui/settings/mac_system_settings_handler.h"
+#endif
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+#include "chrome/browser/compose/compose_enabling.h"
 #endif
 
 namespace settings {
@@ -323,12 +328,13 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("searchEngineChoiceSettingsUi",
                           is_search_engine_choice_settings_ui);
 
+  search_engines::SearchEngineChoiceService*
+      search_engine_choice_dialog_service =
+          search_engines::SearchEngineChoiceServiceFactory::GetForProfile(
+              profile);
   const bool is_eea_country = search_engines::IsEeaChoiceCountry(
-      search_engines::GetSearchEngineChoiceCountryId(profile->GetPrefs()));
+      search_engine_choice_dialog_service->GetCountryId());
   html_source->AddBoolean("useLargeSearchEngineIcons", is_eea_country);
-  if (is_search_engine_choice_settings_ui) {
-    AddGeneratedIconResources(html_source, /*directory=*/"images/");
-  }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -367,10 +373,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kCbdTimeframeRequired));
 
   html_source->AddBoolean(
-      "enableExtendedSettingsDescriptions",
-      base::FeatureList::IsEnabled(features::kExtendedSettingsDescriptions));
-
-  html_source->AddBoolean(
       "enableFriendlierSafeBrowsingSettings",
       base::FeatureList::IsEnabled(
           safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection) &&
@@ -391,12 +393,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kPageContentOptIn) ||
           base::FeatureList::IsEnabled(
               companion::features::kCompanionEnablePageContent));
-
-#if BUILDFLAG(ENABLE_COMPOSE)
-  html_source->AddBoolean(
-      "enableComposeSetting",
-      base::FeatureList::IsEnabled(compose::features::kEnableCompose));
-#endif
 
   html_source->AddBoolean(
       "downloadBubblePartialViewControlledByPref",
@@ -514,10 +510,17 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("enableSafetyHub",
                           base::FeatureList::IsEnabled(features::kSafetyHub));
 
+  // Tracking Protection
   html_source->AddBoolean(
       "is3pcdCookieSettingsRedesignEnabled",
       TrackingProtectionSettingsFactory::GetForProfile(profile)
           ->IsTrackingProtection3pcdEnabled());
+  html_source->AddBoolean("isCookieSettingsUiAlignmentEnabled",
+                          base::FeatureList::IsEnabled(
+                              privacy_sandbox::kCookieSettingsUiAlignment));
+  html_source->AddBoolean(
+      "isIpProtectionV1Enabled",
+      base::FeatureList::IsEnabled(privacy_sandbox::kIpProtectionV1));
   auto* onboarding_service =
       TrackingProtectionOnboardingFactory::GetForProfile(profile);
   html_source->AddBoolean(
@@ -526,22 +529,21 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
           base::FeatureList::IsEnabled(
               privacy_sandbox::kTrackingProtectionSettingsPageRollbackNotice));
 
+  html_source->AddBoolean(
+      "isProactiveTopicsBlockingEnabled",
+      base::FeatureList::IsEnabled(
+          privacy_sandbox::kPrivacySandboxProactiveTopicsBlocking));
+
   // Performance
   AddSettingsPageUIHandler(std::make_unique<PerformanceHandler>());
   html_source->AddBoolean(
-      "isHighEfficiencyMultistateModeEnabled",
+      "isMemorySaverMultistateModeEnabled",
       base::FeatureList::IsEnabled(
-          performance_manager::features::kHighEfficiencyMultistateMode));
+          performance_manager::features::kMemorySaverMultistateMode));
   html_source->AddBoolean(
       "isDiscardExceptionsImprovementsEnabled",
       base::FeatureList::IsEnabled(
           performance_manager::features::kDiscardExceptionsImprovements));
-  html_source->AddBoolean("isPerformanceSettingsPreloadingSubpageEnabled",
-                          base::FeatureList::IsEnabled(
-                              features::kPerformanceSettingsPreloadingSubpage));
-  html_source->AddBoolean(
-      "isPerformanceSettingsPreloadingSubpageV2Enabled",
-      features::kPerformanceSettingsPreloadingSubpageV2.Get());
   html_source->AddBoolean(
       "isBatterySaverModeManagedByOS",
       performance_manager::user_tuning::IsBatterySaverModeManagedByOS());
@@ -716,7 +718,10 @@ void SettingsUI::CreateHelpBubbleHandler(
     mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
   help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
       std::move(handler), std::move(client), this,
-      std::vector<ui::ElementIdentifier>{kEnhancedProtectionSettingElementId});
+      std::vector<ui::ElementIdentifier>{
+          kEnhancedProtectionSettingElementId,
+          kAnonymizedUrlCollectionPersonalizationSettingId,
+      });
 }
 
 void SettingsUI::CreateCustomizeColorSchemeModeHandler(

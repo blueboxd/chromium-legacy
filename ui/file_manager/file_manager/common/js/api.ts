@@ -6,30 +6,10 @@
  * @fileoverview Helpers for APIs used within Files app.
  */
 
-import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {FilesAppDirEntry, FilesAppEntry} from '../../common/js/files_app_entry_types.js';
 
 import {unwrapEntry} from './entry_utils.js';
-
-/**
- * Calls the `fn` function which should expect the callback as last argument.
- *
- * Resolves with the result of the `fn`.
- *
- * Rejects if there is `chrome.runtime.lastError`.
- */
-export async function promisify<T>(fn: Function, ...args: any[]): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const callback = (result: T) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError.message);
-      } else {
-        resolve(result);
-      }
-    };
-
-    fn(...args, callback);
-  });
-}
+import {promisify} from './util.js';
 
 /**
  * Opens a new window for Files SWA.
@@ -51,7 +31,7 @@ export async function getPreferences() {
 }
 
 export async function validatePathNameLength(
-    parentEntry: DirectoryEntry, name: string) {
+    parentEntry: FilesAppDirEntry|DirectoryEntry, name: string) {
   return promisify<boolean>(
       chrome.fileManagerPrivate.validatePathNameLength,
       unwrapEntry(parentEntry), name);
@@ -119,7 +99,7 @@ export async function getDlpBlockedComponents(sourceUrl: string) {
  * Retrieves Data Leak Prevention (DLP) restriction details.
  */
 export async function getDlpRestrictionDetails(sourceUrl: string) {
-  return promisify<chrome.fileManagerPrivate.DlpRestrictionDetails>(
+  return promisify<chrome.fileManagerPrivate.DlpRestrictionDetails[]>(
       chrome.fileManagerPrivate.getDlpRestrictionDetails, sourceUrl);
 }
 
@@ -150,21 +130,23 @@ export async function mountGuest(id: number) {
  * FileSystemEntry helpers
  */
 
-export async function getParentEntry(entry: Entry): Promise<DirectoryEntry> {
+export async function getParentEntry(entry: Entry|
+                                     FilesAppEntry): Promise<DirectoryEntry> {
   return new Promise((resolve, reject) => {
     entry.getParent(resolve, reject);
   });
 }
 
 export async function moveEntryTo(
-    entry: Entry, parent: DirectoryEntry, newName: string): Promise<Entry> {
+    entry: Entry|FilesAppEntry, parent: DirectoryEntry,
+    newName: string): Promise<Entry|FilesAppEntry> {
   return new Promise((resolve, reject) => {
     entry.moveTo(parent, newName, resolve, reject);
   });
 }
 
 export async function getFile(
-    directory: DirectoryEntry, filename: string,
+    directory: FilesAppDirEntry|DirectoryEntry, filename: string,
     options: Flags|undefined): Promise<FileEntry> {
   return new Promise((resolve, reject) => {
     directory.getFile(filename, options, resolve, reject);
@@ -191,9 +173,9 @@ export async function getEntry(
  * or identify the ongoing IO operation.
  */
 export async function startIOTask(
-    type: chrome.fileManagerPrivate.IOTaskType,
+    type: chrome.fileManagerPrivate.IoTaskType,
     entries: Array<Entry|FilesAppEntry>,
-    params: chrome.fileManagerPrivate.IOTaskParams) {
+    params: chrome.fileManagerPrivate.IoTaskParams) {
   if (params.destinationFolder) {
     params.destinationFolder =
         unwrapEntry(params.destinationFolder) as DirectoryEntry;
@@ -213,8 +195,7 @@ export async function parseTrashInfoFiles(entries: Entry[]) {
 }
 
 export async function getMimeType(entry: Entry|FilesAppEntry) {
-  return promisify<string|undefined>(
-      chrome.fileManagerPrivate.getMimeType, unwrapEntry(entry));
+  return chrome.fileManagerPrivate.getMimeType(entry.toURL());
 }
 
 export async function getFileTasks(
@@ -290,4 +271,25 @@ export async function getDriveConnectionState() {
 
 export async function grantAccess(entries: string[]) {
   return promisify<void>(chrome.fileManagerPrivate.grantAccess, entries);
+}
+
+export async function getContentMimeType(fileEntry: FileEntry) {
+  return promisify<string>(
+      chrome.fileManagerPrivate.getContentMimeType, fileEntry);
+}
+
+export async function getContentMetadata(
+    fileEntry: FileEntry, mimeType: string, includeImages: boolean) {
+  return promisify<chrome.fileManagerPrivate.MediaMetadata>(
+      chrome.fileManagerPrivate.getContentMetadata, fileEntry, mimeType,
+      includeImages);
+}
+
+export async function getEntryProperties(
+    entries: Array<Entry|FilesAppEntry>,
+    properties: chrome.fileManagerPrivate.EntryPropertyName[]):
+    Promise<chrome.fileManagerPrivate.EntryProperties[]> {
+  return promisify(
+      chrome.fileManagerPrivate.getEntryProperties, entries.map(unwrapEntry),
+      properties);
 }

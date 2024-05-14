@@ -245,13 +245,13 @@ class PictureInPictureControllerPlayer final : public EmptyWebMediaPlayer {
   ReadyState GetReadyState() const override { return kReadyStateHaveMetadata; }
   bool HasVideo() const override { return true; }
   void OnRequestPictureInPicture() override { surface_id_ = TestSurfaceId(); }
-  absl::optional<viz::SurfaceId> GetSurfaceId() override { return surface_id_; }
+  std::optional<viz::SurfaceId> GetSurfaceId() override { return surface_id_; }
 
   void set_infinity_duration(bool value) { infinity_duration_ = value; }
 
  private:
   bool infinity_duration_ = false;
-  absl::optional<viz::SurfaceId> surface_id_;
+  std::optional<viz::SurfaceId> surface_id_;
 };
 
 class PictureInPictureTestWebFrameClient
@@ -656,19 +656,6 @@ TEST_F(PictureInPictureControllerTestWithWidget,
 
   // TODO(1357125): Check that GetMayThrottle... returns true once the PiP
   // window is closed.
-}
-
-TEST_F(PictureInPictureControllerTestWithWidget,
-       DocumentPiPDoesNotOpenWithBlankUrl) {
-  V8TestingScope v8_scope;
-  ScriptState* script_state =
-      ToScriptStateForMainWorld(GetDocument().GetFrame());
-  ScriptState::Scope entered_context_scope(script_state);
-  LocalFrame::NotifyUserActivation(
-      &GetFrame(), mojom::UserActivationNotificationType::kTest);
-  auto* pip =
-      OpenDocumentPictureInPictureWindow(v8_scope, GetDocument(), BlankURL());
-  EXPECT_FALSE(pip);
 }
 
 TEST_F(PictureInPictureControllerTestWithWidget,

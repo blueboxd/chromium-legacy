@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_DICE_WEB_SIGNIN_INTERCEPTOR_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/cancelable_callback.h"
 #include "base/feature_list.h"
@@ -14,7 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "chrome/browser/search_engine_choice/search_engine_choice_service.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service.h"
 #include "chrome/browser/signin/web_signin_interceptor.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -23,7 +24,6 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
@@ -47,6 +47,26 @@ class DiceInterceptedSessionStartupHelper;
 class Profile;
 class ProfileAttributesEntry;
 class ProfileAttributesStorage;
+
+// This enum gets the result of `MaybeShouldShowChromeSigninBubble()`, which
+// could be `ShouldShow` or `ShouldNotShow`. When the result is `ShouldNotShow`
+// the reason is also added to differentiate the cases of not showing the
+// bubble. These values are persisted to logs. Entries should not be renumbered
+// and numeric values should never be reused.
+enum class ShouldShowChromeSigninBubbleWithReason {
+  // The bubble should be shown.
+  kShouldShow = 0,
+
+  // The bubble should not be shown: multiple reasons listed below with order of
+  // priority.
+  kShouldNotShowMaxShownCountReached = 1,
+  kShouldNotShowAlreadySignedIn = 2,
+  // Deprecated: kShouldNotShowSecondaryAccount = 3,
+  kShouldNotShowUnknownAccessPoint = 4,
+  kShouldNotShowNotFromWebSignin = 5,
+
+  kMaxValue = kShouldNotShowNotFromWebSignin,
+};
 
 // Called after web signed in, after a successful token exchange through Dice.
 // The DiceWebSigninInterceptor may offer the user to create a new profile or
@@ -113,11 +133,11 @@ class DiceWebSigninInterceptor : public KeyedService,
   // in |entry|.
   // In some cases the outcome cannot be fully computed synchronously, when this
   // happens, the signin interception is highly likely (but not guaranteed).
-  absl::optional<SigninInterceptionHeuristicOutcome> GetHeuristicOutcome(
+  std::optional<SigninInterceptionHeuristicOutcome> GetHeuristicOutcome(
       bool is_new_account,
       bool is_sync_signin,
       const std::string& email,
-      bool record_signin_metrics = false,
+      bool update_state = false,
       const ProfileAttributesEntry** entry = nullptr) const;
 
   // Returns true if the interception is in progress (running the heuristic or
@@ -127,7 +147,7 @@ class DiceWebSigninInterceptor : public KeyedService,
   }
 
   void SetInterceptedAccountProfileSeparationPoliciesForTesting(
-      absl::optional<policy::ProfileSeparationPolicies> value) {
+      std::optional<policy::ProfileSeparationPolicies> value) {
     intercepted_account_profile_separation_policies_response_for_testing_ =
         std::move(value);
   }
@@ -201,6 +221,7 @@ class DiceWebSigninInterceptor : public KeyedService,
       const AccountInfo& intercepted_account_info) const;
   bool ShouldShowMultiUserBubble(
       const AccountInfo& intercepted_account_info) const;
+  bool ShouldShowChromeSigninBubble(const std::string& email);
 
   // Helper function to call `delegate_->ShowSigninInterceptionBubble()`.
   void ShowSigninInterceptionBubble(
@@ -237,10 +258,10 @@ class DiceWebSigninInterceptor : public KeyedService,
   void OnChromeSigninChoice(const AccountInfo& account_info,
                             SigninInterceptionResult result);
 
-  // A non `absl::nullopt` `profile_presets` will be applied to the
+  // A non `std::nullopt` `profile_presets` will be applied to the
   // `new_profile` when the function is called.
   void OnNewSignedInProfileCreated(
-      absl::optional<ProfilePresets> profile_presets,
+      std::optional<ProfilePresets> profile_presets,
       Profile* new_profile);
 
   // Called after the user choses whether the session should continue in a new
@@ -325,10 +346,12 @@ class DiceWebSigninInterceptor : public KeyedService,
     CoreAccountId account_id_;
     bool new_account_interception_ = false;
     bool intercepted_account_management_accepted_ = false;
-    absl::optional<WebSigninInterceptor::SigninInterceptionType>
+    std::optional<WebSigninInterceptor::SigninInterceptionType>
         interception_type_;
     signin_metrics::AccessPoint access_point_ =
         signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
+    std::optional<ShouldShowChromeSigninBubbleWithReason>
+        should_show_chrome_signin_bubble_;
 
     // Timeout for waiting for full information to be available (see
     // `ProcessInterceptionOrWait()`).
@@ -351,7 +374,7 @@ class DiceWebSigninInterceptor : public KeyedService,
         account_level_signin_restriction_policy_fetcher_;
     // Value of  the profile separation policies for the intercepted account. If
     // no value is set, then we have not yet received the policy value.
-    absl::optional<policy::ProfileSeparationPolicies>
+    std::optional<policy::ProfileSeparationPolicies>
         intercepted_account_profile_separation_policies_;
   };
 
@@ -369,7 +392,7 @@ class DiceWebSigninInterceptor : public KeyedService,
   // used in place of `intercepted_account_profile_separation_policies_`.
   // This field is excluded from `ResetableState` as tests do not expect to
   // reset this value, it is expected to be sticky across tests.
-  absl::optional<policy::ProfileSeparationPolicies>
+  std::optional<policy::ProfileSeparationPolicies>
       intercepted_account_profile_separation_policies_response_for_testing_;
 };
 

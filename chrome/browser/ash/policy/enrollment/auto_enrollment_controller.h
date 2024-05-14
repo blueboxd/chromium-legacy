@@ -22,6 +22,7 @@
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_dmserver_client_impl.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
+#include "chromeos/ash/components/dbus/device_management/device_management_interface.pb.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 
 namespace ash {
@@ -61,7 +62,7 @@ class EnrollmentFwmpHelper {
 
   void OnGetFirmwareManagementParametersReceived(
       ResultCallback result_callback,
-      std::optional<user_data_auth::GetFirmwareManagementParametersReply>
+      std::optional<device_management::GetFirmwareManagementParametersReply>
           reply);
 
   raw_ptr<ash::InstallAttributesClient> install_attributes_client_;
@@ -210,7 +211,7 @@ class AutoEnrollmentController : public ash::NetworkStateHandlerObserver {
   // the FWMP is used only for newer devices.
   // This also starts the VPD clearing process.
   void OnFirmwareManagementParametersRemoved(
-      std::optional<user_data_auth::RemoveFirmwareManagementParametersReply>
+      std::optional<device_management::RemoveFirmwareManagementParametersReply>
           reply);
 
   // Makes a D-Bus call to session_manager to set block_devmode=0 and
@@ -232,13 +233,13 @@ class AutoEnrollmentController : public ash::NetworkStateHandlerObserver {
   bool IsInProgress() const;
 
   // Used for checking ownership.
-  raw_ptr<ash::DeviceSettingsService, ExperimentalAsh> device_settings_service_;
+  raw_ptr<ash::DeviceSettingsService> device_settings_service_;
 
   // Used for communication with management service.
-  raw_ptr<DeviceManagementService, ExperimentalAsh> device_management_service_;
+  raw_ptr<DeviceManagementService> device_management_service_;
 
   // Used for retrieving device state keys.
-  raw_ptr<ServerBackedStateKeysBroker, ExperimentalAsh> state_keys_broker_;
+  raw_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
 
   // Used for checking dev boot status.
   std::unique_ptr<EnrollmentFwmpHelper> enrollment_fwmp_helper_;
@@ -293,7 +294,7 @@ class AutoEnrollmentController : public ash::NetworkStateHandlerObserver {
   std::unique_ptr<ash::SystemClockSyncObservation>
       system_clock_sync_observation_;
 
-  raw_ptr<ash::NetworkStateHandler, ExperimentalAsh> network_state_handler_;
+  raw_ptr<ash::NetworkStateHandler> network_state_handler_;
   // Observes network state and calls `PortalStateChanged` when it changes from
   // the start until the auto-enrollment state is resolved. Triggers a retry
   // when the device goes online.

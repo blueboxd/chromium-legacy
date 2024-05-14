@@ -25,7 +25,11 @@ bool DisableDiscoverFeed() {
   return true;
 }
 
-bool DisableFirstRun() {
+bool DisableDefaultFirstRun() {
+  return true;
+}
+
+bool DisableDefaultSearchEngineChoice() {
   return true;
 }
 
@@ -85,9 +89,21 @@ void RunTestsIfPresent() {
   // No-op for XCUITest.
 }
 
+void SignalAppLaunched() {
+  // No-op for XCUITest.
+}
+
 base::TimeDelta PasswordCheckMinimumDuration() {
   // No artificial delays for tests.
   return base::Seconds(0);
+}
+
+std::unique_ptr<drive::DriveService> GetOverriddenDriveService() {
+  return nullptr;
+}
+
+std::optional<std::string> FETDemoModeOverride() {
+  return std::nullopt;
 }
 
 }  // namespace tests_hook

@@ -8,12 +8,14 @@
 #include <DirectML.h>
 #include <d3d12.h>
 #include <wrl.h>
+#include <string>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
 #include "services/webnn/dml/command_recorder.h"
 #include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
+#include "services/webnn/public/mojom/webnn_error.mojom.h"
 
 namespace webnn::dml {
 
@@ -55,8 +57,16 @@ void COMPONENT_EXPORT(WEBNN_SERVICE)
                             ComPtr<ID3D12Resource> src_buffer,
                             size_t buffer_size);
 
+// Helper function to readback data from GPU to CPU, the resource can be created
+// for a single buffer or a big buffer combined from multiple buffers.
+void COMPONENT_EXPORT(WEBNN_SERVICE)
+    ReadbackBufferWithBarrier(CommandRecorder* command_recorder,
+                              ComPtr<ID3D12Resource> readback_buffer,
+                              ComPtr<ID3D12Resource> default_buffer,
+                              size_t buffer_size);
+
 mojom::ErrorPtr CreateError(mojom::Error::Code error_code,
-                            std::string error_messages);
+                            const std::string& error_message);
 
 }  // namespace webnn::dml
 

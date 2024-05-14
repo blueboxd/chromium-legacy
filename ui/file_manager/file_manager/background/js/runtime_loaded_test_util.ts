@@ -13,38 +13,10 @@ import {assert} from 'chrome://resources/js/assert.js';
 
 import {entriesToURLs} from '../../common/js/entry_utils.js';
 import {recordEnum} from '../../common/js/metrics.js';
-import {VolumeType} from '../../common/js/volume_manager_types.js';
+import {type ElementObject, type KeyModifiers, VolumeType} from '../../common/js/shared_types.js';
+import type {MetadataKey} from '../../foreground/js/metadata/metadata_item.js';
 
 import {test} from './test_util_base.js';
-
-export interface ElementObject {
-  attributes: Record<string, string|null>;
-  text: string|null;
-  innerText: string|null;
-  value: string|null;
-  styles?: Record<string, string>;
-  hidden: boolean;
-  hasShadowRoot: boolean;
-  imageWidth?: number;
-  imageHeight?: number;
-  renderedWidth?: number;
-  renderedHeight?: number;
-  renderedTop?: number;
-  renderedLeft?: number;
-  scrollLeft?: number;
-  scrollTop?: number;
-  scrollWidth?: number;
-  scrollHeight?: number;
-}
-
-/**
- * Object containing common key modifiers: shift, alt, and ctrl.
- */
-export interface KeyModifiers {
-  shift?: boolean;
-  alt?: boolean;
-  ctrl?: boolean;
-}
 
 export interface RemoteRequest {
   func: string;
@@ -435,8 +407,12 @@ test.util.sync.sendEvent =
 test.util.sync.fakeEvent =
     (contentWindow: Window, targetQuery: string, eventType: string,
      additionalProperties?: Record<string, string>): boolean => {
-      const event = new Event(eventType, additionalProperties || {});
-      if (additionalProperties) {
+      const isCustomEvent = 'detail' in (additionalProperties || {});
+
+      const event = isCustomEvent ?
+          new CustomEvent(eventType, additionalProperties || {}) :
+          new Event(eventType, additionalProperties || {});
+      if (!isCustomEvent && additionalProperties) {
         for (const name in additionalProperties) {
           if (name === 'bubbles') {
             // bubbles is a read-only which, causes an error when assigning.
@@ -1070,7 +1046,7 @@ test.util.executeTestMessage =
     undefined => {
       window.IN_TEST = true;
       // Check the function name.
-      if (!request.func || request.func[request.func.length - 1] == '_') {
+      if (!request.func || request.func[request.func.length - 1] === '_') {
         request.func = '';
       }
       // Prepare arguments.
@@ -1129,7 +1105,7 @@ test.util.sync.getMetadataStats = (contentWindow: Window) => {
  * @param callback Callback with metadata results returned.
  */
 test.util.async.getContentMetadata =
-    (contentWindow: Window, properties: string[],
+    (contentWindow: Window, properties: MetadataKey[],
      callback: (a: unknown) => void) => {
       const entries =
           contentWindow.fileManager.directoryModel.getSelectedEntries_();

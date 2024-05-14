@@ -38,9 +38,9 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
                                        public AccessibilityObserver,
                                        public SessionObserver,
                                        public ui::InputMethodObserver {
- public:
-  METADATA_HEADER(DictationButtonTray);
+  METADATA_HEADER(DictationButtonTray, TrayBackgroundView)
 
+ public:
   DictationButtonTray(Shelf* shelf, TrayBackgroundViewCatalogName catalog_name);
   DictationButtonTray(const DictationButtonTray&) = delete;
   DictationButtonTray& operator=(const DictationButtonTray&) = delete;
@@ -64,7 +64,7 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   void HandleLocaleChange() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void OnThemeChanged() override;
-  void Layout() override;
+  void Layout(PassKey) override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
 
   // ui::InputMethodObserver:
@@ -105,7 +105,7 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   void TextInputChanged(const ui::TextInputClient* client);
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
-  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
+  raw_ptr<views::ImageView> icon_ = nullptr;
 
   // SODA download progress. A value of 0 < X < 100 indicates that download is
   // in-progress.

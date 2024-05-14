@@ -32,7 +32,7 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
   }
 
   certs_in_file_ = X509Certificate::CreateCertificateListFromBytes(
-      base::as_bytes(base::make_span(cert_data)), X509Certificate::FORMAT_AUTO);
+      base::as_byte_span(cert_data), X509Certificate::FORMAT_AUTO);
 
   if (certs_in_file_.empty()) {
     DLOG(FATAL) << "No certificates.";
@@ -122,8 +122,7 @@ bool ProofSourceChromium::GetProofInner(
   proof->signature.assign(reinterpret_cast<const char*>(signature.data()),
                           signature.size());
   *out_chain = chain_;
-  VLOG(1) << "signature: "
-          << base::HexEncode(proof->signature.data(), proof->signature.size());
+  VLOG(1) << "signature: " << base::HexEncode(proof->signature);
   proof->leaf_cert_scts = signed_certificate_timestamp_;
   return true;
 }

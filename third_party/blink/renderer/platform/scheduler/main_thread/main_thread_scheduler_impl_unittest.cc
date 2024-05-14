@@ -491,7 +491,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
     prioritised_local_frame_task_runner_ = main_frame_scheduler_->GetTaskRunner(
         blink::TaskType::kInternalHighPriorityLocalFrame);
     render_blocking_task_runner_ = main_frame_scheduler_->GetTaskRunner(
-        blink::TaskType::kNetworkingUnfreezableImageLoading);
+        blink::TaskType::kNetworkingUnfreezableRenderBlockingLoading);
   }
 
   MainThreadTaskQueue* compositor_task_queue() {
@@ -768,7 +768,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   RAILMode GetRAILMode() {
-    return scheduler_->main_thread_only().current_policy.rail_mode();
+    return scheduler_->main_thread_only().current_policy.rail_mode;
   }
 
   bool BlockingInputExpectedSoon() {

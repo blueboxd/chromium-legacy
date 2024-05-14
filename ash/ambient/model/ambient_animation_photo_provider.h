@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "ash/ambient/model/ambient_backend_model.h"
@@ -62,7 +63,7 @@ class ASH_EXPORT AmbientAnimationPhotoProvider
   ~AmbientAnimationPhotoProvider() override;
 
   scoped_refptr<ImageAsset> LoadImageAsset(
-      base::StringPiece resource_id,
+      std::string_view resource_id,
       const base::FilePath& resource_path,
       const std::optional<gfx::Size>& size) override;
 
@@ -103,9 +104,8 @@ class ASH_EXPORT AmbientAnimationPhotoProvider
   void RecordDynamicAssetMetrics();
 
   // Unowned pointers. Must outlive the |AmbientAnimationPhotoProvider|.
-  const raw_ptr<const AmbientAnimationStaticResources, ExperimentalAsh>
-      static_resources_;
-  const raw_ptr<const AmbientBackendModel, ExperimentalAsh> backend_model_;
+  const raw_ptr<const AmbientAnimationStaticResources> static_resources_;
+  const raw_ptr<const AmbientBackendModel> backend_model_;
 
   // Map's key is hash of the static image asset's string id.
   base::flat_map<cc::SkottieResourceIdHash, scoped_refptr<StaticImageAssetImpl>>

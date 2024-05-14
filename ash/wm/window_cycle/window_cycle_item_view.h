@@ -30,9 +30,9 @@ class WindowCycleController;
 // This view represents a single aura::Window by displaying a title and a
 // thumbnail of the window's contents.
 class ASH_EXPORT WindowCycleItemView : public WindowMiniView {
- public:
-  METADATA_HEADER(WindowCycleItemView);
+  METADATA_HEADER(WindowCycleItemView, WindowMiniView)
 
+ public:
   explicit WindowCycleItemView(aura::Window* window);
   WindowCycleItemView(const WindowCycleItemView&) = delete;
   WindowCycleItemView& operator=(const WindowCycleItemView&) = delete;
@@ -46,7 +46,7 @@ class ASH_EXPORT WindowCycleItemView : public WindowMiniView {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   gfx::Size GetPreviewViewSize() const override;
-  void Layout() override;
+  void Layout(PassKey) override;
   gfx::Size CalculatePreferredSize() const override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
@@ -60,15 +60,16 @@ class ASH_EXPORT WindowCycleItemView : public WindowMiniView {
 // Container view used to host multiple `WindowCycleItemView`s and be the focus
 // target for window groups while tabbing in window cycle view.
 class GroupContainerCycleView : public WindowMiniViewBase {
- public:
-  METADATA_HEADER(GroupContainerCycleView);
+  METADATA_HEADER(GroupContainerCycleView, WindowMiniViewBase)
 
+ public:
   explicit GroupContainerCycleView(SnapGroup* snap_group);
   GroupContainerCycleView(const GroupContainerCycleView&) = delete;
   GroupContainerCycleView& operator=(const GroupContainerCycleView&) = delete;
   ~GroupContainerCycleView() override;
 
-  const std::vector<WindowCycleItemView*>& mini_views() const {
+  const std::vector<raw_ptr<WindowCycleItemView, VectorExperimental>>&
+  mini_views() const {
     return mini_views_;
   }
 
@@ -86,7 +87,7 @@ class GroupContainerCycleView : public WindowMiniViewBase {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
-  std::vector<WindowCycleItemView*> mini_views_;
+  std::vector<raw_ptr<WindowCycleItemView, VectorExperimental>> mini_views_;
 
   // True if `this` is the first time a focus selection request is made to this
   // item.

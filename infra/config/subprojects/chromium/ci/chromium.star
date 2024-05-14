@@ -11,6 +11,7 @@ load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
+load("//lib/targets.star", "targets")
 
 # Take care when changing the GN args of any of these builders to ensure that
 # you do not include a configuration with 'chrome_with_codecs' since these
@@ -82,6 +83,9 @@ ci.builder(
             "strip_debug_info",
         ],
     ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
+    ),
     cores = 32,
     tree_closing = True,
     console_view_entry = consoles.console_view_entry(
@@ -137,6 +141,9 @@ ci.builder(
             "arm64",
         ],
     ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
+    ),
     cores = 32,
     tree_closing = True,
     console_view_entry = consoles.console_view_entry(
@@ -187,6 +194,9 @@ ci.builder(
             "full_symbols",
         ],
     ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
+    ),
     builderless = False,
     cores = 32,
     console_view_entry = consoles.console_view_entry(
@@ -197,54 +207,6 @@ ci.builder(
     # See https://crbug.com/1153349#c22, as we update symbol_level=2, build
     # needs longer time to complete.
     execution_timeout = 7 * time.hour,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-)
-
-ci.builder(
-    name = "fuchsia-official",
-    branch_selector = branches.selector.FUCHSIA_BRANCHES,
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "fuchsia_x64",
-                "checkout_pgo_profiles",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            target_bits = 64,
-            target_platform = builder_config.target_platform.FUCHSIA,
-        ),
-    ),
-    gn_args = gn_args.config(
-        configs = [
-            "official_optimize",
-            "reclient",
-            "fuchsia",
-        ],
-    ),
-    builderless = False,
-    cores = 32,
-    sheriff_rotations = args.ignore_default(None),
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "fuchsia",
-            short_name = "off",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.selector.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "gardener|ci|x64",
-            short_name = "off",
-        ),
-    ],
-    # TODO: Change this back down to something reasonable once these builders
-    # have populated their cached by getting through the compile step
-    execution_timeout = 10 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -274,6 +236,38 @@ ci.builder(
             "release_builder",
             "reclient",
             "use_cups",
+        ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = [
+            "base_unittests",
+            "browser_tests",
+            "chromeos_unittests",
+            "components_unittests",
+            "compositor_unittests",
+            "content_browsertests",
+            "content_unittests",
+            "crypto_unittests",
+            "dbus_unittests",
+            "device_unittests",
+            "gcm_unit_tests",
+            "google_apis_unittests",
+            "gpu_unittests",
+            "interactive_ui_tests",
+            "ipc_tests",
+            "media_unittests",
+            "message_center_unittests",
+            "nacl_loader_unittests",
+            "net_unittests",
+            "ppapi_unittests",
+            "printing_unittests",
+            "remoting_unittests",
+            "sandbox_linux_unittests",
+            "sql_unittests",
+            "ui_base_unittests",
+            "unit_tests",
+            "url_unittests",
+            "views_unittests",
         ],
     ),
     cores = 8,
@@ -312,6 +306,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.CHROMEOS,
         ),
     ),
     gn_args = gn_args.config(
@@ -321,6 +316,9 @@ ci.builder(
             "reclient",
             "also_build_ash_chrome",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "chrome",
     ),
     cores = 8,
     # TODO(crbug.com/1362019): Turn on when stable.
@@ -379,6 +377,10 @@ ci.builder(
             "release",
         ],
     ),
+    # If tests get added to this builder, it will need to specify os_type chromeos
+    targets = targets.bundle(
+        additional_compile_targets = "chrome",
+    ),
     cores = 32,
     tree_closing = True,
     console_view_entry = consoles.console_view_entry(
@@ -434,6 +436,10 @@ ci.builder(
             "lacros",
             "release",
         ],
+    ),
+    # If tests get added to this builder, it will need to specify os_type chromeos
+    targets = targets.bundle(
+        additional_compile_targets = "chrome",
     ),
     cores = 32,
     tree_closing = True,
@@ -491,6 +497,10 @@ ci.builder(
             "release",
         ],
     ),
+    # If tests get added to this builder, it will need to specify os_type chromeos
+    targets = targets.bundle(
+        additional_compile_targets = "chrome",
+    ),
     cores = 32,
     sheriff_rotations = args.ignore_default(None),
     # TODO(crbug.com/1363272): Enable tree_closing/sheriff when stable.
@@ -529,6 +539,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
     ),
     gn_args = gn_args.config(
@@ -537,6 +548,9 @@ ci.builder(
             "reclient",
             "updater",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
     ),
     cores = 32,
     tree_closing = True,
@@ -575,10 +589,14 @@ ci.builder(
                 "mb",
             ],
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
     ),
     gn_args = gn_args.config(
         configs = ["official_optimize", "reclient"],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
     ),
     builderless = False,
     cores = 32,
@@ -589,7 +607,7 @@ ci.builder(
     ),
     execution_timeout = 7 * time.hour,
     health_spec = health_spec.modified_default({
-        "Unhealthy": struct(
+        "Unhealthy": health_spec.unhealthy_thresholds(
             build_time = struct(
                 p50_mins = 240,
             ),
@@ -611,6 +629,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
     ),
     gn_args = gn_args.config(
@@ -620,6 +639,9 @@ ci.builder(
             "mac_strip",
             "minimal_symbols",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
     ),
     cores = 12,
     os = os.MAC_DEFAULT,
@@ -656,6 +678,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
     ),
     gn_args = gn_args.config(
@@ -666,6 +689,9 @@ ci.builder(
             "minimal_symbols",
             "arm64",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
     ),
     cores = 12,
     os = os.MAC_DEFAULT,
@@ -704,6 +730,7 @@ ci.builder(
                 "mb",
             ],
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
     ),
     gn_args = gn_args.config(
@@ -711,6 +738,9 @@ ci.builder(
             "official_optimize",
             "reclient",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
     ),
     builderless = False,
     os = os.MAC_ANY,
@@ -739,6 +769,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
     ),
     gn_args = gn_args.config(
@@ -747,6 +778,10 @@ ci.builder(
             "reclient",
             "minimal_symbols",
         ],
+    ),
+    targets = targets.bundle(
+        targets = "public_build_scripts",
+        additional_compile_targets = "all",
     ),
     builderless = False,
     cores = 32,
@@ -786,6 +821,7 @@ ci.builder(
                 "mb",
             ],
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
     ),
     gn_args = gn_args.config(
@@ -794,6 +830,9 @@ ci.builder(
             "reclient",
             "minimal_symbols",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
     ),
     builderless = False,
     cores = 32,
@@ -822,6 +861,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
     ),
     gn_args = gn_args.config(
@@ -831,6 +871,10 @@ ci.builder(
             "x86",
             "minimal_symbols",
         ],
+    ),
+    targets = targets.bundle(
+        targets = "public_build_scripts",
+        additional_compile_targets = "all",
     ),
     builderless = False,
     cores = 32,
@@ -870,6 +914,7 @@ ci.builder(
                 "mb",
             ],
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
     ),
     gn_args = gn_args.config(
@@ -878,6 +923,9 @@ ci.builder(
             "reclient",
             "x86",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "all",
     ),
     builderless = False,
     cores = 32,

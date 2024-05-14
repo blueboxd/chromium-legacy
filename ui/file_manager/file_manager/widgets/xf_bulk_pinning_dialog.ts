@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import {CrDialogElement} from 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
 
 import {calculateBulkPinRequiredSpace} from '../common/js/api.js';
 import {RateLimiter} from '../common/js/async_util.js';
 import {bytesToString, getCurrentLocaleOrDefault, str, strf} from '../common/js/translations.js';
 import {visitURL} from '../common/js/util.js';
-import {State as AppState} from '../externs/ts/state.js';
+import type {State as AppState} from '../state/state.js';
 import {getStore} from '../state/store.js';
 
 import {css, customElement, html, query, XfBase} from './xf_base.js';

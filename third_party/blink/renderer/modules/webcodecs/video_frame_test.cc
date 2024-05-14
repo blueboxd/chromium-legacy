@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
@@ -81,6 +82,7 @@ class VideoFrameTest : public testing::Test {
   }
 
  private:
+  test::TaskEnvironment task_environment_;
   scoped_refptr<viz::TestContextProvider> test_context_provider_;
 };
 
@@ -278,7 +280,7 @@ TEST_F(VideoFrameTest, ImageBitmapCreationAndZeroCopyRoundTrip) {
 
   const auto* default_options = ImageBitmapOptions::Create();
   auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
-      UnacceleratedStaticBitmapImage::Create(original_image), absl::nullopt,
+      UnacceleratedStaticBitmapImage::Create(original_image), std::nullopt,
       default_options);
   auto* source = MakeGarbageCollected<V8CanvasImageSource>(image_bitmap);
   auto* video_frame = VideoFrame::Create(scope.GetScriptState(), source, init,
@@ -349,7 +351,7 @@ TEST_F(VideoFrameTest, ImageReuse_VideoFrameFromImage) {
 
   const auto* default_options = ImageBitmapOptions::Create();
   auto* image_bitmap_layer = MakeGarbageCollected<ImageBitmap>(
-      UnacceleratedStaticBitmapImage::Create(original_image), absl::nullopt,
+      UnacceleratedStaticBitmapImage::Create(original_image), std::nullopt,
       default_options);
 
   TestWrappedVideoFrameImageReuse(
@@ -368,7 +370,7 @@ TEST_F(VideoFrameTest, ImageReuse_VideoFrameFromVideoFrameFromImage) {
 
   const auto* default_options = ImageBitmapOptions::Create();
   auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
-      UnacceleratedStaticBitmapImage::Create(original_image), absl::nullopt,
+      UnacceleratedStaticBitmapImage::Create(original_image), std::nullopt,
       default_options);
 
   auto* init = VideoFrameInit::Create();

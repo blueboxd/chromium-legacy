@@ -14,6 +14,16 @@ enum MLConvTranspose2dFilterOperandLayout { "iohw", "hwoi", "ohwi" };
 
 enum MLAutoPad { "explicit", "same-upper", "same-lower" };
 
+enum MLRecurrentNetworkDirection { "forward", "backward", "both" };
+
+enum MLLstmWeightLayout { "iofg", "ifgo" };
+
+dictionary MLArgMinMaxOptions {
+  sequence<[EnforceRange] unsigned long> axes;
+  boolean keepDimensions = false;
+  boolean selectLastIndex = false;
+};
+
 // A spec file was issued for WG discussion:
 // https://github.com/webmachinelearning/webnn/issues/481.
 // TODO(crbug.com/1502361): Revisit whether the scale and bias operands
@@ -64,6 +74,11 @@ dictionary MLGemmOptions {
   boolean bTranspose = false;
 };
 
+dictionary MLHardSigmoidOptions {
+  float alpha = 0.2;
+  float beta = 0.5;
+};
+
 dictionary MLLayerNormalizationOptions {
   MLOperand scale;
   MLOperand bias;
@@ -78,6 +93,18 @@ dictionary MLLeakyReluOptions {
 dictionary MLLinearOptions {
   float alpha = 1.0;
   float beta = 0;
+};
+
+dictionary MLLstmOptions {
+  MLOperand bias;
+  MLOperand recurrentBias;
+  MLOperand peepholeWeight;
+  MLOperand initialHiddenState;
+  MLOperand initialCellState;
+  boolean returnSequence = false;
+  MLRecurrentNetworkDirection direction = "forward";
+  MLLstmWeightLayout layout = "iofg";
+  sequence<MLActivation> activations;
 };
 
 enum MLPaddingMode {
@@ -138,6 +165,10 @@ dictionary MLResample2dOptions {
   sequence<[EnforceRange] unsigned long> axes;
 };
 
+dictionary MLSoftplusOptions {
+  float steepness = 1.0;
+};
+
 dictionary MLTransposeOptions {
   sequence<[EnforceRange] unsigned long> permutation;
 };
@@ -155,6 +186,9 @@ dictionary MLSplitOptions {
   [RaisesException] MLOperand input(DOMString name, MLOperandDescriptor desc);
 
   [RaisesException] MLOperand constant(MLOperandDescriptor desc, MLBufferView bufferView);
+
+  [RaisesException] MLOperand argMin(MLOperand input, optional MLArgMinMaxOptions options = {});
+  [RaisesException] MLOperand argMax(MLOperand input, optional MLArgMinMaxOptions options = {});
 
   [RaisesException] MLOperand batchNormalization(MLOperand input, MLOperand mean, MLOperand variance, optional MLBatchNormalizationOptions options = {});
 
@@ -176,7 +210,9 @@ dictionary MLSplitOptions {
   [RaisesException] MLOperand pow(MLOperand a, MLOperand b);
   [RaisesException] MLOperand equal(MLOperand a, MLOperand b);
   [RaisesException] MLOperand greater(MLOperand a, MLOperand b);
+  [RaisesException] MLOperand greaterOrEqual(MLOperand a, MLOperand b);
   [RaisesException] MLOperand lesser(MLOperand a, MLOperand b);
+  [RaisesException] MLOperand lesserOrEqual(MLOperand a, MLOperand b);
 
   // Element-wise unary operations
   [RaisesException] MLOperand abs(MLOperand x);
@@ -205,6 +241,9 @@ dictionary MLSplitOptions {
 
   [RaisesException] MLOperand gemm(MLOperand a, MLOperand b, optional MLGemmOptions options = {});
 
+  [RaisesException] MLOperand hardSigmoid(MLOperand x, optional MLHardSigmoidOptions options = {});
+  [RaisesException] MLActivation hardSigmoid(optional MLHardSigmoidOptions options = {});
+
   [RaisesException] MLOperand hardSwish(MLOperand x);
   [RaisesException] MLActivation hardSwish();
 
@@ -220,11 +259,16 @@ dictionary MLSplitOptions {
   [RaisesException] MLOperand linear(MLOperand input, optional MLLinearOptions options = {});
   [RaisesException] MLActivation linear(optional MLLinearOptions options = {});
 
+  [RaisesException] sequence<MLOperand> lstm(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
+                                             [EnforceRange] unsigned long steps, [EnforceRange] unsigned long hiddenSize,
+                                             optional MLLstmOptions options = {});
+
   [RaisesException] MLOperand pad(MLOperand input, sequence<[EnforceRange] unsigned long> beginningPadding,
                 sequence<[EnforceRange] unsigned long> endingPadding, optional MLPadOptions options = {});
 
   // Pooling operations
   [RaisesException] MLOperand averagePool2d(MLOperand input, optional MLPool2dOptions options = {});
+  [RaisesException] MLOperand l2Pool2d(MLOperand input, optional MLPool2dOptions options = {});
   [RaisesException] MLOperand maxPool2d(MLOperand input, optional MLPool2dOptions options = {});
 
   [RaisesException] MLOperand prelu(MLOperand x, MLOperand slope);
@@ -254,6 +298,9 @@ dictionary MLSplitOptions {
 
   [RaisesException] MLOperand softmax(MLOperand input);
   [RaisesException] MLActivation softmax();
+
+  [RaisesException] MLOperand softplus(MLOperand input, optional MLSoftplusOptions options = {});
+  [RaisesException] MLActivation softplus(optional MLSoftplusOptions options = {});
 
   [RaisesException] MLOperand softsign(MLOperand input);
   [RaisesException] MLActivation softsign();

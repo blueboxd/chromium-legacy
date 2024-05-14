@@ -41,8 +41,7 @@
 namespace ash {
 namespace {
 
-using ItemFailureToLaunchReason =
-    holding_space_metrics::ItemFailureToLaunchReason;
+using ItemLaunchFailureReason = holding_space_metrics::ItemLaunchFailureReason;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -172,7 +171,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
 
   // Marks the underlying download to open when complete. Returns `absl:nullopt`
   // on success or the reason if the attempt was not successful.
-  virtual std::optional<ItemFailureToLaunchReason> OpenWhenComplete() = 0;
+  virtual std::optional<ItemLaunchFailureReason> OpenWhenComplete() = 0;
 
   // Returns the accessible name to use for the underlying download.
   // NOTE: If the underlying download is complete, the return value will be
@@ -463,16 +462,14 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
 
  private:
   const Type type_;
-  const raw_ptr<HoldingSpaceDownloadsDelegate, ExperimentalAsh>
-      delegate_;  // NOTE: Owns `this`.
+  const raw_ptr<HoldingSpaceDownloadsDelegate> delegate_;  // NOTE: Owns `this`.
   crosapi::mojom::DownloadItemPtr mojo_download_item_;
 
   // The in-progress holding space item associated with this in-progress
   // download. NOTE: This may be `nullptr` until the target file path for the
   // in-progress download has been set and a holding space item has been created
   // and associated.
-  raw_ptr<const HoldingSpaceItem, ExperimentalAsh> holding_space_item_ =
-      nullptr;
+  raw_ptr<const HoldingSpaceItem> holding_space_item_ = nullptr;
 
   base::WeakPtrFactory<InProgressDownload> weak_factory_{this};
 };
@@ -514,9 +511,9 @@ class HoldingSpaceDownloadsDelegate::InProgressAshDownload
   void Pause() override { download_item_->Pause(); }
   void Resume() override { download_item_->Resume(/*from_user=*/true); }
 
-  std::optional<ItemFailureToLaunchReason> OpenWhenComplete() override {
+  std::optional<ItemLaunchFailureReason> OpenWhenComplete() override {
     if (GetOpenWhenComplete())
-      return ItemFailureToLaunchReason::kReattemptToOpenWhenComplete;
+      return ItemLaunchFailureReason::kReattemptToOpenWhenComplete;
     download_item_->SetOpenWhenComplete(true);
     return std::nullopt;
   }
@@ -532,8 +529,8 @@ class HoldingSpaceDownloadsDelegate::InProgressAshDownload
     UpdateMojoDownloadItem(nullptr);  // NOTE: Destroys `this`.
   }
 
-  const raw_ptr<content::DownloadManager, ExperimentalAsh> manager_;
-  const raw_ptr<download::DownloadItem, ExperimentalAsh> download_item_;
+  const raw_ptr<content::DownloadManager> manager_;
+  const raw_ptr<download::DownloadItem> download_item_;
 
   base::ScopedObservation<download::DownloadItem,
                           download::DownloadItem::Observer>
@@ -590,15 +587,15 @@ class HoldingSpaceDownloadsDelegate::InProgressLacrosDownload
       download_controller_ash->Resume(GetGuid(), /*user_resume=*/true);
   }
 
-  std::optional<ItemFailureToLaunchReason> OpenWhenComplete() override {
+  std::optional<ItemLaunchFailureReason> OpenWhenComplete() override {
     if (GetOpenWhenComplete())
-      return ItemFailureToLaunchReason::kReattemptToOpenWhenComplete;
+      return ItemLaunchFailureReason::kReattemptToOpenWhenComplete;
     auto* const download_controller_ash = GetDownloadControllerAsh();
     if (download_controller_ash) {
       download_controller_ash->SetOpenWhenComplete(GetGuid(), true);
       return std::nullopt;
     }
-    return ItemFailureToLaunchReason::kCrosApiNotFound;
+    return ItemLaunchFailureReason::kCrosApiNotFound;
   }
 
   // crosapi::DownloadControllerAsh::DownloadControllerObserver:
@@ -632,14 +629,14 @@ HoldingSpaceDownloadsDelegate::~HoldingSpaceDownloadsDelegate() {
     download_controller_ash->RemoveObserver(this);
 }
 
-std::optional<holding_space_metrics::ItemFailureToLaunchReason>
+std::optional<holding_space_metrics::ItemLaunchFailureReason>
 HoldingSpaceDownloadsDelegate::OpenWhenComplete(const HoldingSpaceItem* item) {
   DCHECK(HoldingSpaceItem::IsDownloadType(item->type()));
   for (const auto& in_progress_download : in_progress_downloads_) {
     if (in_progress_download->GetHoldingSpaceItem() == item)
       return in_progress_download->OpenWhenComplete();
   }
-  return ItemFailureToLaunchReason::kDownloadNotFound;
+  return ItemLaunchFailureReason::kDownloadNotFound;
 }
 
 void HoldingSpaceDownloadsDelegate::OnPersistenceRestored() {
@@ -682,8 +679,9 @@ void HoldingSpaceDownloadsDelegate::OnManagerInitialized(
   DCHECK(!is_restoring_persistence());
   download::SimpleDownloadManager::DownloadVector downloads;
   manager->GetAllDownloads(&downloads);
-  for (auto* download : downloads)
+  for (download::DownloadItem* download : downloads) {
     OnDownloadCreated(manager, download);
+  }
 }
 
 void HoldingSpaceDownloadsDelegate::OnManagerGoingDown(
@@ -922,42 +920,48 @@ void HoldingSpaceDownloadsDelegate::CreateOrUpdateHoldingSpaceItem(
       .SetProgress(in_progress_download->GetProgress());
 }
 
-void HoldingSpaceDownloadsDelegate::Cancel(const HoldingSpaceItem* item,
-                                           HoldingSpaceCommandId command_id) {
+void HoldingSpaceDownloadsDelegate::Cancel(
+    const HoldingSpaceItem* item,
+    HoldingSpaceCommandId command_id,
+    holding_space_metrics::EventSource event_source) {
   DCHECK(HoldingSpaceItem::IsDownloadType(item->type()));
   DCHECK_EQ(HoldingSpaceCommandId::kCancelItem, command_id);
   for (const auto& in_progress_download : in_progress_downloads_) {
     if (in_progress_download->GetHoldingSpaceItem() == item) {
       holding_space_metrics::RecordItemAction(
-          {item}, holding_space_metrics::ItemAction::kCancel);
+          {item}, holding_space_metrics::ItemAction::kCancel, event_source);
       in_progress_download->Cancel();
       return;
     }
   }
 }
 
-void HoldingSpaceDownloadsDelegate::Pause(const HoldingSpaceItem* item,
-                                          HoldingSpaceCommandId command_id) {
+void HoldingSpaceDownloadsDelegate::Pause(
+    const HoldingSpaceItem* item,
+    HoldingSpaceCommandId command_id,
+    holding_space_metrics::EventSource event_source) {
   DCHECK(HoldingSpaceItem::IsDownloadType(item->type()));
   DCHECK_EQ(HoldingSpaceCommandId::kPauseItem, command_id);
   for (const auto& in_progress_download : in_progress_downloads_) {
     if (in_progress_download->GetHoldingSpaceItem() == item) {
       holding_space_metrics::RecordItemAction(
-          {item}, holding_space_metrics::ItemAction::kPause);
+          {item}, holding_space_metrics::ItemAction::kPause, event_source);
       in_progress_download->Pause();
       return;
     }
   }
 }
 
-void HoldingSpaceDownloadsDelegate::Resume(const HoldingSpaceItem* item,
-                                           HoldingSpaceCommandId command_id) {
+void HoldingSpaceDownloadsDelegate::Resume(
+    const HoldingSpaceItem* item,
+    HoldingSpaceCommandId command_id,
+    holding_space_metrics::EventSource event_source) {
   DCHECK(HoldingSpaceItem::IsDownloadType(item->type()));
   DCHECK_EQ(HoldingSpaceCommandId::kResumeItem, command_id);
   for (const auto& in_progress_download : in_progress_downloads_) {
     if (in_progress_download->GetHoldingSpaceItem() == item) {
       holding_space_metrics::RecordItemAction(
-          {item}, holding_space_metrics::ItemAction::kResume);
+          {item}, holding_space_metrics::ItemAction::kResume, event_source);
       in_progress_download->Resume();
       return;
     }

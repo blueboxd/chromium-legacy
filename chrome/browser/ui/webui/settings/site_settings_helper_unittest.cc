@@ -49,6 +49,7 @@
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/webui_allowlist.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -373,6 +374,44 @@ TEST_F(SiteSettingsHelperTest, ExceptionListFedCmEmbargo) {
   EXPECT_EQ(kOriginToEmbargo, *primary_pattern);
 }
 
+TEST_F(SiteSettingsHelperTest, ExceptionListIgnoresWebUIAllowlist) {
+  TestingProfile profile;
+  auto* allowlist = WebUIAllowlist::GetOrCreate(&profile);
+
+  // Confirm that WebUI allowlist entries are excluded from the exception list.
+  allowlist->RegisterAutoGrantedPermission(
+      url::Origin::Create(GURL("chrome://example.com")),
+      ContentSettingsType::COOKIES);
+
+  // Secondary patterns should also be ignored.
+  allowlist->RegisterAutoGrantedThirdPartyCookies(
+      url::Origin::Create(GURL("chrome-untrusted://another-example.com")),
+      {
+          ContentSettingsPattern::FromURL(GURL("https://embedded-1.com")),
+          ContentSettingsPattern::FromURL(GURL("https://embedded-2.com")),
+      });
+
+  base::Value::List exceptions;
+  site_settings::GetExceptionsForContentType(ContentSettingsType::COOKIES,
+                                             &profile,
+                                             /*web_ui=*/nullptr,
+                                             /*incognito=*/false, &exceptions);
+  ASSERT_EQ(0U, exceptions.size());
+
+  // Exceptions from other sources that use a WebUI scheme should however be
+  // displayed.
+  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  map->SetContentSettingDefaultScope(
+      GURL("chrome://example"), GURL("chrome-untrusted://another-example"),
+      ContentSettingsType::COOKIES, CONTENT_SETTING_BLOCK);
+
+  site_settings::GetExceptionsForContentType(ContentSettingsType::COOKIES,
+                                             &profile,
+                                             /*web_ui=*/nullptr,
+                                             /*incognito=*/false, &exceptions);
+  ASSERT_EQ(1U, exceptions.size());
+}
+
 TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
   TestingProfile profile;
   HostContentSettingsMap* map =
@@ -393,7 +432,8 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
   policy_provider->SetWebsiteSetting(
       ContentSettingsPattern::FromString(star_google_com),
       ContentSettingsPattern::Wildcard(), kContentType,
-      base::Value(CONTENT_SETTING_BLOCK));
+      base::Value(CONTENT_SETTING_BLOCK), /*constraints=*/{},
+      content_settings::PartitionKey::GetDefaultForTesting());
   policy_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(policy_provider), HostContentSettingsMap::POLICY_PROVIDER);
@@ -411,7 +451,8 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
   extension_provider->SetWebsiteSetting(
       ContentSettingsPattern::FromString(drive_google_com),
       ContentSettingsPattern::Wildcard(), kContentType,
-      base::Value(CONTENT_SETTING_ASK));
+      base::Value(CONTENT_SETTING_ASK), /*constraints=*/{},
+      content_settings::PartitionKey::GetDefaultForTesting());
   extension_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(extension_provider),
@@ -485,10 +526,11 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
 
   // Extension.
   auto extension_provider = std::make_unique<content_settings::MockProvider>();
-  extension_provider->SetWebsiteSetting(ContentSettingsPattern::FromURL(origin),
-                                        ContentSettingsPattern::FromURL(origin),
-                                        kContentType,
-                                        base::Value(CONTENT_SETTING_BLOCK));
+  extension_provider->SetWebsiteSetting(
+      ContentSettingsPattern::FromURL(origin),
+      ContentSettingsPattern::FromURL(origin), kContentType,
+      base::Value(CONTENT_SETTING_BLOCK), /*constraints=*/{},
+      content_settings::PartitionKey::GetDefaultForTesting());
   extension_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(extension_provider),
@@ -500,10 +542,11 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
 
   // Enterprise policy.
   auto policy_provider = std::make_unique<content_settings::MockProvider>();
-  policy_provider->SetWebsiteSetting(ContentSettingsPattern::FromURL(origin),
-                                     ContentSettingsPattern::FromURL(origin),
-                                     kContentType,
-                                     base::Value(CONTENT_SETTING_ALLOW));
+  policy_provider->SetWebsiteSetting(
+      ContentSettingsPattern::FromURL(origin),
+      ContentSettingsPattern::FromURL(origin), kContentType,
+      base::Value(CONTENT_SETTING_ALLOW), /*constraints=*/{},
+      content_settings::PartitionKey::GetDefaultForTesting());
   policy_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(policy_provider), HostContentSettingsMap::POLICY_PROVIDER);
@@ -1068,8 +1111,8 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
   }
 }
 
-// TODO(crbug.com/1373962): Remove this testing class when
-// Persistent Permissions is launched.
+// TODO(crbug.com/1011533): Remove usage of this testing class when the feature
+// flag for Persistent Permissions is removed.
 class PersistentPermissionsSiteSettingsHelperTest
     : public SiteSettingsHelperTest {
  public:

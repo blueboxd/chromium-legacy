@@ -75,12 +75,23 @@ void ClientSharedImage::ScopedMapping::OnMemoryDump(
   buffer_->OnMemoryDump(pmd, buffer_dump_guid, tracing_process_id, importance);
 }
 
-ClientSharedImage::ClientSharedImage(const Mailbox& mailbox)
-    : mailbox_(mailbox) {}
-
-ClientSharedImage::ClientSharedImage(const Mailbox& mailbox,
-                                     GpuMemoryBufferHandleInfo handle_info)
+ClientSharedImage::ClientSharedImage(
+    const Mailbox& mailbox,
+    const Metadata& metadata,
+    scoped_refptr<SharedImageInterfaceHolder> sii_holder)
     : mailbox_(mailbox),
+      metadata_(metadata),
+      sii_holder_(std::move(sii_holder)) {
+  CHECK(!mailbox.IsZero());
+}
+
+ClientSharedImage::ClientSharedImage(
+    const Mailbox& mailbox,
+    const Metadata& metadata,
+    GpuMemoryBufferHandleInfo handle_info,
+    scoped_refptr<SharedImageInterfaceHolder> sii_holder)
+    : mailbox_(mailbox),
+      metadata_(metadata),
       gpu_memory_buffer_(
           GpuMemoryBufferSupport().CreateGpuMemoryBufferImplFromHandle(
               std::move(handle_info.handle),
@@ -91,7 +102,10 @@ ClientSharedImage::ClientSharedImage(const Mailbox& mailbox,
               viz::SinglePlaneSharedImageFormatToBufferFormat(
                   handle_info.format),
               handle_info.buffer_usage,
-              base::DoNothing())) {}
+              base::DoNothing())),
+      sii_holder_(std::move(sii_holder)) {
+  CHECK(!mailbox.IsZero());
+}
 
 ClientSharedImage::~ClientSharedImage() = default;
 
@@ -102,5 +116,13 @@ std::unique_ptr<ClientSharedImage::ScopedMapping> ClientSharedImage::Map() {
   }
   return scoped_mapping;
 }
+
+#if BUILDFLAG(IS_APPLE)
+void ClientSharedImage::SetColorSpaceOnNativeBuffer(
+    const gfx::ColorSpace& color_space) {
+  CHECK(gpu_memory_buffer_);
+  gpu_memory_buffer_->SetColorSpace(color_space);
+}
+#endif
 
 }  // namespace gpu

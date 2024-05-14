@@ -11,12 +11,13 @@
 #include "base/containers/queue.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_delegate.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "ui/display/display_observer.h"
+#include "ui/display/manager/display_manager_observer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
@@ -32,10 +33,17 @@ class RasterContextProvider;
 namespace exo {
 class LayerTreeFrameSinkHolder;
 
+// Notifies viz that exo doesn't want to throttle sending
+// `DidReceiveCompositorFrameAck` and `ReclaimResources`. We don't want exo to
+// merge those into OnBeginFrame as that makes clients of exo to throttle as
+// well given frame callbacks as well as buffers are sent/released in a late
+// manner.
+BASE_DECLARE_FEATURE(kExoDisableBeginFrameAcks);
+
 // This class provides functionality for hosting a surface tree. The surface
 // tree is hosted in the |host_window_|.
 class SurfaceTreeHost : public SurfaceDelegate,
-                        public display::DisplayObserver,
+                        public display::DisplayManagerObserver,
                         public ui::LayerOwner::Observer,
                         public viz::ContextLostObserver {
  public:
@@ -139,9 +147,9 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void SetTopInset(int height) override {}
   SecurityDelegate* GetSecurityDelegate() override;
 
-  // display::DisplayObserver:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
+  // display::DisplayManagerObserver:
+  void OnDidProcessDisplayChanges(
+      const DisplayConfigurationChange& configuration_change) override;
 
   // viz::ContextLostObserver:
   void OnContextLost() override;
@@ -174,6 +182,9 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void ApplyRoundedCornersToSurfaceTree(
       const gfx::RectF& bounds,
       const gfx::RoundedCornersF& radii_in_dps);
+
+  scoped_refptr<viz::RasterContextProvider> SetRasterContextProviderForTesting(
+      scoped_refptr<viz::RasterContextProvider> context_provider_test);
 
  protected:
   void UpdateDisplayOnTree();
@@ -250,6 +261,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   virtual ui::Layer* GetCommitTargetLayer();
   virtual const ui::Layer* GetCommitTargetLayer() const;
 
+  int64_t output_display_id() const { return output_display_id_; }
+
   // The FrameSinkId associated with this.
   viz::FrameSinkId frame_sink_id_;
 
@@ -262,7 +275,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   void CleanUpCallbacks();
 
-  float CalculateScaleFactor(const absl::optional<float>& scale_factor) const;
+  float CalculateScaleFactor(const std::optional<float>& scale_factor) const;
 
   // Applies `rounded_corner_bounds` to the `surface` and propagates the bounds
   // to its subsurfaces. `rounded_corner_bounds` should be in the local
@@ -276,7 +289,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   std::unique_ptr<viz::ChildLocalSurfaceIdAllocator>
       child_local_surface_id_allocator_;
 
-  raw_ptr<Surface, ExperimentalAsh> root_surface_ = nullptr;
+  raw_ptr<Surface> root_surface_ = nullptr;
 
   // Position of root surface relative to topmost, leftmost sub-surface. The
   // host window should be translated by the negation of this vector.
@@ -305,24 +318,26 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // When a client calls set_scale_factor they're actually setting the scale
   // factor for all future commits.
-  absl::optional<float> pending_scale_factor_;
+  std::optional<float> pending_scale_factor_;
 
   // This is the client-set scale factor that is being used for the current
   // buffer.
-  absl::optional<float> scale_factor_;
+  std::optional<float> scale_factor_;
 
   viz::FrameTokenGenerator next_token_;
 
   scoped_refptr<viz::RasterContextProvider> context_provider_;
 
-  display::ScopedDisplayObserver display_observer_{this};
+  base::ScopedObservation<display::DisplayManager,
+                          display::DisplayManagerObserver>
+      display_manager_observation_{this};
 
   // The display id for the output the surface is entered onto.
   int64_t output_display_id_ = display::kInvalidDisplayId;
 
   bool client_submits_surfaces_in_pixel_coordinates_ = false;
 
-  raw_ptr<SecurityDelegate, ExperimentalAsh> security_delegate_ = nullptr;
+  raw_ptr<SecurityDelegate> security_delegate_ = nullptr;
 
   std::set<gpu::SyncToken> prev_frame_verified_tokens_;
 

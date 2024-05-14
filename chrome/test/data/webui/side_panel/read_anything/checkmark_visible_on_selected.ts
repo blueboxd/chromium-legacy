@@ -4,7 +4,7 @@
 
 import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything_toolbar.js';
 
-import {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything_toolbar.js';
+import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything_toolbar.js';
 import {assertEquals} from 'chrome-untrusted://webui-test/chai_assert.js';
 
 import {FakeReadingMode} from './fake_reading_mode.js';
@@ -13,6 +13,7 @@ suite('CheckmarkVisibleOnSelected', () => {
   let toolbar: ReadAnythingToolbarElement;
 
   setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     const readingMode = new FakeReadingMode();
     chrome.readingMode = readingMode as unknown as typeof chrome.readingMode;
 
@@ -46,6 +47,5 @@ suite('CheckmarkVisibleOnSelected', () => {
     assertCheckMarksForDropdown(toolbar.$.lineSpacingMenu);
     assertCheckMarksForDropdown(toolbar.$.letterSpacingMenu);
     assertCheckMarksForDropdown(toolbar.$.colorMenu);
-    assertCheckMarksForDropdown(toolbar.$.voiceSelectionMenu);
   });
 });

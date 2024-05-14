@@ -7,14 +7,15 @@ import 'chrome://resources/js/jstemplate_compiled.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {getRequiredElement} from 'chrome://resources/js/util.js';
-import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
-import {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
-import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
+import type {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
+import type {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
+import type {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
-import {BucketId} from './bucket_id.mojom-webui.js';
+import type {BucketId} from './bucket_id.mojom-webui.js';
 import {IdbTransactionMode, IdbTransactionState} from './indexed_db_bucket_types.mojom-webui.js';
-import {IdbInternalsHandler, IdbInternalsHandlerInterface, IdbPartitionMetadata} from './indexed_db_internals.mojom-webui.js';
-import {SchemefulSite} from './schemeful_site.mojom-webui.js';
+import type {IdbInternalsHandlerInterface, IdbPartitionMetadata} from './indexed_db_internals.mojom-webui.js';
+import {IdbInternalsHandler} from './indexed_db_internals.mojom-webui.js';
+import type {SchemefulSite} from './schemeful_site.mojom-webui.js';
 
 // TODO: This comes from components/flags_ui/resources/flags.ts. It should be
 // extracted into a tools/typescript/definitions/jstemplate.d.ts file, and
@@ -130,16 +131,6 @@ class IdbInternalsRemote {
     return promisifyMojoResult(
         this.handler.getAllBucketsAcrossAllStorageKeys(), 'partitions');
   }
-
-  downloadBucketData(bucketId: BucketId): Promise<bigint> {
-    return promisifyMojoResult(
-        this.handler.downloadBucketData(bucketId), 'connectionCount');
-  }
-
-  forceClose(bucketId: BucketId): Promise<bigint> {
-    return promisifyMojoResult(
-        this.handler.forceClose(bucketId), 'connectionCount');
-  }
 }
 
 const internalsRemote = new IdbInternalsRemote();
@@ -159,8 +150,25 @@ class BucketElement extends HTMLElement {
 
   constructor() {
     super();
-    this.addControlListener('.download', internalsRemote.downloadBucketData);
-    this.addControlListener('.force-close', internalsRemote.forceClose);
+    this.getNode(`.control.download`).addEventListener('click', () => {
+      // Show loading
+      this.progressNode.style.display = 'inline';
+
+      IdbInternalsHandler.getRemote()
+          .downloadBucketData(this.idbBucketId)
+          .then(this.onLoadComplete.bind(this))
+          .catch(errorMsg => console.error(errorMsg));
+    });
+
+    this.getNode(`.control.force-close`).addEventListener('click', () => {
+      // Show loading
+      this.progressNode.style.display = 'inline';
+
+      IdbInternalsHandler.getRemote()
+          .forceClose(this.idbBucketId)
+          .then(this.onLoadComplete.bind(this))
+          .catch(errorMsg => console.error(errorMsg));
+    });
 
     this.progressNode = this.getNode('.download-status');
     this.connectionCountNode = this.getNode('.connection-count');
@@ -172,24 +180,9 @@ class BucketElement extends HTMLElement {
     return controlNode;
   }
 
-  private addControlListener(
-      selector: string, idbMojoFunc: (id: BucketId) => Promise<bigint>) {
-    const eventHandler = () => {
-      // Show loading
-      this.progressNode.style.display = 'inline';
-
-      idbMojoFunc.bind(internalsRemote)(this.idbBucketId)
-          .then(this.onLoadComplete.bind(this))
-          .catch(errorMsg => console.error(errorMsg));
-    };
-
-    const control = this.getNode(`.control${selector}`);
-    control.addEventListener('click', eventHandler);
-  }
-
-  private onLoadComplete(connectionCount: bigint) {
+  private onLoadComplete() {
     this.progressNode.style.display = 'none';
-    this.connectionCountNode.innerText = connectionCount.toString();
+    this.connectionCountNode.innerText = '0';
   }
 }
 

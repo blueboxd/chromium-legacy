@@ -102,6 +102,8 @@ class ArcNetHostImpl : public KeyedService,
   void NotifyAndroidWifiMulticastLockChange(bool is_held) override;
   void NotifySocketConnectionEvent(
       mojom::SocketConnectionEventPtr msg) override;
+  void NotifyARCVPNSocketConnectionEvent(
+      mojom::SocketConnectionEventPtr msg) override;
 
   // Overridden from ash::NetworkStateHandlerObserver.
   void ScanCompleted(const ash::DeviceState* /*unused*/) override;
@@ -262,7 +264,7 @@ class ArcNetHostImpl : public KeyedService,
                                       CreateNetworkCallback callback,
                                       base::Value::Dict eap_dict);
 
-  const raw_ptr<ArcBridgeService, ExperimentalAsh>
+  const raw_ptr<ArcBridgeService>
       arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // True if the chrome::NetworkStateHandler is currently being observed for
@@ -275,9 +277,9 @@ class ArcNetHostImpl : public KeyedService,
   std::string cached_guid_;
   std::string arc_vpn_service_path_;
   // Owned by the user profile whose context was used to initialize |this|.
-  raw_ptr<PrefService, ExperimentalAsh> pref_service_ = nullptr;
-  raw_ptr<ArcAppMetadataProvider, DanglingUntriaged | ExperimentalAsh>
-      app_metadata_provider_ = nullptr;
+  raw_ptr<PrefService> pref_service_ = nullptr;
+  raw_ptr<ArcAppMetadataProvider, DanglingUntriaged> app_metadata_provider_ =
+      nullptr;
 
   std::unique_ptr<CertManager> cert_manager_;
 

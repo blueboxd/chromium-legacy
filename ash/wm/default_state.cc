@@ -16,6 +16,7 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/check.h"
@@ -440,7 +441,13 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
 
 void DefaultState::SetBounds(WindowState* window_state,
                              const SetBoundsWMEvent* event) {
-  if (window_state->is_dragged() || window_state->allow_set_bounds_direct()) {
+  // TODO(andreaorru|oshima): Fix dragging code so that if a window is dragging
+  // tabs, it contains drag details, and `is_dragged` is true for its state.
+  // Then we can simplify this condition and remove `IsDraggingTabs`.
+  bool is_dragged = window_state->is_dragged() ||
+                    window_util::IsDraggingTabs(window_state->window());
+
+  if (is_dragged || window_state->allow_set_bounds_direct()) {
     if (event->animate()) {
       window_state->SetBoundsDirectAnimated(event->requested_bounds(),
                                             event->duration());
@@ -501,10 +508,8 @@ void DefaultState::EnterToNextState(
   gfx::Rect restore_bounds_in_screen;
   if (window_state->window()->parent()) {
     // Save the current bounds as the restore bounds if changing from normal
-    // state (not horizontal/vertical maximized) to other non-minimized window
-    // states.
-    if (is_previous_normal_type && !window_state->IsMinimized() &&
-        !window_state->IsNormalStateType()) {
+    // state (not horizontal/vertical maximized) to other window states.
+    if (is_previous_normal_type && !window_state->IsNormalStateType()) {
       window_state->SaveCurrentBoundsForRestore();
     }
 
@@ -699,7 +704,7 @@ void DefaultState::UpdateBoundsFromState(
         bounds_in_parent.size() != window->bounds().size()) {
       reporter.emplace(
           window_state->window()->layer()->GetAnimator(),
-          metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+          metrics_util::ForSmoothnessV3(base::BindRepeating([](int smoothness) {
             UMA_HISTOGRAM_PERCENTAGE(kSnapWindowSmoothnessHistogramName,
                                      smoothness);
           })));

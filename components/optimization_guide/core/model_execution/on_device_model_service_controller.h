@@ -4,22 +4,28 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_ON_DEVICE_MODEL_SERVICE_CONTROLLER_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_ON_DEVICE_MODEL_SERVICE_CONTROLLER_H_
 
+#include <cstdint>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/types/optional_ref.h"
 #include "base/types/pass_key.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_component.h"
 #include "components/optimization_guide/core/model_execution/session_impl.h"
+#include "components/optimization_guide/core/model_info.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/on_device_model/public/cpp/model_assets.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 #include "services/on_device_model/public/mojom/on_device_model_service.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class OptimizationGuideLogger;
 
@@ -29,6 +35,7 @@ class FilePath;
 
 namespace optimization_guide {
 class OnDeviceModelAccessController;
+class OnDeviceModelComponentStateManager;
 class OnDeviceModelExecutionConfigInterpreter;
 
 // Controls the lifetime of the on-device model service, loading and unloading
@@ -43,17 +50,16 @@ class OnDeviceModelExecutionConfigInterpreter;
 // this. Also handle multiple requests gracefully and fail the subsequent
 // requests, while handling the first one.
 class OnDeviceModelServiceController
-    : public base::RefCounted<OnDeviceModelServiceController> {
+    : public base::RefCounted<OnDeviceModelServiceController>,
+      public OnDeviceModelComponentStateManager::Observer {
  public:
-  explicit OnDeviceModelServiceController(
-      std::unique_ptr<OnDeviceModelAccessController> access_controller);
+  OnDeviceModelServiceController(
+      std::unique_ptr<OnDeviceModelAccessController> access_controller,
+      base::WeakPtr<OnDeviceModelComponentStateManager>
+          on_device_component_state_manager);
 
-  // Initializes the on-device model controller with the parameters, to be ready
-  // to load models and execute.
-  void Init(const base::FilePath& model_path,
-            std::unique_ptr<OnDeviceModelExecutionConfigInterpreter>
-                config_interpreter);
-  // Calls multi-arg init with appropriate parameters.
+  // Initializes OnDeviceModelServiceController. This should be called once
+  // after creation.
   void Init();
 
   // Starts a session for `feature`. This will start the service and load the
@@ -88,16 +94,63 @@ class OnDeviceModelServiceController
     return model_remote_.is_bound() || service_remote_.is_bound();
   }
 
+  // Sets the language detection model to be used by the ODM service when text
+  // safety evaluation is restricted to a specific set of languages.
+  void SetLanguageDetectionModel(
+      base::optional_ref<const ModelInfo> model_info);
+
+  // Updates safety model if the model path provided by `model_info` differs
+  // from what is already loaded. Virtual for testing.
+  virtual void MaybeUpdateSafetyModel(
+      base::optional_ref<const ModelInfo> model_info);
+
+  // OnDeviceModelComponentStateManager::Observer.
+  void StateChanged(const OnDeviceModelComponentState* state) override;
+
+  OnDeviceModelExecutionConfigInterpreter& ConfigInterpreterForTesting() {
+    return *config_interpreter_;
+  }
+
+ protected:
+  ~OnDeviceModelServiceController() override;
+
+  std::optional<base::FilePath> language_detection_model_path() const {
+    return language_detection_model_path_;
+  }
+
  private:
   friend class base::RefCounted<OnDeviceModelServiceController>;
   friend class ChromeOnDeviceModelServiceController;
   friend class OnDeviceModelServiceControllerTest;
   friend class FakeOnDeviceModelServiceController;
 
-  virtual ~OnDeviceModelServiceController();
+  class SafetyModelInfo {
+   public:
+    SafetyModelInfo(
+        const ModelInfo& model_info,
+        uint32_t num_output_categories,
+        base::flat_map<proto::ModelExecutionFeature,
+                       proto::FeatureTextSafetyConfiguration> feature_configs);
+    ~SafetyModelInfo();
+
+    const ModelInfo model_info;
+    const uint32_t num_output_categories;
+    base::flat_map<proto::ModelExecutionFeature,
+                   proto::FeatureTextSafetyConfiguration>
+        feature_configs;
+  };
+
+  bool InitializeSafetyModelInfo(const ModelInfo& model_info);
+
+  // Sets the base model directory and initializes the on-device model
+  // controller with the parameters, to be ready to load models and execute.
+  void SetModelPath(const base::FilePath& model_path,
+                    const std::string& component_version);
+  void ClearModelPath();
 
   // Makes sure the service is running and starts a mojo session.
   void StartMojoSession(
+      on_device_model::ModelAssetPaths model_paths,
       mojo::PendingReceiver<on_device_model::mojom::Session> session);
 
   // Invoked at the end of model load, to continue with model execution.
@@ -116,9 +169,28 @@ class OnDeviceModelServiceController
   // idle.
   void OnRemoteIdle();
 
+  // Gets the model versions based on the current model paths set.
+  proto::OnDeviceModelVersions GetModelVersions(
+      const std::string& component_version) const;
+
+  // Returns the text safety configuration for `feature`.
+  std::optional<proto::FeatureTextSafetyConfiguration>
+  GetFeatureTextSafetyConfigForFeature(proto::ModelExecutionFeature feature);
+
   // This may be null in the destructor, otherwise non-null.
   std::unique_ptr<OnDeviceModelAccessController> access_controller_;
-  base::FilePath model_path_;
+  base::WeakPtr<OnDeviceModelComponentStateManager>
+      on_device_component_state_manager_;
+
+  // Directory containing file assets for underlying on-device models. This does
+  // not include the text safety model or the language detection model.
+  std::optional<base::FilePath> model_path_;
+  // Full path of the language detection model file if it's available.
+  std::optional<base::FilePath> language_detection_model_path_;
+
+  std::optional<proto::OnDeviceModelVersions> model_versions_;
+  // Can be null if no safey model available.
+  std::unique_ptr<SafetyModelInfo> safety_model_info_;
   std::unique_ptr<OnDeviceModelExecutionConfigInterpreter> config_interpreter_;
   mojo::Remote<on_device_model::mojom::OnDeviceModelService> service_remote_;
   mojo::Remote<on_device_model::mojom::OnDeviceModel> model_remote_;

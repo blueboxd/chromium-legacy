@@ -32,9 +32,9 @@ class GlanceableTrayBubble;
 // TODO(b:277268122) update documentation.
 class ASH_EXPORT DateTray : public TrayBackgroundView,
                             public UnifiedSystemTray::Observer {
- public:
-  METADATA_HEADER(DateTray);
+  METADATA_HEADER(DateTray, TrayBackgroundView)
 
+ public:
   DateTray(Shelf* shelf, UnifiedSystemTray* tray);
   DateTray(const DateTray&) = delete;
   DateTray& operator=(const DateTray&) = delete;
@@ -72,10 +72,10 @@ class ASH_EXPORT DateTray : public TrayBackgroundView,
   friend class GlanceableTrayBubbleViewTest;
 
   // Owned by the views hierarchy.
-  raw_ptr<TimeTrayItemView, ExperimentalAsh> time_view_ = nullptr;
+  raw_ptr<TimeTrayItemView> time_view_ = nullptr;
 
   // Owned by `StatusAreaWidget`.
-  raw_ptr<UnifiedSystemTray, ExperimentalAsh> unified_system_tray_ = nullptr;
+  raw_ptr<UnifiedSystemTray> unified_system_tray_ = nullptr;
 
   // Bubble container for Glanceable UI.
   std::unique_ptr<GlanceableTrayBubble> bubble_;

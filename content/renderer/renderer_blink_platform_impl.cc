@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -69,6 +71,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/audio/audio_output_device.h"
+#include "media/base/limits.h"
 #include "media/base/media_permission.h"
 #include "media/base/media_switches.h"
 #include "media/filters/stream_parser_factory.h"
@@ -279,9 +282,9 @@ bool RendererBlinkPlatformImpl::sandboxEnabled() {
       switches::kSingleProcess);
 }
 
-uint64_t RendererBlinkPlatformImpl::VisitedLinkHash(const char* canonical_url,
-                                                    size_t length) {
-  return GetContentClient()->renderer()->VisitedLinkHash(canonical_url, length);
+uint64_t RendererBlinkPlatformImpl::VisitedLinkHash(
+    std::string_view canonical_url) {
+  return GetContentClient()->renderer()->VisitedLinkHash(canonical_url);
 }
 
 bool RendererBlinkPlatformImpl::IsLinkVisited(uint64_t link_hash) {
@@ -362,8 +365,12 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
   }
 
   RenderThreadImpl* thread = RenderThreadImpl::current();
-  if (thread)  // NULL in unittests.
-    thread->GetRendererHost()->SuddenTerminationChanged(enabled);
+  if (!thread) {
+    CHECK_IS_TEST();
+    return;
+  }
+
+  thread->GetRendererHost()->SuddenTerminationChanged(enabled);
 }
 
 //------------------------------------------------------------------------------
@@ -385,8 +392,12 @@ void RendererBlinkPlatformImpl::SetIsLockedToSite() {
 bool RendererBlinkPlatformImpl::IsGpuCompositingDisabled() const {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   RenderThreadImpl* thread = RenderThreadImpl::current();
-  // |thread| can be NULL in tests.
-  return !thread || thread->IsGpuCompositingDisabled();
+  if (!thread) {
+    CHECK_IS_TEST();
+    return true;
+  }
+
+  return thread->IsGpuCompositingDisabled();
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -447,6 +458,7 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
     const WebAudioSinkDescriptor& sink_descriptor,
     unsigned number_of_output_channels,
     const blink::WebAudioLatencyHint& latency_hint,
+    std::optional<float> sample_rate,
     media::AudioRendererSink::RenderCallback* callback) {
   // The `number_of_output_channels` does not manifest the actual channel
   // layout of the audio output device. We use the best guess to the channel
@@ -459,9 +471,15 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
     layout = media::CHANNEL_LAYOUT_DISCRETE;
   }
 
-  return RendererWebAudioDeviceImpl::Create(sink_descriptor, layout,
-                                            number_of_output_channels,
-                                            latency_hint, callback);
+  if (sample_rate && !(media::limits::kMinSampleRate <= *sample_rate &&
+                       *sample_rate <= media::limits::kMaxSampleRate)) {
+    return nullptr;
+  }
+
+  return RendererWebAudioDeviceImpl::Create(
+      sink_descriptor,
+      media::ChannelLayoutConfig(layout, number_of_output_channels),
+      latency_hint, sample_rate, callback);
 }
 
 bool RendererBlinkPlatformImpl::DecodeAudioFileData(
@@ -511,7 +529,7 @@ bool RendererBlinkPlatformImpl::RTCSmoothnessAlgorithmEnabled() {
 
 //------------------------------------------------------------------------------
 
-absl::optional<double>
+std::optional<double>
 RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
   const std::string max_fps_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -521,7 +539,7 @@ RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
     if (base::StringToDouble(max_fps_str, &value) && value >= 0.0)
       return value;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 scoped_refptr<media::AudioRendererSink>
@@ -858,8 +876,7 @@ RendererBlinkPlatformImpl::GetProtocolHandlerSecurityLevel(
       url_origin);
 }
 
-bool RendererBlinkPlatformImpl::OriginCanAccessServiceWorkers(
-    const blink::WebURL& url) {
+bool RendererBlinkPlatformImpl::OriginCanAccessServiceWorkers(const GURL& url) {
   return content::OriginCanAccessServiceWorkers(url);
 }
 
@@ -903,7 +920,7 @@ void RendererBlinkPlatformImpl::CreateServiceWorkerSubresourceLoaderFactory(
           /*remote_controller=*/mojo::NullRemote(),
           /*remote_cache_storage=*/mojo::NullRemote(), client_id.Utf8(),
           blink::mojom::ServiceWorkerFetchHandlerBypassOption::kDefault,
-          /*router_rules=*/absl::nullopt, blink::EmbeddedWorkerStatus::kStopped,
+          /*router_rules=*/std::nullopt, blink::EmbeddedWorkerStatus::kStopped,
           /*running_status_receiver=*/mojo::NullReceiver()),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
       std::move(receiver), std::move(task_runner));

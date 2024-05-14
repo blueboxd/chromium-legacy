@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/android/android_browser_test.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/webapk/webapk.pb.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/browser/android/webapk/webapk_proto_builder.h"
@@ -42,6 +43,7 @@ const char* kServerUrl = "/webapkserver/";
 
 // Start URL for the WebAPK
 const char* kStartUrl = "/index.html";
+const char* kManifestUrl = "/manifest.json";
 
 const char* kBestPrimaryIconUrl = "/banners/128x128-green.png";
 const char* kBestSplashIconUrl = "/banners/128x128-red.png";
@@ -112,26 +114,8 @@ class WebApkInstallerRunner {
 
     // WebApkInstaller owns itself.
     WebApkInstaller::InstallAsyncForTesting(
-        installer.release(), web_contents, info, SkBitmap(),
-        base::BindOnce(&WebApkInstallerRunner::OnCompleted,
-                       base::Unretained(this)));
-
-    run_loop.Run();
-  }
-
-  void RunInstallForService(std::unique_ptr<WebApkInstaller> installer,
-                            std::unique_ptr<std::string> serialized_webapk,
-                            const std::u16string& short_name,
-                            webapps::ShortcutInfo::Source source) {
-    base::RunLoop run_loop;
-    on_completed_callback_ = run_loop.QuitClosure();
-
-    GURL manifest_url("httsp://manifest.com");
-
-    // WebApkInstaller owns itself.
-    WebApkInstaller::InstallWithProtoAsyncForTesting(
-        installer.release(), std::move(serialized_webapk), short_name, source,
-        SkBitmap(), manifest_url,
+        installer.release(), web_contents, info,
+        webapps::WebappInstallSource::MENU_BROWSER_TAB,
         base::BindOnce(&WebApkInstallerRunner::OnCompleted,
                        base::Unretained(this)));
 
@@ -156,7 +140,6 @@ class WebApkInstallerRunner {
 
  private:
   void OnCompleted(webapps::WebApkInstallResult result,
-                   std::unique_ptr<std::string> serialized_webapk,
                    bool relax_updates,
                    const std::string& webapk_package) {
     result_ = result;
@@ -266,6 +249,7 @@ class WebApkInstallerBrowserTest : public AndroidBrowserTest {
 
   webapps::ShortcutInfo DefaultShortcutInfo() {
     webapps::ShortcutInfo info(embedded_test_server()->GetURL(kStartUrl));
+    info.manifest_url = embedded_test_server()->GetURL(kManifestUrl);
     info.best_primary_icon_url =
         embedded_test_server()->GetURL(kBestPrimaryIconUrl);
     info.splash_image_url = embedded_test_server()->GetURL(kBestSplashIconUrl);
@@ -287,7 +271,7 @@ class WebApkInstallerBrowserTest : public AndroidBrowserTest {
     std::string primary_icon_data = "data3";
     std::string splash_icon_data = "data4";
 
-    webapps::ShortcutInfo info(GURL::EmptyGURL());
+    webapps::ShortcutInfo info{GURL()};
 
     return webapps::BuildProtoInBackground(
         info, info.manifest_id, primary_icon_data, splash_icon_data,
@@ -340,10 +324,21 @@ class WebApkInstallerBrowserTest : public AndroidBrowserTest {
 
 // Test installation succeeding.
 IN_PROC_BROWSER_TEST_F(WebApkInstallerBrowserTest, Success) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
   WebApkInstallerRunner runner;
+  webapps::ShortcutInfo shortcut_info = DefaultShortcutInfo();
   runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), web_contents(),
                           DefaultShortcutInfo());
   EXPECT_EQ(webapps::WebApkInstallResult::SUCCESS, runner.result());
+
+  std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
+      webapk_install_entries = ukm_recorder.GetEntries("WebAPK.Install", {});
+  ASSERT_EQ(1u, webapk_install_entries.size());
+  EXPECT_EQ(
+      ukm_recorder.GetSourceForSourceId(webapk_install_entries[0].source_id)
+          ->url(),
+      shortcut_info.manifest_id);
 }
 
 // Test that installation fails if there is not enough space on device.
@@ -426,56 +421,6 @@ IN_PROC_BROWSER_TEST_F(WebApkInstallerBrowserTest,
   runner.RunInstallWebApk(std::move(installer), web_contents(),
                           DefaultShortcutInfo());
   EXPECT_EQ(webapps::WebApkInstallResult::REQUEST_TIMEOUT, runner.result());
-}
-
-// InstallForService tests
-
-// Test installation for service succeeding
-IN_PROC_BROWSER_TEST_F(WebApkInstallerBrowserTest, ServiceSuccess) {
-  std::unique_ptr<WebApkInstaller> installer(
-      new TestWebApkInstaller(profile(), SpaceStatus::ENOUGH_SPACE));
-
-  std::unique_ptr<std::string> serialized_proto = DefaultSerializedWebApk();
-  webapps::ShortcutInfo shortcut_info = DefaultShortcutInfo();
-
-  WebApkInstallerRunner runner;
-  runner.RunInstallForService(std::move(installer), std::move(serialized_proto),
-                              shortcut_info.short_name, shortcut_info.source);
-
-  EXPECT_EQ(webapps::WebApkInstallResult::SUCCESS, runner.result());
-}
-
-// Test installation for service failing if not enough space
-IN_PROC_BROWSER_TEST_F(WebApkInstallerBrowserTest, ServiceFailOnLowSpace) {
-  std::unique_ptr<WebApkInstaller> installer(
-      new TestWebApkInstaller(profile(), SpaceStatus::NOT_ENOUGH_SPACE));
-
-  std::unique_ptr<std::string> serialized_proto = DefaultSerializedWebApk();
-  webapps::ShortcutInfo shortcut_info = DefaultShortcutInfo();
-
-  WebApkInstallerRunner runner;
-  runner.RunInstallForService(std::move(installer), std::move(serialized_proto),
-                              shortcut_info.short_name, shortcut_info.source);
-
-  EXPECT_EQ(webapps::WebApkInstallResult::NOT_ENOUGH_SPACE, runner.result());
-}
-
-// Test installation for service failing if serialized apk invalid.
-IN_PROC_BROWSER_TEST_F(WebApkInstallerBrowserTest,
-                       ServiceFailOnInvalidSerializedWebApk) {
-  std::unique_ptr<WebApkInstaller> installer(
-      new TestWebApkInstaller(profile(), SpaceStatus::ENOUGH_SPACE));
-
-  webapps::ShortcutInfo shortcut_info = DefaultShortcutInfo();
-  std::string invalid_serialized_webapk = "😀";
-
-  WebApkInstallerRunner runner;
-  runner.RunInstallForService(
-      std::move(installer),
-      std::make_unique<std::string>(invalid_serialized_webapk),
-      shortcut_info.short_name, shortcut_info.source);
-
-  EXPECT_EQ(webapps::WebApkInstallResult::REQUEST_INVALID, runner.result());
 }
 
 namespace {

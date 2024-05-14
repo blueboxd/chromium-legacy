@@ -19,11 +19,13 @@
 #import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/url_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_client.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "url/gurl.h"
 
 namespace {
@@ -100,7 +102,8 @@ void AppLauncherTabHelper::SetBrowserPresentationProvider(
 void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                                               const GURL& source_page_url,
                                               bool link_transition,
-                                              bool is_user_initiated) {
+                                              bool is_user_initiated,
+                                              bool user_tapped_recently) {
   // Don't open external application if chrome is not active, or if the
   // web_state is not visible.
   if ([[UIApplication sharedApplication] applicationState] !=
@@ -121,7 +124,8 @@ void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
     return;
   }
 
-  if (!is_user_initiated) {
+  if (!(is_user_initiated ||
+        (url.SchemeIs(url::kTelScheme) && user_tapped_recently))) {
     ShowAppLaunchAlert(AppLauncherAlertCause::kNoUserInteraction, url);
     return;
   }
@@ -148,6 +152,8 @@ void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
         delegate_->LaunchAppForTabHelper(
             this, url,
             base::BindOnce(&AppLauncherTabHelper::OnAppLaunchCompleted,
+                           weak_factory_.GetWeakPtr()),
+            base::BindOnce(&AppLauncherTabHelper::AppNoLongerInactive,
                            weak_factory_.GetWeakPtr()));
       }
       return;
@@ -162,6 +168,7 @@ void AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
 void AppLauncherTabHelper::ShowAppLaunchAlert(AppLauncherAlertCause cause,
                                               const GURL& url) {
   if (!delegate_) {
+    LaunchAppRequestCompleted();
     return;
   }
   is_prompt_active_ = true;
@@ -175,6 +182,7 @@ void AppLauncherTabHelper::OnShowAppLaunchAlertDone(const GURL& url,
                                                     bool user_allowed) {
   if (!user_allowed || !delegate_) {
     is_prompt_active_ = false;
+    LaunchAppRequestCompleted();
     return;
   }
 
@@ -182,6 +190,8 @@ void AppLauncherTabHelper::OnShowAppLaunchAlertDone(const GURL& url,
   delegate_->LaunchAppForTabHelper(
       this, url,
       base::BindOnce(&AppLauncherTabHelper::OnAppLaunchTried,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&AppLauncherTabHelper::AppNoLongerInactive,
                      weak_factory_.GetWeakPtr()));
 }
 
@@ -200,6 +210,21 @@ void AppLauncherTabHelper::ShowFailureAlertDone(bool user_allowed) {
 }
 
 void AppLauncherTabHelper::OnAppLaunchCompleted(bool success) {
+  if (success && !base::FeatureList::IsEnabled(
+                     kInactiveNavigationAfterAppLaunchKillSwitch)) {
+    return;
+  }
+  LaunchAppRequestCompleted();
+}
+
+void AppLauncherTabHelper::AppNoLongerInactive() {
+  if (!base::FeatureList::IsEnabled(
+          kInactiveNavigationAfterAppLaunchKillSwitch)) {
+    LaunchAppRequestCompleted();
+  }
+}
+
+void AppLauncherTabHelper::LaunchAppRequestCompleted() {
   is_app_launch_request_pending_ = false;
   is_prompt_active_ = false;
 
@@ -234,10 +259,16 @@ void AppLauncherTabHelper::ShouldAllowRequest(
     RequestToLaunchApp(app_launch_request.url,
                        app_launch_request.source_page_url,
                        app_launch_request.link_transition,
-                       app_launch_request.has_user_gesture);
+                       app_launch_request.is_user_initiated,
+                       app_launch_request.user_tapped_recently);
   }
 
-  std::move(callback).Run(policy_decision);
+  if (!is_prompt_active_) {
+    std::move(callback).Run(policy_decision);
+  } else {
+    callbacks_waiting_for_app_launch_completion_.push_back(
+        base::BindOnce(std::move(callback), policy_decision));
+  }
 }
 
 AppLauncherTabHelper::PolicyDecisionAndOptionalAppLaunchRequest
@@ -273,20 +304,33 @@ AppLauncherTabHelper::GetPolicyDecisionAndOptionalAppLaunchRequest(
     return {PolicyDecision::Cancel(), kNoAppLaunchRequest};
   }
 
+  if (!base::FeatureList::IsEnabled(
+          web::features::kAllowCrossWindowExternalAppNavigation) &&
+      request_info.target_window_is_cross_origin) {
+    return {PolicyDecision::Cancel(), kNoAppLaunchRequest};
+  }
+
+  // Disallow launching Chrome from within Chrome, as there are no good use
+  // cases for this but allowing it opens the door to abuse.
+  bool is_chrome_launch_attempt = HasChromeAppScheme(request_url);
+  UMA_HISTOGRAM_BOOLEAN("IOS.AppLauncher.AppURLHasChromeLaunchScheme",
+                        is_chrome_launch_attempt);
+  if (is_chrome_launch_attempt) {
+    return {PolicyDecision::Cancel(), kNoAppLaunchRequest};
+  }
+
   ExternalURLRequestStatus request_status =
       ExternalURLRequestStatus::kMainFrameRequestAllowed;
   // TODO(crbug.com/852489): Check if the source frame should also be
   // considered.
   if (!request_info.target_frame_is_main) {
     request_status = ExternalURLRequestStatus::kSubFrameRequestAllowed;
-    // Don't allow navigations from iframe to apps if there is no user gesture
-    // or the URL scheme is for Chrome app.
-    if (!request_info.has_user_gesture || HasChromeAppScheme(request_url)) {
+    // Don't allow navigations from iframe to apps if there is no user gesture.
+    if (!request_info.is_user_initiated) {
       request_status = ExternalURLRequestStatus::kSubFrameRequestBlocked;
     }
   }
-  UMA_HISTOGRAM_ENUMERATION("WebController.ExternalURLRequestBlocking",
-                            request_status, ExternalURLRequestStatus::kCount);
+
   // Request is blocked.
   if (request_status == ExternalURLRequestStatus::kSubFrameRequestBlocked) {
     return {PolicyDecision::Cancel(), kNoAppLaunchRequest};
@@ -300,7 +344,7 @@ AppLauncherTabHelper::GetPolicyDecisionAndOptionalAppLaunchRequest(
   web::NavigationItem* pending_item =
       web_state_->GetNavigationManager()->GetPendingItem();
   GURL original_pending_url =
-      pending_item ? pending_item->GetOriginalRequestURL() : GURL::EmptyGURL();
+      pending_item ? pending_item->GetOriginalRequestURL() : GURL();
   bool is_link_transition = ui::PageTransitionCoreTypeIs(
       request_info.transition_type, ui::PAGE_TRANSITION_LINK);
 
@@ -323,9 +367,9 @@ AppLauncherTabHelper::GetPolicyDecisionAndOptionalAppLaunchRequest(
       !web_state_->GetNavigationManager()->GetLastCommittedItem()) {
     // Launch the app if the URL is valid or if it is the first page of the
     // tab.
-    optional_app_launch_request =
-        AppLaunchRequest{request_url, last_committed_url, is_link_transition,
-                         request_info.has_user_gesture};
+    optional_app_launch_request = AppLaunchRequest{
+        request_url, last_committed_url, is_link_transition,
+        request_info.is_user_initiated, request_info.user_tapped_recently};
   }
   return {PolicyDecision::Cancel(), std::move(optional_app_launch_request)};
 }

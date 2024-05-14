@@ -18,6 +18,12 @@
     z-index: 999;
   }
 
+  @media (forced-colors: active) {
+    dialog {
+      border: solid 1px Highlight;
+    }
+  }
+
   #header {
     display: flex;
     align-items: center;
@@ -52,15 +58,26 @@
     width: 100%;
   }
 
+  @media (forced-colors: active) {
+    cr-slider {
+      --cr-slider-ripple-color: Highlight;
+      forced-color-adjust: none;
+    }
+  }
+
   cr-slider:focus-visible {
     --cr-slider-ripple-opacity: 1;
   }
 
   cr-slider::part(container) {
-    background: var(--hue-gradient_);
+    background: linear-gradient(to right, var(--hue-gradient_));
     border-radius: 4px;
     border: 0;
     height: 8px;
+  }
+
+  :host-context([dir=rtl]) cr-slider::part(container) {
+    background: linear-gradient(to left, var(--hue-gradient_));
   }
 
   cr-slider::part(knob) {
@@ -90,6 +107,7 @@
 <dialog id="dialog">
   <div id="header">
     <h2 id="title">[[i18n('hueSliderTitle')]]</h2>
+    <slot name="headerSuffix"></slot>
     <cr-icon-button id="close" class="icon-clear"
         aria-label$="[[i18n('close')]]"
         title$="[[i18n('close')]]"

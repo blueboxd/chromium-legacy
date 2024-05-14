@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy, CrToastManagerElement, DangerType, DownloadsManagerElement, loadTimeData, PageRemote, State} from 'chrome://downloads/downloads.js';
+import type {CrToastManagerElement, DownloadsManagerElement, PageRemote} from 'chrome://downloads/downloads.js';
+import {BrowserProxy, DangerType, loadTimeData, State} from 'chrome://downloads/downloads.js';
 import {stringToMojoString16, stringToMojoUrl} from 'chrome://resources/js/mojo_type_util.js';
 import {isMac} from 'chrome://resources/js/platform.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
@@ -250,14 +251,18 @@ suite('manager tests', function() {
         ]);
         await callbackRouterRemote.$.flushForTesting();
         flush();
-        const item = manager.shadowRoot!.querySelector('downloads-item')!;
+        const item = manager.shadowRoot!.querySelector('downloads-item');
         assertTrue(!!item);
         item.dispatchEvent(new CustomEvent('save-dangerous-click', {
           bubbles: true,
           composed: true,
           detail: {id: item.data.id},
         }));
+        await callbackRouterRemote.$.flushForTesting();
         flush();
+        const recordOpenId = await testBrowserProxy.handler.whenCalled(
+            'recordOpenBypassWarningPrompt');
+        assertEquals('itemId', recordOpenId);
         const dialog = manager.shadowRoot!.querySelector(
             'download-bypass-warning-confirmation-dialog');
         assertTrue(!!dialog);
@@ -265,12 +270,52 @@ suite('manager tests', function() {
         assertEquals('item.pdf', dialog.fileName);
         // Confirm the dialog to download the dangerous file.
         dialog.$.dialog.close();
+        await callbackRouterRemote.$.flushForTesting();
         flush();
-        const id = await testBrowserProxy.handler.whenCalled(
-            'saveDangerousRequiringGesture');
-        assertEquals('itemId', id);
+        const saveDangerousId = await testBrowserProxy.handler.whenCalled(
+            'saveDangerousFromPromptRequiringGesture');
+        assertEquals('itemId', saveDangerousId);
         assertFalse(dialog.$.dialog.open);
       });
+
+  test('bypass warning confirmation dialog records cancellation', async () => {
+    callbackRouterRemote.insertItems(0, [
+      createDownload({
+        id: 'itemId',
+        fileName: 'item.pdf',
+        state: State.kDangerous,
+        isDangerous: true,
+        dangerType: DangerType.kDangerousUrl,
+      }),
+    ]);
+    await callbackRouterRemote.$.flushForTesting();
+    flush();
+    const item = manager.shadowRoot!.querySelector('downloads-item');
+    assertTrue(!!item);
+    item.dispatchEvent(new CustomEvent('save-dangerous-click', {
+      bubbles: true,
+      composed: true,
+      detail: {id: item.data.id},
+    }));
+    await callbackRouterRemote.$.flushForTesting();
+    flush();
+    const recordOpenId = await testBrowserProxy.handler.whenCalled(
+        'recordOpenBypassWarningPrompt');
+    assertEquals('itemId', recordOpenId);
+    const dialog = manager.shadowRoot!.querySelector(
+        'download-bypass-warning-confirmation-dialog');
+    assertTrue(!!dialog);
+    assertTrue(dialog.$.dialog.open);
+    assertEquals('item.pdf', dialog.fileName);
+    // Cancel the dialog and check that it's recorded.
+    dialog.$.dialog.cancel();
+    await callbackRouterRemote.$.flushForTesting();
+    flush();
+    const recordCancelId = await testBrowserProxy.handler.whenCalled(
+        'recordCancelBypassWarningPrompt');
+    assertEquals('itemId', recordCancelId);
+    assertFalse(dialog.$.dialog.open);
+  });
 
   test(
       'bypass warning confirmation dialog closed when file removed',

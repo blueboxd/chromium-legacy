@@ -22,10 +22,9 @@ import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.IS_LENS_
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.IS_TAB_CARD_VISIBLE;
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.LENS_BUTTON_CLICK_LISTENER;
-import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.MV_TILES_CONTAINER_LEFT_RIGHT_MARGIN;
+import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.MAGIC_STACK_VISIBLE;
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.MV_TILES_CONTAINER_TOP_MARGIN;
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
-import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.SINGLE_TAB_TOP_MARGIN;
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.TOP_TOOLBAR_PLACEHOLDER_HEIGHT;
 import static org.chromium.chrome.features.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
@@ -51,14 +50,14 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -106,13 +105,7 @@ public class TasksViewBinderUnitTest {
         when(mProfile.getPrimaryOTRProfile(true)).thenReturn(mProfile);
         Profile.setLastUsedProfileForTesting(mProfile);
         when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
-        mTasksView =
-                (TasksView) mActivity.getLayoutInflater().inflate(R.layout.tasks_view_layout, null);
-        mActivity.setContentView(mTasksView);
-
-        mTasksViewPropertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
-        PropertyModelChangeProcessor.create(
-                mTasksViewPropertyModel, mTasksView, TasksViewBinder::bind);
+        createTasksView(R.layout.tasks_view_layout);
     }
 
     private boolean isViewVisible(int viewId) {
@@ -327,45 +320,6 @@ public class TasksViewBinderUnitTest {
 
     @Test
     @SmallTest
-    public void testSetMVTilesContainerLeftAndRightMargin() {
-        ViewGroup.MarginLayoutParams params =
-                (ViewGroup.MarginLayoutParams)
-                        mTasksView.findViewById(R.id.mv_tiles_container).getLayoutParams();
-        assertEquals(0, params.leftMargin);
-        assertEquals(0, params.rightMargin);
-
-        mTasksViewPropertyModel.set(MV_TILES_CONTAINER_LEFT_RIGHT_MARGIN, 16);
-
-        assertEquals(16, params.leftMargin);
-        assertEquals(16, params.rightMargin);
-    }
-
-    @Test
-    @SmallTest
-    public void testSetSingleTabTopMargin() {
-        SingleTabView singleTabView =
-                (SingleTabView)
-                        mActivity
-                                .getLayoutInflater()
-                                .inflate(
-                                        R.layout.single_tab_view_layout,
-                                        mTasksView.getCardTabSwitcherContainer(),
-                                        false);
-        mTasksView.getCardTabSwitcherContainer().addView(singleTabView);
-
-        ViewGroup.MarginLayoutParams params =
-                (ViewGroup.MarginLayoutParams)
-                        mTasksView.findViewById(R.id.single_tab_view).getLayoutParams();
-        // The initial top margin of single_tab_view_layout is 24.
-        assertEquals(24, params.topMargin);
-
-        mTasksViewPropertyModel.set(SINGLE_TAB_TOP_MARGIN, 16);
-
-        assertEquals(16, params.topMargin);
-    }
-
-    @Test
-    @SmallTest
     public void testSetTopToolbarLayoutHeight() {
         ViewGroup.LayoutParams params =
                 mTasksView.findViewById(R.id.top_toolbar_placeholder).getLayoutParams();
@@ -386,5 +340,25 @@ public class TasksViewBinderUnitTest {
         int newBackgroundColor = ChromeColors.getPrimaryBackgroundColor(mActivity, false);
         mTasksViewPropertyModel.set(BACKGROUND_COLOR, newBackgroundColor);
         assertEquals(newBackgroundColor, ((ColorDrawable) mTasksView.getBackground()).getColor());
+    }
+
+    @Test
+    @SmallTest
+    public void testSetMagicStackVisibility() {
+        createTasksView(R.layout.tasks_view_layout_polish);
+
+        mTasksViewPropertyModel.set(MAGIC_STACK_VISIBLE, true);
+        assertTrue(isViewVisible(R.id.home_modules_recycler_view));
+
+        mTasksViewPropertyModel.set(MAGIC_STACK_VISIBLE, false);
+        assertFalse(isViewVisible(R.id.home_modules_recycler_view));
+    }
+
+    private void createTasksView(int layoutId) {
+        mTasksView = (TasksView) mActivity.getLayoutInflater().inflate(layoutId, null);
+        mActivity.setContentView(mTasksView);
+        mTasksViewPropertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
+        PropertyModelChangeProcessor.create(
+                mTasksViewPropertyModel, mTasksView, TasksViewBinder::bind);
     }
 }

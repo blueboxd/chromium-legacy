@@ -114,7 +114,8 @@ void SaveIbanBubbleView::CreateMainContentView() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
-  SetID(DialogViewId::MAIN_CONTENT_VIEW_LOCAL);
+  SetID(controller_->IsUploadSave() ? DialogViewId::MAIN_CONTENT_VIEW_UPLOAD
+                                    : DialogViewId::MAIN_CONTENT_VIEW_LOCAL);
   SetProperty(views::kMarginsKey, gfx::Insets());
 
   // If applicable, add the upload explanation label. Appears above the IBAN
@@ -203,10 +204,8 @@ void SaveIbanBubbleView::CreateMainContentView() {
   nickname_textfield_->set_controller(this);
   nickname_textfield_->SetPlaceholderText(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_IBAN_PLACEHOLDER));
-  nickname_textfield_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                               views::MaximumFlexSizeRule::kScaleToMaximum));
+  nickname_textfield_->SetProperty(views::kBoxLayoutFlexKey,
+                                   views::BoxLayoutFlexSpecification());
   nickname_textfield_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   nickname_textfield_->SetBorder(views::NullBorder());
 
@@ -221,6 +220,7 @@ void SaveIbanBubbleView::CreateMainContentView() {
 
   if (std::unique_ptr<views::View> legal_message_view =
           CreateLegalMessageView()) {
+    legal_message_view->SetID(DialogViewId::LEGAL_MESSAGE_VIEW);
     AddChildView(std::move(legal_message_view));
   }
 }

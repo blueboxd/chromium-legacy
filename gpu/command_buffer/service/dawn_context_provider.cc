@@ -269,7 +269,6 @@ bool DawnContextProvider::Initialize(
 
   std::vector<wgpu::FeatureName> features = {
       wgpu::FeatureName::DawnInternalUsages,
-      wgpu::FeatureName::DawnMultiPlanarFormats,
       wgpu::FeatureName::ImplicitDeviceSynchronization,
       wgpu::FeatureName::SurfaceCapabilities,
   };
@@ -331,7 +330,10 @@ bool DawnContextProvider::Initialize(
 
   const wgpu::FeatureName kOptionalFeatures[] = {
       wgpu::FeatureName::BGRA8UnormStorage,
+      wgpu::FeatureName::BufferMapExtendedUsages,
+      wgpu::FeatureName::DawnMultiPlanarFormats,
       wgpu::FeatureName::DualSourceBlending,
+      wgpu::FeatureName::FramebufferFetch,
       wgpu::FeatureName::MultiPlanarFormatExtendedUsages,
       wgpu::FeatureName::MultiPlanarFormatP010,
       wgpu::FeatureName::MultiPlanarFormatNv12a,
@@ -445,6 +447,7 @@ bool DawnContextProvider::InitializeGraphiteContext(
 
   if (device_) {
     skgpu::graphite::DawnBackendContext backend_context;
+    backend_context.fInstance = GetInstance();
     backend_context.fDevice = device_;
     backend_context.fQueue = device_.GetQueue();
     graphite_context_ =

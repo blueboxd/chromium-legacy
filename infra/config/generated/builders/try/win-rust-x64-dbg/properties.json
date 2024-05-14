@@ -21,12 +21,10 @@
                 ],
                 "build_config": "Debug",
                 "config": "chromium",
-                "target_bits": 64
+                "target_bits": 64,
+                "target_platform": "win"
               },
               "legacy_gclient_config": {
-                "apply_configs": [
-                  "checkout_rust"
-                ],
                 "config": "chromium"
               }
             }

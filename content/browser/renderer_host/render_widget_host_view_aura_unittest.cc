@@ -45,8 +45,6 @@
 #include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/frame_tree.h"
-#include "content/browser/renderer_host/input/input_router.h"
-#include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
@@ -59,6 +57,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/features.h"
+#include "content/common/input/input_router.h"
+#include "content/common/input/mouse_wheel_event_queue.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -125,6 +125,7 @@
 #include "ui/wm/core/window_util.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/window_event_target.h"
 #endif
@@ -357,8 +358,8 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     last_forwarded_gesture_event_ = gesture_event;
   }
 
-  absl::optional<WebGestureEvent> GetAndResetLastForwardedGestureEvent() {
-    absl::optional<WebGestureEvent> ret;
+  std::optional<WebGestureEvent> GetAndResetLastForwardedGestureEvent() {
+    std::optional<WebGestureEvent> ret;
     last_forwarded_gesture_event_.swap(ret);
     return ret;
   }
@@ -445,7 +446,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   bool new_content_rendering_timeout_fired_ = false;
   MockWidgetInputHandler input_handler_;
   MockWidget widget_;
-  absl::optional<WebGestureEvent> last_forwarded_gesture_event_;
+  std::optional<WebGestureEvent> last_forwarded_gesture_event_;
 };
 
 class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
@@ -467,7 +468,7 @@ class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
 
  private:
   bool keyboard_lock_active_ = false;
-  absl::optional<ui::DomCode> locked_key_;
+  std::optional<ui::DomCode> locked_key_;
 };
 
 TestScopedKeyboardHook::TestScopedKeyboardHook() = default;
@@ -697,6 +698,12 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         ->delegate()
         ->GetTextInputManager();
   }
+
+#if BUILDFLAG(IS_WIN)
+  LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND() const {
+    return view_->legacy_render_widget_host_HWND_;
+  }
+#endif  // BUILDFLAG(IS_WIN)
 
   // Sets the |view| active in TextInputManager with the given |type|. |type|
   // cannot be ui::TEXT_INPUT_TYPE_NONE.
@@ -2414,7 +2421,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   // cancel to cancel any ongoing flings before the start of this scroll.
   view_->OnScrollEvent(&scroll_event);
   base::RunLoop().RunUntilIdle();
-  absl::optional<WebGestureEvent> last_gesture =
+  std::optional<WebGestureEvent> last_gesture =
       widget_host_->GetAndResetLastForwardedGestureEvent();
   ASSERT_TRUE(last_gesture);
   EXPECT_EQ(WebInputEvent::Type::kGestureFlingCancel, last_gesture->GetType());
@@ -5317,7 +5324,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
 
   // Lock the mouse, simulate, and ensure they are forwarded.
-  view_->LockMouse(false /* request_unadjusted_movement */);
+  view_->LockPointer(false /* request_unadjusted_movement */);
 
   mouse_event =
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -5330,7 +5337,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   view_->OnMouseEvent(&mouse_event);
   EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
 
-  view_->UnlockMouse();
+  view_->UnlockPointer();
 
   // view_ will be destroyed when parent is destroyed.
   view_ = nullptr;
@@ -5411,7 +5418,7 @@ class MockWindowEventTarget : public ui::WindowEventTarget {
 // forwarded, resulting in stuck tooltips. Test that tooltips are cleared.
 TEST_F(RenderWidgetHostViewAuraTest, OcclusionHidesTooltip) {
   // Give the host window an event target, which allows the view to create the
-  // Chrome_RenderWidgetHostHWND window.
+  // LegacyRenderWidgetHostHWND Chrome_RenderWidgetHostHWND window.
   MockWindowEventTarget event_target;
   auto prop_window_target = std::make_unique<ui::ViewProp>(
       parent_view_->GetHostWindowHWND(),
@@ -5422,7 +5429,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OcclusionHidesTooltip) {
   InitViewForFrame(nullptr);
   ParentHostView(view_, parent_view_);
   view_->Show();
-  EXPECT_TRUE(view_->UsesNativeWindowFrame());
+  EXPECT_TRUE(legacy_render_widget_host_HWND());
 
   // Simulate a tooltip.
   std::u16string tooltip_text(u"The tooltip!");
@@ -5434,6 +5441,28 @@ TEST_F(RenderWidgetHostViewAuraTest, OcclusionHidesTooltip) {
   view_->WasOccluded();
   EXPECT_TRUE(widget_host_->is_hidden());
   EXPECT_EQ(std::u16string(), view_->tooltip_);
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, LegacyRenderWidgetHostHWNDAuraLookup) {
+  // Give the host window an event target, which allows the view to create the
+  // LegacyRenderWidgetHostHWND Chrome_RenderWidgetHostHWND window.
+  MockWindowEventTarget event_target;
+  auto prop_window_target = std::make_unique<ui::ViewProp>(
+      parent_view_->GetHostWindowHWND(),
+      ui::WindowEventTarget::kWin32InputEventTarget,
+      static_cast<ui::WindowEventTarget*>(&event_target));
+
+  // Initialize the view.
+  InitViewForFrame(nullptr);
+  ParentHostView(view_, parent_view_);
+  view_->Show();
+
+  ASSERT_TRUE(legacy_render_widget_host_HWND());
+  HWND hwnd = legacy_render_widget_host_HWND()->hwnd();
+  EXPECT_TRUE(hwnd);
+  auto* window_tree_host = aura::WindowTreeHost::GetForAcceleratedWidget(hwnd);
+  EXPECT_TRUE(window_tree_host);
+  EXPECT_EQ(view_->GetNativeView()->GetHost(), window_tree_host);
 }
 #endif
 
@@ -5981,7 +6010,7 @@ class InputMethodAuraTestBase : public RenderWidgetHostViewAuraTest {
     view_for_second_process_.ExtractAsDangling()->Destroy();
     view_for_third_process_.ExtractAsDangling()->Destroy();
 
-    for (auto* host : widget_hosts_to_cleanup_) {
+    for (content::MockRenderWidgetHostImpl* host : widget_hosts_to_cleanup_) {
       host->ShutdownAndDestroyWidget(true);
     }
 
@@ -6041,9 +6070,11 @@ class InputMethodAuraTestBase : public RenderWidgetHostViewAuraTest {
 
   MockRenderWidgetHostImpl* tab_widget_host() const { return widget_host_; }
 
-  std::vector<RenderWidgetHostViewBase*> views_;
-  std::vector<MockRenderWidgetHostImpl*> widget_hosts_;
-  std::vector<MockRenderWidgetHostImpl*> widget_hosts_to_cleanup_;
+  std::vector<raw_ptr<RenderWidgetHostViewBase, VectorExperimental>> views_;
+  std::vector<raw_ptr<MockRenderWidgetHostImpl, VectorExperimental>>
+      widget_hosts_;
+  std::vector<raw_ptr<MockRenderWidgetHostImpl, VectorExperimental>>
+      widget_hosts_to_cleanup_;
   // A sequence of indices in [0, 3] which determines the index of a RWHV in
   // |views_|. This sequence is used in the tests to sequentially make a RWHV
   // active for a subsequent IME result method call.
@@ -6339,7 +6370,7 @@ TEST_F(InputMethodStateAuraTest, GetCompositionCharacterBounds) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     // Simulate an IPC to set character bounds for the view.
     views_[index]->ImeCompositionRangeChanged(
-        gfx::Range(), {{gfx::Rect(1, 2, 3, 4 + index)}}, absl::nullopt);
+        gfx::Range(), {{gfx::Rect(1, 2, 3, 4 + index)}}, std::nullopt);
 
     // No bounds at index 1.
     EXPECT_FALSE(text_input_client()->GetCompositionCharacterBounds(1, &bound));
@@ -6488,7 +6519,7 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
 // composition, the RenderWidgetHostViewAura will receive the notification and
 // the current composition is canceled.
 TEST_F(InputMethodStateAuraTest, ImeCancelCompositionForAllViews) {
-  for (auto* view : views_) {
+  for (content::RenderWidgetHostViewBase* view : views_) {
     ActivateViewForTextInputManager(view, ui::TEXT_INPUT_TYPE_TEXT);
     // There is no composition in the beginning.
     EXPECT_FALSE(has_composition_text());
@@ -6610,6 +6641,13 @@ class RenderWidgetHostViewAuraInputMethodTest
     text_input_client_ = nullptr;
   }
 
+  void TearDown() override {
+    // text_input_client_ may point at |parent_view_| or something else owned by
+    // RenderWidgetHostViewAuraTest and will get destroyed in TearDown().
+    text_input_client_ = nullptr;
+    RenderWidgetHostViewAuraTest::TearDown();
+  }
+
   // Override from ui::InputMethodObserver.
   void OnFocus() override {}
   void OnBlur() override {}
@@ -6620,7 +6658,7 @@ class RenderWidgetHostViewAuraInputMethodTest
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
 
  protected:
-  raw_ptr<const ui::TextInputClient, DanglingUntriaged> text_input_client_;
+  raw_ptr<const ui::TextInputClient> text_input_client_;
 };
 
 // This test is for notifying InputMethod for surrounding text changes.

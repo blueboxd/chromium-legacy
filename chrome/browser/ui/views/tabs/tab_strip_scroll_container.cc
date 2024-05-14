@@ -208,11 +208,11 @@ void TabStripScrollContainer::OnViewPreferredSizeChanged(views::View* view) {
 
 void TabStripScrollContainer::OnContentsScrolledCallback() {
   views::Widget* root_widget = tab_strip_->GetWidget();
-  std::set<views::Widget*> children_widgets;
+  std::set<raw_ptr<views::Widget, SetExperimental>> children_widgets;
   views::Widget::GetAllOwnedWidgets(root_widget->GetNativeView(),
                                     &children_widgets);
 
-  for (auto* child_widget : children_widgets) {
+  for (views::Widget* child_widget : children_widgets) {
     views::BubbleDialogDelegate* bdd =
         child_widget->widget_delegate()->AsBubbleDialogDelegate();
     if (bdd) {
@@ -330,6 +330,6 @@ void TabStripScrollContainer::RemovedFromWidget() {
   paint_as_active_subscription_ = {};
 }
 
-BEGIN_METADATA(TabStripScrollContainer, views::View)
+BEGIN_METADATA(TabStripScrollContainer)
 ADD_READONLY_PROPERTY_METADATA(int, TabStripAvailableWidth)
 END_METADATA

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -13,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/payments/save_card_ui.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
@@ -34,6 +36,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -48,6 +51,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
@@ -61,17 +65,6 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
   SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
 
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment)) {
-    std::unique_ptr<LegalMessageView> legal_message_view =
-        CreateLegalMessageView();
-
-    if (legal_message_view != nullptr) {
-      legal_message_view_ = SetFootnoteView(std::move(legal_message_view));
-      InitFootnoteView(legal_message_view_);
-    }
-  }
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HatsService* hats_service =
@@ -83,10 +76,32 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
 
 void SaveCardOfferBubbleViews::Init() {
   SaveCardBubbleViews::Init();
+
+  if (controller() &&
+      (controller()->GetBubbleType() == BubbleType::UPLOAD_SAVE ||
+       controller()->GetBubbleType() == BubbleType::UPLOAD_IN_PROGRESS) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableSaveCardLoadingAndConfirmation)) {
+    loading_row_ = AddChildView(CreateLoadingRow());
+    if (controller()->GetBubbleType() == BubbleType::UPLOAD_IN_PROGRESS) {
+      ShowThrobber();
+    }
+  }
+
   SetExtraView(CreateUploadExplanationView());
 }
 
 bool SaveCardOfferBubbleViews::Accept() {
+  bool show_throbber =
+      controller() &&
+      controller()->GetBubbleType() == BubbleType::UPLOAD_SAVE &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableSaveCardLoadingAndConfirmation);
+
+  if (show_throbber) {
+    ShowThrobber();
+  }
+
   if (controller()) {
     controller()->OnSaveButton(
         {cardholder_name_textfield_ ? cardholder_name_textfield_->GetText()
@@ -100,7 +115,10 @@ bool SaveCardOfferBubbleViews::Accept() {
                    year_input_dropdown_->GetSelectedIndex().value())
              : std::u16string()});
   }
-  return true;
+
+  // If a throbber is shown, don't automatically close the bubble view upon
+  // acceptance.
+  return !show_throbber;
 }
 
 bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
@@ -148,15 +166,20 @@ void SaveCardOfferBubbleViews::AddedToWidget() {
   // Set the header image.
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
+  bool is_cvc_save_bubble =
+      controller()->GetBubbleType() == BubbleType::LOCAL_CVC_SAVE ||
+      controller()->GetBubbleType() == BubbleType::UPLOAD_CVC_SAVE;
   auto image_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
       *bundle.GetImageSkiaNamed(
-          base::FeatureList::IsEnabled(
-              features::kAutofillEnableNewSaveCardBubbleUi)
+          is_cvc_save_bubble ? IDR_SAVE_CVC
+          : base::FeatureList::IsEnabled(
+                features::kAutofillEnableNewSaveCardBubbleUi)
               ? IDR_SAVE_CARD_SECURELY
               : IDR_SAVE_CARD),
       *bundle.GetImageSkiaNamed(
-          base::FeatureList::IsEnabled(
-              features ::kAutofillEnableNewSaveCardBubbleUi)
+          is_cvc_save_bubble ? IDR_SAVE_CVC_DARK
+          : base::FeatureList::IsEnabled(
+                features ::kAutofillEnableNewSaveCardBubbleUi)
               ? IDR_SAVE_CARD_SECURELY_DARK
               : IDR_SAVE_CARD_DARK),
       base::BindRepeating(&views::BubbleDialogDelegate::GetBackgroundColor,
@@ -256,44 +279,12 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     view->AddChildView(CreateRequestExpirationDateView());
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment)) {
-    std::unique_ptr<views::View> legal_message_view = CreateLegalMessageView();
-
-    if (legal_message_view != nullptr) {
-      legal_message_view->SetID(DialogViewId::LEGAL_MESSAGE_VIEW);
-      view->AddChildView(std::move(legal_message_view));
-    }
+  if (std::unique_ptr<views::View> legal_message_view = CreateLegalMessageView()) {
+    legal_message_view->SetID(DialogViewId::LEGAL_MESSAGE_VIEW);
+    view->AddChildView(std::move(legal_message_view));
   }
 
   return view;
-}
-
-std::unique_ptr<LegalMessageView>
-SaveCardOfferBubbleViews::CreateLegalMessageView() {
-  const LegalMessageLines message_lines = controller()->GetLegalMessageLines();
-
-  if (message_lines.empty()) {
-    return nullptr;
-  }
-
-  LegalMessageView::LinkClickedCallback LegalMessageCallBack =
-      base::BindRepeating(&SaveCardOfferBubbleViews::LinkClicked,
-                          base::Unretained(this));
-
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableNewSaveCardBubbleUi) ||
-      base::FeatureList::IsEnabled(
-          features::kAutofillEnableUserAvatarInSaveCardFooter)) {
-    return (std::make_unique<LegalMessageView>(
-        message_lines, base::UTF8ToUTF16(controller()->GetAccountInfo().email),
-        GetProfileAvatar(controller()->GetAccountInfo()),
-        LegalMessageCallBack));
-  }
-
-  return std::make_unique<LegalMessageView>(
-      message_lines, /*user_email=*/std::u16string(),
-      /*user_avatar=*/ui::ImageModel(), LegalMessageCallBack);
 }
 
 std::unique_ptr<views::View>
@@ -381,9 +372,66 @@ SaveCardOfferBubbleViews::CreateUploadExplanationView() {
   return upload_explanation_tooltip;
 }
 
+std::unique_ptr<LegalMessageView>
+SaveCardOfferBubbleViews::CreateLegalMessageView() {
+  const LegalMessageLines message_lines = controller()->GetLegalMessageLines();
+
+  if (message_lines.empty()) {
+    return nullptr;
+  }
+
+  LegalMessageView::LinkClickedCallback LegalMessageCallBack =
+      base::BindRepeating(&SaveCardOfferBubbleViews::LinkClicked,
+                          base::Unretained(this));
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableNewSaveCardBubbleUi) ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableUserAvatarInSaveCardFooter)) {
+    return (std::make_unique<LegalMessageView>(
+        message_lines, base::UTF8ToUTF16(controller()->GetAccountInfo().email),
+        GetProfileAvatar(controller()->GetAccountInfo()),
+        LegalMessageCallBack));
+  }
+
+  return std::make_unique<LegalMessageView>(
+      message_lines, /*user_email=*/std::u16string(),
+      /*user_avatar=*/ui::ImageModel(), LegalMessageCallBack);
+}
+
+std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateLoadingRow() {
+  auto loading_row = std::make_unique<views::BoxLayoutView>();
+
+  // Initialize `loading_row` as hidden because it should only be visible after
+  // the user accepts uploading the card.
+  loading_row->SetVisible(false);
+
+  loading_row->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
+  loading_row->SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd);
+  loading_throbber_ =
+      loading_row->AddChildView(std::make_unique<views::Throbber>());
+  loading_throbber_->SetID(DialogViewId::LOADING_THROBBER);
+
+  return loading_row;
+}
+
 void SaveCardOfferBubbleViews::LinkClicked(const GURL& url) {
   if (controller())
     controller()->OnLegalMessageLinkClicked(url);
+}
+
+void SaveCardOfferBubbleViews::ShowThrobber() {
+  if (loading_row_ == nullptr) {
+    return;
+  }
+
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+
+  CHECK(loading_throbber_);
+  loading_throbber_->Start();
+  loading_row_->SetVisible(true);
+
+  DialogModelChanged();
 }
 
 }  // namespace autofill

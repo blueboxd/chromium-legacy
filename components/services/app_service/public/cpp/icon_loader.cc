@@ -61,26 +61,24 @@ IconLoader::IconLoader() = default;
 
 IconLoader::~IconLoader() = default;
 
-absl::optional<IconKey> IconLoader::GetIconKey(const std::string& id) {
-  return absl::make_optional<IconKey>();
+std::optional<IconKey> IconLoader::GetIconKey(const std::string& id) {
+  return std::make_optional<IconKey>();
 }
 
 std::unique_ptr<IconLoader::Releaser> IconLoader::LoadIcon(
-    AppType app_type,
-    const std::string& app_id,
+    const std::string& id,
     const IconType& icon_type,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::LoadIconCallback callback) {
-  auto icon_key = GetIconKey(app_id);
+  auto icon_key = GetIconKey(id);
   if (!icon_key.has_value()) {
     std::move(callback).Run(std::make_unique<IconValue>());
     return nullptr;
   }
 
-  return LoadIconFromIconKey(app_id, icon_key.value(), icon_type,
-                             size_hint_in_dip, allow_placeholder_icon,
-                             std::move(callback));
+  return LoadIconFromIconKey(id, icon_key.value(), icon_type, size_hint_in_dip,
+                             allow_placeholder_icon, std::move(callback));
 }
 
 }  // namespace apps

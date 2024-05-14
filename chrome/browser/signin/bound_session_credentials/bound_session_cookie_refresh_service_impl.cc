@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_impl.h"
 
 #include <memory>
+#include <optional>
 
 #include "base/check.h"
 #include "base/containers/flat_set.h"
@@ -18,7 +19,6 @@
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
@@ -30,11 +30,13 @@ BoundSessionCookieRefreshServiceImpl::BoundSessionCookieRefreshServiceImpl(
     unexportable_keys::UnexportableKeyService& key_service,
     std::unique_ptr<BoundSessionParamsStorage> session_params_storage,
     content::StoragePartition* storage_partition,
-    network::NetworkConnectionTracker* network_connection_tracker)
+    network::NetworkConnectionTracker* network_connection_tracker,
+    bool is_off_the_record_profile)
     : key_service_(key_service),
       session_params_storage_(std::move(session_params_storage)),
       storage_partition_(storage_partition),
-      network_connection_tracker_(network_connection_tracker) {
+      network_connection_tracker_(network_connection_tracker),
+      is_off_the_record_profile_(is_off_the_record_profile) {
   CHECK(session_params_storage_);
   CHECK(storage_partition_);
   data_removal_observation_.Observe(storage_partition_);
@@ -61,8 +63,12 @@ void BoundSessionCookieRefreshServiceImpl::RegisterNewBoundSession(
   }
   // New session should override an existing one.
   if (cookie_controller_) {
-    session_params_storage_->ClearParams(cookie_controller_->url().spec(),
-                                         cookie_controller_->session_id());
+    bool clear_params = cookie_controller_->url().spec() != params.site() ||
+                        cookie_controller_->session_id() != params.session_id();
+    if (clear_params) {
+      session_params_storage_->ClearParams(cookie_controller_->url().spec(),
+                                           cookie_controller_->session_id());
+    }
     cookie_controller_.reset();
     RecordSessionTerminationTrigger(
         SessionTerminationTrigger::kSessionOverride);
@@ -123,7 +129,9 @@ void BoundSessionCookieRefreshServiceImpl::HandleRequestBlockedOnCookie(
     HandleRequestBlockedOnCookieCallback resume_blocked_request) {
   if (!cookie_controller_) {
     // Session has been terminated.
-    std::move(resume_blocked_request).Run();
+    std::move(resume_blocked_request)
+        .Run(chrome::mojom::ResumeBlockedRequestsTrigger::
+                 kShutdownOrSessionTermination);
     return;
   }
   cookie_controller_->HandleRequestBlockedOnCookie(
@@ -142,7 +150,7 @@ void BoundSessionCookieRefreshServiceImpl::CreateRegistrationRequest(
       std::make_unique<BoundSessionRegistrationFetcherImpl>(
           std::move(registration_params),
           storage_partition_->GetURLLoaderFactoryForBrowserProcess(),
-          key_service_.get());
+          key_service_.get(), is_off_the_record_profile_);
   // `base::Unretained(this)` is safe here because `this` owns the fetcher via
   // `active_registration_requests_`
   active_registration_request_->Start(base::BindOnce(
@@ -166,7 +174,7 @@ void BoundSessionCookieRefreshServiceImpl::RemoveObserver(
 }
 
 void BoundSessionCookieRefreshServiceImpl::OnRegistrationRequestComplete(
-    absl::optional<bound_session_credentials::BoundSessionParams>
+    std::optional<bound_session_credentials::BoundSessionParams>
         bound_session_params) {
   if (bound_session_params.has_value()) {
     RegisterNewBoundSession(*bound_session_params);
@@ -220,18 +228,21 @@ void BoundSessionCookieRefreshServiceImpl::OnStorageKeyDataCleared(
 
 std::unique_ptr<BoundSessionCookieController>
 BoundSessionCookieRefreshServiceImpl::CreateBoundSessionCookieController(
-    const bound_session_credentials::BoundSessionParams& bound_session_params) {
+    const bound_session_credentials::BoundSessionParams& bound_session_params,
+    bool is_off_the_record_profile) {
   return controller_factory_for_testing_.is_null()
              ? std::make_unique<BoundSessionCookieControllerImpl>(
                    key_service_.get(), storage_partition_,
-                   network_connection_tracker_, bound_session_params, this)
+                   network_connection_tracker_, bound_session_params, this,
+                   is_off_the_record_profile)
              : controller_factory_for_testing_.Run(bound_session_params, this);
 }
 
 void BoundSessionCookieRefreshServiceImpl::InitializeBoundSession(
     const bound_session_credentials::BoundSessionParams& bound_session_params) {
   CHECK(!cookie_controller_);
-  cookie_controller_ = CreateBoundSessionCookieController(bound_session_params);
+  cookie_controller_ = CreateBoundSessionCookieController(
+      bound_session_params, is_off_the_record_profile_);
   cookie_controller_->Initialize();
   UpdateAllRenderers();
 }

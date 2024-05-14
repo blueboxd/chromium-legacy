@@ -6,6 +6,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/webdata/addresses/address_autofill_table.h"
 #include "components/autofill/core/common/autofill_clock.h"
 
 namespace autofill {
@@ -29,8 +30,9 @@ void PersonalDataManagerTestBase::SetUpTest() {
       path, base::SingleThreadTaskRunner::GetCurrentDefault(),
       base::SingleThreadTaskRunner::GetCurrentDefault());
 
+  profile_web_database_->AddTable(std::make_unique<AddressAutofillTable>());
   // Hacky: hold onto a pointer but pass ownership.
-  profile_autofill_table_ = new AutofillTable;
+  profile_autofill_table_ = new PaymentsAutofillTable;
   profile_web_database_->AddTable(
       std::unique_ptr<WebDatabaseTable>(profile_autofill_table_));
   profile_web_database_->LoadDatabase();
@@ -43,7 +45,7 @@ void PersonalDataManagerTestBase::SetUpTest() {
       new WebDatabaseService(base::FilePath(WebDatabase::kInMemoryPath),
                              base::SingleThreadTaskRunner::GetCurrentDefault(),
                              base::SingleThreadTaskRunner::GetCurrentDefault());
-  account_autofill_table_ = new AutofillTable;
+  account_autofill_table_ = new PaymentsAutofillTable;
   account_web_database_->AddTable(
       std::unique_ptr<WebDatabaseTable>(account_autofill_table_));
   account_web_database_->LoadDatabase();
@@ -98,7 +100,7 @@ void PersonalDataManagerTestBase::ResetPersonalDataManager(
       profile_database_service_, account_database_service_, prefs_.get(),
       prefs_.get(), identity_test_env_.identity_manager(),
       /*history_service=*/nullptr, &sync_service_, strike_database_.get(),
-      /*image_fetcher=*/nullptr);
+      /*image_fetcher=*/nullptr, /*shared_storage_handler=*/nullptr);
   personal_data->AddObserver(&personal_data_observer_);
   personal_data->OnStateChanged(&sync_service_);
   std::move(waiter).Wait();

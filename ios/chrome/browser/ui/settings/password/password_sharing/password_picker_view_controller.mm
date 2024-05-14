@@ -7,7 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_ui_utils.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_picker_view_controller_presentation_delegate.h"
@@ -46,7 +46,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            target:self
                            action:@selector(cancelButtonTapped)];
   self.navigationItem.leftBarButtonItem.accessibilityIdentifier =
-      kPasswordPickerCancelButtonId;
+      kPasswordPickerCancelButtonID;
   self.navigationItem.title =
       l10n_util::GetNSString(IDS_IOS_PASSWORD_SHARING_TITLE);
   UIBarButtonItem* nextButton = [[UIBarButtonItem alloc]
@@ -57,7 +57,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
              action:@selector(nextButtonTapped)];
   self.navigationItem.rightBarButtonItem = nextButton;
   self.navigationItem.rightBarButtonItem.accessibilityIdentifier =
-      kPasswordPickerNextButtonId;
+      kPasswordPickerNextButtonID;
+  self.view.accessibilityIdentifier = kPasswordPickerViewID;
 
   [self loadModel];
 }

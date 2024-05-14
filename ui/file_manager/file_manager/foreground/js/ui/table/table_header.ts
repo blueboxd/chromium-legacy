@@ -31,18 +31,15 @@ export class TableHeader extends HTMLDivElement {
   /**
    * Initializes the element.
    */
-  static decorate(el: Element) {
-    Object.setPrototypeOf(el, TableHeader.prototype);
-    const header = el as TableHeader;
+  initialize() {
+    this.className = 'table-header';
+    this.batchCount_ = 0;
 
-    header.className = 'table-header';
-    header.batchCount_ = 0;
-
-    header.headerInner_ = el.ownerDocument.createElement('div');
-    header.headerInner_.className = 'table-header-inner';
-    header.appendChild(header.headerInner_);
-    header.addEventListener(
-        'touchstart', header.handleTouchStart_.bind(el), false);
+    this.headerInner_ = this.ownerDocument.createElement('div');
+    this.headerInner_.className = 'table-header-inner';
+    this.appendChild(this.headerInner_);
+    this.addEventListener(
+        'touchstart', this.handleTouchStart_.bind(this), false);
   }
 
   /**
@@ -82,7 +79,7 @@ export class TableHeader extends HTMLDivElement {
 
   endBatchUpdates() {
     this.batchCount_--;
-    if (this.batchCount_ == 0) {
+    if (this.batchCount_ === 0) {
       this.redraw();
     }
   }
@@ -91,7 +88,7 @@ export class TableHeader extends HTMLDivElement {
    * Redraws table header.
    */
   redraw() {
-    if (this.batchCount_ != 0) {
+    if (this.batchCount_ !== 0) {
       return;
     }
 
@@ -204,7 +201,7 @@ export class TableHeader extends HTMLDivElement {
    * to a splitter starts dragging.
    */
   private handleTouchStart_(e: TouchEvent) {
-    if (e.touches.length != 1) {
+    if (e.touches.length !== 1) {
       return;
     }
     const clientX = e.touches[0]!.clientX;
@@ -250,12 +247,12 @@ export class TableHeader extends HTMLDivElement {
     const cm = this.table.columnModel;
     // If the number of columns in the model has changed, a full redraw is
     // needed.
-    if (headerCells.length != cm.size) {
+    if (headerCells.length !== cm.size) {
       return true;
     }
     // If the column visibility has changed, a full redraw is required.
     for (let i = 0; i < cm.size; i++) {
-      if (cm.isVisible(i) == headerCells[i]!.hidden) {
+      if (cm.isVisible(i) === headerCells[i]!.hidden) {
         return true;
       }
     }

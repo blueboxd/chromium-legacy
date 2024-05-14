@@ -35,8 +35,9 @@ namespace arc {
 class ArcSplashScreenDialogView : public views::BubbleDialogDelegateView,
                                   public views::ViewObserver,
                                   public wm::ActivationChangeObserver {
+  METADATA_HEADER(ArcSplashScreenDialogView, views::BubbleDialogDelegateView)
+
  public:
-  METADATA_HEADER(ArcSplashScreenDialogView);
   // TestApi is used for tests to get internal implementation details.
   class TestApi {
    public:
@@ -47,7 +48,7 @@ class ArcSplashScreenDialogView : public views::BubbleDialogDelegateView,
     views::View* highlight_border() const { return view_->highlight_border_; }
 
    private:
-    const raw_ptr<ArcSplashScreenDialogView, ExperimentalAsh> view_;
+    const raw_ptr<ArcSplashScreenDialogView> view_;
   };
 
   ArcSplashScreenDialogView(base::OnceClosure close_callback,
@@ -83,11 +84,11 @@ class ArcSplashScreenDialogView : public views::BubbleDialogDelegateView,
 
   void OnCloseButtonClicked();
 
-  raw_ptr<views::View, ExperimentalAsh> anchor_;
-  raw_ptr<views::View, ExperimentalAsh> highlight_border_{nullptr};
+  raw_ptr<views::View> anchor_;
+  raw_ptr<views::View> highlight_border_{nullptr};
 
   base::OnceClosure close_callback_;
-  raw_ptr<views::LabelButton, ExperimentalAsh> close_button_ = nullptr;
+  raw_ptr<views::LabelButton> close_button_ = nullptr;
 
   const ui::ColorId background_color_id_;
 

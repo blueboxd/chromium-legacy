@@ -59,8 +59,9 @@
 namespace {
 
 class FrameGrabHandle : public views::View {
+  METADATA_HEADER(FrameGrabHandle, views::View)
+
  public:
-  METADATA_HEADER(FrameGrabHandle);
   gfx::Size CalculatePreferredSize() const override {
     // Reserve some space for the frame to be grabbed by, even if the tabstrip
     // is full.
@@ -69,7 +70,7 @@ class FrameGrabHandle : public views::View {
   }
 };
 
-BEGIN_METADATA(FrameGrabHandle, views::View)
+BEGIN_METADATA(FrameGrabHandle)
 END_METADATA
 
 bool ShouldShowNewTabButton(const Browser* browser) {
@@ -89,8 +90,8 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
       this, views::kCascadingBackgroundColor,
       kColorTabBackgroundInactiveFrameInactive);
 
-  layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal);
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kHorizontal);
 
   tab_strip_ = tab_strip.get();
   const Browser* browser = tab_strip_->GetBrowser();
@@ -112,7 +113,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
 
     // Inset between the tabsearch and tabstrip should be reduced to account for
     // extra spacing.
-    layout_manager_->SetChildViewIgnoredByLayout(tab_search_container_, true);
+    tab_search_container_->SetProperty(views::kViewIgnoredByLayoutKey, true);
   }
 
   if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
@@ -309,19 +310,19 @@ views::View::Views TabStripRegionView::GetChildrenInZOrder() {
   views::View::Views children;
 
   if (tab_strip_container_) {
-    children.emplace_back(tab_strip_container_);
+    children.emplace_back(tab_strip_container_.get());
   }
 
   if (new_tab_button_) {
-    children.emplace_back(new_tab_button_);
+    children.emplace_back(new_tab_button_.get());
   }
 
   if (tab_search_container_) {
-    children.emplace_back(tab_search_container_);
+    children.emplace_back(tab_search_container_.get());
   }
 
   if (reserved_grab_handle_space_) {
-    children.emplace_back(reserved_grab_handle_space_);
+    children.emplace_back(reserved_grab_handle_space_.get());
   }
 
   return children;
@@ -330,14 +331,14 @@ views::View::Views TabStripRegionView::GetChildrenInZOrder() {
 // The TabSearchButton need bounds that overlap the TabStripContainer, which
 // FlexLayout doesn't currently support. Because of this the TSB bounds are
 // manually calculated.
-void TabStripRegionView::Layout() {
+void TabStripRegionView::Layout(PassKey) {
   const bool tab_search_container_before_tab_strip =
       tab_search_container_ && render_tab_search_before_tab_strip_;
   if (tab_search_container_before_tab_strip) {
     UpdateTabStripMargin();
   }
 
-  views::AccessiblePaneView::Layout();
+  LayoutSuperclass<views::AccessiblePaneView>(this);
 
   if (tab_search_container_before_tab_strip) {
     const gfx::Size tab_search_container_size =
@@ -498,7 +499,7 @@ void TabStripRegionView::UpdateTabStripMargin() {
       new_tab_button_->layer()->SetFillsBoundsOpaquely(false);
       // Inset between the tabstrip and new tab button should be reduced to
       // account for extra spacing.
-      layout_manager_->SetChildViewIgnoredByLayout(new_tab_button_, true);
+      new_tab_button_->SetProperty(views::kViewIgnoredByLayoutKey, true);
 
       tab_strip_right_margin = new_tab_button_->GetPreferredSize().width() +
                                GetLayoutConstant(TAB_STRIP_PADDING);
@@ -508,7 +509,7 @@ void TabStripRegionView::UpdateTabStripMargin() {
   std::optional<int> tab_strip_left_margin;
   if (tab_search_container_ && render_tab_search_before_tab_strip_) {
     // The `tab_search_container_` is being laid out manually.
-    CHECK(layout_manager_->IsChildViewIgnoredByLayout(tab_search_container_));
+    tab_search_container_->GetProperty(views::kViewIgnoredByLayoutKey);
 
     // Add a margin to the tab_strip_container_ to leave the correct amount of
     // space for the `tab_search_container_`.
@@ -534,5 +535,5 @@ void TabStripRegionView::UpdateTabStripMargin() {
   }
 }
 
-BEGIN_METADATA(TabStripRegionView, views::AccessiblePaneView)
+BEGIN_METADATA(TabStripRegionView)
 END_METADATA

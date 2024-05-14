@@ -39,7 +39,6 @@ class ASH_EXPORT AssistantOverlay : public views::View,
   bool IsHidden() const { return AnimationState::HIDDEN == animation_state_; }
 
   // views::View:
-  const char* GetClassName() const override;
   void OnThemeChanged() override;
 
   // ui::ImplicitAnimationObserver
@@ -58,7 +57,7 @@ class ASH_EXPORT AssistantOverlay : public views::View,
 
   std::unique_ptr<ui::Layer> ripple_layer_;
 
-  raw_ptr<HomeButton, ExperimentalAsh> host_view_;
+  raw_ptr<HomeButton> host_view_;
 
   AnimationState animation_state_ = AnimationState::HIDDEN;
 

@@ -198,16 +198,13 @@ void CalculatePopupYAndHeight(int popup_preferred_height,
   popup_bounds->set_height(popup_preferred_height);
   popup_bounds->set_y(top_growth_end);
 
-  if (bottom_available >= popup_preferred_height ||
-      bottom_available >= top_available) {
-    popup_bounds->AdjustToFit(
-        gfx::Rect(popup_bounds->x(), element_bounds.bottom(),
-                  popup_bounds->width(), bottom_available));
-  } else {
-    popup_bounds->AdjustToFit(gfx::Rect(popup_bounds->x(),
-                                        content_area_bounds.y(),
-                                        popup_bounds->width(), top_available));
-  }
+  int y_adjustment = (bottom_available >= popup_preferred_height ||
+                      bottom_available >= top_available)
+                         ? element_bounds.bottom()
+                         : content_area_bounds.y();
+  popup_bounds->AdjustToFit(gfx::Rect(popup_bounds->x(), y_adjustment,
+                                      popup_bounds->width(),
+                                      content_area_bounds.height()));
 }
 
 gfx::Rect CalculatePopupBounds(const gfx::Size& desired_size,
@@ -259,11 +256,15 @@ bool CanShowDropdownHere(int item_height,
 // Keep in sync with TryToCloseAllPrompts() from autofill_uitest.cc.
 bool BoundsOverlapWithAnyOpenPrompt(const gfx::Rect& screen_bounds,
                                     content::WebContents* web_contents) {
-  gfx::NativeView top_level_view =
-      platform_util::GetViewForWindow(web_contents->GetTopLevelNativeWindow());
-  if (!top_level_view) {
+  gfx::NativeWindow top_level_window = web_contents->GetTopLevelNativeWindow();
+  // `top_level_window` can be `nullptr` if `web_contents` is not attached to
+  // a window, e.g. in unit test runs.
+  if (!top_level_window) {
     return false;
   }
+  gfx::NativeView top_level_view =
+      platform_util::GetViewForWindow(top_level_window);
+
   // We generally want to ensure that no prompt overlaps with |screen_bounds|.
   // It is possible, however, that a <datalist> is part of a prompt (e.g. an
   // extension popup can render a <datalist>). Therefore, we exclude the widget
@@ -533,57 +534,6 @@ BubbleBorder::Arrow GetOptimalPopupPlacement(
   return arrow;
 }
 
-int GetMainTextStyleForPopupItemId(PopupItemId popup_item_id) {
-  switch (popup_item_id) {
-    case PopupItemId::kFillFullAddress:
-    case PopupItemId::kFillFullName:
-      return views::style::TextStyle::STYLE_SECONDARY;
-    case PopupItemId::kAccountStoragePasswordEntry:
-    case PopupItemId::kAccountStorageUsernameEntry:
-    case PopupItemId::kAddressEntry:
-    case PopupItemId::kAddressFieldByFieldFilling:
-    case PopupItemId::kAllSavedPasswordsEntry:
-    case PopupItemId::kAutocompleteEntry:
-    case PopupItemId::kAutofillOptions:
-    case PopupItemId::kClearForm:
-    case PopupItemId::kCompose:
-    case PopupItemId::kCreateNewPlusAddress:
-    case PopupItemId::kCreditCardEntry:
-    case PopupItemId::kCreditCardFieldByFieldFilling:
-    case PopupItemId::kDatalistEntry:
-    case PopupItemId::kDeleteAddressProfile:
-    case PopupItemId::kDevtoolsTestAddressEntry:
-    case PopupItemId::kDevtoolsTestAddresses:
-    case PopupItemId::kEditAddressProfile:
-    case PopupItemId::kFillEverythingFromAddressProfile:
-    case PopupItemId::kFillExistingPlusAddress:
-    case PopupItemId::kFillFullEmail:
-    case PopupItemId::kFillFullPhoneNumber:
-    case PopupItemId::kAddressEntryNotSelectable:
-    case PopupItemId::kPaymentsEntryNotSelectable:
-    case PopupItemId::kGeneratePasswordEntry:
-    case PopupItemId::kIbanEntry:
-    case PopupItemId::kInsecureContextPaymentDisabledMessage:
-    case PopupItemId::kMerchantPromoCodeEntry:
-    case PopupItemId::kMixedFormMessage:
-    case PopupItemId::kPasswordAccountStorageEmpty:
-    case PopupItemId::kPasswordAccountStorageOptIn:
-    case PopupItemId::kPasswordAccountStorageOptInAndGenerate:
-    case PopupItemId::kPasswordAccountStorageReSignin:
-    case PopupItemId::kPasswordEntry:
-    case PopupItemId::kScanCreditCard:
-    case PopupItemId::kSeePromoCodeDetails:
-    case PopupItemId::kSeparator:
-    case PopupItemId::kShowAccountCards:
-    case PopupItemId::kTitle:
-    case PopupItemId::kUsernameEntry:
-    case PopupItemId::kVirtualCreditCardEntry:
-    case PopupItemId::kWebauthnCredential:
-    case PopupItemId::kWebauthnSignInWithAnotherDevice:
-      return views::style::TextStyle::STYLE_PRIMARY;
-  }
-}
-
 bool IsFooterPopupItemId(PopupItemId popup_item_id) {
   switch (popup_item_id) {
     case PopupItemId::kScanCreditCard:
@@ -599,9 +549,9 @@ bool IsFooterPopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kSeePromoCodeDetails:
     case PopupItemId::kEditAddressProfile:
     case PopupItemId::kDeleteAddressProfile:
+    case PopupItemId::kViewPasswordDetails:
       return true;
     case PopupItemId::kAccountStoragePasswordEntry:
-    case PopupItemId::kAccountStorageUsernameEntry:
     case PopupItemId::kAddressEntry:
     case PopupItemId::kAddressFieldByFieldFilling:
     case PopupItemId::kAutocompleteEntry:
@@ -612,8 +562,6 @@ bool IsFooterPopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kDatalistEntry:
     case PopupItemId::kDevtoolsTestAddressEntry:
     case PopupItemId::kDevtoolsTestAddresses:
-    case PopupItemId::kAddressEntryNotSelectable:
-    case PopupItemId::kPaymentsEntryNotSelectable:
     case PopupItemId::kFillExistingPlusAddress:
     case PopupItemId::kFillFullAddress:
     case PopupItemId::kFillFullName:
@@ -626,11 +574,11 @@ bool IsFooterPopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kMixedFormMessage:
     case PopupItemId::kPasswordEntry:
     case PopupItemId::kSeparator:
-    case PopupItemId::kTitle:
-    case PopupItemId::kUsernameEntry:
     case PopupItemId::kVirtualCreditCardEntry:
     case PopupItemId::kWebauthnCredential:
     case PopupItemId::kWebauthnSignInWithAnotherDevice:
+    case PopupItemId::kPasswordFieldByFieldFilling:
+    case PopupItemId::kFillPassword:
       return false;
   }
 }
@@ -645,18 +593,16 @@ bool IsExpandablePopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kFillFullName:
     case PopupItemId::kFillFullEmail:
     case PopupItemId::kFillFullPhoneNumber:
-    case PopupItemId::kAddressEntryNotSelectable:
-    case PopupItemId::kPaymentsEntryNotSelectable:
+    case PopupItemId::kCreditCardEntry:
+    case PopupItemId::kPasswordEntry:
       return true;
     case PopupItemId::kAccountStoragePasswordEntry:
-    case PopupItemId::kAccountStorageUsernameEntry:
     case PopupItemId::kAllSavedPasswordsEntry:
     case PopupItemId::kAutocompleteEntry:
     case PopupItemId::kAutofillOptions:
     case PopupItemId::kClearForm:
     case PopupItemId::kCompose:
     case PopupItemId::kCreateNewPlusAddress:
-    case PopupItemId::kCreditCardEntry:
     case PopupItemId::kDatalistEntry:
     case PopupItemId::kDevtoolsTestAddressEntry:
     case PopupItemId::kDeleteAddressProfile:
@@ -672,13 +618,13 @@ bool IsExpandablePopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kPasswordAccountStorageOptIn:
     case PopupItemId::kPasswordAccountStorageOptInAndGenerate:
     case PopupItemId::kPasswordAccountStorageReSignin:
-    case PopupItemId::kPasswordEntry:
+    case PopupItemId::kPasswordFieldByFieldFilling:
+    case PopupItemId::kFillPassword:
+    case PopupItemId::kViewPasswordDetails:
     case PopupItemId::kScanCreditCard:
     case PopupItemId::kSeePromoCodeDetails:
     case PopupItemId::kSeparator:
     case PopupItemId::kShowAccountCards:
-    case PopupItemId::kTitle:
-    case PopupItemId::kUsernameEntry:
     case PopupItemId::kVirtualCreditCardEntry:
     case PopupItemId::kWebauthnCredential:
     case PopupItemId::kWebauthnSignInWithAnotherDevice:
@@ -691,6 +637,18 @@ bool ShouldApplyNewAutofillPopupStyle() {
              features::kAutofillShowAutocompleteDeleteButton) ||
          base::FeatureList::IsEnabled(
              features::kAutofillGranularFillingAvailable);
+}
+
+views::style::TextStyle GetPrimaryTextStyle() {
+  return ShouldApplyNewAutofillPopupStyle()
+             ? views::style::TextStyle::STYLE_BODY_3_MEDIUM
+             : views::style::TextStyle::STYLE_PRIMARY;
+}
+
+views::style::TextStyle GetSecondaryTextStyle() {
+  return ShouldApplyNewAutofillPopupStyle()
+             ? views::style::TextStyle::STYLE_BODY_4
+             : views::style::TextStyle::STYLE_SECONDARY;
 }
 
 }  // namespace autofill

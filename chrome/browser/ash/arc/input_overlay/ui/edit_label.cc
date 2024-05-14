@@ -7,6 +7,7 @@
 #include "ash/bubble/bubble_utils.h"
 #include "ash/style/typography.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
@@ -22,18 +23,38 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 
 namespace arc::input_overlay {
 
+namespace {
+
+constexpr float kCornerRadius = 8.0f;
+constexpr int kLabelSize = 32;
+
+constexpr ui::ColorId kPenIconColor = cros_tokens::kCrosSysOnPrimaryContainer;
+
+// Pulse animation specs.
+constexpr int kPulseTimes = 3;
+constexpr int kPulseExtraHalfSize = 32;
+constexpr base::TimeDelta kPulseDuration = base::Seconds(2);
+
+}  // namespace
+
 EditLabel::EditLabel(DisplayOverlayController* controller,
                      Action* action,
+                     bool for_editing_list,
                      size_t index)
     : views::LabelButton(),
       controller_(controller),
       action_(action),
+      for_editing_list_(for_editing_list),
       index_(index) {
   Init();
 }
@@ -52,11 +73,58 @@ void EditLabel::RemoveNewState() {
   SetLabelContent();
 }
 
+void EditLabel::PerformPulseAnimation(int pulse_count) {
+  // Destroy the pulse layer if it pulses after `kPulseTimes` times.
+  if (pulse_count >= kPulseTimes) {
+    pulse_layer_.reset();
+    return;
+  }
+
+  auto* widget = GetWidget();
+  DCHECK(widget);
+
+  // Initiate pulse layer if it starts to pulse for the first time.
+  if (pulse_count == 0) {
+    pulse_layer_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+    widget->GetLayer()->Add(pulse_layer_.get());
+    pulse_layer_->SetColor(widget->GetColorProvider()->GetColor(
+        cros_tokens::kCrosSysHighlightText));
+  }
+
+  DCHECK(pulse_layer_);
+
+  // Initial bounds in its widget coordinate.
+  auto view_bounds = ConvertRectToWidget(gfx::Rect(size()));
+
+  // Set initial properties.
+  pulse_layer_->SetBounds(view_bounds);
+  pulse_layer_->SetOpacity(1.0f);
+  pulse_layer_->SetRoundedCornerRadius(gfx::RoundedCornersF(kCornerRadius));
+
+  // Animate from a square to a circle with larger target bounds and to a
+  // smaller opacity.
+  view_bounds.Outset(kPulseExtraHalfSize);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(base::BindOnce(&EditLabel::PerformPulseAnimation,
+                              base::Unretained(this), pulse_count + 1))
+      .Once()
+      .SetDuration(kPulseDuration)
+      .SetBounds(pulse_layer_.get(), view_bounds,
+                 gfx::Tween::ACCEL_0_40_DECEL_100)
+      .SetOpacity(pulse_layer_.get(), /*opacity=*/0.0f,
+                  gfx::Tween::ACCEL_0_80_DECEL_80)
+      .SetRoundedCorners(
+          pulse_layer_.get(),
+          gfx::RoundedCornersF(kPulseExtraHalfSize + kLabelSize / 2.0f),
+          gfx::Tween::ACCEL_0_40_DECEL_100);
+}
+
 void EditLabel::Init() {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetPreferredSize(gfx::Size(32, 32));
-  SetAccessibilityProperties(ax::mojom::Role::kLabelText,
-                             CalculateAccessibleName());
+  SetPreferredSize(gfx::Size(kLabelSize, kLabelSize));
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(false);
   SetRequestFocusOnPress(true);
@@ -80,22 +148,23 @@ void EditLabel::SetLabelContent() {
 
   // Clear icon if it is a valid key for new action.
   SetImageModel(views::Button::STATE_NORMAL,
-                output_string.empty() ? ui::ImageModel::FromVectorIcon(
-                                            kGameControlsEditPenIcon,
-                                            cros_tokens::kCrosSysHighlightShape)
-                                      : ui::ImageModel());
+                output_string.empty()
+                    ? ui::ImageModel::FromVectorIcon(kGameControlsEditPenIcon,
+                                                     kPenIconColor)
+                    : ui::ImageModel());
   // Set text label by `output_string` even it is empty to clear the text label.
   SetTextLabel(output_string);
 }
 
 void EditLabel::SetTextLabel(const std::u16string& text) {
   SetText(text);
-  SetAccessibleName(CalculateAccessibleName());
+  UpdateAccessibleName();
+
   SetBackground(views::CreateThemedRoundedRectBackground(
       text == kUnknownBind && !action_->is_new()
           ? cros_tokens::kCrosSysErrorHighlight
           : cros_tokens::kCrosSysHighlightShape,
-      /*radius=*/8));
+      kCornerRadius));
   if (HasFocus()) {
     SetToFocused();
   } else {
@@ -110,10 +179,21 @@ void EditLabel::SetNameTagState(bool is_error,
   parent_view->SetNameTagState(is_error, error_tooltip);
 }
 
-std::u16string EditLabel::CalculateAccessibleName() {
-  return l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_KEYMAPPING_KEY)
-      .append(u" ")
-      .append(GetDisplayTextAccessibleName(label()->GetText()));
+void EditLabel::UpdateAccessibleName() {
+  const std::u16string a11y_name =
+      GetDisplayTextAccessibleName(label()->GetText());
+  const std::u16string reassign = l10n_util::GetStringUTF16(
+      IDS_INPUT_OVERLAY_EDIT_LABEL_REASSIGN_A11Y_LABEL);
+
+  if (a11y_name.empty() || a11y_name.compare(kUnknownBind) == 0) {
+    SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_INPUT_OVERLAY_EDIT_LABEL_UNASSIGNED_A11Y_LABEL));
+  } else if (for_editing_list_) {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_INPUT_OVERLAY_EDIT_LABEL_A11Y_LABEL_TEMPLATE, a11y_name, reassign));
+  } else {
+    SetAccessibleName(reassign);
+  }
 }
 
 void EditLabel::SetToDefault() {
@@ -126,9 +206,9 @@ void EditLabel::SetToDefault() {
 void EditLabel::SetToFocused() {
   SetEnabledTextColorIds(IsInputUnbound() && !action_->is_new()
                              ? cros_tokens::kCrosSysError
-                             : cros_tokens::kCrosSysHighlightText);
+                             : cros_tokens::kCrosSysOnSurface);
   SetBorder(views::CreateThemedRoundedRectBorder(
-      /*thickness=*/2, /*corner_radius=*/8, cros_tokens::kCrosSysPrimary));
+      /*thickness=*/2, kCornerRadius, cros_tokens::kCrosSysPrimary));
 }
 
 void EditLabel::OnFocus() {
@@ -151,10 +231,9 @@ void EditLabel::OnBlur() {
   }
 
   if (action_->is_new() && GetText().empty()) {
-    SetImageModel(
-        views::Button::STATE_NORMAL,
-        ui::ImageModel::FromVectorIcon(kGameControlsEditPenIcon,
-                                       cros_tokens::kCrosSysHighlightShape));
+    SetImageModel(views::Button::STATE_NORMAL,
+                  ui::ImageModel::FromVectorIcon(kGameControlsEditPenIcon,
+                                                 kPenIconColor));
   }
   SetToDefault();
   // Reset the error state if an reserved key was pressed.
@@ -208,7 +287,7 @@ bool EditLabel::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-BEGIN_METADATA(EditLabel, views::LabelButton)
+BEGIN_METADATA(EditLabel)
 END_METADATA
 
 }  // namespace arc::input_overlay

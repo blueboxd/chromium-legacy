@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "extensions/browser/api/content_settings/content_settings_store.h"
+#include "extensions/common/extension_id.h"
 
 namespace content_settings {
 
@@ -33,27 +34,30 @@ class CustomExtensionProvider : public ObservableProvider,
   std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       bool incognito,
-      const content_settings::PartitionKey& partition_key =
-          content_settings::PartitionKey::WipGetDefault()) const override;
+      const content_settings::PartitionKey& partition_key) const override;
+  std::unique_ptr<Rule> GetRule(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      bool off_the_record,
+      const PartitionKey& partition_key) const override;
 
   bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       base::Value&& value,
-      const ContentSettingConstraints& constraint = {},
-      const content_settings::PartitionKey& partition_key =
-          content_settings::PartitionKey::WipGetDefault()) override;
+      const ContentSettingConstraints& constraints,
+      const content_settings::PartitionKey& partition_key) override;
 
   void ClearAllContentSettingsRules(
       ContentSettingsType content_type,
-      const content_settings::PartitionKey& partition_key =
-          content_settings::PartitionKey::WipGetDefault()) override {}
+      const content_settings::PartitionKey& partition_key) override {}
 
   void ShutdownOnUIThread() override;
 
   // extensions::ContentSettingsStore::Observer methods:
-  void OnContentSettingChanged(const std::string& extension_id,
+  void OnContentSettingChanged(const extensions::ExtensionId& extension_id,
                                bool incognito) override;
 
  private:

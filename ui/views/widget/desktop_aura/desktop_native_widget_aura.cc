@@ -446,7 +446,7 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   // activation change event. This is needed since the activation client may
   // check whether this widget can receive activation when deciding which window
   // should receive activation next.
-  base::AutoReset<absl::optional<bool>> resetter(&should_activate_, active);
+  base::AutoReset<std::optional<bool>> resetter(&should_activate_, active);
 
   if (active) {
     // TODO(nektar): We need to harmonize the firing of accessibility
@@ -1164,11 +1164,6 @@ void DesktopNativeWidgetAura::SetVisibilityAnimationTransition(
       break;
   }
   wm::SetWindowVisibilityAnimationTransition(content_window_, wm_transition);
-}
-
-bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
-  return desktop_window_tree_host_ &&
-         desktop_window_tree_host_->IsTranslucentWindowOpacitySupported();
 }
 
 ui::GestureRecognizer* DesktopNativeWidgetAura::GetGestureRecognizer() {

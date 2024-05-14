@@ -83,8 +83,10 @@ StyleResolverState::StyleResolverState(
                                 ? style_recalc_context->is_outside_flat_tree
                                 : false),
       can_trigger_animations_(style_request.can_trigger_animations),
+      // TODO(crbug.com/1475321): Remove is_resolving_position_fallback_style
+      // when auto-fallbacks are reworked.
       is_resolving_position_fallback_style_(
-          style_recalc_context && style_recalc_context->is_position_fallback) {
+          style_recalc_context && style_recalc_context->is_interleaved_oof) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (UsesHighlightPseudoInheritance()) {
@@ -208,10 +210,19 @@ void StyleResolverState::SetLayoutParentStyle(
 void StyleResolverState::LoadPendingResources() {
   if (pseudo_request_type_ == StyleRequest::kForComputedStyle ||
       (ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
-      (StyleBuilder().Display() == EDisplay::kNone &&
-       !GetElement().LayoutObjectIsNeeded(style_builder_->GetDisplayStyle())) ||
       StyleBuilder().IsEnsuredOutsideFlatTree()) {
     return;
+  }
+  if (StyleBuilder().Display() == EDisplay::kNone &&
+      !GetElement().LayoutObjectIsNeeded(style_builder_->GetDisplayStyle())) {
+    // Don't load resources for display:none elements unless we are animating
+    // display. If we are animating display, we might otherwise have ended up
+    // caching a base style with pending images.
+    Element* animating_element = GetAnimatingElement();
+    if (!animating_element || !CSSAnimations::IsAnimatingDisplayProperty(
+                                  animating_element->GetElementAnimations())) {
+      return;
+    }
   }
 
   if (StyleBuilder().StyleType() == kPseudoIdTargetText) {

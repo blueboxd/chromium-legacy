@@ -116,8 +116,7 @@ PaintPropertyTreeBuilderContext::PaintPropertyTreeBuilderContext()
       was_layout_shift_root(false),
       global_main_thread_scrolling_reasons(0),
       composited_scrolling_preference(
-          static_cast<unsigned>(CompositedScrollingPreference::kDefault)),
-      transform_or_clip_added_or_removed(false) {}
+          static_cast<unsigned>(CompositedScrollingPreference::kDefault)) {}
 
 void VisualViewportPaintPropertyTreeBuilder::Update(
     LocalFrameView& main_frame_view,
@@ -226,12 +225,12 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE bool CanPropagateSubpixelAccumulation() const;
   ALWAYS_INLINE void UpdatePaintOffset();
   ALWAYS_INLINE void UpdateForPaintOffsetTranslation(
-      absl::optional<gfx::Vector2d>&);
+      std::optional<gfx::Vector2d>&);
   ALWAYS_INLINE void UpdatePaintOffsetTranslation(
-      const absl::optional<gfx::Vector2d>&);
+      const std::optional<gfx::Vector2d>&);
   ALWAYS_INLINE void SetNeedsPaintPropertyUpdateIfNeeded();
   ALWAYS_INLINE void UpdateForObjectLocation(
-      absl::optional<gfx::Vector2d>& paint_offset_translation);
+      std::optional<gfx::Vector2d>& paint_offset_translation);
   ALWAYS_INLINE void UpdateStickyTranslation();
   ALWAYS_INLINE void UpdateAnchorPositionScrollTranslation();
 
@@ -348,11 +347,17 @@ class FragmentPaintPropertyTreeBuilder {
   void OnUpdateTransform(PaintPropertyChangeType change) {
     properties_changed_.transform_changed =
         std::max(properties_changed_.transform_changed, change);
+    properties_changed_.transform_change_is_scroll_translation_only = false;
+  }
+  void OnUpdateScrollTranslation(PaintPropertyChangeType change) {
+    properties_changed_.transform_changed =
+        std::max(properties_changed_.transform_changed, change);
   }
   void OnClearTransform(bool cleared) {
     if (cleared) {
       properties_changed_.transform_changed =
           PaintPropertyChangeType::kNodeAddedOrRemoved;
+      properties_changed_.transform_change_is_scroll_translation_only = false;
     }
   }
 
@@ -410,7 +415,7 @@ class FragmentPaintPropertyTreeBuilder {
   // These are updated in UpdateClipPathClip() and used in UpdateEffect() if
   // needs_mask_base_clip_path_ is true.
   bool needs_mask_based_clip_path_ = false;
-  absl::optional<gfx::RectF> clip_path_bounding_box_;
+  std::optional<gfx::RectF> clip_path_bounding_box_;
 };
 
 // True if a scroll translation is needed for static scroll offset (e.g.,
@@ -594,7 +599,7 @@ bool FragmentPaintPropertyTreeBuilder::CanPropagateSubpixelAccumulation()
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
-    absl::optional<gfx::Vector2d>& paint_offset_translation) {
+    std::optional<gfx::Vector2d>& paint_offset_translation) {
   if (!NeedsPaintOffsetTranslation(object_,
                                    full_context_.direct_compositing_reasons,
                                    full_context_.container_for_fixed_position,
@@ -653,13 +658,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
-    const absl::optional<gfx::Vector2d>& paint_offset_translation) {
+    const std::optional<gfx::Vector2d>& paint_offset_translation) {
   DCHECK(properties_);
 
   if (paint_offset_translation) {
     TransformPaintPropertyNode::State state{
         {gfx::Transform::MakeTranslation(*paint_offset_translation)}};
-    state.flags.flattens_inherited_transform =
+    state.flattens_inherited_transform =
         context_.should_flatten_inherited_transform;
     state.rendering_context_id = context_.rendering_context_id;
     state.direct_compositing_reasons =
@@ -677,7 +682,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
 
     if (IsA<LayoutView>(object_)) {
       DCHECK(object_.GetFrame());
-      state.flags.is_frame_paint_offset_translation = true;
+      state.is_frame_paint_offset_translation = true;
       state.visible_frame_element_id =
           object_.GetFrame()->GetVisibleToHitTesting()
               ? CompositorElementIdFromUniqueObjectId(
@@ -722,7 +727,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
           box_model.UniqueId(),
           CompositorElementIdNamespace::kStickyTranslation);
       state.rendering_context_id = context_.rendering_context_id;
-      state.flags.flattens_inherited_transform =
+      state.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
 
       if (state.direct_compositing_reasons) {
@@ -824,7 +829,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateAnchorPositionScrollTranslation() {
           box.UniqueId(),
           CompositorElementIdNamespace::kAnchorPositionScrollTranslation);
       state.rendering_context_id = context_.rendering_context_id;
-      state.flags.flattens_inherited_transform =
+      state.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
 
       state.anchor_position_scrollers_data =
@@ -974,10 +979,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
       // be included here, such as setting animation_is_axis_aligned.
       state.direct_compositing_reasons =
           direct_compositing_reasons & CompositingReasonsForTransformProperty();
-      state.flags.flattens_inherited_transform =
+      state.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
       state.rendering_context_id = context_.rendering_context_id;
-      state.flags.is_for_svg_child = true;
+      state.is_for_svg_child = true;
       state.compositor_element_id = GetCompositorElementId(
           CompositorElementIdNamespace::kPrimaryTransform);
 
@@ -1207,7 +1212,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
         // TODO(crbug.com/1185254): Make this work correctly for block
         // fragmentation. It's the size of each individual PhysicalBoxFragment
         // that's interesting, not the total LayoutBox size.
-        state.flags.animation_is_axis_aligned =
+        state.animation_is_axis_aligned =
             UpdateBoxSizeAndCheckActiveAnimationAxisAlignment(
                 box, full_context_.direct_compositing_reasons);
       }
@@ -1216,7 +1221,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
           full_context_.direct_compositing_reasons &
           compositing_reasons_for_property;
 
-      state.flags.flattens_inherited_transform =
+      state.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
       if (running_on_compositor_test) {
         state.compositor_element_id =
@@ -1227,33 +1232,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
         if (object_.HasHiddenBackface()) {
           state.backface_visibility =
               TransformPaintPropertyNode::BackfaceVisibility::kHidden;
-        } else if (RuntimeEnabledFeatures::
-                       BackfaceVisibilityNewInheritanceEnabled()) {
-          if (!context_.can_inherit_backface_visibility ||
-              style.Has3DTransformOperation()) {
-            // We want to set backface-visibility back to visible, if the
-            // parent doesn't allow this element to inherit backface visibility
-            // (e.g. if the parent preserves 3d), or this element has a
-            // syntactically-3D transform in *any* of the transform properties
-            // (not just 'transform'). This means that backface-visibility on
-            // an ancestor element no longer affects this element.
-            state.backface_visibility =
-                TransformPaintPropertyNode::BackfaceVisibility::kVisible;
-          } else {
-            // Otherwise we want to inherit backface-visibility.
-            DCHECK_EQ(
-                state.backface_visibility,
-                TransformPaintPropertyNode::BackfaceVisibility::kInherited);
-          }
-        } else if (state.direct_compositing_reasons !=
-                   CompositingReason::kNone) {
-          // The above condition fixes a CompositeAfterPaint regression
-          // (crbug.com/1260603) by letting non-directly-composited transforms
-          // inherit parent's backface visibility.
-          // TODO(crbug.com/1261905): Fix the the root cause, and revisit the
-          // above condition and make it at least more web developer friendly.
+        } else if (!context_.can_inherit_backface_visibility ||
+                   style.Has3DTransformOperation()) {
+          // We want to set backface-visibility back to visible, if the
+          // parent doesn't allow this element to inherit backface visibility
+          // (e.g. if the parent preserves 3d), or this element has a
+          // syntactically-3D transform in *any* of the transform properties
+          // (not just 'transform'). This means that backface-visibility on
+          // an ancestor element no longer affects this element.
           state.backface_visibility =
               TransformPaintPropertyNode::BackfaceVisibility::kVisible;
+        } else {
+          // Otherwise we want to inherit backface-visibility.
+          DCHECK_EQ(state.backface_visibility,
+                    TransformPaintPropertyNode::BackfaceVisibility::kInherited);
         }
       }
 
@@ -1531,7 +1523,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsEffect()) {
-      absl::optional<gfx::RectF> mask_clip = CSSMaskPainter::MaskBoundingBox(
+      std::optional<gfx::RectF> mask_clip = CSSMaskPainter::MaskBoundingBox(
           object_, context_.current.paint_offset);
       if (mask_clip || needs_mask_based_clip_path_) {
         DCHECK(mask_clip || clip_path_bounding_box_.has_value());
@@ -1716,7 +1708,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateElementCaptureEffect() {
 
   if (!(full_context_.direct_compositing_reasons &
         CompositingReason::kElementCapture)) {
-    OnClearEffect(properties_->ElementCaptureEffect());
+    OnClearEffect(properties_->ClearElementCaptureEffect());
     return;
   }
 
@@ -2013,7 +2005,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip() {
                 ? gfx::Vector2dF(context_.current.paint_offset)
                 : gfx::Vector2dF();
         clip_path_bounding_box_->Offset(paint_offset);
-        if (absl::optional<Path> path = ClipPathClipper::PathBasedClip(
+        if (std::optional<Path> path = ClipPathClipper::PathBasedClip(
                 object_, context_.current.is_in_block_fragmentation)) {
           path->Translate(paint_offset);
           ClipPaintPropertyNode::State state(
@@ -2128,6 +2120,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
   if (old_transform != new_transform) {
     properties_changed_.transform_changed =
         PaintPropertyChangeType::kNodeAddedOrRemoved;
+    properties_changed_.transform_change_is_scroll_translation_only = false;
   }
   if (old_clip != new_clip) {
     properties_changed_.clip_changed =
@@ -2152,8 +2145,7 @@ bool FragmentPaintPropertyTreeBuilder::NeedsOverflowControlsClip() const {
   if (const auto* scrollbar = scrollable_area->VerticalScrollbar())
     scroll_controls_bounds.Union(scrollbar->FrameRect());
   gfx::Rect pixel_snapped_border_box_rect(
-      gfx::Point(),
-      box.PixelSnappedBorderBoxSize(context_.current.paint_offset));
+      gfx::Point(), scrollable_area->PixelSnappedBorderBoxSize());
   return !pixel_snapped_border_box_rect.Contains(scroll_controls_bounds);
 }
 
@@ -2169,8 +2161,12 @@ static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
     return false;
   }
 
+  // The check for overflowing both axes is due to this spec line:
+  //   However, when one of overflow-x or overflow-y computes to clip and the
+  //   other computes to visible, the clipping region is not rounded.
+  // (https://drafts.csswg.org/css-overflow/#corner-clipping).
   return object.StyleRef().HasBorderRadius() && object.IsBox() &&
-         NeedsOverflowClip(object);
+         NeedsOverflowClip(object) && object.ShouldClipOverflowAlongBothAxis();
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateOverflowControlsClip() {
@@ -2423,7 +2419,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
           {matrix,
            gfx::Point3F(PerspectiveOrigin(To<LayoutBox>(object_)) +
                         gfx::Vector2dF(context_.current.paint_offset))}};
-      state.flags.flattens_inherited_transform =
+      state.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
       state.rendering_context_id = context_.rendering_context_id;
       OnUpdateTransform(properties_->UpdatePerspective(
@@ -2457,7 +2453,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     if (!content_to_parent_space.IsIdentity()) {
       TransformPaintPropertyNode::State state;
       state.transform_and_origin = {content_to_parent_space.ToTransform()};
-      state.flags.flattens_inherited_transform =
+      state.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
       state.rendering_context_id = context_.rendering_context_id;
       OnUpdateTransform(properties_->UpdateReplacedContentTransform(
@@ -2539,9 +2535,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       state.snap_container_data =
           box.GetScrollableArea() &&
                   box.GetScrollableArea()->GetSnapContainerData()
-              ? absl::optional<cc::SnapContainerData>(
+              ? std::optional<cc::SnapContainerData>(
                     *box.GetScrollableArea()->GetSnapContainerData())
-              : absl::nullopt;
+              : std::nullopt;
 
       OnUpdateScroll(properties_->UpdateScroll(*context_.current.scroll,
                                                std::move(state)));
@@ -2573,8 +2569,18 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           object_.IsLayoutView() &&
           ViewTransitionUtils::GetTransition(object_.GetDocument());
 
+      // Overflow controls are not clipped by InnerBorderRadiusClip or
+      // OverflowClip, so the output clip should skip them.
+      const auto* overflow_control_effect_output_clip = context_.current.clip;
+      if (const auto* clip_to_skip = properties_->InnerBorderRadiusClip()
+                                         ? properties_->InnerBorderRadiusClip()
+                                         : properties_->OverflowClip()) {
+        overflow_control_effect_output_clip = clip_to_skip->Parent();
+      }
+
       auto setup_scrollbar_effect_node =
-          [this, scrollable_area, transition_forces_scrollbar_effect_nodes](
+          [this, scrollable_area, transition_forces_scrollbar_effect_nodes,
+           overflow_control_effect_output_clip](
               ScrollbarOrientation orientation) {
             Scrollbar* scrollbar = scrollable_area->GetScrollbar(orientation);
 
@@ -2588,19 +2594,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
             if (needs_effect_node) {
               EffectPaintPropertyNode::State effect_state;
               effect_state.local_transform_space = context_.current.transform;
-
-              // Scrollbars are not clipped by InnerBorderRadiusClip or
-              // OverflowClip, so the output clip should skip them.
-              auto* clip_to_skip = properties_->InnerBorderRadiusClip();
-              if (!clip_to_skip) {
-                clip_to_skip = properties_->OverflowClip();
-              }
-              if (clip_to_skip) {
-                effect_state.output_clip = clip_to_skip->Parent();
-              } else {
-                effect_state.output_clip = context_.current.clip;
-              }
-
+              effect_state.output_clip = overflow_control_effect_output_clip;
               effect_state.compositor_element_id =
                   scrollable_area->GetScrollbarElementId(orientation);
 
@@ -2646,7 +2640,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         // are only painted for non-overlay scrollbars.
         EffectPaintPropertyNode::State effect_state;
         effect_state.local_transform_space = context_.current.transform;
-        effect_state.output_clip = context_.current.clip;
+        effect_state.output_clip = overflow_control_effect_output_clip;
         effect_state.compositor_element_id =
             scrollable_area->GetScrollCornerElementId();
         OnUpdateEffect(properties_->UpdateScrollCornerEffect(
@@ -2676,25 +2670,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
             box.GetScrollableArea()->PendingScrollAnchorAdjustment();
         box.GetScrollableArea()->ClearPendingScrollAnchorAdjustment();
       }
-      state.flags.flattens_inherited_transform =
+      state.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
       state.rendering_context_id = context_.rendering_context_id;
       state.direct_compositing_reasons =
           full_context_.direct_compositing_reasons &
           CompositingReason::kDirectReasonsForScrollTranslationProperty;
       state.scroll = properties_->Scroll();
-      // If scroll and transform are both present, we should use the
-      // transform property tree node to determine visibility of the
-      // scrolling contents.
-      if (object_.HasTransform() && object_.StyleRef().BackfaceVisibility() ==
-                                        EBackfaceVisibility::kHidden) {
-        if (RuntimeEnabledFeatures::BackfaceVisibilityNewInheritanceEnabled()) {
-          CHECK_EQ(state.backface_visibility,
-                   TransformPaintPropertyNode::BackfaceVisibility::kInherited);
-        } else {
-          state.flags.delegates_to_parent_for_backface = true;
-        }
-      }
+
+      // The scroll translation node always inherits backface visibility, which
+      // means if scroll and transform are both present, we will use the
+      // transform property tree node to determine visibility of the scrolling
+      // contents.
+      DCHECK_EQ(state.backface_visibility,
+                TransformPaintPropertyNode::BackfaceVisibility::kInherited);
 
       auto effective_change_type = properties_->UpdateScrollTranslation(
           *context_.current.transform, std::move(state));
@@ -2722,7 +2711,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           }
         }
       }
-      OnUpdateTransform(effective_change_type);
+      OnUpdateScrollTranslation(effective_change_type);
     } else {
       OnClearTransform(properties_->ClearScrollTranslation());
     }
@@ -2978,7 +2967,7 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocation(
-    absl::optional<gfx::Vector2d>& paint_offset_translation) {
+    std::optional<gfx::Vector2d>& paint_offset_translation) {
   context_.old_paint_offset = fragment_data_.PaintOffset();
   UpdatePaintOffset();
   UpdateForPaintOffsetTranslation(paint_offset_translation);
@@ -3049,7 +3038,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
   bool should_check_paint_under_invalidation =
       RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       !PrePaintDisableSideEffectsScope::IsDisabled();
-  absl::optional<FindPaintOffsetNeedingUpdateScope> check_paint_offset;
+  std::optional<FindPaintOffsetNeedingUpdateScope> check_paint_offset;
   if (should_check_paint_under_invalidation) {
     check_paint_offset.emplace(object_, fragment_data_,
                                full_context_.is_actually_needed);
@@ -3058,7 +3047,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 
   // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
   // can change without NeedsPaintPropertyUpdate.
-  absl::optional<gfx::Vector2d> paint_offset_translation;
+  std::optional<gfx::Vector2d> paint_offset_translation;
   UpdateForObjectLocation(paint_offset_translation);
   if (&fragment_data_ == &object_.FirstFragment())
     SetNeedsPaintPropertyUpdateIfNeeded();
@@ -3070,7 +3059,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
   }
 
 #if DCHECK_IS_ON()
-  absl::optional<FindPropertiesNeedingUpdateScope> check_paint_properties;
+  std::optional<FindPropertiesNeedingUpdateScope> check_paint_properties;
   if (should_check_paint_under_invalidation) {
     bool force_subtree_update = full_context_.force_subtree_update_reasons;
     check_paint_properties.emplace(object_, fragment_data_,
@@ -3129,8 +3118,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
   // here to out-live check_paint_offset. It's false because paint offset
   // should not change during this function.
   const bool needs_paint_offset_update = false;
-  absl::optional<FindPaintOffsetNeedingUpdateScope> check_paint_offset;
-  absl::optional<FindPropertiesNeedingUpdateScope> check_paint_properties;
+  std::optional<FindPaintOffsetNeedingUpdateScope> check_paint_offset;
+  std::optional<FindPropertiesNeedingUpdateScope> check_paint_properties;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       !PrePaintDisableSideEffectsScope::IsDisabled()) {
     check_paint_offset.emplace(object_, fragment_data_,
@@ -3258,6 +3247,7 @@ void PaintPropertyTreeBuilder::InitPaintProperties() {
     if (properties->HasTransformNode()) {
       properties_changed_.transform_changed =
           PaintPropertyChangeType::kNodeAddedOrRemoved;
+      properties_changed_.transform_change_is_scroll_translation_only = false;
     }
     if (properties->HasClipNode()) {
       properties_changed_.clip_changed =
@@ -3395,21 +3385,10 @@ void PaintPropertyTreeBuilder::UpdateForSelf() {
                                            GetFragmentData());
   builder.UpdateForSelf();
   properties_changed_.Merge(builder.PropertiesChanged());
-  context_.transform_or_clip_added_or_removed |=
-      properties_changed_.TransformOrClipAddedOrRemoved();
 
   if (!PrePaintDisableSideEffectsScope::IsDisabled()) {
     object_.GetMutableForPainting()
         .SetShouldAssumePaintOffsetTranslationForLayoutShiftTracking(false);
-
-    if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled() &&
-        context_.transform_or_clip_added_or_removed) {
-      // Some of such changes can't be captured by IntersectionObservation::
-      // InvalidateCachedRectsIfNeeded(), e.g. when if LocalBorderBoxProperties
-      // now points to the parent of a removed paint property.
-      object_.GetMutableForPainting()
-          .InvalidateIntersectionObserverCachedRects();
-    }
   }
 }
 
@@ -3491,13 +3470,22 @@ void PaintPropertyTreeBuilder::UpdateForChildren() {
           PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
     }
   }
+
+  if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled() &&
+      (properties_changed_.transform_changed >
+           (properties_changed_.transform_change_is_scroll_translation_only
+                ? PaintPropertyChangeType::kChangedOnlySimpleValues
+                : PaintPropertyChangeType::kUnchanged) ||
+       properties_changed_.clip_changed > PaintPropertyChangeType::kUnchanged ||
+       properties_changed_.scroll_changed >
+           PaintPropertyChangeType::kUnchanged)) {
+    object_.GetFrameView()->SetIntersectionObservationState(
+        LocalFrameView::kDesired);
+  }
+
   if (is_isolated) {
     context_.force_subtree_update_reasons &=
         ~PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
-    context_.transform_or_clip_added_or_removed = false;
-  } else {
-    context_.transform_or_clip_added_or_removed |=
-        properties_changed_.TransformOrClipAddedOrRemoved();
   }
 }
 
@@ -3550,14 +3538,21 @@ void PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(
       std::move(transform_and_origin), animation_state);
   DirectlyUpdateCcTransform(*transform, object, effective_change_type);
 
+  if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled() &&
+      effective_change_type > PaintPropertyChangeType::kUnchanged) {
+    object.GetFrameView()->SetIntersectionObservationState(
+        LocalFrameView::kDesired);
+  }
+
   if (effective_change_type >=
       PaintPropertyChangeType::kChangedOnlySimpleValues) {
     object.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
   }
 
-  PaintPropertiesChangeInfo properties_changed;
-  properties_changed.transform_changed = effective_change_type;
-
+  PaintPropertiesChangeInfo properties_changed{
+      .transform_changed = effective_change_type,
+      .transform_change_is_scroll_translation_only = false,
+  };
   CullRectUpdater::PaintPropertiesChanged(object, properties_changed);
 }
 

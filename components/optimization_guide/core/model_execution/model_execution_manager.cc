@@ -10,6 +10,7 @@
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/types/expected.h"
 #include "components/optimization_guide/core/model_execution/model_execution_fetcher.h"
 #include "components/optimization_guide/core/model_execution/model_execution_util.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_execution_config_interpreter.h"
@@ -19,6 +20,8 @@
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
+#include "components/optimization_guide/core/optimization_guide_model_executor.h"
+#include "components/optimization_guide/core/optimization_guide_model_provider.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/optimization_metadata.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
@@ -97,6 +100,7 @@ ModelExecutionManager::ModelExecutionManager(
     signin::IdentityManager* identity_manager,
     scoped_refptr<OnDeviceModelServiceController>
         on_device_model_service_controller,
+    OptimizationGuideModelProvider* model_provider,
     OptimizationGuideLogger* optimization_guide_logger)
     : optimization_guide_logger_(optimization_guide_logger),
       model_execution_service_url_(net::AppendOrReplaceQueryParameter(
@@ -105,10 +109,30 @@ ModelExecutionManager::ModelExecutionManager(
           features::GetOptimizationGuideServiceAPIKey())),
       url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager),
+      model_provider_(model_provider),
       on_device_model_service_controller_(
-          std::move(on_device_model_service_controller)) {}
+          std::move(on_device_model_service_controller)) {
+  if (model_provider_ && on_device_model_service_controller_ &&
+      features::ShouldUseTextSafetyClassifierModel()) {
+    model_provider_->AddObserverForOptimizationTargetModel(
+        proto::OptimizationTarget::OPTIMIZATION_TARGET_TEXT_SAFETY,
+        /*model_metadata=*/std::nullopt, this);
+    model_provider_->AddObserverForOptimizationTargetModel(
+        proto::OptimizationTarget::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
+        /*model_metadata=*/std::nullopt, this);
+  }
+}
 
-ModelExecutionManager::~ModelExecutionManager() = default;
+ModelExecutionManager::~ModelExecutionManager() {
+  if (model_provider_ && on_device_model_service_controller_ &&
+      features::ShouldUseTextSafetyClassifierModel()) {
+    model_provider_->RemoveObserverForOptimizationTargetModel(
+        proto::OptimizationTarget::OPTIMIZATION_TARGET_TEXT_SAFETY, this);
+    model_provider_->RemoveObserverForOptimizationTargetModel(
+        proto::OptimizationTarget::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
+        this);
+  }
+}
 
 void ModelExecutionManager::ExecuteModelWithStreaming(
     proto::ModelExecutionFeature feature,
@@ -121,17 +145,15 @@ void ModelExecutionManager::ExecuteModelWithStreaming(
           [](OptimizationGuideModelExecutionResultStreamingCallback callback,
              OptimizationGuideModelExecutionResult result,
              std::unique_ptr<ModelQualityLogEntry> log_entry) {
+            OptimizationGuideModelStreamingExecutionResult streaming_result;
+            streaming_result.log_entry = std::move(log_entry);
             if (result.has_value()) {
-              callback.Run(
-                  StreamingResponse{
-                      .response = *result,
-                      .is_complete = true,
-                  },
-                  std::move(log_entry));
+              streaming_result.response = base::ok(
+                  StreamingResponse{.response = *result, .is_complete = true});
             } else {
-              callback.Run(base::unexpected(result.error()),
-                           std::move(log_entry));
+              streaming_result.response = base::unexpected(result.error());
             }
+            callback.Run(std::move(streaming_result));
           },
           callback));
 }
@@ -143,15 +165,13 @@ void ModelExecutionManager::ExecuteModel(
     OptimizationGuideModelExecutionResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (active_model_execution_fetchers_.find(feature) !=
-      active_model_execution_fetchers_.end()) {
+  auto previous_fetcher_it = active_model_execution_fetchers_.find(feature);
+  if (previous_fetcher_it != active_model_execution_fetchers_.end()) {
+    // Cancel the existing fetcher and let the new one continue.
+    active_model_execution_fetchers_.erase(previous_fetcher_it);
     RecordModelExecutionResultHistogram(feature, false);
-    std::move(callback).Run(
-        base::unexpected(
-            OptimizationGuideModelExecutionError::FromModelExecutionError(
-                ModelExecutionError::kGenericFailure)),
-        nullptr);
-    return;
+    CHECK(active_model_execution_fetchers_.find(feature) ==
+          active_model_execution_fetchers_.end());
   }
 
   if (optimization_guide_logger_->ShouldEnableDebugLogs()) {
@@ -220,9 +240,10 @@ ModelExecutionManager::StartSession(proto::ModelExecutionFeature feature) {
   }
 
   RecordSessionUsedRemoteExecutionHistogram(feature, /*is_remote=*/true);
-  return std::make_unique<SessionImpl>(base::DoNothing(), feature, nullptr,
-                                       nullptr, std::move(execute_fn),
-                                       optimization_guide_logger_.get());
+  return std::make_unique<SessionImpl>(
+      base::DoNothing(), feature, std::nullopt, nullptr, nullptr,
+      /*safety_config=*/std::nullopt, std::move(execute_fn),
+      optimization_guide_logger_.get());
 }
 
 void ModelExecutionManager::OnModelExecuteResponse(
@@ -249,12 +270,12 @@ void ModelExecutionManager::OnModelExecuteResponse(
 
   // Set the id if present.
   if (execute_response->has_server_execution_id()) {
-    log_entry.get()->set_model_execution_id(
-        execute_response->server_execution_id());
+    log_entry->set_model_execution_id(execute_response->server_execution_id());
   }
 
   if (execute_response->has_error_response()) {
     scoped_logger.set_message("Error: No Response Metadata");
+    log_entry->set_error_response(execute_response->error_response());
     // For unallowed error states, don't log request data.
     auto error =
         OptimizationGuideModelExecutionError::FromModelExecutionServerError(
@@ -331,6 +352,28 @@ void ModelExecutionManager::OnModelExecuteResponse(
   RecordModelExecutionResultHistogram(feature, true);
   std::move(callback).Run(base::ok(execute_response->response_metadata()),
                           std::move(log_entry));
+}
+
+void ModelExecutionManager::OnModelUpdated(
+    proto::OptimizationTarget optimization_target,
+    base::optional_ref<const ModelInfo> model_info) {
+  switch (optimization_target) {
+    case proto::OPTIMIZATION_TARGET_TEXT_SAFETY:
+      if (on_device_model_service_controller_) {
+        on_device_model_service_controller_->MaybeUpdateSafetyModel(model_info);
+      }
+      break;
+
+    case proto::OPTIMIZATION_TARGET_LANGUAGE_DETECTION:
+      if (on_device_model_service_controller_) {
+        on_device_model_service_controller_->SetLanguageDetectionModel(
+            model_info);
+      }
+      break;
+
+    default:
+      break;
+  }
 }
 
 }  // namespace optimization_guide

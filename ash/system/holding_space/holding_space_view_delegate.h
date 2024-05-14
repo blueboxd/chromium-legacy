@@ -40,6 +40,10 @@ namespace ash {
 class HoldingSpaceItemView;
 class HoldingSpaceTrayBubble;
 
+namespace holding_space_metrics {
+enum class EventSource;
+}  // namespace holding_space_metrics
+
 // A delegate for holding space views which implements context menu,
 // drag-and-drop, and selection functionality. Only a single delegate instance
 // exists at a time and is shared by all existing holding space views in order
@@ -60,7 +64,7 @@ class ASH_EXPORT HoldingSpaceViewDelegate
     ~ScopedSelectionRestore();
 
    private:
-    const raw_ptr<HoldingSpaceViewDelegate, ExperimentalAsh> delegate_;
+    const raw_ptr<HoldingSpaceViewDelegate> delegate_;
     std::vector<std::string> selected_item_ids_;
     std::optional<std::string> selected_range_start_item_id_;
     std::optional<std::string> selected_range_end_item_id_;
@@ -188,9 +192,10 @@ class ASH_EXPORT HoldingSpaceViewDelegate
   // Attempts to open the holding space items associated with the given `views`.
   // Schedules the bubble to close regardless of attempt success.
   void OpenItemsAndScheduleClose(
-      const std::vector<const HoldingSpaceItemView*>& views);
+      const std::vector<const HoldingSpaceItemView*>& views,
+      holding_space_metrics::EventSource event_source);
 
-  const raw_ptr<HoldingSpaceTrayBubble, ExperimentalAsh> bubble_;
+  const raw_ptr<HoldingSpaceTrayBubble> bubble_;
 
   std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
@@ -198,13 +203,13 @@ class ASH_EXPORT HoldingSpaceViewDelegate
   // Caches a view for which mouse released events should be temporarily
   // ignored. This is to prevent us from selecting a view on mouse pressed but
   // then unselecting that same view on mouse released.
-  raw_ptr<HoldingSpaceItemView, DanglingUntriaged | ExperimentalAsh>
-      ignore_mouse_released_ = nullptr;
+  raw_ptr<HoldingSpaceItemView, DanglingUntriaged> ignore_mouse_released_ =
+      nullptr;
 
   // Caches views from which range-based selections should start and end. This
   // is used when determining the range for selection performed via shift-click.
-  raw_ptr<HoldingSpaceItemView, DanglingUntriaged | ExperimentalAsh>
-      selected_range_start_ = nullptr;
+  raw_ptr<HoldingSpaceItemView, DanglingUntriaged> selected_range_start_ =
+      nullptr;
   // This field is not a raw_ptr<> because it was filtered by the rewriter
   // for: #addr-of
   RAW_PTR_EXCLUSION HoldingSpaceItemView* selected_range_end_ = nullptr;

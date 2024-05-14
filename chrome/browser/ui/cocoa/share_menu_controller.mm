@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/location_bar_model.h"
-#include "net/base/mac/url_conversions.h"
+#include "net/base/apple/url_conversions.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/geometry/rect.h"
@@ -150,7 +150,8 @@ bool CanShare() {
 // Private methods
 
 // Saves details required by delegate methods for the transition animation.
-- (void)saveTransitionDataFromBrowser:(Browser*)browser {
+- (void)saveTransitionDataFromBrowser:(Browser*)browser
+                         whenComplete:(base::OnceClosure)closure {
   _windowForShare = browser->window()->GetNativeWindow().GetNativeNSWindow();
   BrowserView* browserView = BrowserView::GetBrowserViewForBrowser(browser);
   if (!browserView)
@@ -167,10 +168,17 @@ bool CanShare() {
 
   gfx::Rect rectInWidget =
       browserView->ConvertRectToWidget(contentsView->bounds());
-  gfx::Image image;
-  if (ui::GrabWindowSnapshot(_windowForShare, rectInWidget, &image)) {
-    _snapshotForShare = image.ToNSImage();
-  }
+  ui::GrabWindowSnapshotAsync(
+      _windowForShare, rectInWidget,
+      base::BindOnce(
+          [](ShareMenuController* controller, base::OnceClosure closure,
+             gfx::Image image) {
+            if (!image.IsEmpty()) {
+              controller->_snapshotForShare = image.ToNSImage();
+            }
+            std::move(closure).Run();
+          },
+          self, std::move(closure)));
 }
 
 - (void)clearTransitionData {
@@ -190,18 +198,23 @@ bool CanShare() {
   if (NSUserActivityTypeBrowsingWebStr) {
     DCHECK(CanShare());
     Browser* browser = chrome::FindLastActive();
-    DCHECK(browser);
-    [self saveTransitionDataFromBrowser:browser];
 
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();
+    CHECK(contents);
     NSURL* url = net::NSURLWithGURL(contents->GetLastCommittedURL());
     NSString* title = base::SysUTF16ToNSString(contents->GetTitle());
 
     NSSharingService* service =
-        base::apple::ObjCCastStrict<NSSharingService>([sender representedObject]);
+        base::apple::ObjCCastStrict<NSSharingService>(sender.representedObject);
     service.delegate = self;
     service.subject = title;
+
+    DCHECK(browser);
+    [self saveTransitionDataFromBrowser:browser
+                           whenComplete:base::BindOnce(^{
+                             [service performWithItems:@[ url ]];
+                           })];
 
     NSArray* itemsToShare = @[ url ];
     if (@available(macOS 10.14, *)) {

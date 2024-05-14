@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/hats/survey_config.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/messages/android/message_enums.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -50,6 +51,24 @@ class HatsService : public KeyedService {
 
     // Metadata affecting all triggers.
     std::optional<base::Time> any_last_survey_started_time;
+  };
+
+  struct SurveyOptions {
+    explicit SurveyOptions(
+        std::optional<std::u16string> custom_invitation = std::nullopt,
+        std::optional<messages::MessageIdentifier> message_identifier =
+            std::nullopt);
+    SurveyOptions(const SurveyOptions& other);
+    ~SurveyOptions();
+
+    std::optional<std::u16string> custom_invitation;
+    std::optional<messages::MessageIdentifier> message_identifier;
+  };
+
+  enum NavigationBehaviour {
+    ALLOW_ANY = 0,              // allow any navigation
+    REQUIRE_SAME_ORIGIN = 1,    // abort survey on cross-origin navigation
+    REQUIRE_SAME_DOCUMENT = 2,  // abort survey on cross-document navigation
   };
 
   explicit HatsService(Profile* profile);
@@ -87,8 +106,8 @@ class HatsService : public KeyedService {
       const SurveyStringData& product_specific_string_data,
       base::OnceClosure success_callback = base::DoNothing(),
       base::OnceClosure failure_callback = base::DoNothing(),
-      const absl::optional<std::string_view>& supplied_trigger_id =
-          absl::nullopt) = 0;
+      const std::optional<std::string>& supplied_trigger_id = std::nullopt,
+      const SurveyOptions& survey_options = SurveyOptions()) = 0;
 
   // Launches survey (with id |trigger|) with a timeout |timeout_ms| if
   // appropriate.
@@ -108,8 +127,8 @@ class HatsService : public KeyedService {
   // Rejects (and returns false) if there is already an identical delayed-task
   // (same |trigger| and same |web_contents|) waiting to be fulfilled. Also
   // rejects if the underlying task posting fails.
-  // If |require_same_origin| is set, additionally requires that |web_contents|
-  // remain on the same origin.
+  // |navigation_behaviour| specifies whether cross-origin or cross-document
+  // navigations should abort the survey.
   // |success_callback| is called when the survey is shown to the user.
   // |failure_callback| is called if the survey does not launch for any reason.
   virtual bool LaunchDelayedSurveyForWebContents(
@@ -118,11 +137,11 @@ class HatsService : public KeyedService {
       int timeout_ms,
       const SurveyBitsData& product_specific_bits_data = {},
       const SurveyStringData& product_specific_string_data = {},
-      bool require_same_origin = false,
+      NavigationBehaviour navigation_behaviour = NavigationBehaviour::ALLOW_ANY,
       base::OnceClosure success_callback = base::DoNothing(),
       base::OnceClosure failure_callback = base::DoNothing(),
-      const absl::optional<std::string_view>& supplied_trigger_id =
-          absl::nullopt) = 0;
+      const std::optional<std::string>& supplied_trigger_id = std::nullopt,
+      const SurveyOptions& survey_options = SurveyOptions()) = 0;
 
   // Whether the user is eligible for any survey (of the type |user_prompted|
   // or not) to be shown. A return value of false is always a true-negative,

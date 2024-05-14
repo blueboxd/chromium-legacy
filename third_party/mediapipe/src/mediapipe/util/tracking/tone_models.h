@@ -20,12 +20,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <string>
 #include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "mediapipe/framework/port/integral_types.h"
 #include "mediapipe/framework/port/opencv_core_inc.h"
 #include "mediapipe/framework/port/vector.h"
 #include "mediapipe/util/tracking/tone_models.pb.h"
@@ -602,7 +602,7 @@ void ToneModelMethods<Model, Adapter>::MapImageIndependent(
   // independent, we can assign the same value to each channel, which will be
   // transformed by the respective channel's transform.
   cv::Mat lut_input(1, 256, CV_8UC3);
-  uint8* lut_ptr = lut_input.ptr<uint8>(0);
+  uint8_t* lut_ptr = lut_input.ptr<uint8_t>(0);
   for (int k = 0; k < 256; ++k, lut_ptr += 3) {
     for (int c = 0; c < 3; ++c) {
       lut_ptr[c] = k;

@@ -13,9 +13,11 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 
+import java.util.HashSet;
 import java.util.List;
 
 /** Fragment for the blocked Topic preferences. */
@@ -28,7 +30,12 @@ public class TopicsBlockedFragment extends PrivacySandboxSettingsBaseFragment
     @Override
     public void onCreatePreferences(@Nullable Bundle bundle, @Nullable String s) {
         super.onCreatePreferences(bundle, s);
-        getActivity().setTitle(R.string.settings_topics_page_blocked_topics_sub_page_title);
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)) {
+            getActivity().setTitle(R.string.settings_topics_page_blocked_topics_heading_new);
+        } else {
+            getActivity().setTitle(R.string.settings_topics_page_blocked_topics_sub_page_title);
+        }
         SettingsUtils.addPreferencesFromResource(this, R.xml.block_list_preference);
 
         mBlockedTopicsCategory = findPreference(BLOCKED_TOPICS_PREFERENCE);
@@ -52,15 +59,32 @@ public class TopicsBlockedFragment extends PrivacySandboxSettingsBaseFragment
     @Override
     public boolean onPreferenceClick(@NonNull Preference preference) {
         if (preference instanceof TopicPreference) {
-            PrivacySandboxBridge.setTopicAllowed(((TopicPreference) preference).getTopic(), true);
+            Topic topic = ((TopicPreference) preference).getTopic();
+            PrivacySandboxBridge.setTopicAllowed(topic, true);
             mBlockedTopicsCategory.removePreference(preference);
             updateBlockedTopicsDescription();
 
-            showSnackbar(
-                    R.string.settings_topics_page_add_topic_snackbar,
-                    null,
-                    Snackbar.TYPE_ACTION,
-                    Snackbar.UMA_PRIVACY_SANDBOX_ADD_INTEREST);
+            if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)) {
+                var currentTopics = new HashSet<Topic>(PrivacySandboxBridge.getCurrentTopTopics());
+                if (!currentTopics.contains(topic)) {
+                    showSnackbar(
+                            R.string.settings_unblock_topic_toast_body,
+                            null,
+                            Snackbar.TYPE_ACTION,
+                            Snackbar.UMA_PRIVACY_SANDBOX_ADD_INTEREST,
+                            R.string.settings_unblock_topic_toast_button_text,
+                            /* multiLine= */ true);
+                }
+            } else {
+                showSnackbar(
+                        R.string.settings_topics_page_add_topic_snackbar,
+                        null,
+                        Snackbar.TYPE_ACTION,
+                        Snackbar.UMA_PRIVACY_SANDBOX_ADD_INTEREST,
+                        /* actionStringResId= */ 0,
+                        /* multiLine= */ true);
+            }
             RecordUserAction.record("Settings.PrivacySandbox.Topics.TopicAdded");
             return true;
         }
@@ -85,6 +109,14 @@ public class TopicsBlockedFragment extends PrivacySandboxSettingsBaseFragment
     }
 
     private void updateBlockedTopicsDescription() {
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.PRIVACY_SANDBOX_PROACTIVE_TOPICS_BLOCKING)) {
+            mBlockedTopicsCategory.setSummary(null);
+            if (mBlockedTopicsCategory.getPreferenceCount() == 0)
+                mBlockedTopicsCategory.setSummary(
+                        R.string.settings_topics_page_blocked_topics_description_empty_text_v2);
+            return;
+        }
         mBlockedTopicsCategory.setSummary(
                 mBlockedTopicsCategory.getPreferenceCount() == 0
                         ? R.string.settings_topics_page_blocked_topics_description_empty

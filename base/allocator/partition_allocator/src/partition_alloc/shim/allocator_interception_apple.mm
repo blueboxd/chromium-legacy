@@ -22,18 +22,19 @@
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
-#include <errno.h>
 #include <mach/mach.h>
 #import <objc/runtime.h>
-#include <stddef.h>
 
 #include <algorithm>
 #include <bit>
+#include <cerrno>
+#include <cstddef>
 #include <new>
 
 #include "build/build_config.h"
 #include "partition_alloc/oom.h"
 #include "partition_alloc/partition_alloc_base/apple/mach_logging.h"
+#include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/logging.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/shim/malloc_zone_functions_apple.h"
@@ -47,7 +48,7 @@
 
 // The patching of Objective-C runtime bits must be done without any
 // interference from the ARC machinery.
-#if defined(__has_feature) && __has_feature(objc_arc)
+#if PA_HAS_FEATURE(objc_arc)
 #error "This file must not be compiled with ARC."
 #endif
 

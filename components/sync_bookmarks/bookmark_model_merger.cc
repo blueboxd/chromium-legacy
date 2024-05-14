@@ -597,6 +597,7 @@ void BookmarkModelMerger::Merge() {
     DCHECK_EQ(permanent_folder->uuid(),
               GetPermanentFolderUuidForServerDefinedUniqueTag(
                   server_defined_unique_tag));
+
     MergeSubtree(/*local_node=*/permanent_folder,
                  /*remote_node=*/root);
   }

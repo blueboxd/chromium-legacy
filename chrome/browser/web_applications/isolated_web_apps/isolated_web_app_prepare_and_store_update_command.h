@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -22,11 +23,11 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
 class Profile;
@@ -37,9 +38,6 @@ class WebContents;
 
 namespace web_app {
 
-class AppLock;
-class AppLockDescription;
-class LockDescription;
 class WebAppUrlLoader;
 
 enum class WebAppUrlLoaderResult;
@@ -76,12 +74,13 @@ using IsolatedWebAppUpdatePrepareAndStoreCommandResult =
 // update, and, on success, persisting the information about the pending update
 // into the Web App database.
 class IsolatedWebAppUpdatePrepareAndStoreCommand
-    : public WebAppCommandTemplate<AppLock> {
+    : public WebAppCommand<AppLock,
+                           IsolatedWebAppUpdatePrepareAndStoreCommandResult> {
  public:
   class UpdateInfo {
    public:
     UpdateInfo(IsolatedWebAppLocation location,
-               absl::optional<base::Version> expected_version);
+               std::optional<base::Version> expected_version);
     ~UpdateInfo();
 
     UpdateInfo(const UpdateInfo&);
@@ -90,7 +89,7 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
     base::Value AsDebugValue() const;
 
     const IsolatedWebAppLocation& location() const { return location_; }
-    const absl::optional<base::Version>& expected_version() const {
+    const std::optional<base::Version>& expected_version() const {
       return expected_version_;
     }
 
@@ -100,7 +99,7 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
 
    private:
     IsolatedWebAppLocation location_;
-    absl::optional<base::Version> expected_version_;
+    std::optional<base::Version> expected_version_;
   };
 
   // `update_info` specifies the location of the update for the IWA referred to
@@ -130,11 +129,9 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
 
   ~IsolatedWebAppUpdatePrepareAndStoreCommand() override;
 
-  // WebAppCommandTemplate<AppLock>:
-  const LockDescription& lock_description() const override;
-  base::Value ToDebugValue() const override;
+ protected:
+  // WebAppCommand:
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
-  void OnShutdown() override;
 
  private:
   void ReportFailure(base::StringPiece message);
@@ -199,23 +196,18 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  std::unique_ptr<AppLockDescription> lock_description_;
   std::unique_ptr<AppLock> lock_;
-  base::Value::Dict debug_log_;
 
   UpdateInfo source_update_info_;
   IsolatedWebAppUrlInfo url_info_;
   base::Version installed_version_;
-  absl::optional<UpdateInfo> lazy_destination_update_info_;
+  std::optional<UpdateInfo> lazy_destination_update_info_;
 
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<WebAppUrlLoader> url_loader_;
 
   std::unique_ptr<ScopedKeepAlive> optional_keep_alive_;
   std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive_;
-
-  base::OnceCallback<void(IsolatedWebAppUpdatePrepareAndStoreCommandResult)>
-      callback_;
 
   std::unique_ptr<IsolatedWebAppInstallCommandHelper> command_helper_;
 

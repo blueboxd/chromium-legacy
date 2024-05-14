@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chromeos/ash/components/growth/campaigns_matcher.h"
+
 #include <memory>
+#include <string_view>
 
 #include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
@@ -20,7 +22,7 @@ namespace growth {
 namespace {
 
 bool MatchPref(const base::Value::List* criterias,
-               base::StringPiece pref_path,
+               std::string_view pref_path,
                const PrefService* pref_service) {
   if (!pref_service) {
     LOG(ERROR) << "Matching pref before pref service is available";
@@ -80,10 +82,8 @@ CampaignsMatcher::CampaignsMatcher(CampaignsManagerClient* client,
     : client_(client), local_state_(local_state) {}
 CampaignsMatcher::~CampaignsMatcher() = default;
 
-void CampaignsMatcher::SetCampaigns(const CampaignsPerSlot* proactiveCampaigns,
-                                    const CampaignsPerSlot* reactiveCampaigns) {
-  proactive_campaigns_ = proactiveCampaigns;
-  reactive_campaigns_ = reactiveCampaigns;
+void CampaignsMatcher::SetCampaigns(const CampaignsPerSlot* campaigns) {
+  campaigns_ = campaigns;
 }
 
 void CampaignsMatcher::SetPrefs(PrefService* prefs) {
@@ -91,7 +91,7 @@ void CampaignsMatcher::SetPrefs(PrefService* prefs) {
 }
 
 const Campaign* CampaignsMatcher::GetCampaignBySlot(Slot slot) const {
-  auto* targeted_campaigns = GetCampaignsBySlot(reactive_campaigns_, slot);
+  auto* targeted_campaigns = GetCampaignsBySlot(campaigns_, slot);
   if (!targeted_campaigns) {
     return nullptr;
   }

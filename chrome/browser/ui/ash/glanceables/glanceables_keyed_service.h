@@ -53,9 +53,20 @@ class GlanceablesKeyedService : public KeyedService {
   void Shutdown() override;
 
  private:
+  // Indicates whether, and why time management glanceables are enabled.
+  // Used as an enum in histograms, so the assigned values should not change.
+  enum class GlanceablesStatus {
+    kDisabled = 0,
+    kEnabledForTrustedTesters = 1,
+    kEnabledByV2Flag = 2,
+    kEnabledByPrefBypass = 3,
+    kEnabledForFullLaunch = 4,
+    kMaxValue = kEnabledForFullLaunch
+  };
+
   // Returns whether glanceables are enabled for the profile that owns the
   // GlanceablesKeyedService.
-  bool AreGlanceablesEnabled() const;
+  GlanceablesStatus AreGlanceablesEnabled() const;
 
   // Helper method that creates a `google_apis::RequestSender` instance.
   // `scopes` - OAuth 2 scopes needed for a client.
@@ -79,11 +90,10 @@ class GlanceablesKeyedService : public KeyedService {
   void UpdateRegistration();
 
   // The profile for which this keyed service was created.
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
+  const raw_ptr<Profile> profile_;
 
   // Identity manager associated with `profile_`.
-  const raw_ptr<signin::IdentityManager, DanglingUntriaged | ExperimentalAsh>
-      identity_manager_;
+  const raw_ptr<signin::IdentityManager, DanglingUntriaged> identity_manager_;
 
   // Account id associated with the primary profile.
   const AccountId account_id_;

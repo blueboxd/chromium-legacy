@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_INLINE_OFFSET_MAPPING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_INLINE_OFFSET_MAPPING_H_
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <optional>
+
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -21,7 +22,7 @@ namespace blink {
 class LayoutBlockFlow;
 class LayoutObject;
 
-enum class OffsetMappingUnitType { kIdentity, kCollapsed };
+enum class OffsetMappingUnitType { kIdentity, kCollapsed, kVariable };
 
 // An OffsetMappingUnit indicates a "simple" offset mapping between dom offset
 // range [dom_start, dom_end] on node |owner| and text content offset range
@@ -33,9 +34,13 @@ enum class OffsetMappingUnitType { kIdentity, kCollapsed };
 // - kCollapsed: The mapping is collapsed, namely, |text_content_start| and
 //   |text_content_end| are the same, and characters in the dom range are
 //   collapsed.
-// - kExpanded: The mapping is expanded, namely, |dom_end == dom_start + 1|, and
-//   |text_content_end > text_content_start + 1|, indicating that the character
-//   in the dom range is expanded into multiple characters.
+// - kVariable: The mapping is expanded or shrunk, namely.
+//   -- |dom_end == dom_start + 1|, and
+//      |text_content_end > text_content_start + 1|, indicating that the
+//      character in the dom range is expanded into multiple characters, or
+//   -- |dom_end > dom_start + 1|, and
+//      |text_content_end == text_content_start + 1|, indicating that multiple
+//      characters in the dom range is shrunk into a single character.
 // See design doc https://goo.gl/CJbxky for details.
 class CORE_EXPORT OffsetMappingUnit {
   DISALLOW_NEW();
@@ -179,7 +184,7 @@ class CORE_EXPORT OffsetMapping final : public GarbageCollected<OffsetMapping> {
 
   // Returns the text content offset corresponding to the given position.
   // Returns nullopt when the position is not laid out in this context.
-  absl::optional<unsigned> GetTextContentOffset(const Position&) const;
+  std::optional<unsigned> GetTextContentOffset(const Position&) const;
 
   // Starting from the given position, searches for non-collapsed content in
   // the anchor node in forward/backward direction and returns the position
@@ -196,7 +201,7 @@ class CORE_EXPORT OffsetMapping final : public GarbageCollected<OffsetMapping> {
 
   // Maps the given position to a text content offset, and then returns the text
   // content character before the offset. Returns nullopt if it does not exist.
-  absl::optional<UChar> GetCharacterBefore(const Position&) const;
+  std::optional<UChar> GetCharacterBefore(const Position&) const;
 
   // ------ Mapping APIs from text content to DOM ------
 

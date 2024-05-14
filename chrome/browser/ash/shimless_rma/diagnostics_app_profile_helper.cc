@@ -5,12 +5,14 @@
 #include "chrome/browser/ash/shimless_rma/diagnostics_app_profile_helper.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "ash/constants/ash_features.h"
 #include "ash/webui/shimless_rma/backend/shimless_rma_delegate.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -42,8 +44,8 @@
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/verifier_formats.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
 namespace context {
 class BrowserContext;
@@ -57,6 +59,14 @@ namespace {
 constexpr base::TimeDelta kExtensionReadyPollingInterval =
     base::Milliseconds(50);
 constexpr base::TimeDelta kExtensionReadyPollingTimeout = base::Seconds(3);
+
+// The set of allowlisted permission policy for diagnostics IWA.
+constexpr auto kAllowlistedPermissionPolicy =
+    base::MakeFixedFlatSet<blink::mojom::PermissionsPolicyFeature>(
+        {blink::mojom::PermissionsPolicyFeature::kCamera,
+         blink::mojom::PermissionsPolicyFeature::kFullscreen,
+         blink::mojom::PermissionsPolicyFeature::kMicrophone,
+         blink::mojom::PermissionsPolicyFeature::kHid});
 
 extensions::ExtensionService* GetExtensionService(
     content::BrowserContext* context) {
@@ -104,10 +114,10 @@ struct PrepareDiagnosticsAppProfileState {
   scoped_refptr<extensions::CrxInstaller> crx_installer = nullptr;
   // Result.
   raw_ptr<content::BrowserContext> context;
-  absl::optional<std::string> extension_id;
-  absl::optional<web_package::SignedWebBundleId> iwa_id;
-  absl::optional<std::string> name;
-  absl::optional<std::string> permission_message;
+  std::optional<std::string> extension_id;
+  std::optional<web_package::SignedWebBundleId> iwa_id;
+  std::optional<std::string> name;
+  std::optional<std::string> permission_message;
 };
 
 PrepareDiagnosticsAppProfileState::PrepareDiagnosticsAppProfileState() =
@@ -157,8 +167,12 @@ void OnIsolatedWebAppInstalled(
   // custom checker. For now, we just install the IWA. Because we won't return
   // the profile and won't launch the IWA it should be fine.
   if (!web_app->permissions_policy().empty()) {
-    ReportError(std::move(state), k3pDiagErrorIWACannotHasPermissionPolicy);
-    return;
+    for (const auto& permission_policy : web_app->permissions_policy()) {
+      if (!kAllowlistedPermissionPolicy.contains(permission_policy.feature)) {
+        ReportError(std::move(state), k3pDiagErrorIWACannotHasPermissionPolicy);
+        return;
+      }
+    }
   }
   state->name = web_app->untranslated_name();
 
@@ -186,7 +200,7 @@ void InstallIsolatedWebApp(
   state->delegate->GetWebAppCommandScheduler(state->context)
       ->InstallIsolatedWebApp(
           url_info, location,
-          /*expected_version=*/absl::nullopt, /*optional_keep_alive=*/nullptr,
+          /*expected_version=*/std::nullopt, /*optional_keep_alive=*/nullptr,
           /*optional_profile_keep_alive=*/nullptr,
           base::BindOnce(&OnIsolatedWebAppInstalled, std::move(state)));
 }
@@ -239,7 +253,7 @@ void CheckExtensionIsReady(
 
 void OnExtensionInstalled(
     std::unique_ptr<PrepareDiagnosticsAppProfileState> state,
-    const absl::optional<extensions::CrxInstallError>& error) {
+    const std::optional<extensions::CrxInstallError>& error) {
   CHECK(state->context);
   CHECK(state->crx_installer);
 
@@ -273,7 +287,7 @@ void OnExtensionInstalled(
   extensions::PermissionMessages permission_messages =
       extension->permissions_data()->GetPermissionMessages();
   if (permission_messages.empty()) {
-    state->permission_message = absl::nullopt;
+    state->permission_message = std::nullopt;
   } else {
     std::u16string message;
     for (const auto& permission_message : permission_messages) {

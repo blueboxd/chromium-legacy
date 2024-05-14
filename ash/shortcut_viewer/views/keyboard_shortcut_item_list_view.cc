@@ -40,9 +40,6 @@ class HorizontalSeparator : public views::View {
 
   ~HorizontalSeparator() override = default;
 
-  // views::View overrides:
-  const char* GetClassName() const override { return "HorizontalSeparator"; }
-
   gfx::Size CalculatePreferredSize() const override {
     constexpr int kSeparatorThickness = 1;
     return gfx::Size(preferred_width_, kSeparatorThickness);
@@ -66,7 +63,7 @@ class HorizontalSeparator : public views::View {
 
  private:
   const int preferred_width_;
-  raw_ptr<ash::ColorProvider, ExperimentalAsh> color_provider_;
+  raw_ptr<ash::ColorProvider> color_provider_;
 };
 
 BEGIN_METADATA(HorizontalSeparator)

@@ -8,10 +8,9 @@
 #import "base/memory/ptr_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/task/sequenced_task_runner.h"
-#import "ios/chrome/browser/snapshots/model/snapshot_generator.h"
+#import "ios/chrome/browser/snapshots/model/legacy_snapshot_generator.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_manager.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_storage.h"
-#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 
 namespace {
@@ -65,17 +64,7 @@ void SnapshotTabHelper::RetrieveGreySnapshot(void (^callback)(UIImage*)) {
 void SnapshotTabHelper::UpdateSnapshotWithCallback(void (^callback)(UIImage*)) {
   was_loading_during_last_snapshot_ = web_state_->IsLoading();
 
-  bool showing_native_content =
-      web::GetWebClient()->IsAppSpecificURL(web_state_->GetLastCommittedURL());
-  if (!showing_native_content && web_state_->CanTakeSnapshot()) {
-    // Take the snapshot using the optimized WKWebView snapshotting API for
-    // pages loaded in the web view when the WebState snapshot API is available.
-    [snapshot_manager_ updateWKWebViewSnapshotWithCompletion:callback];
-    return;
-  }
-  // Use the UIKit-based snapshot API as a fallback when the WKWebView API is
-  // unavailable.
-  [snapshot_manager_ updateUIViewSnapshotWithCompletion:callback];
+  [snapshot_manager_ updateSnapshotWithCompletion:callback];
 }
 
 UIImage* SnapshotTabHelper::GenerateSnapshotWithoutOverlays() {
@@ -106,9 +95,10 @@ SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
   DCHECK(web_state_);
   snapshot_manager_ = [[SnapshotManager alloc]
-      initWithGenerator:[[SnapshotGenerator alloc] initWithWebState:web_state_]
+      initWithGenerator:[[LegacySnapshotGenerator alloc]
+                            initWithWebState:web_state_]
              snapshotID:GenerateSnapshotID(web_state_)];
-  web_state_observation_.Observe(web_state_);
+  web_state_observation_.Observe(web_state_.get());
 }
 
 void SnapshotTabHelper::PageLoaded(

@@ -358,7 +358,7 @@ void ServiceWorkerContainerHost::GetRegistrations(
   if (!CanServeContainerHostMethods(
           &callback, url_, GURL(),
           ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix,
-          absl::nullopt)) {
+          std::nullopt)) {
     return;
   }
 
@@ -368,7 +368,7 @@ void ServiceWorkerContainerHost::GetRegistrations(
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
     // the callback is not run. Just run it with nonsense arguments.
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
-                            std::string(), absl::nullopt);
+                            std::string(), std::nullopt);
     return;
   }
 
@@ -629,10 +629,12 @@ void ServiceWorkerContainerHost::CountFeature(
     return;
 
   // `container_` shouldn't be disconnected during the lifetime of `this` but
-  // there seems a situation where `container_` is disconnected.
-  // TODO(crbug.com/1136843): Figure out the cause and remove this check.
-  if (!container_.is_connected())
+  // there seems a situation where `container_` is disconnected or unbound.
+  // TODO(crbug.com/1136843, crbug.com/40918057): Figure out the cause and
+  // remove this check.
+  if (!container_.is_bound() || !container_.is_connected()) {
     return;
+  }
 
   container_->CountFeature(feature);
 }
@@ -651,6 +653,7 @@ ServiceWorkerContainerHost::CreateControllerServiceWorkerInfo() {
       controller()->fetch_handler_bypass_option();
   controller_info->sha256_script_checksum =
       controller()->sha256_script_checksum();
+  controller_info->need_router_evaluate = controller()->NeedRouterEvaluate();
 
   if (controller()->router_evaluator()) {
     controller_info->router_data = blink::mojom::ServiceWorkerRouterData::New();
@@ -684,7 +687,7 @@ ServiceWorkerContainerHost::CreateControllerServiceWorkerInfo() {
 
   if (fetch_request_window_id()) {
     controller_info->fetch_request_window_id =
-        absl::make_optional(fetch_request_window_id());
+        std::make_optional(fetch_request_window_id());
   }
   // Populate used features for UseCounter purposes.
   for (const auto feature : controller()->used_features()) {
@@ -857,12 +860,12 @@ void ServiceWorkerContainerHost::RemoveServiceWorkerObjectHost(
 
 bool ServiceWorkerContainerHost::IsContainerForServiceWorker() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return client_info_ == absl::nullopt;
+  return client_info_ == std::nullopt;
 }
 
 bool ServiceWorkerContainerHost::IsContainerForClient() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return client_info_ != absl::nullopt;
+  return client_info_ != std::nullopt;
 }
 
 blink::mojom::ServiceWorkerClientType
@@ -992,7 +995,7 @@ void ServiceWorkerContainerHost::CompleteWebWorkerPreparation(
 
 void ServiceWorkerContainerHost::UpdateUrls(
     const GURL& url,
-    const absl::optional<url::Origin>& top_frame_origin,
+    const std::optional<url::Origin>& top_frame_origin,
     const blink::StorageKey& storage_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GURL previous_url = url_;
@@ -1617,7 +1620,7 @@ void ServiceWorkerContainerHost::RegistrationComplete(
   DCHECK(registration);
 
   std::move(callback).Run(
-      blink::mojom::ServiceWorkerErrorType::kNone, absl::nullopt,
+      blink::mojom::ServiceWorkerErrorType::kNone, std::nullopt,
       CreateServiceWorkerRegistrationObjectInfo(
           scoped_refptr<ServiceWorkerRegistration>(registration)));
 }
@@ -1669,7 +1672,7 @@ void ServiceWorkerContainerHost::GetRegistrationComplete(
   }
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          absl::nullopt, std::move(info));
+                          std::nullopt, std::move(info));
 }
 
 void ServiceWorkerContainerHost::GetRegistrationsComplete(
@@ -1692,7 +1695,7 @@ void ServiceWorkerContainerHost::GetRegistrationsComplete(
         std::string(
             ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix) +
             std::string(ServiceWorkerConsts::kShutdownErrorMessage),
-        absl::nullopt);
+        std::nullopt);
     return;
   }
 
@@ -1705,7 +1708,7 @@ void ServiceWorkerContainerHost::GetRegistrationsComplete(
         error_type,
         ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix +
             error_message,
-        absl::nullopt);
+        std::nullopt);
     return;
   }
 
@@ -1730,7 +1733,7 @@ void ServiceWorkerContainerHost::GetRegistrationsComplete(
       });
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          absl::nullopt, std::move(object_infos));
+                          std::nullopt, std::move(object_infos));
 }
 
 bool ServiceWorkerContainerHost::IsValidGetRegistrationMessage(
@@ -1922,6 +1925,31 @@ ServiceWorkerContainerHost::GetRunningStatusCallbackReceiver() {
   auto receiver = remote_callback.InitWithNewPipeAndPassReceiver();
   running_status_observer_->AddCallback(std::move(remote_callback));
   return receiver;
+}
+
+SubresourceLoaderParams
+ServiceWorkerContainerHost::MaybeCreateSubresourceLoaderParams(
+    base::WeakPtr<ServiceWorkerContainerHost> container_host) {
+  // We didn't find a matching service worker for this request, and
+  // ServiceWorkerContainerHost::SetControllerRegistration() was not called.
+  if (!container_host || !container_host->controller()) {
+    return {};
+  }
+
+  // Otherwise let's send the controller service worker information along
+  // with the navigation commit.
+  SubresourceLoaderParams params;
+  params.controller_service_worker_info =
+      container_host->CreateControllerServiceWorkerInfo();
+  if (base::WeakPtr<ServiceWorkerObjectHost> object_host =
+          container_host->GetOrCreateServiceWorkerObjectHost(
+              container_host->controller())) {
+    params.controller_service_worker_object_host = object_host;
+    params.controller_service_worker_info->object_info =
+        object_host->CreateIncompleteObjectInfo();
+  }
+
+  return params;
 }
 
 }  // namespace content

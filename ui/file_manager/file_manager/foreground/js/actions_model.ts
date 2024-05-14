@@ -4,20 +4,20 @@
 
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
-import {assert} from 'chrome://resources/js/assert.js';
 
+import type {VolumeManager} from '../../background/js/volume_manager.js';
+import {getEntryProperties} from '../../common/js/api.js';
 import {isDirectoryEntry, isSameVolume, unwrapEntry} from '../../common/js/entry_utils.js';
+import type {FilesAppEntry} from '../../common/js/files_app_entry_types.js';
 import {recordBoolean} from '../../common/js/metrics.js';
 import {strf} from '../../common/js/translations.js';
 import {visitURL} from '../../common/js/util.js';
 import {VolumeType} from '../../common/js/volume_manager_types.js';
-import type {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
 
-import {constants} from './constants.js';
+import {FSP_ACTION_HIDDEN_ONEDRIVE_REAUTHENTICATION_REQUIRED, FSP_ACTION_HIDDEN_ONEDRIVE_URL, FSP_ACTION_HIDDEN_ONEDRIVE_USER_EMAIL} from './constants.js';
 import type {FolderShortcutsDataModel} from './folder_shortcuts_data_model.js';
 import type {MetadataModel} from './metadata/metadata_model.js';
-import type {ActionModelUI} from './ui/action_model_ui.js';
+import type {ActionModelUi} from './ui/action_model_ui.js';
 
 type ActionsMap =
     Partial<Record<CommonActionId|InternalActionId|string, Action>>;
@@ -46,72 +46,15 @@ export abstract class Action {
   abstract getEntries(): Array<Entry|FilesAppEntry>;
 }
 
-class DriveShareAction implements Action {
-  constructor(
-      private entry_: Entry|FilesAppEntry,
-      private metadataModel_: MetadataModel,
-      private volumeManager_: VolumeManager) {}
-
-  static create(
-      entries: Array<Entry|FilesAppEntry>, metadataModel: MetadataModel,
-      volumeManager: VolumeManager) {
-    if (entries.length !== 1) {
-      return null;
-    }
-    return new DriveShareAction(entries[0]!, metadataModel, volumeManager);
-  }
-
-  execute() {
-    // Open the Sharing dialog in a new window.
-    chrome.fileManagerPrivate.getEntryProperties(
-        [unwrapEntry(this.entry_) as Entry], ['shareUrl'],
-        (results: chrome.fileManagerPrivate.EntryProperties[]) => {
-          if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError.message);
-            return;
-          }
-          if (results.length !== 1) {
-            console.warn(
-                'getEntryProperties for shareUrl should return 1 entry ' +
-                '(returned ' + results.length + ')');
-            return;
-          }
-          if (results[0]!.shareUrl === undefined) {
-            console.warn('getEntryProperties shareUrl is undefined');
-            return;
-          }
-          visitURL(results[0]!.shareUrl);
-        });
-  }
-
-  canExecute() {
-    const metadata = this.metadataModel_.getCache([this.entry_], ['canShare']);
-    assert(metadata.length === 1);
-    const canShareItem = metadata[0]!.canShare !== false;
-    return this.volumeManager_.getDriveConnectionState().type !==
-        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
-        canShareItem;
-  }
-
-  getTitle() {
-    return null;
-  }
-
-  getEntries() {
-    return [this.entry_];
-  }
-}
-
-
 class DriveToggleOfflineAction implements Action {
   constructor(
       private entries_: Array<Entry|FilesAppEntry>,
-      private metadataModel_: MetadataModel, private ui_: ActionModelUI,
+      private metadataModel_: MetadataModel, private ui_: ActionModelUi,
       private value_: boolean, private onExecute_: VoidCallback) {}
 
   static create(
       entries: Array<Entry|FilesAppEntry>, metadataModel: MetadataModel,
-      ui: ActionModelUI, value: boolean, onExecute: VoidCallback) {
+      ui: ActionModelUi, value: boolean, onExecute: VoidCallback) {
     const actionableEntries = entries.filter(
         entry =>
             metadataModel.getCache([entry], ['pinned'])[0]?.pinned !== value);
@@ -126,7 +69,7 @@ class DriveToggleOfflineAction implements Action {
 
   execute() {
     const entries = this.entries_;
-    if (entries.length == 0) {
+    if (entries.length === 0) {
       return;
     }
 
@@ -312,25 +255,20 @@ class DriveManageAction implements Action {
   }
 
   execute() {
-    chrome.fileManagerPrivate.getEntryProperties(
-        [unwrapEntry(this.entry_) as Entry], ['alternateUrl'],
-        (results: chrome.fileManagerPrivate.EntryProperties[]) => {
-          if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError.message);
-            return;
-          }
-          if (results.length !== 1) {
-            console.warn(
-                'getEntryProperties for alternateUrl should return 1 entry ' +
-                '(returned ' + results.length + ')');
-            return;
-          }
-          if (results[0]!.alternateUrl === undefined) {
-            console.warn('getEntryProperties alternateUrl is undefined');
-            return;
-          }
-          visitURL(results[0]!.alternateUrl);
-        });
+    const props = [chrome.fileManagerPrivate.EntryPropertyName.ALTERNATE_URL];
+    getEntryProperties([this.entry_], props).then((results) => {
+      if (results.length !== 1) {
+        console.warn(
+            `getEntryProperties for alternateUrl should return 1 entry ` +
+            `(returned ${results.length})`);
+        return;
+      }
+      if (results[0]!.alternateUrl === undefined) {
+        console.warn('getEntryProperties alternateUrl is undefined');
+        return;
+      }
+      visitURL(results[0]!.alternateUrl);
+    });
   }
 
   canExecute() {
@@ -398,7 +336,7 @@ export class ActionsModel extends EventTarget {
       private volumeManager_: VolumeManager,
       private metadataModel_: MetadataModel,
       private shortcutsModel_: FolderShortcutsDataModel,
-      private ui_: ActionModelUI,
+      private ui_: ActionModelUi,
       private entries_: Array<Entry|FilesAppEntry>) {
     super();
   }
@@ -435,12 +373,6 @@ export class ActionsModel extends EventTarget {
             // For Drive, actions are constructed directly in the Files app
             // code.
             case VolumeType.DRIVE:
-              const shareAction = DriveShareAction.create(
-                  this.entries_, this.metadataModel_, this.volumeManager_);
-              if (shareAction) {
-                actions[CommonActionId.SHARE] = shareAction;
-              }
-
               const saveForOfflineAction = DriveToggleOfflineAction.create(
                   this.entries_, this.metadataModel_, this.ui_, true,
                   this.invalidate_.bind(this));
@@ -499,17 +431,15 @@ export class ActionsModel extends EventTarget {
                         // user, for example actions that just expose OneDrive
                         // URLs.
                         // TODO(b/237216270): Restrict to the ODFS extension ID.
-                        if (action.id ===
-                            constants.FSP_ACTION_HIDDEN_ONEDRIVE_URL) {
+                        if (action.id === FSP_ACTION_HIDDEN_ONEDRIVE_URL) {
                           return;
                         }
                         if (action.id ===
-                            constants.FSP_ACTION_HIDDEN_ONEDRIVE_USER_EMAIL) {
+                            FSP_ACTION_HIDDEN_ONEDRIVE_USER_EMAIL) {
                           return;
                         }
                         if (action.id ===
-                            constants
-                                .FSP_ACTION_HIDDEN_ONEDRIVE_REAUTHENTICATION_REQUIRED) {
+                            FSP_ACTION_HIDDEN_ONEDRIVE_REAUTHENTICATION_REQUIRED) {
                           return;
                         }
                         actions[action.id] = new CustomAction(

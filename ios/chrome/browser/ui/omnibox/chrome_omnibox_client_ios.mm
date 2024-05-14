@@ -170,8 +170,6 @@ void ChromeOmniboxClientIOS::OnUserPastedInOmniboxResultingInValidURL() {
       HasRecentValidURLPastesAndRecordsCurrentPaste()) {
     engagement_tracker_->NotifyEvent(
         feature_engagement::events::kBlueDotPromoCriterionMet);
-    engagement_tracker_->NotifyEvent(
-        feature_engagement::events::kDefaultBrowserVideoPromoConditionsMet);
   }
 }
 
@@ -274,6 +272,10 @@ LocationBarModel* ChromeOmniboxClientIOS::GetLocationBarModel() {
   return location_bar_->GetLocationBarModel();
 }
 
+base::WeakPtr<OmniboxClient> ChromeOmniboxClientIOS::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void ChromeOmniboxClientIOS::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
@@ -288,7 +290,10 @@ void ChromeOmniboxClientIOS::DidFinishNavigation(
       ios::ShortcutsBackendFactory::GetInstance()->GetForBrowserState(
           browser_state_);
 
-  if (!navigation_context->GetError() && shortcuts_backend) {
+  // Add the shortcut if the navigation from the omnibox was successful.
+  if (!navigation_context->GetError() && shortcuts_backend &&
+      (navigation_context->GetPageTransition() &
+       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
     shortcuts_backend->AddOrUpdateShortcut(shortcut.text, shortcut.match);
   }
 }

@@ -136,11 +136,10 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   // views::View:
   void AddedToWidget() override;
-  const char* GetClassName() const override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void Layout() override;
+  void Layout(PassKey) override;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
@@ -190,6 +189,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   // Returns the shutdown confirmation bubble.
   ShelfShutdownConfirmationBubble* GetShutdownConfirmationBubbleForTesting();
+
+  LoginShelfButton* GetLoginShelfButtonByID(ButtonId button_id);
 
  private:
   class ScopedGuestButtonBlockerImpl;
@@ -254,8 +255,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // appear if there are no user views.
   bool login_screen_has_users_ = false;
 
-  raw_ptr<LockScreenActionBackgroundController, ExperimentalAsh>
-      lock_screen_action_background_;
+  raw_ptr<LockScreenActionBackgroundController> lock_screen_action_background_;
 
   base::ScopedObservation<TrayAction, TrayActionObserver>
       tray_action_observation_{this};
@@ -276,16 +276,18 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   // The kiosk app button will only be created for the primary display's login
   // shelf.
-  raw_ptr<KioskAppsButton, ExperimentalAsh> kiosk_apps_button_ = nullptr;
+  raw_ptr<KioskAppsButton> kiosk_apps_button_ = nullptr;
+
+  // The shutdown confirmation bubble button.
+  raw_ptr<LoginShelfButton> shutdown_confirmation_button_ = nullptr;
 
   // The kiosk app instruction will be shown if the kiosk app button is visible.
-  raw_ptr<KioskAppInstructionBubble, ExperimentalAsh>
-      kiosk_instruction_bubble_ = nullptr;
+  raw_ptr<KioskAppInstructionBubble> kiosk_instruction_bubble_ = nullptr;
 
   // This is used in tests to check if the confirmation bubble is visible and to
   // click its buttons.
-  raw_ptr<ShelfShutdownConfirmationBubble, ExperimentalAsh>
-      test_shutdown_confirmation_bubble_ = nullptr;
+  raw_ptr<ShelfShutdownConfirmationBubble> test_shutdown_confirmation_bubble_ =
+      nullptr;
 
   // This is used in tests to wait until UI is updated.
   std::unique_ptr<TestUiUpdateDelegate> test_ui_update_delegate_;
@@ -296,7 +298,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   gfx::Rect button_union_bounds_;
 
   // Maintains a list of LoginShelfButton children of LoginShelfView.
-  std::vector<LoginShelfButton*> login_shelf_buttons_;
+  std::vector<raw_ptr<LoginShelfButton, VectorExperimental>>
+      login_shelf_buttons_;
 
   // Number of active scoped Guest button blockers.
   int scoped_guest_button_blockers_ = 0;
@@ -310,7 +313,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Set of the tray buttons which are in disabled state. It is used to record
   // and recover the states of tray buttons after temporarily disable of the
   // buttons.
-  std::set<TrayBackgroundView*> disabled_tray_buttons_;
+  std::set<raw_ptr<TrayBackgroundView, SetExperimental>> disabled_tray_buttons_;
 
   base::WeakPtrFactory<LoginShelfView> weak_ptr_factory_{this};
 };

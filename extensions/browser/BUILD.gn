@@ -29,6 +29,12 @@ group("browser") {
   ]
 }
 
+source_set("url_fetcher") {
+  visibility = [ "./*" ]
+
+  sources = [ "url_fetcher.h" ]
+}
+
 # A group of helpers to instantiate the set of all browser context keyed service
 # factories, including both the API methods and core system services.
 source_set("browser_context_keyed_service_factories") {
@@ -289,6 +295,8 @@ source_set("browser_sources") {
     "crx_file_info.h",
     "deferred_start_render_host.h",
     "disable_reason.h",
+    "embedder_user_script_loader.cc",
+    "embedder_user_script_loader.h",
     "error_map.cc",
     "error_map.h",
     "event_listener_map.cc",
@@ -344,8 +352,6 @@ source_set("browser_sources") {
     "extension_icon_image.h",
     "extension_icon_placeholder.cc",
     "extension_icon_placeholder.h",
-    "extension_message_filter.cc",
-    "extension_message_filter.h",
     "extension_navigation_throttle.cc",
     "extension_navigation_throttle.h",
     "extension_navigation_ui_data.cc",
@@ -374,8 +380,6 @@ source_set("browser_sources") {
     "extension_registry_factory.cc",
     "extension_registry_factory.h",
     "extension_registry_observer.h",
-    "extension_service_worker_message_filter.cc",
-    "extension_service_worker_message_filter.h",
     "extension_system.cc",
     "extension_system.h",
     "extension_system_provider.cc",
@@ -437,6 +441,8 @@ source_set("browser_sources") {
 
     # TODO(crbug.com/730220): Ideally web_view should be a separate target on
     # which the extension system depends.
+    "guest_view/web_view/controlled_frame_embedder_url_fetcher.cc",
+    "guest_view/web_view/controlled_frame_embedder_url_fetcher.h",
     "guest_view/web_view/javascript_dialog_helper.cc",
     "guest_view/web_view/javascript_dialog_helper.h",
     "guest_view/web_view/web_view_constants.cc",
@@ -557,6 +563,7 @@ source_set("browser_sources") {
     "uninstall_reason.h",
     "unloaded_extension_reason.h",
     "update_observer.h",
+    "url_fetcher.h",
     "url_loader_factory_manager.cc",
     "url_loader_factory_manager.h",
     "url_request_util.cc",
@@ -575,8 +582,6 @@ source_set("browser_sources") {
     "warning_service_factory.h",
     "warning_set.cc",
     "warning_set.h",
-    "web_ui_user_script_loader.cc",
-    "web_ui_user_script_loader.h",
     "zipfile_installer.cc",
     "zipfile_installer.h",
   ]
@@ -683,6 +688,7 @@ source_set("browser_sources") {
       "api/clipboard/clipboard_api.h",
     ]
     deps += [
+      "//chromeos/constants",
       "//chromeos/dbus/permission_broker",
       "//components/prefs:prefs",
       "//ui/base/clipboard",
@@ -1002,6 +1008,10 @@ source_set("unit_tests") {
     "//third_party/zlib/google:zip",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
@@ -1050,7 +1060,7 @@ source_set("unit_tests") {
   data = [
     "//extensions/browser/extension_event_histogram_value.h",
     "//extensions/browser/extension_function_histogram_value.h",
-    "//tools/metrics/histograms/enums.xml",
+    "//tools/metrics/histograms/metadata/extensions/enums.xml",
     "//extensions/browser/api/declarative_net_request/flat/extension_ruleset.fbs",
   ]
 }

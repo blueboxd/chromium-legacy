@@ -43,8 +43,9 @@ class PolicyStatus {
   void AddPolicyIfNeeded(bool is_managed,
                          const std::string& source,
                          const T& policy) {
-    if (conflict_policy_)
+    if (conflict_policy_) {
       return;  // We already have enough policies.
+    }
 
     if (!effective_policy_ && is_managed) {
       effective_policy_ = std::make_optional<Entry>(source, policy);
@@ -107,6 +108,7 @@ class PolicyService : public base::RefCountedThreadSafe<PolicyService> {
   std::string source() const;
 
   // These methods call and aggregate the results from the policy managers.
+  PolicyStatus<bool> CloudPolicyOverridesPlatformPolicy() const;
   PolicyStatus<base::TimeDelta> GetLastCheckPeriod() const;
   PolicyStatus<UpdatesSuppressedTimes> GetUpdatesSuppressedTimes() const;
   PolicyStatus<std::string> GetDownloadPreference() const;
@@ -137,6 +139,13 @@ class PolicyService : public base::RefCountedThreadSafe<PolicyService> {
   virtual ~PolicyService();
 
  private:
+  template <typename T>
+  using PolicyQueryFunction =
+      std::optional<T> (PolicyManagerInterface::*)() const;
+  template <typename T>
+  using AppPolicyQueryFunction =
+      std::optional<T> (PolicyManagerInterface::*)(const std::string&) const;
+
   friend class base::RefCountedThreadSafe<PolicyService>;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -160,21 +169,20 @@ class PolicyService : public base::RefCountedThreadSafe<PolicyService> {
   const scoped_refptr<ExternalConstants> external_constants_;
 
   // Helper function to query the policy from the managed policy providers and
-  // determines the policy status.
-  template <typename T>
-  PolicyStatus<T> QueryPolicy(
-      const base::RepeatingCallback<std::optional<T>(
-          const PolicyManagerInterface*)>& policy_query_callback,
-      const base::RepeatingCallback<bool(const T&)>& validator =
-          base::NullCallback()) const;
+  // determines the policy status. The provided `transform` can be used to
+  // modify the queried value to be a different type, or to nullify it when
+  // invalid.
+  template <typename T, typename U = T>
+  PolicyStatus<U> QueryPolicy(
+      PolicyQueryFunction<T> policy_query_function,
+      const base::RepeatingCallback<std::optional<U>(std::optional<T>)>&
+          transform = base::NullCallback()) const;
 
   // Helper function to query app policy from the managed policy providers and
   // determines the policy status.
   template <typename T>
   PolicyStatus<T> QueryAppPolicy(
-      const base::RepeatingCallback<
-          std::optional<T>(const PolicyManagerInterface*,
-                           const std::string& app_id)>& policy_query_callback,
+      AppPolicyQueryFunction<T> policy_query_function,
       const std::string& app_id) const;
 
   std::set<std::string> GetAppsWithPolicy() const;

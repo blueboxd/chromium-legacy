@@ -57,12 +57,6 @@
     [CrossOrigin, CallWith=Isolate] void focus();
     [CrossOrigin] void blur();
 
-    // Additional Windowing Controls (AWC)
-    [RuntimeEnabled=DesktopPWAsAdditionalWindowingControls, RaisesException] void maximize();
-    [RuntimeEnabled=DesktopPWAsAdditionalWindowingControls, RaisesException] void minimize();
-    [RuntimeEnabled=DesktopPWAsAdditionalWindowingControls, RaisesException] void restore();
-    [RuntimeEnabled=DesktopPWAsAdditionalWindowingControls, RaisesException] void setResizable(boolean resizable);
-
     // other browsing contexts
     [Replaceable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window frames;
     [Replaceable, CrossOrigin] readonly attribute unsigned long length;
@@ -177,6 +171,9 @@
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
     [HighEntropy=Direct, MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
+
+    // Event handler attribute for the pageconceal event.
+    [RuntimeEnabled=PageConcealEvent] attribute EventHandler onpageconceal;
 
     // Event handler attribute for the pagereveal event.
     // https://drafts.csswg.org/css-view-transitions-2/#reveal-event

@@ -29,9 +29,6 @@ COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kBlockRepeatedNotificationPermissionPrompts);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
-BASE_DECLARE_FEATURE(kNotificationInteractionHistory);
-
-COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kOneTimePermission);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
@@ -108,6 +105,10 @@ extern const base::FeatureParam<double> kPermissionPredictionsV2HoldbackChance;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<std::string> kPermissionsPromptSurveyTriggerId;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<std::string>
+    kPermissionsPromptSurveyCustomInvitationTriggerId;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<std::string>

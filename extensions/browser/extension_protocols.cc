@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -68,6 +69,7 @@
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -230,16 +232,16 @@ bool URLIsForExtensionIcon(const GURL& url, const Extension* extension) {
     return false;
 
   DCHECK_EQ(url.host(), extension->id());
-  base::StringPiece path = url.path_piece();
+  std::string_view path = url.path_piece();
   DCHECK(path.length() > 0 && path[0] == '/');
-  base::StringPiece path_without_slash = path.substr(1);
+  std::string_view path_without_slash = path.substr(1);
   return IconsInfo::GetIcons(extension).ContainsPath(path_without_slash);
 }
 
 // Retrieves the path corresponding to an extension on disk. Returns |true| on
 // success and populates |*path|; otherwise returns |false|.
 bool GetDirectoryForExtensionURL(const GURL& url,
-                                 const std::string& extension_id,
+                                 const ExtensionId& extension_id,
                                  const Extension* extension,
                                  const ExtensionSet& disabled_extensions,
                                  base::FilePath* out_path) {
@@ -297,8 +299,8 @@ void GetSecurityPolicyForURL(const network::ResourceRequest& request,
       (extension.creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE) != 0;
 }
 
-bool IsPathEqualTo(const GURL& url, base::StringPiece test) {
-  base::StringPiece path_piece = url.path_piece();
+bool IsPathEqualTo(const GURL& url, std::string_view test) {
+  std::string_view path_piece = url.path_piece();
   return path_piece.size() > 1 && path_piece.substr(1) == test;
 }
 
@@ -371,10 +373,8 @@ void AddCacheHeaders(net::HttpResponseHeaders& headers,
   std::string hash =
       base::StringPrintf("%" PRId64, last_modified_time.ToInternalValue());
   hash = base::SHA1HashString(hash);
-  std::string etag;
-  base::Base64Encode(hash, &etag);
-  etag = "\"" + etag + "\"";
-  headers.SetHeader("ETag", etag);
+  headers.SetHeader(
+      "ETag", base::StringPrintf(R"("%s")", base::Base64Encode(hash).c_str()));
 
   // Also force revalidation.
   headers.SetHeader("cache-control", "no-cache");
@@ -514,7 +514,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
       return;
     }
 
-    const std::string extension_id = request_.url.host();
+    const ExtensionId extension_id = request_.url.host();
     ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
     scoped_refptr<const Extension> extension =
         registry->GenerateInstalledExtensionsSet().GetByIDorGUID(extension_id);
@@ -739,7 +739,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
 
     // Handle shared resources (extension A loading resources out of extension
     // B).
-    std::string extension_id = extension->id();
+    ExtensionId extension_id = extension->id();
     std::string path = request_.url.path();
     if (SharedModuleInfo::IsImportedPath(path)) {
       std::string new_extension_id;

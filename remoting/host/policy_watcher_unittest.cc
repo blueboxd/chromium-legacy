@@ -329,6 +329,7 @@ class PolicyWatcherTest : public testing::Test {
     dict.Set(key::kRemoteAccessHostAllowClientPairing, true);
     dict.Set(key::kRemoteAccessHostAllowGnubbyAuth, true);
     dict.Set(key::kRemoteAccessHostAllowFileTransfer, true);
+    dict.Set(key::kRemoteAccessHostAllowUrlForwarding, true);
     dict.Set(key::kRemoteAccessHostEnableUserInterface, true);
     dict.Set(key::kRemoteAccessHostAllowRemoteAccessConnections, true);
     dict.Set(key::kRemoteAccessHostMaximumSessionDurationMinutes, 0);
@@ -524,13 +525,13 @@ TEST_P(MisspelledPolicyTest, WarningLogged) {
   // registry key on Windows which fails on the Chromium bots. The warning that
   // gets logged cases the subsequent log assertion to fail so this check was
   // added so the test runs locally and in the bot environment.
-  EXPECT_CALL(mock_log, Log(logging::LOG_WARNING, _, _, _, _))
+  EXPECT_CALL(mock_log, Log(logging::LOGGING_WARNING, _, _, _, _))
       .With(testing::Args<4>(
           ContainsSubstring("Failed to open Chrome policy registry key")))
       .Times(testing::AtMost(1));
 #endif
 
-  EXPECT_CALL(mock_log, Log(logging::LOG_WARNING, _, _, _, _))
+  EXPECT_CALL(mock_log, Log(logging::LOGGING_WARNING, _, _, _, _))
       .With(testing::Args<4>(ContainsSubstring(misspelled_policy_name)))
       .Times(1);
 

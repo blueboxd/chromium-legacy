@@ -177,13 +177,16 @@ void ResponsivenessMetrics::RecordUserInteractionUKM(
   EventTimestamps longest_event = LongestEvent(timestamps);
   base::TimeTicks max_event_start = longest_event.start_time;
   base::TimeTicks max_event_end = longest_event.end_time;
+  base::TimeTicks max_event_queued_main_thread =
+      longest_event.main_thread_queued_time;
   base::TimeDelta max_event_duration = longest_event.duration();
   base::TimeDelta total_event_duration = TotalEventDuration(timestamps);
   // We found some negative values in the data. Before figuring out the root
   // cause, we need this check to avoid sending nonsensical data.
   if (max_event_duration.InMilliseconds() >= 0) {
     window->GetFrame()->Client()->DidObserveUserInteraction(
-        max_event_start, max_event_end, interaction_type, interaction_offset);
+        max_event_start, max_event_end, max_event_queued_main_thread,
+        interaction_type, interaction_offset);
   }
   TRACE_EVENT2("devtools.timeline", "Responsiveness.Renderer.UserInteraction",
                "data",
@@ -268,7 +271,7 @@ bool ResponsivenessMetrics::SetPointerIdAndRecordLatency(
     NotifyPointerdown(pointer_info->GetEntry());
     // The pointer id of the pointerdown is no longer needed.
     pointer_id_entry_map_.erase(pointer_id);
-    last_pointer_id_ = absl::nullopt;
+    last_pointer_id_ = std::nullopt;
   } else if (event_type == event_type_names::kContextmenu) {
     // Start a timer to flush event timing entries when times up. On receiving a
     // new pointerup or pointerdown, the timer will be canceled and entries will
@@ -371,7 +374,7 @@ bool ResponsivenessMetrics::SetPointerIdAndRecordLatency(
     }
     // Any existing pointerup in the map cannot fire a click.
     FlushPointerup();
-    last_pointer_id_ = absl::nullopt;
+    last_pointer_id_ = std::nullopt;
   }
   return true;
 }
@@ -392,9 +395,9 @@ void ResponsivenessMetrics::RecordKeyboardUKM(
 // events as interactions.
 bool ResponsivenessMetrics::SetKeyIdAndRecordLatency(
     PerformanceEventTiming* entry,
-    absl::optional<int> key_code,
+    std::optional<int> key_code,
     EventTimestamps event_timestamps) {
-  last_pointer_id_ = absl::nullopt;
+  last_pointer_id_ = std::nullopt;
   auto event_type = entry->name();
   if (event_type == event_type_names::kKeydown) {
     // If we were waiting for matching pointerup/keyup after a contextmenu, they
@@ -525,6 +528,16 @@ void ResponsivenessMetrics::UpdateInteractionId() {
 
 uint32_t ResponsivenessMetrics::GetCurrentInteractionId() const {
   return current_interaction_id_for_event_timing_;
+}
+
+void ResponsivenessMetrics::SetCurrentInteractionEventQueuedTimestamp(
+    base::TimeTicks queued_time) {
+  current_interaction_event_queued_timestamp_ = queued_time;
+}
+
+base::TimeTicks ResponsivenessMetrics::CurrentInteractionEventQueuedTimestamp()
+    const {
+  return current_interaction_event_queued_timestamp_;
 }
 
 void ResponsivenessMetrics::FlushPointerTimerFired(TimerBase*) {

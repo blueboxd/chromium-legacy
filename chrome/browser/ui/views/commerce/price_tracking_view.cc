@@ -17,13 +17,11 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets_outsets_base.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -55,7 +53,6 @@ gfx::Size GetIconSize() {
 
 PriceTrackingView::PriceTrackingView(Profile* profile,
                                      const GURL& page_url,
-                                     const gfx::ImageSkia& product_image,
                                      bool is_price_track_enabled,
                                      const commerce::ProductInfo& product_info)
     : profile_(profile),
@@ -105,8 +102,7 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
   bool email_pref_value =
       commerce::GetEmailNotificationPrefValue(profile_->GetPrefs());
 
-  if ((base::FeatureList::IsEnabled(commerce::kShoppingListTrackByDefault) &&
-       !email_pref_set_by_user) ||
+  if (!email_pref_set_by_user ||
       (email_pref_set_by_user && !email_pref_value)) {
     body_string_id = IDS_BOOKMARK_STAR_DIALOG_TRACK_PRICE_DESCRIPTION_EMAIL_OFF;
   }
@@ -215,8 +211,7 @@ void PriceTrackingView::UpdatePriceTrackingState(const GURL& url) {
 
   // If "track by default" is on, we'll show a dialog after saving to offer
   // email notifications.
-  if (!base::FeatureList::IsEnabled(commerce::kShoppingListTrackByDefault) &&
-      profile_ && is_price_track_enabled_) {
+  if (profile_ && is_price_track_enabled_) {
     commerce::MaybeEnableEmailNotifications(profile_->GetPrefs());
   }
 
@@ -250,5 +245,5 @@ void PriceTrackingView::OnPriceTrackingStateUpdated(bool success) {
   }
 }
 
-BEGIN_METADATA(PriceTrackingView, views::FlexLayoutView)
+BEGIN_METADATA(PriceTrackingView)
 END_METADATA

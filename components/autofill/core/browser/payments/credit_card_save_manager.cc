@@ -36,6 +36,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/client_behavior_constants.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_network_interface.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
@@ -85,11 +86,9 @@ std::u16string RemoveMiddleInitial(const std::u16string& name) {
 
 CreditCardSaveManager::CreditCardSaveManager(
     AutofillClient* client,
-    payments::PaymentsNetworkInterface* payments_network_interface,
     const std::string& app_locale,
     PersonalDataManager* personal_data_manager)
     : client_(client),
-      payments_network_interface_(payments_network_interface),
       app_locale_(app_locale),
       personal_data_manager_(personal_data_manager) {}
 
@@ -217,11 +216,14 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     const FormStructure& submitted_form,
     const CreditCard& card,
     const bool uploading_local_card) {
-  // Abort the uploading if `payments_network_interface_` is nullptr.
-  if (!payments_network_interface_) {
+  payments::PaymentsNetworkInterface* payments_network_interface =
+      client_->GetPaymentsNetworkInterface();
+  // Abort the uploading if `payments_network_interface` is nullptr.
+  if (!payments_network_interface) {
     return;
   }
-  upload_request_ = payments::PaymentsNetworkInterface::UploadRequestDetails();
+  upload_request_ =
+      payments::PaymentsNetworkInterface::UploadCardRequestDetails();
   upload_request_.card = card;
   uploading_local_card_ = uploading_local_card;
   show_save_prompt_.reset();
@@ -355,8 +357,22 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   }
 #endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
 
-  if (!upload_request_.card.cvc().empty() &&
-      personal_data_manager_->IsPaymentCvcStorageEnabled() &&
+  bool cvc_is_being_uploaded =
+      !upload_request_.card.cvc().empty() &&
+      personal_data_manager_->IsPaymentCvcStorageEnabled();
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsAndroidBottomSheetAccountEmail)) {
+    upload_request_.client_behavior_signals.push_back(
+        ClientBehaviorConstants::kShowAccountEmailInLegalMessage);
+    if (cvc_is_being_uploaded) {
+      upload_request_.client_behavior_signals.push_back(
+          ClientBehaviorConstants::kOfferingToSaveCvc);
+    }
+  }
+#endif
+
+  if (cvc_is_being_uploaded &&
       // kAutofillEnableNewSaveCardBubbleUi affects the overall save bubble
       // structure, and the client signal to incorporate CVC into the ToS should
       // only be sent if the updated UI is active. If not, CVC save notice will
@@ -367,7 +383,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
         ClientBehaviorConstants::kOfferingToSaveCvc);
   }
 
-  payments_network_interface_->GetUploadDetails(
+  payments_network_interface->GetCardUploadDetails(
       country_only_profiles, upload_request_.detected_values,
       upload_request_.client_behavior_signals, app_locale_,
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
@@ -436,7 +452,7 @@ void CreditCardSaveManager::OnDidUploadCard(
         !upload_request_.card.cvc().empty() &&
         upload_card_response_details.instrument_id.has_value()) {
       // After a card is successfully saved to server, if CVC storage is
-      // enabled, save server CVC to AutofillTable if it exists.
+      // enabled, save server CVC to PaymentsAutofillTable if it exists.
       personal_data_manager_->AddServerCvc(
           upload_card_response_details.instrument_id.value(),
           upload_request_.card.cvc());
@@ -446,9 +462,12 @@ void CreditCardSaveManager::OnDidUploadCard(
     // |personal_data_manager_|. PDM uses this information to update the avatar
     // button UI.
     personal_data_manager_->OnCreditCardSaved(/*is_local_card=*/false);
-
+#if BUILDFLAG(IS_IOS)
+    if (base::FeatureList::IsEnabled(features::kAutofillEnableVirtualCards)) {
+#else
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableUpdateVirtualCardEnrollment)) {
+#endif
       // After a card is successfully saved to the server, offer virtual card
       // enrollment if the card is eligible. |upload_card_response_details| has
       // fields in the response that will be required for server requests in the
@@ -484,8 +503,7 @@ void CreditCardSaveManager::OnDidUploadCard(
         !upload_request_.card
              .GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale_)
              .empty()) {
-      personal_data_manager_->OnAcceptedLocalCreditCardSave(
-          upload_request_.card);
+      personal_data_manager_->SaveCardLocallyIfNew(upload_request_.card);
     }
 
     // If the upload failed and the bubble was actually shown (NOT just the
@@ -499,7 +517,7 @@ void CreditCardSaveManager::OnDidUploadCard(
   }
 
   // Show credit card upload feedback.
-  client_->CreditCardUploadCompleted(
+  client_->GetPaymentsAutofillClient()->CreditCardUploadCompleted(
       result == AutofillClient::PaymentsRpcResult::kSuccess);
 
   if (observer_for_testing_) {
@@ -538,23 +556,26 @@ bool CreditCardSaveManager::
       is_upload_save
           ? base::NumberToString(card_save_candidate_.instrument_id())
           : card_save_candidate_.guid();
-  CvcStorageStrikeDatabase::BlockedReason reason =
-      CvcStorageStrikeDatabase::kUnknown;
-  bool should_block = cvc_storage_strike_db->ShouldBlockFeature(id, &reason);
-  if (should_block) {
-    if (reason == CvcStorageStrikeDatabase::kMaxStrikeLimitReached) {
+
+  CvcStorageStrikeDatabase::StrikeDatabaseDecision decision =
+      cvc_storage_strike_db->GetStrikeDatabaseDecision(id);
+
+  switch (decision) {
+    case CvcStorageStrikeDatabase::kDoNotBlock:
+      return false;
+    case CvcStorageStrikeDatabase::kMaxStrikeLimitReached:
       autofill_metrics::LogSaveCvcPromptOfferMetric(
           autofill_metrics::SaveCardPromptOffer::kNotShownMaxStrikesReached,
           is_upload_save,
           /*is_reshow=*/false);
-    } else if (reason == CvcStorageStrikeDatabase::kRequiredDelayNotPassed) {
+      return true;
+    case CvcStorageStrikeDatabase::kRequiredDelayNotPassed:
       autofill_metrics::LogSaveCvcPromptOfferMetric(
           autofill_metrics::SaveCardPromptOffer::kNotShownRequiredDelay,
           is_upload_save,
           /*is_reshow=*/false);
-    }
+      return true;
   }
-  return should_block;
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -593,9 +614,9 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
       return;
     }
 
-    // Do *not* call payments_network_interface_->Prepare() here. We shouldn't
-    // send credentials until the user has explicitly accepted a prompt to
-    // upload.
+    // Do *not* call `client_->GetPaymentsNetworkInterface()->Prepare()` here.
+    // We shouldn't send credentials until the user has explicitly accepted a
+    // prompt to upload.
     if (!supported_card_bin_ranges.empty() &&
         !payments::IsCreditCardNumberSupported(upload_request_.card.number(),
                                                supported_card_bin_ranges)) {
@@ -731,7 +752,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
             .with_card_save_type(card_save_type),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnUploadSave,
                        weak_ptr_factory_.GetWeakPtr()));
-    client_->LoadRiskData(
+    client_->GetPaymentsAutofillClient()->LoadRiskData(
         base::BindOnce(&CreditCardSaveManager::OnDidGetUploadRiskData,
                        weak_ptr_factory_.GetWeakPtr()));
 
@@ -833,7 +854,8 @@ void CreditCardSaveManager::LogStrikesPresentWhenCardSaved(
 
 void CreditCardSaveManager::SetProfilesForCreditCardUpload(
     const CreditCard& card,
-    payments::PaymentsNetworkInterface::UploadRequestDetails* upload_request) {
+    payments::PaymentsNetworkInterface::UploadCardRequestDetails*
+        upload_request) {
   std::vector<AutofillProfile> candidate_profiles;
   const base::Time now = AutofillClock::Now();
   const base::TimeDelta fifteen_minutes = base::Minutes(15);
@@ -1197,8 +1219,12 @@ void CreditCardSaveManager::OnUserDidAcceptUploadHelper(
         user_provided_card_details.expiration_date_year, app_locale_);
   }
 
+#if BUILDFLAG(IS_IOS)
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableVirtualCards)) {
+#else
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableUpdateVirtualCardEnrollment)) {
+#endif
     client_->GetVirtualCardEnrollmentManager()
         ->SetSaveCardBubbleAcceptedTimestamp(AutofillClock::Now());
   }
@@ -1232,7 +1258,7 @@ void CreditCardSaveManager::SendUploadCardRequest() {
       uploading_local_card_
           ? AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_LOCAL_CARD
           : AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_NEW_CARD);
-  payments_network_interface_->UploadCard(
+  client_->GetPaymentsNetworkInterface()->UploadCard(
       upload_request_, base::BindOnce(&CreditCardSaveManager::OnDidUploadCard,
                                       weak_ptr_factory_.GetWeakPtr()));
 }

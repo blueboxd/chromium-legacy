@@ -51,8 +51,7 @@ class ASH_EXPORT TaskContinuationView : public views::View,
 
     // views::View:
     gfx::Size CalculatePreferredSize() const override;
-    void Layout() override;
-    const char* GetClassName() const override;
+    void Layout(PassKey) override;
 
     // Clear all existing tasks in the view and in |task_chips_|.
     void Reset();
@@ -67,10 +66,9 @@ class ASH_EXPORT TaskContinuationView : public views::View,
   // Update the chips to display current phone status.
   void Update();
 
-  raw_ptr<phonehub::PhoneModel, ExperimentalAsh> phone_model_ = nullptr;
-  raw_ptr<phonehub::UserActionRecorder, ExperimentalAsh> user_action_recorder_ =
-      nullptr;
-  raw_ptr<TaskChipsView, ExperimentalAsh> chips_view_ = nullptr;
+  raw_ptr<phonehub::PhoneModel> phone_model_ = nullptr;
+  raw_ptr<phonehub::UserActionRecorder> user_action_recorder_ = nullptr;
+  raw_ptr<TaskChipsView> chips_view_ = nullptr;
 };
 
 }  // namespace ash

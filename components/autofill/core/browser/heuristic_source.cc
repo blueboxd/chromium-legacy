@@ -26,33 +26,55 @@ HeuristicSource GetActiveHeuristicSource() {
   }
   const std::string& source =
       features::kAutofillParsingPatternActiveSource.Get();
-  CHECK(source == "default" || source == "experimental" ||
-        source == "nextgen" || source == "legacy");
+  CHECK(source == "default" || source == "experimental" || source == "nextgen");
   return source == "default"        ? HeuristicSource::kDefault
          : source == "experimental" ? HeuristicSource::kExperimental
-         : source == "nextgen"      ? HeuristicSource::kNextGen
-         : source == "legacy"       ? HeuristicSource::kLegacy
-                                    : HeuristicSource::kDefault;
+                                    : HeuristicSource::kNextGen;
 #endif
 }
 
 DenseSet<HeuristicSource> GetNonActiveHeuristicSources() {
-  DenseSet<HeuristicSource> sources{HeuristicSource::kLegacy};
+  DenseSet<HeuristicSource> non_active_sources;
+  switch (GetActiveHeuristicSource()) {
 #if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
-  if (base::FeatureList::IsEnabled(features::kAutofillParsingPatternProvider)) {
-    sources.insert_all({HeuristicSource::kDefault,
-                        HeuristicSource::kExperimental,
-                        HeuristicSource::kNextGen});
-  }
+    // If a `PatternSource` is the active `HeuristicSource`, compute shadow
+    // predictions against the `PatternSource` of the prior rollout stage.
+    case HeuristicSource::kDefault:
+      non_active_sources.insert(HeuristicSource::kExperimental);
+      break;
+    case HeuristicSource::kExperimental:
+      non_active_sources.insert(HeuristicSource::kNextGen);
+      break;
+    case HeuristicSource::kNextGen:
 #endif
-  if (base::FeatureList::IsEnabled(features::kAutofillModelPredictions)) {
-    sources.insert(HeuristicSource::kMachineLearning);
+    // Prior to PatternProvider and on non Chrome-branded builds, no alternative
+    // `PatternSource`s exist.
+    case HeuristicSource::kLegacy:
+      break;
+    // If ML is active, compare against the `PatternSource`-based predictions
+    // that would otherwise be active.
+    case HeuristicSource::kMachineLearning:
+      non_active_sources.insert(
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
+          base::FeatureList::IsEnabled(
+              features::kAutofillParsingPatternProvider)
+              ? HeuristicSource::kDefault
+              : HeuristicSource::kLegacy
+#else
+          HeuristicSource::kLegacy
+#endif
+      );
+      break;
   }
-  sources.erase(GetActiveHeuristicSource());
-  return sources;
+  // If ML is enabled but inactive, compute shadow predictions for it.
+  if (base::FeatureList::IsEnabled(features::kAutofillModelPredictions) &&
+      !features::kAutofillModelPredictionsAreActive.Get()) {
+    non_active_sources.insert(HeuristicSource::kMachineLearning);
+  }
+  return non_active_sources;
 }
 
-absl::optional<PatternSource> HeuristicSourceToPatternSource(
+std::optional<PatternSource> HeuristicSourceToPatternSource(
     HeuristicSource source) {
   switch (source) {
     case HeuristicSource::kLegacy:
@@ -66,7 +88,7 @@ absl::optional<PatternSource> HeuristicSourceToPatternSource(
       return PatternSource::kNextGen;
 #endif
     case autofill::HeuristicSource::kMachineLearning:
-      return absl::nullopt;
+      return std::nullopt;
   }
   NOTREACHED_NORETURN();
 }

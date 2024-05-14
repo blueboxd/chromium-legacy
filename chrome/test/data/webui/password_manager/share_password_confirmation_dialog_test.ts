@@ -4,7 +4,8 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {PasswordManagerImpl, SharePasswordConfirmationDialogElement} from 'chrome://password-manager/password_manager.js';
+import type {SharePasswordConfirmationDialogElement} from 'chrome://password-manager/password_manager.js';
+import {PasswordManagerImpl} from 'chrome://password-manager/password_manager.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {MockTimer} from 'chrome://webui-test/mock_timer.js';
@@ -106,7 +107,6 @@ suite('SharePasswordConfirmationDialogTest', function() {
                       substitutions: [
                         'New User',
                         SHARED_PASSWORD_NAME,
-                        dialog.i18n('passwordSharingLearnMoreURL'),
                       ],
                     })
                 .toString());
@@ -196,7 +196,6 @@ suite('SharePasswordConfirmationDialogTest', function() {
                     'sharePasswordConfirmationDescriptionMultipleRecipients', {
                       substitutions: [
                         SHARED_PASSWORD_NAME,
-                        dialog.i18n('passwordSharingLearnMoreURL'),
                       ],
                     })
                 .toString());

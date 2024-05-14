@@ -43,20 +43,6 @@ TARGET_DEVICES = {
             'Speedometer2': 10,
         },
     },
-    'android-go-perf': {
-        'jetstream2': {
-            'JetStream2': 5,
-        },
-        'system_health.common_mobile': {
-            # timeToFirstContentfulPaint
-            'background:social:facebook:2019': 10,
-            # cputimeToFirstContentfulPaint
-            'load:search:google:2018': 10
-        },
-        'speedometer2': {
-            'Speedometer2': 10,
-        },
-    },
     'android-go-wembley-perf': {
         'jetstream2': {
             'JetStream2': 5,
@@ -116,6 +102,20 @@ TARGET_DEVICES = {
         },
     },
     'win-10-perf': {
+        'jetstream2': {
+            'JetStream2': 5,
+        },
+        'system_health.common_desktop': {
+            # cputimeToFirstContentfulPaint
+            'browse:media:tumblr:2018': 10,
+            'browse:social:tumblr_infinite_scroll:2018': 10,
+            'load:search:google:2018': 10,
+        },
+        'speedometer2': {
+            'Speedometer2': 20,
+        },
+    },
+    'win-11-perf': {
         'jetstream2': {
             'JetStream2': 5,
         },

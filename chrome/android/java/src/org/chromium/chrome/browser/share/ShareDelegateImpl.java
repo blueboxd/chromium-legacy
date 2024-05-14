@@ -5,20 +5,17 @@
 package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
+import android.os.Build;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.os.BuildCompat;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.device_lock.DeviceLockActivityLauncherImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersTabHelper;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -291,11 +288,8 @@ public class ShareDelegateImpl implements ShareDelegate {
     }
 
     @Override
-    @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
     public boolean isSharingHubEnabled() {
-        return !(mIsCustomTab
-                || (ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_SHEET_MIGRATION_ANDROID)
-                        && BuildCompat.isAtLeastU()));
+        return !(mIsCustomTab || Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE);
     }
 
     /** Delegate for share handling. */
@@ -321,7 +315,7 @@ public class ShareDelegateImpl implements ShareDelegate {
 
             if (chromeShareExtras.shareDirectly()) {
                 ShareHelper.shareWithLastUsedComponent(params);
-            } else if (sharingHubEnabled && !chromeShareExtras.sharingTabGroup()) {
+            } else if (sharingHubEnabled) {
                 // TODO(crbug.com/1085078): Sharing hub is suppressed for tab group sharing.
                 // Re-enable it when tab group sharing is supported by sharing hub.
                 RecordHistogram.recordEnumeratedHistogram(
@@ -338,7 +332,6 @@ public class ShareDelegateImpl implements ShareDelegate {
                                 printCallback,
                                 new LargeIconBridge(profile),
                                 isIncognito,
-                                AppHooks.get().getImageEditorModuleProvider(),
                                 TrackerFactory.getTrackerForProfile(profile),
                                 profile,
                                 DeviceLockActivityLauncherImpl.get());

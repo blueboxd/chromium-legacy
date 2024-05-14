@@ -30,9 +30,9 @@ class Profile;
 class ExtensionInstallDialogView : public views::BubbleDialogDelegateView,
                                    public extensions::ExtensionRegistryObserver,
                                    public views::TextfieldController {
- public:
-  METADATA_HEADER(ExtensionInstallDialogView);
+  METADATA_HEADER(ExtensionInstallDialogView, views::BubbleDialogDelegateView)
 
+ public:
   // The views::View::id of the ratings section in the dialog.
   static const int kRatingsViewId = 1;
 
@@ -91,11 +91,6 @@ class ExtensionInstallDialogView : public views::BubbleDialogDelegateView,
 
   // Enables the install button and updates the dialog buttons.
   void EnableInstallButton();
-
-  // Updates the histogram that holds cloud extension request accepted/aborted
-  // decision made by user on the specific prompt dialog.
-  void UpdateEnterpriseCloudExtensionRequestDialogActionHistogram(
-      bool accepted) const;
 
   raw_ptr<Profile> profile_;
   std::unique_ptr<ExtensionInstallPromptShowParams> show_params_;

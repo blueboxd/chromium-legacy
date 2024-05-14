@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/permissions_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
 
@@ -26,6 +27,9 @@ class ReportingContextTest : public testing::Test {
  protected:
   ReportingContextTest() = default;
   ~ReportingContextTest() override = default;
+
+ private:
+  test::TaskEnvironment task_environment_;
 };
 
 class MockReportingServiceProxy : public mojom::blink::ReportingServiceProxy {
@@ -45,7 +49,7 @@ class MockReportingServiceProxy : public mojom::blink::ReportingServiceProxy {
     broker_.SetBinderForTesting(ReportingServiceProxy::Name_, {});
   }
 
-  absl::optional<base::Time> DeprecationReportAnticipatedRemoval() const {
+  std::optional<base::Time> DeprecationReportAnticipatedRemoval() const {
     return deprecation_report_anticipated_removal_;
   }
 
@@ -59,7 +63,7 @@ class MockReportingServiceProxy : public mojom::blink::ReportingServiceProxy {
 
   void QueueDeprecationReport(const KURL& url,
                               const String& id,
-                              absl::optional<base::Time> anticipated_removal,
+                              std::optional<base::Time> anticipated_removal,
                               const String& message,
                               const String& source_file,
                               int32_t line_number,
@@ -128,7 +132,7 @@ class MockReportingServiceProxy : public mojom::blink::ReportingServiceProxy {
   base::OnceClosure reached_callback_;
 
   // Last reported values
-  absl::optional<base::Time> deprecation_report_anticipated_removal_;
+  std::optional<base::Time> deprecation_report_anticipated_removal_;
 
   // Last reported report's message.
   String last_message_;

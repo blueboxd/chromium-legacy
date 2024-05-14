@@ -97,6 +97,7 @@ static_library("autofill") {
       "//chrome/android:jni_headers",
       "//chrome/app:generated_resources",
       "//chrome/browser/autofill/android:jni_headers",
+      "//chrome/browser/keyboard_accessory/android:public",
       "//components/autofill/android:autofill_core_browser_java_enums",
       "//components/autofill/core/common/mojom:mojo_types",
       "//components/messages/android:feature_flags",
@@ -129,6 +130,8 @@ static_library("test_support") {
   sources = [
     "autofill_uitest_util.cc",
     "autofill_uitest_util.h",
+    "mock_autofill_agent.cc",
+    "mock_autofill_agent.h",
     "mock_autofill_popup_controller.cc",
     "mock_autofill_popup_controller.h",
     "mock_manual_filling_controller.cc",
@@ -139,6 +142,7 @@ static_library("test_support") {
     "//chrome/browser/autofill:autofill",
     "//chrome/browser/profiles:profile",
     "//components/autofill/content/browser:browser",
+    "//components/autofill/content/common/mojom",
     "//components/autofill/core/browser:test_support",
     "//content/test:test_support",
     "//testing/gmock",
@@ -167,6 +171,7 @@ static_library("test_support") {
       "//chrome/android:test_support_jni_headers",
       "//chrome/browser",
       "//chrome/browser/autofill",
+      "//chrome/browser/keyboard_accessory/android:public",
     ]
     public_deps += [ "test:test_support" ]
   }
@@ -177,8 +182,8 @@ if (!is_android) {
     testonly = true
 
     sources = [
+      "autocomplete_browsertest.cc",
       "autofill_across_iframes_browsertest.cc",
-      "autofill_autocomplete_browsertest.cc",
       "autofill_browsertest.cc",
       "autofill_metrics_browsertest.cc",
       "autofill_server_browsertest.cc",

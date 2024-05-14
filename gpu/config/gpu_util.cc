@@ -249,17 +249,30 @@ GpuFeatureStatus GetCanvasOopRasterizationFeatureStatus(
     }
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Disable OOP-C if explicitly turned off from the command line.
+  base::FeatureList* feature_list = base::FeatureList::GetInstance();
+  if (feature_list && feature_list->IsFeatureOverriddenFromCommandLine(
+                          features::kCanvasOopRasterization.name,
+                          base::FeatureList::OVERRIDE_DISABLE_FEATURE))
+    return kGpuFeatureStatusDisabled;
+
   // VDA video decoder on ChromeOS uses legacy mailboxes which is not compatible
   // with OOP-C
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!gpu_preferences.enable_chromeos_direct_video_decoder)
     return kGpuFeatureStatusDisabled;
-#endif
+
+  // On certain ChromeOS devices, using Vulkan without OOP-C results in video
+  // encode artifacts (b/318721705).
+  if (gpu_preferences.use_vulkan != VulkanImplementationName::kNone)
+    return kGpuFeatureStatusEnabled;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Canvas OOP Rasterization on platforms that are not fully enabled is
   // controlled by a finch experiment.
-  if (!base::FeatureList::IsEnabled(features::kCanvasOopRasterization))
+  if (!features::IsCanvasOopRasterizationEnabled()) {
     return kGpuFeatureStatusDisabled;
+  }
 
   return kGpuFeatureStatusEnabled;
 }
@@ -1033,8 +1046,6 @@ void RecordDevicePerfInfoHistograms() {
     return;
   UMA_HISTOGRAM_COUNTS_1000("Hardware.TotalDiskSpace",
                             device_perf_info->total_disk_space_mb / 1024);
-  UMA_HISTOGRAM_COUNTS_100("Hardware.Concurrency",
-                           device_perf_info->hardware_concurrency);
 #if BUILDFLAG(IS_WIN)
   UMA_HISTOGRAM_COUNTS_100("Memory.Total.SystemCommitLimit",
                            device_perf_info->system_commit_limit_mb / 1024);

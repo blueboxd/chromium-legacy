@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/app/application_delegate/app_state+Testing.h"
 
 #import <utility>
 
@@ -21,7 +22,6 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/metrics/metrics_service.h"
 #import "components/previous_session_info/previous_session_info.h"
-#import "ios/chrome/app/application_delegate/app_state+private.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
@@ -50,6 +50,7 @@
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/system_identity_manager.h"
 #import "ios/chrome/browser/web_state_list/model/session_metrics.h"
+#import "ios/chrome/browser/web_state_list/model/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/net/cookies/cookie_store_ios.h"
 #import "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
@@ -107,10 +108,6 @@ void FlushCookieStoreOnIOThread(
 
 // Saves the current launch details to user defaults.
 - (void)saveLaunchDetailsToDefaults;
-
-// This flag is set when the first scene has activated since the startup, and
-// never reset.
-@property(nonatomic, assign) BOOL firstSceneHasActivated;
 
 // Redefined as readwrite.
 @property(nonatomic, assign) BOOL firstSceneHasInitializedUI;
@@ -401,8 +398,12 @@ void FlushCookieStoreOnIOThread(
   // provider (and no tabs).
   if (self.initStage >= InitStageBrowserObjectsForUI) {
     for (SceneState* sceneState in self.connectedScenes) {
-      sceneState.browserProviderInterface.currentBrowserProvider
-          .userInteractionEnabled = NO;
+      Browser* browser =
+          sceneState.browserProviderInterface.currentBrowserProvider.browser;
+      if (browser && WebUsageEnablerBrowserAgent::FromBrowser(browser)) {
+        WebUsageEnablerBrowserAgent::FromBrowser(browser)->SetWebUsageEnabled(
+            false);
+      }
     }
   }
 

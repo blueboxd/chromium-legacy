@@ -21,60 +21,41 @@
 
 namespace password_manager {
 
-SyncCredentialsFilter::SyncCredentialsFilter(
-    PasswordManagerClient* client,
-    SyncServiceFactoryFunction sync_service_factory_function)
-    : client_(client),
-      sync_service_factory_function_(std::move(sync_service_factory_function)) {
-}
+SyncCredentialsFilter::SyncCredentialsFilter(PasswordManagerClient* client)
+    : client_(client) {}
 
 SyncCredentialsFilter::~SyncCredentialsFilter() = default;
 
 bool SyncCredentialsFilter::ShouldSave(const PasswordForm& form) const {
-  if (client_->IsOffTheRecord())
+  if (client_->IsOffTheRecord()) {
     return false;
+  }
 
-  if (form.form_data.is_gaia_with_skip_save_password_form)
+  if (form.form_data.is_gaia_with_skip_save_password_form) {
     return false;
-
-  const syncer::SyncService* sync_service =
-      sync_service_factory_function_.Run();
-
-  if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
-    // Legacy code path, subject to clean-up.
-    // If kEnablePasswordsAccountStorage is NOT enabled, then don't allow saving
-    // the password for the sync account specifically.
-    if (!form.url.DomainIs("google.com")) {
-      return true;
-    }
-
-    // The empty username can mean that Chrome did not detect it correctly. For
-    // reasons described in http://crbug.com/636292#c1, the username is
-    // suspected to be the sync username unless proven otherwise.
-    if (form.username_value.empty()) {
-      return false;
-    }
-
-    return !gaia::AreEmailsSame(
-        base::UTF16ToUTF8(form.username_value),
-        sync_util::GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
-            sync_service));
   }
 
   if (!sync_util::IsGaiaCredentialPage(form.signon_realm)) {
     return true;
   }
 
+  // Note that `sync_service` may be null in advanced cases like --disable-sync
+  // being used as per syncer::IsSyncAllowedByFlag().
+  const syncer::SyncService* sync_service = client_->GetSyncService();
+
   // The requirement to fulfill is "don't offer to save a Gaia password inside
   // its own account".
   // Let's assume that if the browser is signed-in, new passwords are saved to
   // the primary signed-in account. Per sync_util::GetAccountForSaving(), that's
   // not always true, but let's not overcomplicate.
-  const CoreAccountInfo primary_account = sync_service->GetAccountInfo();
+  const CoreAccountInfo primary_account = sync_service != nullptr
+                                              ? sync_service->GetAccountInfo()
+                                              : CoreAccountInfo();
   if (!primary_account.IsEmpty()) {
-    // This returns false when `primary_account` just signed-in on the web and
-    // already made it to the IdentityManager.
-    return !gaia::AreEmailsSame(base::UTF16ToUTF8(form.username_value),
+    // Only save if the account is not the same. If the username is empty, in
+    // doubt don't save (this is relevant in the password change page).
+    return !form.username_value.empty() &&
+           !gaia::AreEmailsSame(base::UTF16ToUTF8(form.username_value),
                                 primary_account.email);
   }
 

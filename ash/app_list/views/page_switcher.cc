@@ -159,7 +159,7 @@ gfx::Size PageSwitcher::CalculatePreferredSize() const {
                    buttons_->GetPreferredSize().height());
 }
 
-void PageSwitcher::Layout() {
+void PageSwitcher::Layout(PassKey) {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
     return;
@@ -168,15 +168,11 @@ void PageSwitcher::Layout() {
   buttons_->SetBoundsRect(rect);
 }
 
-const char* PageSwitcher::GetClassName() const {
-  return "PageSwitcher";
-}
-
 void PageSwitcher::OnThemeChanged() {
   views::View::OnThemeChanged();
   if (!buttons_)
     return;
-  for (auto* child : buttons_->children()) {
+  for (views::View* child : buttons_->children()) {
     if (child->GetVisible())
       child->SchedulePaint();
   }

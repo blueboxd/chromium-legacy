@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/masked_domain_list_component_installer.h"
 
 #include "base/logging.h"
+#include "base/task/task_traits.h"
 #include "components/component_updater/installer_policies/masked_domain_list_component_installer_policy.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -20,8 +21,7 @@ void RegisterMaskedDomainListComponent(ComponentUpdateService* cus) {
 
   auto policy = std::make_unique<MaskedDomainListComponentInstallerPolicy>(
       /*on_list_ready=*/base::BindRepeating(
-          [](base::Version version,
-             const absl::optional<std::string>& raw_mdl) {
+          [](base::Version version, const std::optional<std::string>& raw_mdl) {
             if (raw_mdl.has_value()) {
               VLOG(1) << "Received Masked Domain List";
               content::GetNetworkService()->UpdateMaskedDomainList(
@@ -31,7 +31,9 @@ void RegisterMaskedDomainListComponent(ComponentUpdateService* cus) {
             }
           }));
 
-  base::MakeRefCounted<ComponentInstaller>(std::move(policy))
-      ->Register(cus, base::OnceClosure(), base::TaskPriority::USER_BLOCKING);
+  base::MakeRefCounted<ComponentInstaller>(std::move(policy),
+                                           /*action_handler=*/nullptr,
+                                           base::TaskPriority::USER_BLOCKING)
+      ->Register(cus, base::OnceClosure());
 }
 }  // namespace component_updater

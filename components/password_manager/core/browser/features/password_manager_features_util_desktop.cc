@@ -96,18 +96,21 @@ class ScopedAccountStorageSettingsUpdate {
 
 }  // namespace
 
-bool ShouldShowAccountStorageOptIn(const syncer::SyncService* sync_service) {
+bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
+                                   const syncer::SyncService* sync_service) {
   // Show the opt-in if the user is eligible, but not yet opted in.
-  return internal::IsUserEligibleForAccountStorage(sync_service) &&
-         !IsOptedInForAccountStorage(sync_service);
+  return internal::IsUserEligibleForAccountStorage(pref_service,
+                                                   sync_service) &&
+         !IsOptedInForAccountStorage(pref_service, sync_service);
 }
 
-bool ShouldShowAccountStorageReSignin(const syncer::SyncService* sync_service,
+bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
+                                      const syncer::SyncService* sync_service,
                                       const GURL& current_page_url) {
   // Checks that the sync_service is not null and the feature is enabled.
   // IsUserEligibleForAccountStorage() doesn't fit because it's false for
   // signed-out users.
-  if (!internal::CanAccountStorageBeEnabled(sync_service)) {
+  if (!internal::CanAccountStorageBeEnabled(pref_service, sync_service)) {
     return false;  // Opt-in wouldn't work here, so don't show the re-signin.
   }
 
@@ -132,7 +135,7 @@ PasswordForm::Store GetDefaultPasswordStore(
     const syncer::SyncService* sync_service) {
   DCHECK(pref_service);
 
-  if (!internal::IsUserEligibleForAccountStorage(sync_service)) {
+  if (!internal::IsUserEligibleForAccountStorage(pref_service, sync_service)) {
     return PasswordForm::Store::kProfileStore;
   }
 
@@ -153,7 +156,8 @@ PasswordForm::Store GetDefaultPasswordStore(
     // in, then saves go to the profile store by default. If the user *has*
     // opted in, then they've chosen to save to the account, so that becomes the
     // default.
-    bool save_to_profile_store = !IsOptedInForAccountStorage(sync_service);
+    bool save_to_profile_store =
+        !IsOptedInForAccountStorage(pref_service, sync_service);
     return save_to_profile_store ? PasswordForm::Store::kProfileStore
                                  : PasswordForm::Store::kAccountStore;
   }
@@ -184,8 +188,7 @@ void OptInToAccountStorage(PrefService* pref_service,
                            syncer::SyncService* sync_service) {
   DCHECK(pref_service);
   DCHECK(sync_service);
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
+  CHECK(CanCreateAccountStore(pref_service));
 
   std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty()) {
@@ -203,18 +206,51 @@ void OptInToAccountStorage(PrefService* pref_service,
   sync_user_settings->SetSelectedType(syncer::UserSelectableType::kPasswords,
                                       /*is_type_on=*/true);
 
+  // Since opting out using toggle in settings explicitly sets the default store
+  // to kProfileStore, opt in needs to explicitly set it to kAccountStore.
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kButterOnDesktopFollowup)) {
+    ScopedAccountStorageSettingsUpdate(pref_service,
+                                       GaiaIdHash::FromGaiaId(gaia_id))
+        .SetDefaultStore(PasswordForm::Store::kAccountStore);
+  }
+
   // Record the total number of (now) opted-in accounts.
   base::UmaHistogramExactLinear(
       "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn",
       sync_user_settings->GetNumberOfAccountsWithPasswordsSelected(), 10);
 }
 
+void OptOutOfAccountStorage(PrefService* pref_service,
+                            syncer::SyncService* sync_service) {
+  CHECK(pref_service);
+  CHECK(sync_service);
+  CHECK(base::FeatureList::IsEnabled(
+      password_manager::features::kButterOnDesktopFollowup));
+
+  std::string gaia_id = sync_service->GetAccountInfo().gaia;
+  if (gaia_id.empty()) {
+    // In rare cases, it could happen that the account went away since the
+    // opt-out UI was triggered.
+    return;
+  }
+
+  // Note SyncUserSettings::SetSelectedType() won't clear the gaia id hash
+  // but that's not required here.
+  syncer::SyncUserSettings* sync_user_settings =
+      sync_service->GetUserSettings();
+  sync_user_settings->SetSelectedType(syncer::UserSelectableType::kPasswords,
+                                      false);
+  ScopedAccountStorageSettingsUpdate(pref_service,
+                                     GaiaIdHash::FromGaiaId(gaia_id))
+      .SetDefaultStore(PasswordForm::Store::kProfileStore);
+}
+
 void OptOutOfAccountStorageAndClearSettings(PrefService* pref_service,
                                             syncer::SyncService* sync_service) {
   DCHECK(pref_service);
   DCHECK(sync_service);
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
+  CHECK(CanCreateAccountStore(pref_service));
 
   std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty()) {
@@ -244,8 +280,7 @@ void SetDefaultPasswordStore(PrefService* pref_service,
                              PasswordForm::Store default_store) {
   DCHECK(pref_service);
   DCHECK(sync_service);
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
+  CHECK(CanCreateAccountStore(pref_service));
 
   std::string gaia_id = sync_service->GetAccountInfo().gaia;
   if (gaia_id.empty()) {
@@ -312,6 +347,37 @@ void MigrateOptInPrefToSyncSelectedTypes(PrefService* pref_service) {
           ->Set(syncer::prefs::internal::kSyncPasswords, true);
     }
     settings.GetDict().Remove(kLegacyAccountStorageOptedInKey);
+  }
+}
+
+void MigrateDeclinedSaveOptInToExplicitOptOut(PrefService* pref_service) {
+  ScopedDictPrefUpdate opt_in_pref_update(
+      pref_service, syncer::prefs::internal::kSelectedTypesPerAccount);
+  for (auto [serialized_gaia_id_hash, settings] :
+       pref_service->GetDict(prefs::kAccountStoragePerAccountSettings)) {
+    // `settings` should be a dict but check to avoid a possible startup crash.
+    if (!settings.is_dict()) {
+      continue;
+    }
+    // Do nothing if there is no password store set or if there is already a
+    // value set for SyncUserSettings::GetSelectedTypes().
+    std::optional<int> default_store =
+        settings.GetDict().FindInt(kAccountStorageDefaultStoreKey);
+    std::optional<bool> opt_in =
+        opt_in_pref_update->EnsureDict(serialized_gaia_id_hash)
+            ->FindBool(syncer::prefs::internal::kSyncPasswords);
+    if (!default_store || opt_in.has_value()) {
+      continue;
+    }
+
+    // Set password storage in the sync user settings to false if the default
+    // store has been set to kProfileStore before, e.g. through declining when
+    // asked through a Reauth bubble whether to save passwords to the account.
+    if (PasswordStoreFromInt(*default_store) ==
+        PasswordForm::Store::kProfileStore) {
+      opt_in_pref_update->EnsureDict(serialized_gaia_id_hash)
+          ->Set(syncer::prefs::internal::kSyncPasswords, false);
+    }
   }
 }
 

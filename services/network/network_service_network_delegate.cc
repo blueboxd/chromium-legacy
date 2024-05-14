@@ -26,6 +26,7 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_proxy_delegate.h"
 #include "services/network/pending_callback_chain.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
 #include "url/gurl.h"
 
@@ -86,10 +87,15 @@ int NetworkServiceNetworkDelegate::OnBeforeURLRequest(
 
   MaybeTruncateReferrer(request, *effective_url);
 
+  NetworkService* network_service = network_context_->network_service();
+  if (network_service) {
+    network_service->NotifyNetworkRequestWithAnnotation(
+        request->traffic_annotation());
+  }
+
   if (!loader)
     return net::OK;
 
-  NetworkService* network_service = network_context_->network_service();
   if (network_service) {
     loader->SetEnableReportingRawHeaders(network_service->HasRawHeadersAccess(
         loader->GetProcessId(), *effective_url));
@@ -120,7 +126,7 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     const net::IPEndPoint& endpoint,
-    absl::optional<GURL>* preserve_fragment_on_redirect_url) {
+    std::optional<GURL>* preserve_fragment_on_redirect_url) {
   auto chain = base::MakeRefCounted<PendingCallbackChain>(std::move(callback));
   URLLoader* url_loader = URLLoader::ForRequest(*request);
   if (url_loader) {
@@ -200,18 +206,29 @@ bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader) {
     allowed =
-        url_loader->AllowCookies(request.url(), request.site_for_cookies());
+        url_loader->AllowFullCookies(request.url(), request.site_for_cookies());
+    if (!allowed) {
+      // AllowFullCookies returns false if "all" cookies are not allowed by a
+      // URL but it could still be the case that cookies are allowed, but it was
+      // 3PCs that were not allowed. If that is the case, we should still
+      // preserve partitioned cookies.
+      ExcludeAllCookiesExceptPartitioned(
+          net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+          maybe_included_cookies, excluded_cookies,
+          url_loader->CookiesDisabled());
+    }
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
   } else {
     WebSocket* web_socket = WebSocket::ForRequest(request);
     if (web_socket) {
       allowed = web_socket->AllowCookies(request.url());
+      if (!allowed) {
+        ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+                          maybe_included_cookies, excluded_cookies);
+      }
     }
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
   }
-  if (!allowed)
-    ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-                      maybe_included_cookies, excluded_cookies);
 
   return allowed;
 }
@@ -232,8 +249,10 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
   // The remaining checks do not consider setting overrides since they enforce
   // explicit disablement via Android Webview APIs.
   URLLoader* url_loader = URLLoader::ForRequest(request);
-  if (url_loader)
-    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
+  if (url_loader) {
+    return url_loader->AllowCookie(cookie, request.url(),
+                                   request.site_for_cookies());
+  }
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
   WebSocket* web_socket = WebSocket::ForRequest(request);
   if (web_socket)

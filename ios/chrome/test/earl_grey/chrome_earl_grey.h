@@ -70,6 +70,14 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // vertical and regular horizontal size class.
 - (BOOL)isRegularXRegularSizeClass;
 
+// Stops primes performance metrics logging by calling into the
+// internal framework (should only be used by performance tests)
+- (void)primesStopLogging;
+
+// Takes a snapshot of memory usage by calling into the internal
+// framework (should only be used by performance tests)
+- (void)primesTakeMemorySnapshot:(NSString*)eventName;
+
 #pragma mark - History Utilities (EG2)
 
 // Clears browsing history. Raises an EarlGrey exception if history is not
@@ -191,9 +199,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 #pragma mark - Sync Utilities (EG2)
 
-// Clears fake sync server data if the server is running.
-- (void)clearSyncServerData;
-
 // Signs in with `identity` without sync consent.
 - (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity;
 
@@ -226,6 +231,14 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Tears down the fake sync server used by the SyncServiceImpl and restores the
 // real one.
 - (void)tearDownFakeSyncServer;
+
+// Clears fake sync server data if the server is running.
+- (void)clearFakeSyncServerData;
+
+// Ensures that all of the FakeServer's data is persisted to disk. This is
+// useful before app restarts, where otherwise the FakeServer may not get to do
+// its usual on-destruction flush.
+- (void)flushFakeSyncServerToDisk;
 
 // Gets the number of entities of the given `type`.
 - (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type [[nodiscard]];
@@ -658,7 +671,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Returns cookies as key value pairs, where key is a cookie name and value is a
 // cookie value.
-// A GREYAssert is induced if cookies can not be returned.
+// If cookies can not be returned, returns nil and induces a GREYAssert.
 - (NSDictionary*)cookies;
 
 #pragma mark - Accessibility Utilities (EG2)

@@ -223,7 +223,7 @@ ScriptPromise NavigatorManagedData::getAnnotatedLocation(
 
 void NavigatorManagedData::OnConfigurationReceived(
     ScriptPromiseResolver* scoped_resolver,
-    const absl::optional<HashMap<String, String>>& configurations) {
+    const std::optional<HashMap<String, String>>& configurations) {
   pending_promises_.erase(scoped_resolver);
 
   ScriptState* script_state = scoped_resolver->GetScriptState();
@@ -242,7 +242,7 @@ void NavigatorManagedData::OnConfigurationReceived(
     if (v8::JSON::Parse(script_state->GetContext(),
                         V8String(script_state->GetIsolate(), config_pair.value))
             .ToLocal(&v8_object)) {
-      result.Add(config_pair.key, v8_object);
+      result.AddV8Value(config_pair.key, v8_object);
     }
   }
   scoped_resolver->Resolve(result.GetScriptValue());

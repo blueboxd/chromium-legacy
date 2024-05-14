@@ -4,10 +4,11 @@
 
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_mediator.h"
 
+#import "base/memory/raw_ptr.h"
 #import "components/favicon/core/large_icon_service_impl.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
+#import "ios/chrome/browser/favicon/model/favicon_loader.h"
 #import "ios/chrome/browser/follow/model/follow_browser_agent.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/follow/followed_web_channel.h"
@@ -107,7 +108,7 @@ class FollowManagementMediatorTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestBrowser> browser_;
-  FollowBrowserAgent* follow_browser_agent_;
+  raw_ptr<FollowBrowserAgent> follow_browser_agent_;
   FakeLargeIconService large_icon_service_;
   std::unique_ptr<FaviconLoader> favicon_loader_;
   FollowManagementMediator* mediator_;

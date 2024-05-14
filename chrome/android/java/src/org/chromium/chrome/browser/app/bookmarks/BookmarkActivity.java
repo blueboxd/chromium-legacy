@@ -12,13 +12,13 @@ import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
-import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkManagerCoordinator;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
@@ -39,33 +39,25 @@ public class BookmarkActivity extends SnackbarActivity {
         boolean isIncognito =
                 IntentUtils.safeGetBooleanExtra(
                         getIntent(), IntentHandler.EXTRA_INCOGNITO_MODE, false);
+        Profile profile = ProfileProvider.getOrCreateProfile(getProfileProvider(), isIncognito);
         mBookmarkManagerCoordinator =
                 new BookmarkManagerCoordinator(
                         this,
                         IntentUtils.safeGetParcelableExtra(
                                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT),
                         true,
-                        isIncognito,
                         getSnackbarManager(),
-                        Profile.getLastUsedRegularProfile(),
+                        profile,
                         new BookmarkUiPrefs(ChromeSharedPreferences.getInstance()));
         String url = getIntent().getDataString();
         if (TextUtils.isEmpty(url)) url = UrlConstants.BOOKMARKS_URL;
         mBookmarkManagerCoordinator.updateForUrl(url);
         setContentView(mBookmarkManagerCoordinator.getView());
-        if (BackPressManager.isSecondaryActivityEnabled()) {
-            BackPressHelper.create(
-                    this,
-                    getOnBackPressedDispatcher(),
-                    mBookmarkManagerCoordinator,
-                    SecondaryActivity.BOOKMARK);
-        } else {
-            BackPressHelper.create(
-                    this,
-                    getOnBackPressedDispatcher(),
-                    mBookmarkManagerCoordinator::onBackPressed,
-                    SecondaryActivity.BOOKMARK);
-        }
+        BackPressHelper.create(
+                this,
+                getOnBackPressedDispatcher(),
+                mBookmarkManagerCoordinator,
+                SecondaryActivity.BOOKMARK);
     }
 
     @Override

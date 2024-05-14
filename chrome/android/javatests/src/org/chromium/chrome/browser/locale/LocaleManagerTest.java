@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.locale;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import static org.chromium.components.search_engines.TemplateUrlTestHelpers.buildMockTemplateUrl;
+
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -26,6 +28,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.search_engines.DefaultSearchEnginePromoDialog;
@@ -33,7 +36,6 @@ import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -167,7 +169,7 @@ public class LocaleManagerTest {
     @Features.EnableFeatures({ChromeFeatureList.SEARCH_ENGINE_CHOICE})
     public void testShowSearchEnginePromoIfNeeded_ForWaffle() throws Exception {
         final CallbackHelper searchEnginesFinalizedCallback = new CallbackHelper();
-        final List<TemplateUrl> fakeTemplateUrls = List.of(mMockTemplateUrl);
+        final List<TemplateUrl> fakeTemplateUrls = List.of(buildMockTemplateUrl("name", 1));
 
         // Override the LocaleManagerDelegate to bypass the logic determining which type of promo
         // to show.

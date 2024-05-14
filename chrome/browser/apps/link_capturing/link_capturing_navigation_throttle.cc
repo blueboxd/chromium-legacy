@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/types/cxx23_to_underlying.h"
+#include "chrome/browser/apps/link_capturing/link_capturing_tab_data.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"  // nogncheck https://crbug.com/1474116
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"  // nogncheck https://crbug.com/1474116
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"  // nogncheck https://crbug.com/1474116
@@ -160,6 +161,16 @@ LinkCapturingNavigationThrottle::MaybeCreate(
     return nullptr;
   }
 
+  // Never link capture links that open in a popup window. Popups are closely
+  // associated with the tab that opened them, so the popup should open in the
+  // same (app/non-app) context as its opener.
+  WindowOpenDisposition disposition =
+      GetLinkCapturingSourceDisposition(web_contents);
+  if (disposition == WindowOpenDisposition::NEW_POPUP &&
+      !web_contents->GetLastCommittedURL().is_valid()) {
+    return nullptr;
+  }
+
   return base::WrapUnique(
       new LinkCapturingNavigationThrottle(handle, std::move(delegate)));
 }
@@ -258,6 +269,15 @@ ThrottleCheckResult LinkCapturingNavigationThrottle::HandleRequest() {
                                                 is_navigation_from_link);
   if (!launch_link_capture.has_value()) {
     return content::NavigationThrottle::PROCEED;
+  }
+
+  // If this is a prerender navigation that would otherwise launch an app, we
+  // must cancel it. We only want to launch an app once the URL is intentionally
+  // navigated to by the user. We cancel the navigation here so that when the
+  // link is clicked, we'll run NavigationThrottles again. If we leave the
+  // prerendering alive, the activating navigation won't run throttles.
+  if (handle->IsInPrerenderedMainFrame()) {
+    return content::NavigationThrottle::CANCEL_AND_IGNORE;
   }
 
   // Browser & profile keep-alives must be used to keep the browser & profile

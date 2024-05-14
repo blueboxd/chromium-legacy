@@ -18,7 +18,7 @@
 #include "ui/views/view_targeter_delegate.h"
 
 namespace {
-class WebAppNonClientFrameViewAshTest;
+class WebAppNonClientFrameViewChromeOSTest;
 }
 
 namespace views {
@@ -36,8 +36,9 @@ class WebAppToolbarButtonContainer;
 class WebAppFrameToolbarView : public views::AccessiblePaneView,
                                public ToolbarButtonProvider,
                                public views::ViewTargeterDelegate {
+  METADATA_HEADER(WebAppFrameToolbarView, views::AccessiblePaneView)
+
  public:
-  METADATA_HEADER(WebAppFrameToolbarView);
   explicit WebAppFrameToolbarView(BrowserView* browser_view);
   WebAppFrameToolbarView(const WebAppFrameToolbarView&) = delete;
   WebAppFrameToolbarView& operator=(const WebAppFrameToolbarView&) = delete;
@@ -110,11 +111,11 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
  private:
   friend class ImmersiveModeControllerChromeosWebAppBrowserTest;
   friend class WebAppAshInteractiveUITest;
-  friend class WebAppNonClientFrameViewAshTest;
+  friend class WebAppNonClientFrameViewChromeOSTest;
 
   views::View* GetContentSettingContainerForTesting();
 
-  const std::vector<ContentSettingImageView*>&
+  const std::vector<raw_ptr<ContentSettingImageView, VectorExperimental>>&
   GetContentSettingViewsForTesting() const;
 
   void UpdateCachedColors();

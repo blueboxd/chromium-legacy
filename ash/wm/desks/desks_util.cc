@@ -19,6 +19,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/adapters.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -183,8 +184,13 @@ const Desk* GetDeskForContext(aura::Window* context) {
 }
 
 bool ShouldDesksBarBeCreated() {
-  return !display::Screen::GetScreen()->InTabletMode() ||
-         DesksController::Get()->desks().size() > 1;
+  if (display::Screen::GetScreen()->InTabletMode()) {
+    return DesksController::Get()->desks().size() > 1;
+  }
+
+  // If in clamshell mode, and overview was started by faster splitscreen setup,
+  // don't show the desk bar.
+  return !window_util::IsInFasterSplitScreenSetupSession();
 }
 
 ui::Compositor* GetSelectedCompositorForPerformanceMetrics() {
@@ -224,8 +230,9 @@ bool IsZOrderTracked(aura::Window* window) {
              ui::ZOrderLevel::kNormal;
 }
 
-std::optional<size_t> GetWindowZOrder(const std::vector<aura::Window*>& windows,
-                                      aura::Window* window) {
+std::optional<size_t> GetWindowZOrder(
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows,
+    aura::Window* window) {
   size_t position = 0;
   for (aura::Window* w : base::Reversed(windows)) {
     if (IsZOrderTracked(w)) {

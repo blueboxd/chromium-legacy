@@ -5,9 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_BUILDER_H_
 
+#include <optional>
+
 #include "base/types/expected.h"
 #include "components/ml/webnn/graph_validation_utils.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_auto_pad.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_data_type.h"
@@ -24,6 +25,7 @@ namespace blink {
 
 class ExceptionState;
 class MLActivation;
+class MLArgMinMaxOptions;
 class MLBatchNormalizationOptions;
 class MLContext;
 class MLClampOptions;
@@ -33,14 +35,17 @@ class MLEluOptions;
 class MLGatherOptions;
 class MLGemmOptions;
 class MLGraph;
+class MLHardSigmoidOptions;
 class MLInstanceNormalizationOptions;
 class MLLayerNormalizationOptions;
 class MLLeakyReluOptions;
 class MLLinearOptions;
+class MLLstmOptions;
 class MLPadOptions;
 class MLPool2dOptions;
 class MLReduceOptions;
 class MLResample2dOptions;
+class MLSoftplusOptions;
 class MLSplitOptions;
 class MLTransposeOptions;
 class MLOperand;
@@ -80,6 +85,13 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                       ExceptionState& exception_state);
 
   // The order of operations declaration is the same as spec.
+  MLOperand* argMin(const MLOperand* input,
+                    const MLArgMinMaxOptions* options,
+                    ExceptionState& exception_state);
+  MLOperand* argMax(const MLOperand* input,
+                    const MLArgMinMaxOptions* options,
+                    ExceptionState& exception_state);
+
   MLOperand* batchNormalization(const MLOperand* input,
                                 const MLOperand* mean,
                                 const MLOperand* variance,
@@ -134,9 +146,15 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLOperand* greater(const MLOperand* a,
                      const MLOperand* b,
                      ExceptionState& exception_state);
+  MLOperand* greaterOrEqual(const MLOperand* a,
+                            const MLOperand* b,
+                            ExceptionState& exception_state);
   MLOperand* lesser(const MLOperand* a,
                     const MLOperand* b,
                     ExceptionState& exception_state);
+  MLOperand* lesserOrEqual(const MLOperand* a,
+                           const MLOperand* b,
+                           ExceptionState& exception_state);
 
   // Element-wise unary operations
   MLOperand* abs(const MLOperand* input, ExceptionState& exception_state);
@@ -180,6 +198,12 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                   const MLGemmOptions* options,
                   ExceptionState& exception_state);
 
+  MLOperand* hardSigmoid(const MLOperand* input,
+                         const MLHardSigmoidOptions* options,
+                         ExceptionState& exception_state);
+  MLActivation* hardSigmoid(const MLHardSigmoidOptions* options,
+                            ExceptionState& exception_state);
+
   MLOperand* hardSwish(const MLOperand* input, ExceptionState& exception_state);
   MLActivation* hardSwish(ExceptionState& exception_state);
 
@@ -204,6 +228,14 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLActivation* linear(const MLLinearOptions* options,
                        ExceptionState& exception_state);
 
+  HeapVector<Member<const MLOperand>> lstm(const MLOperand* input,
+                                           const MLOperand* weight,
+                                           const MLOperand* recurrent_weight,
+                                           const uint32_t steps,
+                                           const uint32_t hidden_size,
+                                           const MLLstmOptions* options,
+                                           ExceptionState& exception_state);
+
   MLOperand* matmul(const MLOperand* a,
                     const MLOperand* b,
                     ExceptionState& exception_state);
@@ -218,6 +250,9 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLOperand* averagePool2d(const MLOperand* input,
                            const MLPool2dOptions* options,
                            ExceptionState& exception_state);
+  MLOperand* l2Pool2d(const MLOperand* input,
+                      const MLPool2dOptions* options,
+                      ExceptionState& exception_state);
   MLOperand* maxPool2d(const MLOperand* input,
                        const MLPool2dOptions* options,
                        ExceptionState& exception_state);
@@ -279,6 +314,12 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
 
   MLOperand* softmax(const MLOperand* input, ExceptionState& exception_state);
   MLActivation* softmax(ExceptionState& exception_state);
+
+  MLOperand* softplus(const MLOperand* input,
+                      const MLSoftplusOptions* options,
+                      ExceptionState& exception_state);
+  MLActivation* softplus(const MLSoftplusOptions* options,
+                         ExceptionState& exception_state);
 
   MLOperand* softsign(const MLOperand* input, ExceptionState& exception_state);
   MLActivation* softsign(ExceptionState& exception_state);

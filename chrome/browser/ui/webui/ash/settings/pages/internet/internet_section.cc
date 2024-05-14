@@ -777,6 +777,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_INTERNET_MENU_ITEM_DESCRIPTION_WIFI_ONLY},
       {"internetMenuItemDescriptionWifiAndMobileData",
        IDS_OS_SETTINGS_INTERNET_MENU_ITEM_DESCRIPTION_WIFI_AND_MOBILE_DATA},
+      {"internetMenuItemDescriptionInstantHotspotAvailable",
+       IDS_OS_SETTINGS_INTERNET_MENU_ITEM_DESCRIPTION_INSTANT_HOTSPOT_AVAILABLE},
       {"internetAddCellular", IDS_SETTINGS_INTERNET_ADD_CELLULAR},
       {"internetAddConnection", IDS_SETTINGS_INTERNET_ADD_CONNECTION},
       {"internetAddConnectionExpandA11yLabel",
@@ -795,6 +797,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"internetPageTitle", IDS_SETTINGS_INTERNET},
       {"internetSummaryButtonA11yLabel",
        IDS_SETTINGS_INTERNET_SUMMARY_BUTTON_ACCESSIBILITY_LABEL},
+      {"internetToggleTetherA11yLabel",
+       IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL},
       {"internetToggleMobileA11yLabel",
        IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL},
       {"internetToggleWiFiA11yLabel",
@@ -1134,6 +1138,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           ash::features::IsSmdsSupportEnabled());
   html_source->AddBoolean("isHotspotEnabled",
                           ash::features::IsHotspotEnabled());
+  html_source->AddBoolean("isInstantHotspotRebrandEnabled",
+                          ash::features::IsInstantHotspotRebrandEnabled());
   html_source->AddBoolean("isPasspointEnabled",
                           ash::features::IsPasspointARCSupportEnabled());
   html_source->AddBoolean("isPasspointSettingsEnabled",

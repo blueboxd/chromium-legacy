@@ -91,6 +91,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
+#include "base/types/expected.h"
 #include "base/types/pass_key.h"
 #include "build/blink_buildflags.h"
 #include "build/build_config.h"
@@ -297,6 +298,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // command line as overridden. See b/284986126.
   static bool ParseFieldTrialsString(
       const base::StringPiece field_trials_string,
+      bool override_trials,
       std::vector<State>& entries);
 
   // Returns a '--force-fieldtrials' formatted string representing the list of
@@ -579,7 +581,10 @@ class BASE_EXPORT FieldTrialList {
   // through a command line argument to the browser process. Created field
   // trials will be marked "used" for the purposes of active trial reporting
   // if they are prefixed with |kActivationMarker|.
-  static bool CreateTrialsFromString(const std::string& trials_string);
+  // If `override_trials` is true, `FieldTrial::SetOverridden()` is called for
+  // created trials.
+  static bool CreateTrialsFromString(const std::string& trials_string,
+                                     bool override_trials = false);
 
   // Creates trials in a child process from a command line that was produced
   // via PopulateLaunchOptionsWithFieldTrialState() in the parent process.
@@ -752,14 +757,28 @@ class BASE_EXPORT FieldTrialList {
       const ReadOnlySharedMemoryRegion& shm,
       LaunchOptions* launch_options);
 
+  // Indicates failure modes of deserializing the shared memory handle.
+  enum class SharedMemError {
+    kNoError,
+    kUnexpectedTokensCount,
+    kParseInt0Failed,
+    kParseInt4Failed,
+    kUnexpectedHandleType,
+    kInvalidHandle,
+    kGetFDFailed,
+    kDeserializeGUIDFailed,
+    kDeserializeFailed,
+    kCreateTrialsFailed,
+  };
+
   // Deserialization instantiates the shared memory region for FieldTrials from
   // the serialized information contained in |switch_value|. Returns an invalid
   // ReadOnlySharedMemoryRegion on failure.
-  // |fd| is used on non-Mac POSIX platforms to instantiate the shared memory
-  // region via a file descriptor.
-  static ReadOnlySharedMemoryRegion DeserializeSharedMemoryRegionMetadata(
-      const std::string& switch_value,
-      int fd);
+  // |fd_key| is used on non-Mac POSIX platforms as the file descriptor passed
+  // down to the child process for the shared memory region.
+  static expected<ReadOnlySharedMemoryRegion, SharedMemError>
+  DeserializeSharedMemoryRegionMetadata(const std::string& switch_value,
+                                        uint32_t fd_key);
 
   // Takes in |handle_switch| from the command line which represents the shared
   // memory handle for field trials, parses it, and creates the field trials.
@@ -767,8 +786,9 @@ class BASE_EXPORT FieldTrialList {
   // |switch_value| also contains the serialized GUID.
   // |fd_key| is used on non-Mac POSIX platforms as the file descriptor passed
   // down to the child process for the shared memory region.
-  static bool CreateTrialsFromSwitchValue(const std::string& switch_value,
-                                          uint32_t fd_key);
+  static SharedMemError CreateTrialsFromSwitchValue(
+      const std::string& switch_value,
+      uint32_t fd_key);
 #endif  // BUILDFLAG(USE_BLINK)
 
   // Takes an unmapped ReadOnlySharedMemoryRegion, maps it with the correct size
@@ -856,11 +876,13 @@ class BASE_EXPORT FieldTrialList {
 
   // List of observers to be notified when a group is selected for a FieldTrial.
   // Excludes low anonymity field trials.
-  std::vector<Observer*> observers_ GUARDED_BY(lock_);
+  std::vector<raw_ptr<Observer, VectorExperimental>> observers_
+      GUARDED_BY(lock_);
 
   // List of observers to be notified when a group is selected for a FieldTrial.
   // Includes low anonymity field trials.
-  std::vector<Observer*> observers_including_low_anonymity_ GUARDED_BY(lock_);
+  std::vector<raw_ptr<Observer, VectorExperimental>>
+      observers_including_low_anonymity_ GUARDED_BY(lock_);
 
   // Counts the ongoing calls to
   // FieldTrialList::NotifyFieldTrialGroupSelection(). Used to ensure that

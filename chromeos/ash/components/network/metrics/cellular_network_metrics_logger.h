@@ -150,17 +150,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
   static constexpr char kSmdsScanProfileCount[] =
       "Network.Ash.Cellular.ESim.SmdsScan.ProfileCount";
   static constexpr char kSmdsScanOtherDurationSuccess[] =
-      "Network.Ash.Cellular.ESim.SmdsScanDuration.Other.OnSuccess";
+      "Network.Ash.Cellular.ESim.SmdsScanDuration2.Other.OnSuccess";
   static constexpr char kSmdsScanOtherDurationFailure[] =
-      "Network.Ash.Cellular.ESim.SmdsScanDuration.Other.OnFailure";
+      "Network.Ash.Cellular.ESim.SmdsScanDuration2.Other.OnFailure";
   static constexpr char kSmdsScanAndroidDurationSuccess[] =
-      "Network.Ash.Cellular.ESim.SmdsScanDuration.Android.OnSuccess";
+      "Network.Ash.Cellular.ESim.SmdsScanDuration2.Android.OnSuccess";
   static constexpr char kSmdsScanAndroidDurationFailure[] =
-      "Network.Ash.Cellular.ESim.SmdsScanDuration.Android.OnFailure";
+      "Network.Ash.Cellular.ESim.SmdsScanDuration2.Android.OnFailure";
   static constexpr char kSmdsScanGsmaDurationSuccess[] =
-      "Network.Ash.Cellular.ESim.SmdsScanDuration.Gsma.OnSuccess";
+      "Network.Ash.Cellular.ESim.SmdsScanDuration2.Gsma.OnSuccess";
   static constexpr char kSmdsScanGsmaDurationFailure[] =
-      "Network.Ash.Cellular.ESim.SmdsScanDuration.Gsma.OnFailure";
+      "Network.Ash.Cellular.ESim.SmdsScanDuration2.Gsma.OnFailure";
   static constexpr char kESimUserInstallMethod[] =
       "Network.Ash.Cellular.ESim.UserInstall.Method";
   static constexpr char kESimPolicyInstallMethod[] =
@@ -330,10 +330,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
       const std::string& guid,
       const std::optional<std::string>& shill_error) override;
 
-  raw_ptr<NetworkStateHandler, ExperimentalAsh> network_state_handler_ =
+  raw_ptr<NetworkStateHandler> network_state_handler_ = nullptr;
+  raw_ptr<NetworkMetadataStore, DanglingUntriaged> network_metadata_store_ =
       nullptr;
-  raw_ptr<NetworkMetadataStore, DanglingUntriaged | ExperimentalAsh>
-      network_metadata_store_ = nullptr;
 
   base::ScopedObservation<ConnectionInfoMetricsLogger,
                           ConnectionInfoMetricsLogger::Observer>

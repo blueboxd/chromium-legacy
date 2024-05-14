@@ -23,8 +23,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment.AutofillOptionsReferrer;
 import org.chromium.chrome.browser.autofill.settings.SettingsLauncherHelper;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.magic_stack.ModuleRegistry;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics.ThemeSettingsEntry;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
@@ -32,6 +34,7 @@ import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
+import org.chromium.chrome.browser.password_manager.settings.PasswordsPreference;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
@@ -79,6 +82,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
     public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_PASSWORDS = "passwords";
     public static final String PREF_HOMEPAGE = "homepage";
+    public static final String PREF_HOME_MODULES_CONFIG = "home_modules_config";
     public static final String PREF_TOOLBAR_SHORTCUT = "toolbar_shortcut";
     public static final String PREF_UI_THEME = "ui_theme";
     public static final String PREF_PRIVACY = "privacy";
@@ -89,6 +93,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
     public static final String PREF_AUTOFILL_OPTIONS = "autofill_options";
     public static final String PREF_AUTOFILL_ADDRESSES = "autofill_addresses";
     public static final String PREF_AUTOFILL_PAYMENTS = "autofill_payment_methods";
+    public static final String PREF_PLUS_ADDRESSES = "plus_addresses";
 
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
 
@@ -197,6 +202,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
         cachePreferences();
 
         updateAutofillPreferences();
+        updatePlusAddressesPreference();
 
         // TODO(crbug.com/1373451): Remove the passwords managed subtitle for local and UPM
         // unenrolled users who can see it directly in the context of the setting.
@@ -281,9 +287,16 @@ public class MainSettings extends ChromeBaseSettingsFragment
         updateManageSyncPreference();
         updateSearchEnginePreference();
         updateAutofillPreferences();
+        updatePlusAddressesPreference();
 
         Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
         setOnOffSummary(homepagePref, HomepageManager.isHomepageEnabled());
+
+        if (ModuleRegistry.getInstance().hasCustomizableModule()) {
+            addPreferenceIfAbsent(PREF_HOME_MODULES_CONFIG);
+        } else {
+            removePreferenceIfPresent(PREF_HOME_MODULES_CONFIG);
+        }
 
         if (NightModeUtils.isNightModeSupported()) {
             addPreferenceIfAbsent(PREF_UI_THEME)
@@ -400,16 +413,40 @@ public class MainSettings extends ChromeBaseSettingsFragment
                 .setOnPreferenceClickListener(
                         preference ->
                                 SettingsLauncherHelper.showAutofillProfileSettings(getActivity()));
-        findPreference(PREF_PASSWORDS)
-                .setOnPreferenceClickListener(
-                        preference -> {
-                            PasswordManagerLauncher.showPasswordSettings(
-                                    getActivity(),
-                                    ManagePasswordsReferrer.CHROME_SETTINGS,
-                                    mModalDialogManagerSupplier,
-                                    /* managePasskeys= */ false);
-                            return true;
-                        });
+        PasswordsPreference passwordsPreference = findPreference(PREF_PASSWORDS);
+        passwordsPreference.setProfile(getProfile());
+        passwordsPreference.setOnPreferenceClickListener(
+                preference -> {
+                    PasswordManagerLauncher.showPasswordSettings(
+                            getActivity(),
+                            ManagePasswordsReferrer.CHROME_SETTINGS,
+                            mModalDialogManagerSupplier,
+                            /* managePasskeys= */ false);
+                    return true;
+                });
+    }
+
+    private void updatePlusAddressesPreference() {
+        // TODO(crbug.com/1467623): Replace with a static string once name is finalized.
+        String title =
+                ChromeFeatureList.getFieldTrialParamByFeature(
+                        ChromeFeatureList.PLUS_ADDRESSES_ENABLED, "settings-label");
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PLUS_ADDRESSES_ENABLED)
+                && !title.isEmpty()) {
+            addPreferenceIfAbsent(PREF_PLUS_ADDRESSES);
+            Preference preference = findPreference(PREF_PLUS_ADDRESSES);
+            preference.setTitle(title);
+            preference.setOnPreferenceClickListener(
+                    unused -> {
+                        String url =
+                                ChromeFeatureList.getFieldTrialParamByFeature(
+                                        ChromeFeatureList.PLUS_ADDRESSES_ENABLED, "manage-url");
+                        CustomTabActivity.showInfoPage(getContext(), url);
+                        return true;
+                    });
+        } else {
+            removePreferenceIfPresent(PREF_PLUS_ADDRESSES);
+        }
     }
 
     private void setOnOffSummary(Preference pref, boolean isOn) {

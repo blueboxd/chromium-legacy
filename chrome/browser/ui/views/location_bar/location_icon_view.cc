@@ -277,16 +277,28 @@ void LocationIconView::UpdateIcon() {
                      icon_fetch_weak_ptr_factory_.GetWeakPtr()));
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  const bool is_vector_icon = !icon.IsEmpty() && icon.IsVectorIcon() &&
+                              icon.GetVectorIcon().vector_icon();
+  if (is_vector_icon) {
+    const std::string icon_name = icon.GetVectorIcon().vector_icon()->name;
+    if (icon_name == vector_icons::kGoogleSuperGIcon.name ||
+        icon_name == vector_icons::kGoogleGLogoMonochromeIcon.name) {
+      // Remove the inkdrop around the Google G logo since we cannot interact
+      // with it.
+      views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
+    } else {
+      views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+    }
 
-  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
-    bool has_custom_theme =
-        this->GetWidget() && this->GetWidget()->GetCustomTheme();
+    if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
+      bool has_custom_theme =
+          this->GetWidget() && this->GetWidget()->GetCustomTheme();
 
-    if (has_custom_theme && !icon.IsEmpty() && icon.IsVectorIcon() &&
-        icon.GetVectorIcon().vector_icon()->name ==
-            vector_icons::kGoogleSuperGIcon.name) {
-      SetBackground(
-          views::CreateRoundedRectBackground(SK_ColorWHITE, height() / 2));
+      if (has_custom_theme &&
+          icon_name == vector_icons::kGoogleSuperGIcon.name) {
+        SetBackground(
+            views::CreateRoundedRectBackground(SK_ColorWHITE, height() / 2));
+      }
     }
   }
 #endif
@@ -431,7 +443,7 @@ gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
   return size;
 }
 
-BEGIN_METADATA(LocationIconView, IconLabelBubbleView)
+BEGIN_METADATA(LocationIconView)
 ADD_READONLY_PROPERTY_METADATA(int, MinimumLabelTextWidth)
 ADD_READONLY_PROPERTY_METADATA(std::u16string, Text)
 ADD_READONLY_PROPERTY_METADATA(bool, ShowText)

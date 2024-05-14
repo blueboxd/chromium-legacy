@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <stack>
 
 #include "base/dcheck_is_on.h"
@@ -26,7 +27,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -115,7 +115,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // Don't use except for tracing.
   struct TaskDescriptionForTracing {
     TaskType task_type;
-    absl::optional<MainThreadTaskQueue::QueueType> queue_type;
+    std::optional<MainThreadTaskQueue::QueueType> queue_type;
 
     // Required in order to wrap in TraceableState.
     constexpr bool operator!=(const TaskDescriptionForTracing& rhs) const {
@@ -371,7 +371,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   }
 
   TaskPriority find_in_page_priority() const {
-    return main_thread_only().current_policy.find_in_page_priority();
+    return main_thread_only().current_policy.find_in_page_priority;
   }
 
  protected:
@@ -439,7 +439,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void AddAgentGroupScheduler(AgentGroupSchedulerImpl*);
 
   struct AgentGroupSchedulerScope {
-    std::unique_ptr<base::SingleThreadTaskRunner::CurrentHandleOverride>
+    std::unique_ptr<base::SingleThreadTaskRunner::CurrentDefaultHandle>
         single_thread_task_runner_current_handle_override;
     WeakPersistent<AgentGroupScheduler> previous_agent_group_scheduler;
     WeakPersistent<AgentGroupScheduler> current_agent_group_scheduler;
@@ -457,84 +457,27 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   bool IsAnyOrdinaryMainFrameWaitingForFirstMeaningfulPaint() const;
   bool IsAnyOrdinaryMainFrameLoading() const;
 
-  class Policy {
+  struct Policy {
     DISALLOW_NEW();
 
    public:
+    RAILMode rail_mode = RAILMode::kAnimation;
+    bool should_freeze_compositor_task_queue = false;
+    bool should_defer_task_queues = false;
+    bool should_pause_task_queues = false;
+    bool should_pause_task_queues_for_android_webview = false;
+    bool should_prioritize_ipc_tasks = false;
+    TaskPriority find_in_page_priority =
+        FindInPageBudgetPoolController::kFindInPageBudgetNotExhaustedPriority;
+    UseCase use_case = UseCase::kNone;
+
     Policy() = default;
     ~Policy() = default;
 
-    RAILMode& rail_mode() { return rail_mode_; }
-    RAILMode rail_mode() const { return rail_mode_; }
-
-    bool& frozen_when_backgrounded() { return frozen_when_backgrounded_; }
-    bool frozen_when_backgrounded() const { return frozen_when_backgrounded_; }
-
-    bool& should_freeze_compositor_task_queue() {
-      return should_freeze_compositor_task_queue_;
-    }
-    bool should_freeze_compositor_task_queue() const {
-      return should_freeze_compositor_task_queue_;
-    }
-
-    bool& should_defer_task_queues() { return should_defer_task_queues_; }
-    bool should_defer_task_queues() const { return should_defer_task_queues_; }
-
-    bool& should_pause_task_queues() { return should_pause_task_queues_; }
-    bool should_pause_task_queues() const { return should_pause_task_queues_; }
-
-    bool& should_pause_task_queues_for_android_webview() {
-      return should_pause_task_queues_for_android_webview_;
-    }
-    bool should_pause_task_queues_for_android_webview() const {
-      return should_pause_task_queues_for_android_webview_;
-    }
-
-    TaskPriority& find_in_page_priority() { return find_in_page_priority_; }
-    TaskPriority find_in_page_priority() const {
-      return find_in_page_priority_;
-    }
-
-    bool& should_prioritize_ipc_tasks() { return should_prioritize_ipc_tasks_; }
-    bool should_prioritize_ipc_tasks() const {
-      return should_prioritize_ipc_tasks_;
-    }
-
-    UseCase& use_case() { return use_case_; }
-    UseCase use_case() const { return use_case_; }
-
-    bool operator==(const Policy& other) const {
-      return rail_mode_ == other.rail_mode_ &&
-             frozen_when_backgrounded_ == other.frozen_when_backgrounded_ &&
-             should_freeze_compositor_task_queue_ ==
-                 other.should_freeze_compositor_task_queue_ &&
-             should_defer_task_queues_ == other.should_defer_task_queues_ &&
-             should_pause_task_queues_ == other.should_pause_task_queues_ &&
-             should_pause_task_queues_for_android_webview_ ==
-                 other.should_pause_task_queues_for_android_webview_ &&
-             find_in_page_priority_ == other.find_in_page_priority_ &&
-             should_prioritize_ipc_tasks_ ==
-                 other.should_prioritize_ipc_tasks_ &&
-             use_case_ == other.use_case_;
-    }
+    bool operator==(const Policy& other) const = default;
 
     bool IsQueueEnabled(MainThreadTaskQueue* task_queue) const;
-
     void WriteIntoTrace(perfetto::TracedValue context) const;
-
-   private:
-    RAILMode rail_mode_{RAILMode::kAnimation};
-    bool frozen_when_backgrounded_{false};
-    bool should_freeze_compositor_task_queue_{false};
-    bool should_defer_task_queues_{false};
-    bool should_pause_task_queues_{false};
-    bool should_pause_task_queues_for_android_webview_{false};
-    bool should_prioritize_ipc_tasks_{false};
-
-    TaskPriority find_in_page_priority_{
-        FindInPageBudgetPoolController::kFindInPageBudgetNotExhaustedPriority};
-
-    UseCase use_case_{UseCase::kNone};
   };
 
   class TaskDurationMetricTracker;
@@ -646,7 +589,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // enabled/disabled state based on current policy. When triggered from a
   // policy update, |previous_policy| should be populated with the pre-update
   // policy.
-  void UpdateStateForAllTaskQueues(absl::optional<Policy> previous_policy);
+  void UpdateStateForAllTaskQueues(std::optional<Policy> previous_policy);
 
   void UpdateTaskQueueState(
       MainThreadTaskQueue* task_queue,
@@ -678,11 +621,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // Computes the priority for compositing based on the current use case.
   // Returns nullopt if the use case does not need to set the priority.
-  absl::optional<TaskPriority> ComputeCompositorPriorityFromUseCase() const;
+  std::optional<TaskPriority> ComputeCompositorPriorityFromUseCase() const;
 
   // Computes the compositor task queue priority for the next main frame based
   // on the current `RenderingPrioritizationState`.
-  absl::optional<TaskPriority> ComputeCompositorPriorityForMainFrame() const;
+  std::optional<TaskPriority> ComputeCompositorPriorityForMainFrame() const;
 
   void MaybeUpdateIPCTaskQueuePriorityOnTaskCompleted();
 
@@ -799,7 +742,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         rail_mode_for_tracing;  // Don't use except for tracing.
 
     TraceableObjectState<bool, TracingCategory::kTopLevel> renderer_hidden;
-    absl::optional<base::ScopedSampleMetadata> renderer_hidden_metadata;
+    std::optional<base::ScopedSampleMetadata> renderer_hidden_metadata;
     TraceableObjectState<bool, TracingCategory::kTopLevel>
         renderer_backgrounded;
     TraceableState<bool, TracingCategory::kDefault>
@@ -819,10 +762,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     MainThreadMetricsHelper metrics_helper;
     TraceableState<WebRendererProcessType, TracingCategory::kTopLevel>
         process_type;
-    TraceableState<absl::optional<TaskDescriptionForTracing>,
+    TraceableState<std::optional<TaskDescriptionForTracing>,
                    TracingCategory::kInfo>
         task_description_for_tracing;  // Don't use except for tracing.
-    TraceableState<absl::optional<TaskPriority>,
+    TraceableState<std::optional<TaskPriority>,
                    TracingCategory::kInfo>
         task_priority_for_tracing;  // Only used for tracing.
 

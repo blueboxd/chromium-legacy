@@ -9,16 +9,18 @@ import org.chromium.ui.dragdrop.DropDataAndroid;
 
 /** */
 public class ChromeDropDataAndroid extends DropDataAndroid {
-    public final int mTabId;
+    private static final String TAB_DATA_PREFIX = "TabId=";
+    private static final String TAB_DATA_DELIMITER = "\n";
+    public final Tab mTab;
 
     /** Not generated from java */
     ChromeDropDataAndroid(Builder builder) {
         super(null, null, null, null, null);
-        this.mTabId = builder.mTabId;
+        this.mTab = builder.mTab;
     }
 
     public boolean hasTab() {
-        return mTabId != Tab.INVALID_TAB_ID;
+        return mTab != null;
     }
 
     @Override
@@ -26,16 +28,24 @@ public class ChromeDropDataAndroid extends DropDataAndroid {
         return hasTab();
     }
 
+    /** Build clip data text with tab info. */
+    public String buildTabClipDataText() {
+        if (hasTab()) {
+            return mTab.getUrl().getSpec();
+        }
+        return null;
+    }
+
     /** Builder for @{@link ChromeDropDataAndroid} instance. */
     public static class Builder {
-        private int mTabId = Tab.INVALID_TAB_ID;
+        private Tab mTab;
 
         /**
-         * @param tabId to be set in clip data.
+         * @param tab to be set in clip data.
          * @return @{@link ChromeDropDataAndroid.Builder} instance.
          */
-        public Builder withTabId(int tabId) {
-            this.mTabId = tabId;
+        public Builder withTab(Tab tab) {
+            this.mTab = tab;
             return this;
         }
 

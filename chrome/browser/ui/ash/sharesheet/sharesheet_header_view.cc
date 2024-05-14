@@ -19,6 +19,7 @@
 #include "ash/style/typography.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -102,8 +103,9 @@ namespace sharesheet {
 // ------------------------------------------------------
 
 class SharesheetHeaderView::SharesheetImagePreview : public views::View {
+  METADATA_HEADER(SharesheetImagePreview, views::View)
+
  public:
-  METADATA_HEADER(SharesheetImagePreview);
   explicit SharesheetImagePreview(size_t file_count) {
     auto* color_provider = AshColorProvider::Get();
     const bool is_dark_mode_enabled =
@@ -236,7 +238,7 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
     AddImageViewTo(parent_view, size);
   }
 
-  std::vector<RoundedImageView*> image_views_;
+  std::vector<raw_ptr<RoundedImageView, VectorExperimental>> image_views_;
 };
 
 BEGIN_METADATA(SharesheetHeaderView, SharesheetImagePreview, views::View)
@@ -492,7 +494,7 @@ void SharesheetHeaderView::OnImageLoaded(const gfx::Size& size, size_t index) {
   image_preview_->GetImageViewAt(index)->SchedulePaint();
 }
 
-BEGIN_METADATA(SharesheetHeaderView, views::View)
+BEGIN_METADATA(SharesheetHeaderView)
 END_METADATA
 
 }  // namespace sharesheet

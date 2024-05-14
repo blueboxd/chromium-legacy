@@ -100,7 +100,7 @@ TEST_F(HighlightStyleUtilsTest, CustomPropertyInheritance) {
       To<HTMLDivElement>(GetDocument().QuerySelector(AtomicString("div")));
   Window().getSelection()->setBaseAndExtent(div_node, 0, div_node, 1);
   Compositor().BeginFrame();
-  absl::optional<Color> previous_layer_color;
+  std::optional<Color> previous_layer_color;
 
   std::unique_ptr<PaintController> controller{
       std::make_unique<PaintController>()};
@@ -148,7 +148,7 @@ TEST_F(HighlightStyleUtilsTest, CustomPropertyInheritanceNoRoot) {
   Compositor().BeginFrame();
 
   const ComputedStyle& div_style = div_node->ComputedStyleRef();
-  absl::optional<Color> previous_layer_color;
+  std::optional<Color> previous_layer_color;
   Color background_color = HighlightStyleUtils::HighlightBackgroundColor(
       GetDocument(), div_style, div_node, previous_layer_color,
       kPseudoIdSelection);
@@ -293,6 +293,121 @@ TEST_F(HighlightStyleUtilsTest, CustomHighlightsNotOverlapping) {
             To<CustomHighlightMarker>(marker)->GetHighlightName());
   EXPECT_EQ(5u, marker->StartOffset());
   EXPECT_EQ(9u, marker->EndOffset());
+}
+
+TEST_F(HighlightStyleUtilsTest, ContainerMetricsFromOriginatingElement) {
+  ScopedHighlightInheritanceForTest highlight_inheritance_enabled(true);
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <head>
+      <style>
+        .wrapper {
+          container: wrapper / size;
+          width: 200px;
+          height: 100px;
+        }
+        @container wrapper (width > 100px) {
+          ::highlight(highlight1) {
+            text-underline-offset: 2cqw;
+            text-decoration-line: underline;
+            text-decoration-color: green;
+            text-decoration-thickness: 4cqh;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="wrapper">
+        <div id="h1">With container size</div>
+      </div>
+      <script>
+        let r1 = new Range();
+        r1.setStart(h1, 0);
+        r1.setEnd(h1, 1);
+        CSS.highlights.set("highlight1", new Highlight(r1));
+      </script>
+    </body>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* div_node =
+      To<HTMLDivElement>(GetDocument().QuerySelector(AtomicString("#h1")));
+  EXPECT_TRUE(div_node);
+  const ComputedStyle& div_style = div_node->ComputedStyleRef();
+
+  const ComputedStyle* div_pseudo_style =
+      HighlightStyleUtils::HighlightPseudoStyle(
+          div_node, div_style, kPseudoIdHighlight, AtomicString("highlight1"));
+
+  EXPECT_TRUE(div_pseudo_style->HasAppliedTextDecorations());
+  const AppliedTextDecoration& text_decoration =
+      div_pseudo_style->AppliedTextDecorations()[0];
+  TextDecorationThickness thickness = text_decoration.Thickness();
+  EXPECT_EQ(FloatValueForLength(thickness.Thickness(), 1), 4);
+  Length offset = text_decoration.UnderlineOffset();
+  EXPECT_EQ(FloatValueForLength(offset, 1), 4);
+}
+
+TEST_F(HighlightStyleUtilsTest, ContainerIsOriginatingElement) {
+  ScopedHighlightInheritanceForTest highlight_inheritance_enabled(true);
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <head>
+      <style>
+        .wrapper {
+          container: wrapper / size;
+          width: 200px;
+          height: 100px;
+        }
+        @container (width > 100px) {
+          .wrapper::highlight(highlight1) {
+            text-underline-offset: 2cqw;
+            text-decoration-line: underline;
+            text-decoration-color: green;
+            text-decoration-thickness: 4cqh;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div id="h1" class="wrapper">With container size</div>
+      <script>
+        let r1 = new Range();
+        r1.setStart(h1, 0);
+        r1.setEnd(h1, 1);
+        CSS.highlights.set("highlight1", new Highlight(r1));
+      </script>
+    </body>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* div_node =
+      To<HTMLDivElement>(GetDocument().QuerySelector(AtomicString("#h1")));
+  EXPECT_TRUE(div_node);
+  const ComputedStyle& div_style = div_node->ComputedStyleRef();
+
+  const ComputedStyle* div_pseudo_style =
+      HighlightStyleUtils::HighlightPseudoStyle(
+          div_node, div_style, kPseudoIdHighlight, AtomicString("highlight1"));
+
+  EXPECT_TRUE(div_pseudo_style);
+  EXPECT_TRUE(div_pseudo_style->HasAppliedTextDecorations());
+  const AppliedTextDecoration& text_decoration =
+      div_pseudo_style->AppliedTextDecorations()[0];
+  TextDecorationThickness thickness = text_decoration.Thickness();
+  EXPECT_EQ(FloatValueForLength(thickness.Thickness(), 1), 4);
+  Length offset = text_decoration.UnderlineOffset();
+  EXPECT_EQ(FloatValueForLength(offset, 1), 4);
 }
 
 }  // namespace blink

@@ -26,6 +26,9 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/test_future.h"
 #include "base/version.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_system_session.h"
@@ -54,6 +57,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "chromeos/ash/components/standalone_browser/standalone_browser_features.h"
@@ -203,7 +207,7 @@ class AppLaunchTracker : public extensions::TestEventRouter::EventObserver {
 
  private:
   const std::string app_id_;
-  raw_ptr<extensions::TestEventRouter, ExperimentalAsh> event_router_;
+  raw_ptr<extensions::TestEventRouter> event_router_;
   int kiosk_launch_count_ = 0;
 };
 
@@ -341,11 +345,9 @@ class TestKioskLoaderVisitor
   }
 
  private:
-  const raw_ptr<content::BrowserContext, ExperimentalAsh> browser_context_;
-  const raw_ptr<extensions::ExtensionRegistry, ExperimentalAsh>
-      extension_registry_;
-  const raw_ptr<extensions::ExtensionService, ExperimentalAsh>
-      extension_service_;
+  const raw_ptr<content::BrowserContext> browser_context_;
+  const raw_ptr<extensions::ExtensionRegistry> extension_registry_;
+  const raw_ptr<extensions::ExtensionService> extension_service_;
 
   std::set<std::string> pending_crx_files_;
   std::set<std::string> pending_update_urls_;
@@ -500,8 +502,7 @@ class ScopedKioskAppManagerOverrides : public KioskChromeAppManager::Overrides {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ScopedCrosSettingsTestHelper> accounts_settings_helper_;
 
-  raw_ptr<chromeos::TestExternalCache, DanglingUntriaged | ExperimentalAsh>
-      external_cache_;
+  raw_ptr<chromeos::TestExternalCache, DanglingUntriaged> external_cache_;
   bool kiosk_system_session_initialized_ = false;
 };
 
@@ -737,6 +738,9 @@ class StartupAppLauncherTest : public StartupAppLauncherNoCreateTest {
   // testing::Test:
   void SetUp() override {
     StartupAppLauncherNoCreateTest::SetUp();
+    // Some tests depend on AppService, so wait AppService to be ready.
+    WaitForAppServiceProxyReady(
+        apps::AppServiceProxyFactory::GetForProfile(profile()));
 
     startup_app_launcher_ = CreateStartupAppLauncher();
   }
@@ -1612,7 +1616,7 @@ class StartupAppLauncherUsingLacrosTest : public testing::Test {
       fake_user_manager_{std::make_unique<ash::FakeChromeUserManager>()};
   TestingProfileManager testing_profile_manager_{
       TestingBrowserProcess::GetGlobal()};
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile> profile_;
   FakeChromeKioskLaunchController launch_controller_;
   crosapi::FakeBrowserManager browser_manager_;
 

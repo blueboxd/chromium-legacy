@@ -64,7 +64,12 @@ class IncludeFinderPPCallbacks : public clang::PPCallbacks {
                           clang::OptionalFileEntryRef file,
                           llvm::StringRef search_path,
                           llvm::StringRef relative_path,
+#if defined(LLVM_FORCE_HEAD_REVISION)
+                          const clang::Module* SuggestedModule,
+                          bool ModuleImported,
+#else
                           const clang::Module* imported,
+#endif
                           clang::SrcMgr::CharacteristicKind /*file_type*/
                           ) override;
   void EndOfMainFile() override;
@@ -131,7 +136,8 @@ void IncludeFinderPPCallbacks::FileChanged(
       current_files_.push(last_inclusion_directive_);
     } else {
       current_files_.push(std::string(
-          source_manager_->getFileEntryForID(source_manager_->getMainFileID())
+          source_manager_
+              ->getFileEntryRefForID(source_manager_->getMainFileID())
               ->getName()));
     }
   } else if (reason == ExitFile) {
@@ -161,7 +167,12 @@ void IncludeFinderPPCallbacks::InclusionDirective(
     clang::OptionalFileEntryRef file,
     llvm::StringRef search_path,
     llvm::StringRef relative_path,
+#if defined(LLVM_FORCE_HEAD_REVISION)
+    const clang::Module* SuggestedModule,
+    bool ModuleImported,
+#else
     const clang::Module* imported,
+#endif
     clang::SrcMgr::CharacteristicKind /*file_type*/
 ) {
   if (!file)
@@ -216,8 +227,9 @@ string IncludeFinderPPCallbacks::DoubleSlashSystemHeaders(
 }
 
 void IncludeFinderPPCallbacks::EndOfMainFile() {
-  const clang::FileEntry* main_file =
-      source_manager_->getFileEntryForID(source_manager_->getMainFileID());
+  clang::OptionalFileEntryRef main_file =
+      source_manager_->getFileEntryRefForID(source_manager_->getMainFileID());
+  assert(main_file.has_value());
 
   SmallVector<char, 100> main_source_file_real_path;
   SmallVector<char, 100> main_file_name_real_path;

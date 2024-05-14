@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/capture_mode/base_capture_mode_session.h"
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
@@ -159,6 +159,10 @@ void BaseCaptureModeSession::MaybeUpdateSelfieCamInSessionVisibility() {
   if (!controller_->is_recording_in_progress()) {
     camera_controller->SetShouldShowPreview(controller_->type() ==
                                             CaptureModeType::kVideo);
+    // The selfie camera may have already been visible from before, but had the
+    // wrong parent and now needs to be updated (e.g. due to a change in the
+    // capture type).
+    camera_controller->MaybeReparentPreviewWidget();
   }
 }
 

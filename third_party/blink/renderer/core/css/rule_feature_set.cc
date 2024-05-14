@@ -89,6 +89,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoNthLastOfType:
     case CSSSelector::kPseudoPart:
     case CSSSelector::kPseudoState:
+    case CSSSelector::kPseudoStateDeprecatedSyntax:
     case CSSSelector::kPseudoLink:
     case CSSSelector::kPseudoVisited:
     case CSSSelector::kPseudoAny:
@@ -131,7 +132,6 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoNot:
     case CSSSelector::kPseudoPlaceholder:
     case CSSSelector::kPseudoDetailsContent:
-    case CSSSelector::kPseudoDetailsSummary:
     case CSSSelector::kPseudoFileSelectorButton:
     case CSSSelector::kPseudoResizer:
     case CSSSelector::kPseudoRoot:
@@ -171,7 +171,6 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoDefined:
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoSpatialNavigationFocus:
-    case CSSSelector::kPseudoSpatialNavigationInterest:
     case CSSSelector::kPseudoHasDatalist:
     case CSSSelector::kPseudoIsHtml:
     case CSSSelector::kPseudoListBox:
@@ -180,6 +179,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoOpen:
     case CSSSelector::kPseudoClosed:
     case CSSSelector::kPseudoDialogInTopLayer:
+    case CSSSelector::kPseudoSelectAuthorButton:
+    case CSSSelector::kPseudoSelectAuthorDatalist:
     case CSSSelector::kPseudoPopoverInTopLayer:
     case CSSSelector::kPseudoPopoverOpen:
     case CSSSelector::kPseudoSlotted:
@@ -721,6 +722,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoReadOnly:
       case CSSSelector::kPseudoReadWrite:
       case CSSSelector::kPseudoState:
+      case CSSSelector::kPseudoStateDeprecatedSyntax:
       case CSSSelector::kPseudoUserInvalid:
       case CSSSelector::kPseudoUserValid:
       case CSSSelector::kPseudoValid:
@@ -745,7 +747,6 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoVideoPersistent:
       case CSSSelector::kPseudoVideoPersistentAncestor:
       case CSSSelector::kPseudoXrOverlay:
-      case CSSSelector::kPseudoSpatialNavigationInterest:
       case CSSSelector::kPseudoHasDatalist:
       case CSSSelector::kPseudoMultiSelectFocus:
       case CSSSelector::kPseudoModal:

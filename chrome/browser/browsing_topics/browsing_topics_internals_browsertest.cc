@@ -353,7 +353,7 @@ PrivacySandboxAdsAPIsOverride: disabled
 OverridePrivacySandboxSettingsLocalTesting: disabled
 BrowsingTopicsBypassIPIsPubliclyRoutableCheck: disabled
 BrowsingTopicsDocumentAPI: enabled
-Configuration version: 1
+Configuration version: 2
 BrowsingTopicsParameters: disabled
 BrowsingTopicsParameters:number_of_epochs_to_expose: 3
 BrowsingTopicsParameters:time_period_per_epoch: 7d-0h-0m-0s
@@ -466,7 +466,7 @@ PrivacySandboxAdsAPIsOverride: enabled
 OverridePrivacySandboxSettingsLocalTesting: disabled
 BrowsingTopicsBypassIPIsPubliclyRoutableCheck: disabled
 BrowsingTopicsDocumentAPI: enabled
-Configuration version: 1
+Configuration version: 2
 BrowsingTopicsParameters: enabled
 BrowsingTopicsParameters:number_of_epochs_to_expose: 3
 BrowsingTopicsParameters:time_period_per_epoch: 0d-0h-0m-15s
@@ -719,8 +719,8 @@ Model file path: /test_path/test_model.tflite
                      /*world_id=*/1));
 
   EXPECT_EQ(GetHostsClassificationResultTableContent(),
-            R"(foo1.com|1. Arts & entertainment;2. Acting & theater;|
-foo2.com|3. Comics;4. Concerts & music festivals;5. Dance;|
+            R"(foo1.com|1. Arts & Entertainment;2. Acting & Theater;|
+foo2.com|3. Comics;4. Concerts & Music Festivals;5. Dance;|
 )");
 
   EXPECT_TRUE(GetHostsClassificationInputValidationError().empty());

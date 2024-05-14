@@ -65,21 +65,15 @@ const PolicyToPreferenceMapEntry kDefaultSearchPolicyDataMap[] = {
      base::Value::Type::BOOLEAN},
     {key::kDefaultSearchProviderName, DefaultSearchManager::kShortName,
      base::Value::Type::STRING},
-    {key::kDefaultSearchProviderKeyword, DefaultSearchManager::kKeyword,
-     base::Value::Type::STRING},
     {key::kDefaultSearchProviderSearchURL, DefaultSearchManager::kURL,
      base::Value::Type::STRING},
     {key::kDefaultSearchProviderSuggestURL,
      DefaultSearchManager::kSuggestionsURL, base::Value::Type::STRING},
-    {key::kDefaultSearchProviderIconURL, DefaultSearchManager::kFaviconURL,
-     base::Value::Type::STRING},
     {key::kDefaultSearchProviderEncodings,
      DefaultSearchManager::kInputEncodings, base::Value::Type::LIST},
     {key::kDefaultSearchProviderAlternateURLs,
      DefaultSearchManager::kAlternateURLs, base::Value::Type::LIST},
     {key::kDefaultSearchProviderImageURL, DefaultSearchManager::kImageURL,
-     base::Value::Type::STRING},
-    {key::kDefaultSearchProviderNewTabURL, DefaultSearchManager::kNewTabURL,
      base::Value::Type::STRING},
     {key::kDefaultSearchProviderSearchURLPostParams,
      DefaultSearchManager::kSearchURLPostParams, base::Value::Type::STRING},
@@ -92,6 +86,10 @@ const PolicyToPreferenceMapEntry kDefaultSearchPolicyDataMap[] = {
     {key::kDefaultSearchProviderContextMenuAccessAllowed,
      prefs::kDefaultSearchProviderContextMenuAccessAllowed,
      base::Value::Type::BOOLEAN},
+    {key::kDefaultSearchProviderKeyword, DefaultSearchManager::kKeyword,
+     base::Value::Type::STRING},
+    {key::kDefaultSearchProviderNewTabURL, DefaultSearchManager::kNewTabURL,
+     base::Value::Type::STRING},
 #endif
 };
 
@@ -166,22 +164,16 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                    prefs::kDefaultSearchProviderEnabled, dict);
   SetStringInPref(policies, key::kDefaultSearchProviderName,
                   DefaultSearchManager::kShortName, dict);
-  SetStringInPref(policies, key::kDefaultSearchProviderKeyword,
-                  DefaultSearchManager::kKeyword, dict);
   SetStringInPref(policies, key::kDefaultSearchProviderSearchURL,
                   DefaultSearchManager::kURL, dict);
   SetStringInPref(policies, key::kDefaultSearchProviderSuggestURL,
                   DefaultSearchManager::kSuggestionsURL, dict);
-  SetStringInPref(policies, key::kDefaultSearchProviderIconURL,
-                  DefaultSearchManager::kFaviconURL, dict);
   SetListInPref(policies, key::kDefaultSearchProviderEncodings,
                 DefaultSearchManager::kInputEncodings, dict);
   SetListInPref(policies, key::kDefaultSearchProviderAlternateURLs,
                 DefaultSearchManager::kAlternateURLs, dict);
   SetStringInPref(policies, key::kDefaultSearchProviderImageURL,
                   DefaultSearchManager::kImageURL, dict);
-  SetStringInPref(policies, key::kDefaultSearchProviderNewTabURL,
-                  DefaultSearchManager::kNewTabURL, dict);
   SetStringInPref(policies, key::kDefaultSearchProviderSearchURLPostParams,
                   DefaultSearchManager::kSearchURLPostParams, dict);
   SetStringInPref(policies, key::kDefaultSearchProviderSuggestURLPostParams,
@@ -192,9 +184,13 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   SetBooleanInPref(policies,
                    key::kDefaultSearchProviderContextMenuAccessAllowed,
                    prefs::kDefaultSearchProviderContextMenuAccessAllowed, dict);
-  size_t policyCount = 14;
-#else
+  SetStringInPref(policies, key::kDefaultSearchProviderKeyword,
+                  DefaultSearchManager::kKeyword, dict);
+  SetStringInPref(policies, key::kDefaultSearchProviderNewTabURL,
+                  DefaultSearchManager::kNewTabURL, dict);
   size_t policyCount = 13;
+#else
+  size_t policyCount = 10;
 #endif
 
   CHECK_EQ(policyCount, std::size(kDefaultSearchPolicyDataMap));

@@ -143,7 +143,7 @@ class MockPasswordManagerClient
  private:
   mutable FakeNetworkContext network_context_;
   raw_ptr<PrefService> const prefs_;
-  password_manager::PasswordStoreInterface* const store_;
+  const raw_ptr<password_manager::PasswordStoreInterface> store_;
 };
 
 // Creates PasswordController with the given `pref_service`, `web_state` and a
@@ -506,8 +506,10 @@ class PasswordControllerTest : public PlatformTest {
   web::ScopedTestingWebClient web_client_;
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  std::unique_ptr<web::WebState> web_state_;
+  // `autofill_client_` mocks KeyedServices, which need to outlive the
+  // `BrowserAutofillManager` owned by frame (`web_state`).
   autofill::TestAutofillClient autofill_client_;
+  std::unique_ptr<web::WebState> web_state_;
 
   // SuggestionController for testing.
   PasswordsTestSuggestionController* suggestionController_;
@@ -1313,7 +1315,7 @@ class PasswordControllerTestSimple : public PlatformTest {
   scoped_refptr<password_manager::MockPasswordStoreInterface> store_;
   MockPasswordManagerClient* weak_client_;
   web::FakeWebState web_state_;
-  web::FakeWebFramesManager* web_frames_manager_;
+  raw_ptr<web::FakeWebFramesManager> web_frames_manager_;
 };
 
 TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
@@ -1322,7 +1324,7 @@ TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   SharedPasswordController* sharedPasswordController =
       passwordController_.sharedPasswordController;
 
-  auto web_frame = web::FakeWebFrame::CreateMainWebFrame(GURL::EmptyGURL());
+  auto web_frame = web::FakeWebFrame::CreateMainWebFrame(GURL());
   web_frame->set_browser_state(browser_state_.get());
   web::WebFrame* main_web_frame = web_frame.get();
   web_frames_manager_->AddWebFrame(std::move(web_frame));

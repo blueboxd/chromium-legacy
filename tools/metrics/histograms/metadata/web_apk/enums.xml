@@ -50,6 +50,12 @@ chromium-metrics-reviews@google.com.
   <int value="12" label="IPH shown, then install via BottomSheet (API)"/>
 </enum>
 
+<enum name="SegmentationResult">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="Don't show"/>
+  <int value="2" label="Show install prompt"/>
+</enum>
+
 <enum name="WebApkGooglePlayInstallResult">
   <int value="0" label="Success"/>
   <int value="1" label="Install delegate unavailable"/>
@@ -125,13 +131,6 @@ chromium-metrics-reviews@google.com.
   <int value="9" label="Download icon and hash error"/>
 </enum>
 
-<enum name="WebApkUpdateManifestResult">
-  <int value="0" label="Treated as another WebAPK"/>
-  <int value="1"
-      label="Treated as another WebAPK for legacy WebAPK(without ID)"/>
-  <int value="2" label="Found a manifest for update"/>
-</enum>
-
 <enum name="WebApkUpdateRequestQueued">
   <int value="0" label="Queued for the first time"/>
   <int value="1" label="Queued for the second time"/>
@@ -143,11 +142,6 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Sent when WebAPK is moved to background (deprecated)"/>
   <int value="2" label="Sent by forcing an update (deprecated)"/>
   <int value="3" label="Sent when WebAPK is closed"/>
-</enum>
-
-<enum name="WebApkUserTheme">
-  <int value="0" label="Light Theme"/>
-  <int value="1" label="Dark Theme"/>
 </enum>
 
 </enums>

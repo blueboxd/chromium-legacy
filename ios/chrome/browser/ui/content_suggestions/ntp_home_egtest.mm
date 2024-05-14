@@ -5,9 +5,12 @@
 #import "base/apple/foundation_util.h"
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
+#import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "build/branding_buildflags.h"
+#import "components/feature_engagement/public/feature_constants.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
+#import "components/search_engines/search_engines_switches.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/search_engines/model/search_engines_app_interface.h"
@@ -36,6 +39,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/test_switches.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
@@ -126,9 +130,7 @@ id<GREYMatcher> mostlyNotVisible() {
 
 + (void)setUpForTestCase {
   [super setUpForTestCase];
-  // Mark What's New as already-seen so it does not override Bookmarks.
-  [ChromeEarlGrey setUserDefaultsObject:@YES forKey:kWhatsNewUsageEntryKey];
-  [ChromeEarlGrey setUserDefaultsObject:@YES forKey:kWhatsNewM116UsageEntryKey];
+
   [NTPHomeTestCase setUpHelper];
 }
 
@@ -143,9 +145,6 @@ id<GREYMatcher> mostlyNotVisible() {
 
 + (void)tearDown {
   [self closeAllTabs];
-  // Clean up What's New already-seen.
-  [ChromeEarlGrey removeUserDefaultsObjectForKey:kWhatsNewUsageEntryKey];
-  [ChromeEarlGrey setUserDefaultsObject:@YES forKey:kWhatsNewM116UsageEntryKey];
 
   [super tearDown];
 }
@@ -170,6 +169,14 @@ id<GREYMatcher> mostlyNotVisible() {
   if ([self isRunningTest:@selector(testMinimumHeight)]) {
     config.features_enabled.push_back(kMagicStack);
   }
+
+  if ([self isRunningTest:@selector(testCollectionShortcuts)]) {
+    // This ensures that the test will not fail when What's New is updated.
+    config.additional_args.push_back(base::StringPrintf(
+        "--disable-features=%s",
+        feature_engagement::kIPHWhatsNewUpdatedFeature.name));
+  }
+
   return config;
 }
 
@@ -203,6 +210,10 @@ id<GREYMatcher> mostlyNotVisible() {
 
 // Tests that the collections shortcut are displayed and working.
 - (void)testCollectionShortcuts {
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
   // Close NTP and reopen.
   [ChromeEarlGrey closeAllTabs];
   [ChromeEarlGrey openNewTab];
@@ -272,9 +283,17 @@ id<GREYMatcher> mostlyNotVisible() {
 - (void)MAYBE_testCollectionShortcutsWithWhatsNew {
   AppLaunchConfiguration config = self.appConfigurationForTestCase;
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  [ChromeEarlGrey setUserDefaultsObject:@NO forKey:kWhatsNewM116UsageEntryKey];
-
+  // This ensures that the test will not fail when What's New has already been
+  // opened during testing.
+  config.iph_feature_enabled =
+      feature_engagement::kIPHWhatsNewUpdatedFeature.name;
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Navigate
+  // TODO(crbug.com/1510484): The FET is not ready upon app launch in the NTP.
+  // Consequently, close NTP and reopen the NTP where the FET becomes ready.
+  [ChromeEarlGrey closeAllTabs];
+  [ChromeEarlGrey openNewTab];
 
   // Check the What's New.
   [[EarlGrey
@@ -1189,12 +1208,14 @@ id<GREYMatcher> mostlyNotVisible() {
 
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                                  error:nil];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-        performAction:grey_scrollInDirection(kGREYDirectionDown, 100)];
-  }
+  id<GREYMatcher> magicStackScrollView =
+      grey_accessibilityID(kMagicStackScrollViewAccessibilityIdentifier);
+
+  // Scroll down to find the MagicStack.
+  [[[EarlGrey selectElementWithMatcher:magicStackScrollView]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100.0f)
+      onElementWithMatcher:chrome_test_util::NTPCollectionView()]
+      assertWithMatcher:grey_notNil()];
 
   // Verify Most Visited Tiles module title is visible.
   [[EarlGrey selectElementWithMatcher:
@@ -1203,10 +1224,11 @@ id<GREYMatcher> mostlyNotVisible() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Swipe to next module
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kMagicStackScrollViewAccessibilityIdentifier)]
-      performAction:grey_scrollInDirection(kGREYDirectionRight, 343)];
+  // Need to swipe at least half of the widest a module can be.
+  CGFloat moduleSwipeAmount = 250;
+  [[EarlGrey selectElementWithMatcher:magicStackScrollView]
+      performAction:GREYScrollInDirectionWithStartPoint(
+                        kGREYDirectionRight, moduleSwipeAmount, 0.9, 0.5)];
 
   // Verify Shortcuts module title is visible.
   [[EarlGrey selectElementWithMatcher:
@@ -1239,10 +1261,9 @@ id<GREYMatcher> mostlyNotVisible() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Swipe back to first module
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kMagicStackScrollViewAccessibilityIdentifier)]
-      performAction:grey_swipeFastInDirection(kGREYDirectionRight)];
+  [[EarlGrey selectElementWithMatcher:magicStackScrollView]
+      performAction:GREYScrollInDirectionWithStartPoint(
+                        kGREYDirectionLeft, moduleSwipeAmount, 0.10, 0.5)];
 
   // Verify Most Visited Tiles module title is visible.
   [[EarlGrey selectElementWithMatcher:
@@ -1285,9 +1306,7 @@ id<GREYMatcher> mostlyNotVisible() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Sign out
-  [SigninEarlGreyUI
-      signOutWithConfirmationChoice:SignOutConfirmationChoiceClearData];
+  [SigninEarlGreyUI signOut];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPLogo()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -1515,6 +1534,8 @@ id<GREYMatcher> mostlyNotVisible() {
   // TODO(crbug.com/1350826): Adapt the test with launch of trending queries.
   AppLaunchConfiguration config = [self appConfigurationForTestCase];
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  config.additional_args.push_back(std::string("--") +
+                                   switches::kDisableSearchEngineChoiceScreen);
   // TODO(crbug.com/1403077): Reenable the discover feed sync promo feature
   config.features_disabled.push_back(kEnableDiscoverFeedTopSyncPromo);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
@@ -1550,8 +1571,7 @@ id<GREYMatcher> mostlyNotVisible() {
   // Opens settings menu and ensures that Discover setting is not present.
   [self checkDiscoverSettingsToggleVisible:NO];
 
-  [SigninEarlGreyUI
-      signOutWithConfirmationChoice:SignOutConfirmationChoiceClearData];
+  [SigninEarlGreyUI signOut];
 
   // The feed label should be visible on sign-out.
   [self checkFeedLabelForFeedVisible:YES];

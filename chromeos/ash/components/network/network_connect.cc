@@ -105,7 +105,7 @@ class NetworkConnectImpl : public NetworkConnect {
   void ConfigureSetProfileSucceeded(const std::string& network_id,
                                     base::Value::Dict properties_to_set);
 
-  raw_ptr<Delegate, ExperimentalAsh> delegate_;
+  raw_ptr<Delegate> delegate_;
   base::WeakPtrFactory<NetworkConnectImpl> weak_factory_{this};
 };
 
@@ -182,7 +182,7 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
     return;
   }
 
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN();
 }
 
 // If |shared| is true, sets |profile_path| to the shared profile path.

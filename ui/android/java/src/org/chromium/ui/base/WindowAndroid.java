@@ -86,7 +86,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // Error code returned when an Intent fails to start an Activity.
     public static final int START_INTENT_FAILURE = -1;
 
-    private boolean mWindowisWideColorGamut;
+    private boolean mIsDestroyed;
 
     // We use a weak reference here to prevent this from leaking in WebView.
     private final ImmutableWeakReference<Context> mContextRef;
@@ -605,10 +605,18 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         return null;
     }
 
+    /**
+     * @return Whether this instance is destroyed.
+     */
+    public boolean isDestroyed() {
+        return mIsDestroyed;
+    }
+
     /** Destroys the c++ WindowAndroid object if one has been created. */
     @CalledByNative
     public void destroy() {
         LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
+        mIsDestroyed = true;
         if (mNativeWindowAndroid != 0) {
             // Native code clears |mNativeWindowAndroid|.
             WindowAndroidJni.get().destroy(mNativeWindowAndroid, WindowAndroid.this);
@@ -990,11 +998,11 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
                 case Surface.ROTATION_0:
                     return OverlayTransform.NONE;
                 case Surface.ROTATION_90:
-                    return OverlayTransform.ROTATE_90;
+                    return OverlayTransform.ROTATE_CLOCKWISE_90;
                 case Surface.ROTATION_180:
-                    return OverlayTransform.ROTATE_180;
+                    return OverlayTransform.ROTATE_CLOCKWISE_180;
                 case Surface.ROTATION_270:
-                    return OverlayTransform.ROTATE_270;
+                    return OverlayTransform.ROTATE_CLOCKWISE_270;
                 default:
                     return OverlayTransform.NONE;
             }

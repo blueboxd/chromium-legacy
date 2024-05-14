@@ -11,24 +11,27 @@
 #include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/game_dashboard/game_dashboard_button.h"
+#include "ash/game_dashboard/game_dashboard_constants.h"
 #include "ash/game_dashboard/game_dashboard_context_test_api.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/game_dashboard/game_dashboard_main_menu_view.h"
 #include "ash/game_dashboard/game_dashboard_test_base.h"
 #include "ash/game_dashboard/game_dashboard_toolbar_view.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
-#include "ash/game_dashboard/game_dashboard_widget.h"
 #include "ash/game_dashboard/test_game_dashboard_delegate.h"
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/color_palette_controller.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/switch.h"
+#include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "ash/system/unified/feature_tile.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -50,10 +53,6 @@ namespace ash {
 
 using ToolbarSnapLocation = GameDashboardContext::ToolbarSnapLocation;
 
-// Toolbar padding copied from `GameDashboardContext`.
-static const int kToolbarEdgePadding = 10;
-static constexpr gfx::Rect kAppBounds = gfx::Rect(50, 50, 800, 400);
-
 // Sub-label strings.
 const std::u16string& hidden_label = u"Hidden";
 const std::u16string& visible_label = u"Visible";
@@ -67,10 +66,34 @@ class GameDashboardContextTest : public GameDashboardTestBase {
   GameDashboardContextTest& operator=(const GameDashboardContextTest&) = delete;
   ~GameDashboardContextTest() override = default;
 
+  void SetUp() override {
+    GameDashboardTestBase::SetUp();
+
+    // Disable the welcome dialog by default.
+    active_user_prefs_ =
+        Shell::Get()->session_controller()->GetActivePrefService();
+    ASSERT_TRUE(active_user_prefs_);
+    SetShowWelcomeDialog(false);
+  }
+
   void TearDown() override {
+    active_user_prefs_ = nullptr;
+    CloseGameWindow();
+    GameDashboardTestBase::TearDown();
+  }
+
+  void CloseGameWindow() {
     game_window_.reset();
     test_api_.reset();
-    GameDashboardTestBase::TearDown();
+  }
+
+  const gfx::Rect app_bounds() const { return app_bounds_; }
+
+  void SetAppBounds(gfx::Rect app_bounds) {
+    CHECK(!game_window_)
+        << "App bounds cannot be changed after creating window. To set the app "
+           "bounds, call CloseWindow() and re-call this function.";
+    app_bounds_ = app_bounds;
   }
 
   int GetToolbarHeight() {
@@ -89,6 +112,20 @@ class GameDashboardContextTest : public GameDashboardTestBase {
     EXPECT_TRUE(CaptureModeController::Get()->is_recording_in_progress());
   }
 
+  // Sets whether the welcome dialog should be displayed when a game window
+  // opens, which is determiend by the `show_dialog` param.
+  void SetShowWelcomeDialog(bool show_dialog) {
+    CHECK(!game_window_)
+        << "The show welcome dialog param should be changed before "
+           "creating the window. To set this param, call this "
+           "function before CreateGameWindow() is called.";
+    active_user_prefs_->SetBoolean(prefs::kGameDashboardShowWelcomeDialog,
+                                   show_dialog);
+    ASSERT_EQ(
+        active_user_prefs_->GetBoolean(prefs::kGameDashboardShowWelcomeDialog),
+        show_dialog);
+  }
+
   // If `is_arc_window` is true, this function creates the window as an ARC
   // game window. Otherwise, it creates the window as a GeForceNow window.
   // For ARC game windows, if `set_arc_game_controls_flags_prop` is true, then
@@ -101,7 +138,7 @@ class GameDashboardContextTest : public GameDashboardTestBase {
     game_window_ = CreateAppWindow(
         (is_arc_window ? TestGameDashboardDelegate::kGameAppId
                        : extension_misc::kGeForceNowAppId),
-        (is_arc_window ? AppType::ARC_APP : AppType::NON_APP), kAppBounds);
+        (is_arc_window ? AppType::ARC_APP : AppType::NON_APP), app_bounds());
     auto* context = GameDashboardController::Get()->GetGameDashboardContext(
         game_window_.get());
     ASSERT_TRUE(context);
@@ -122,25 +159,34 @@ class GameDashboardContextTest : public GameDashboardTestBase {
     CHECK(game_dashboard_button_widget);
     ASSERT_FALSE(game_dashboard_button_widget->CanActivate());
     ASSERT_FALSE(game_dashboard_button_widget->IsActive());
+
+    // Using `prefs::kGameDashboardShowWelcomeDialog`, verify whether the
+    // welcome dialog should be shown.
+    if (active_user_prefs_->GetBoolean(
+            prefs::kGameDashboardShowWelcomeDialog)) {
+      ASSERT_TRUE(test_api_->GetWelcomeDialogWidget());
+    } else {
+      ASSERT_FALSE(test_api_->GetWelcomeDialogWidget());
+    }
   }
 
   // Opens the main menu and toolbar, and checks Game Controls UI states. At the
   // end of the test, closes the main menu and toolbar.
   // `hint_tile_states` is about feature tile states, {expect_exists,
   // expect_enabled, expect_on}.
-  // `details_row_exists` is about if the Game Controls details row exists.
-  // `feature_switch_states` is about feature switch button states,
-  // {expect_exists, expect_toggled}.
-  // `setup_exists` shows if setup button exists.
+  // `details_row_states` is about the Game Controls details row states,
+  // {expect_exists, expect_enabled}. `feature_switch_states` is about feature
+  // switch button states, {expect_exists, expect_toggled}. `setup_exists` shows
+  // if setup button exists.
   void OpenMenuCheckGameControlsUIState(
       std::array<bool, 3> hint_tile_states,
-      bool details_row_exists,
+      std::array<bool, 2> details_row_states,
       std::array<bool, 2> feature_switch_states,
       bool setup_exists) {
     test_api_->OpenTheMainMenu();
 
-    auto* tile = test_api_->GetMainMenuGameControlsTile();
-    if (hint_tile_states[0]) {
+    if (const auto* tile = test_api_->GetMainMenuGameControlsTile();
+        hint_tile_states[0]) {
       ASSERT_TRUE(tile);
       EXPECT_EQ(hint_tile_states[1], tile->GetEnabled());
       EXPECT_EQ(hint_tile_states[2], tile->IsToggled());
@@ -149,10 +195,14 @@ class GameDashboardContextTest : public GameDashboardTestBase {
     }
 
     auto* details_row = test_api_->GetMainMenuGameControlsDetailsButton();
-    ASSERT_EQ(!!details_row, details_row_exists);
+    EXPECT_EQ(details_row_states[0], !!details_row);
+    if (details_row) {
+      EXPECT_EQ(details_row_states[1], details_row->GetEnabled());
+    }
 
-    auto* switch_button = test_api_->GetMainMenuGameControlsFeatureSwitch();
-    if (feature_switch_states[0]) {
+    if (const auto* switch_button =
+            test_api_->GetMainMenuGameControlsFeatureSwitch();
+        feature_switch_states[0]) {
       ASSERT_TRUE(switch_button);
       EXPECT_EQ(feature_switch_states[1], switch_button->GetIsOn());
     } else {
@@ -161,12 +211,16 @@ class GameDashboardContextTest : public GameDashboardTestBase {
 
     auto* setup_button = test_api_->GetMainMenuGameControlsSetupButton();
     ASSERT_EQ(!!setup_button, setup_exists);
+    if (setup_button) {
+      EXPECT_EQ(details_row_states[1], setup_button->GetEnabled());
+    }
 
     // Open toolbar and check the toolbar's Game Controls button state.
     test_api_->OpenTheToolbar();
     // The button state has the same state as the hint tile on the main menu.
-    auto* game_controls_button = test_api_->GetToolbarGameControlsButton();
-    if (hint_tile_states[0]) {
+    if (const auto* game_controls_button =
+            test_api_->GetToolbarGameControlsButton();
+        hint_tile_states[0]) {
       ASSERT_TRUE(game_controls_button);
       EXPECT_EQ(hint_tile_states[1], game_controls_button->GetEnabled());
       EXPECT_EQ(hint_tile_states[2], game_controls_button->toggled());
@@ -181,10 +235,10 @@ class GameDashboardContextTest : public GameDashboardTestBase {
   void VerifyToolbarDrag(Movement move_type) {
     test_api_->OpenTheMainMenu();
     test_api_->OpenTheToolbar();
-    gfx::Rect window_bounds = game_window_->GetBoundsInScreen();
-    gfx::Point window_center_point = window_bounds.CenterPoint();
-    int x_offset = window_bounds.width() / 4;
-    int y_offset = window_bounds.height() / 4;
+    const auto window_bounds = game_window_->GetBoundsInScreen();
+    const auto window_center_point = window_bounds.CenterPoint();
+    const int x_offset = window_bounds.width() / 4;
+    const int y_offset = window_bounds.height() / 4;
 
     // Verify that be default the snap position should be `kTopRight` and
     // toolbar is placed in the top right quadrant.
@@ -255,21 +309,20 @@ class GameDashboardContextTest : public GameDashboardTestBase {
       wm::ActivateWindow(test_api->context()->game_window());
 
       test_api->OpenTheMainMenu();
-      auto* record_game_tile = test_api->GetMainMenuRecordGameTile();
+      const auto* record_game_tile = test_api->GetMainMenuRecordGameTile();
       ASSERT_TRUE(record_game_tile);
       EXPECT_TRUE(record_game_tile->GetEnabled());
       EXPECT_FALSE(record_game_tile->IsToggled());
 
       test_api->OpenTheToolbar();
-      auto* record_game_button = test_api->GetToolbarRecordGameButton();
+      const auto* record_game_button = test_api->GetToolbarRecordGameButton();
       ASSERT_TRUE(record_game_button);
       EXPECT_TRUE(record_game_button->GetEnabled());
       EXPECT_FALSE(record_game_button->toggled());
     }
-    const base::RepeatingTimer& recording_window_timer =
+    const auto& recording_window_timer =
         recording_window_test_api->GetRecordingTimer();
-    const base::RepeatingTimer& other_window_timer =
-        other_window_test_api->GetRecordingTimer();
+    const auto& other_window_timer = other_window_test_api->GetRecordingTimer();
 
     // Verify the recording timer is not running in both windows.
     EXPECT_FALSE(recording_window_timer.IsRunning());
@@ -391,17 +444,16 @@ class GameDashboardContextTest : public GameDashboardTestBase {
 
  protected:
   std::unique_ptr<aura::Window> game_window_;
-  raw_ptr<chromeos::FrameHeader, DanglingUntriaged | ExperimentalAsh>
-      frame_header_;
+  raw_ptr<chromeos::FrameHeader, DanglingUntriaged> frame_header_;
   std::unique_ptr<GameDashboardContextTestApi> test_api_;
 
   void DragToolbarToPoint(Movement move_type,
                           const gfx::Point& new_location,
                           bool drop = true) {
-    auto* widget = test_api_->GetToolbarWidget();
+    const auto* widget = test_api_->GetToolbarWidget();
     DCHECK(widget) << "Cannot drag toolbar because it's unavailable on screen.";
-    gfx::Rect toolbar_bounds = widget->GetNativeWindow()->GetBoundsInScreen();
-    ui::test::EventGenerator* event_generator = GetEventGenerator();
+    const auto toolbar_bounds = widget->GetNativeWindow()->GetBoundsInScreen();
+    auto* event_generator = GetEventGenerator();
     event_generator->set_current_screen_location(toolbar_bounds.CenterPoint());
 
     switch (move_type) {
@@ -429,6 +481,10 @@ class GameDashboardContextTest : public GameDashboardTestBase {
     // completes before proceeding.
     base::RunLoop().RunUntilIdle();
   }
+
+ private:
+  gfx::Rect app_bounds_ = gfx::Rect(50, 50, 800, 400);
+  raw_ptr<PrefService> active_user_prefs_;
 };
 
 // Verifies Game Controls tile state.
@@ -437,15 +493,17 @@ class GameDashboardContextTest : public GameDashboardTestBase {
 // - The tile can only be toggled when Game Controls has at least one action and
 //   Game Controls feature is enabled.
 TEST_F(GameDashboardContextTest, GameControlsMenuState) {
-  CreateGameWindow(/*is_arc_window=*/true);
+  CreateGameWindow(/*is_arc_window=*/true,
+                   /*set_arc_game_controls_flags_prop=*/true);
 
+  // Game Controls is not available (GC is optout).
   OpenMenuCheckGameControlsUIState(
       /*hint_tile_states=*/
-      {/*expect_exists=*/false, /*expect_enabled=*/false, /*expect_on=*/false},
-      /*details_row_exists=*/false,
+      {/*expect_exists=*/true, /*expect_enabled=*/false, /*expect_on=*/false},
+      /*details_row_exists=*/{/*expect_exists=*/true, /*expect_enabled=*/false},
       /*feature_switch_states=*/
       {/*expect_exists=*/false, /*expect_toggled=*/false},
-      /*setup_exists=*/false);
+      /*setup_exists=*/true);
 
   // Game Controls is available, not empty, but not enabled.
   game_window_->SetProperty(
@@ -455,7 +513,7 @@ TEST_F(GameDashboardContextTest, GameControlsMenuState) {
   OpenMenuCheckGameControlsUIState(
       /*hint_tile_states=*/
       {/*expect_exists=*/true, /*expect_enabled=*/false, /*expect_on=*/false},
-      /*details_row_exists=*/true,
+      /*details_row_exists=*/{/*expect_exists=*/true, /*expect_enabled=*/true},
       /*feature_switch_states=*/
       {/*expect_exists=*/true, /*expect_toggled=*/false},
       /*setup_exists=*/false);
@@ -470,7 +528,7 @@ TEST_F(GameDashboardContextTest, GameControlsMenuState) {
   OpenMenuCheckGameControlsUIState(
       /*hint_tile_states=*/
       {/*expect_exists=*/true, /*expect_enabled=*/false, /*expect_on=*/false},
-      /*details_row_exists=*/true,
+      /*details_row_exists=*/{/*expect_exists=*/true, /*expect_enabled=*/true},
       /*feature_switch_states=*/
       {/*expect_exists=*/false, /*expect_toggled=*/false},
       /*setup_exists=*/true);
@@ -484,7 +542,7 @@ TEST_F(GameDashboardContextTest, GameControlsMenuState) {
   OpenMenuCheckGameControlsUIState(
       /*hint_tile_states=*/
       {/*expect_exists=*/true, /*expect_enabled=*/true, /*expect_on=*/false},
-      /*details_row_exists=*/true,
+      /*details_row_exists=*/{/*expect_exists=*/true, /*expect_enabled=*/true},
       /*feature_switch_states=*/
       {/*expect_exists=*/true, /*expect_toggled=*/true},
       /*setup_exists=*/false);
@@ -498,10 +556,38 @@ TEST_F(GameDashboardContextTest, GameControlsMenuState) {
   OpenMenuCheckGameControlsUIState(
       /*hint_tile_states=*/
       {/*expect_exists=*/true, /*expect_enabled=*/true, /*expect_on=*/true},
-      /*details_row_exists=*/true,
+      /*details_row_exists=*/{/*expect_exists=*/true, /*expect_enabled=*/true},
       /*feature_switch_states=*/
       {/*expect_exists=*/true, /*expect_toggled=*/true},
       /*setup_exists=*/false);
+}
+
+TEST_F(GameDashboardContextTest, GameControlsSetupNudge) {
+  CreateGameWindow(/*is_arc_window=*/true);
+
+  // Test setup nudge for non-O4C games.
+  game_window_->SetProperty(
+      kArcGameControlsFlagsKey,
+      static_cast<ArcGameControlsFlag>(
+          ArcGameControlsFlag::kKnown | ArcGameControlsFlag::kAvailable |
+          ArcGameControlsFlag::kEmpty | ArcGameControlsFlag::kEnabled));
+
+  test_api_->OpenTheMainMenu();
+  EXPECT_TRUE(test_api_->GetGameControlsSetupNudge());
+  task_environment()->FastForwardBy(
+      AnchoredNudgeManagerImpl::kNudgeMediumDuration);
+  EXPECT_FALSE(test_api_->GetGameControlsSetupNudge());
+  test_api_->CloseTheMainMenu();
+
+  // Test setup nudge for O4C games.
+  game_window_->SetProperty(
+      kArcGameControlsFlagsKey,
+      static_cast<ArcGameControlsFlag>(
+          ArcGameControlsFlag::kKnown | ArcGameControlsFlag::kAvailable |
+          ArcGameControlsFlag::kEmpty | ArcGameControlsFlag::kEnabled |
+          ArcGameControlsFlag::kO4C));
+  test_api_->OpenTheMainMenu();
+  EXPECT_FALSE(test_api_->GetGameControlsSetupNudge());
 }
 
 // Verifies Game Controls button logics.
@@ -562,7 +648,7 @@ TEST_F(GameDashboardContextTest, GameControlsMenuFunctions) {
   OpenMenuCheckGameControlsUIState(
       /*hint_tile_states=*/
       {/*expect_exists=*/true, /*expect_enabled=*/false, /*expect_on=*/false},
-      /*details_row_exists=*/true,
+      /*details_row_exists=*/{/*expect_exists=*/true, /*expect_enabled=*/true},
       /*feature_switch_states=*/
       {/*expect_exists=*/true, /*expect_toggled=*/false},
       /*setup_exists=*/false);
@@ -574,7 +660,7 @@ TEST_F(GameDashboardContextTest, GameControlsMenuFunctions) {
   detail_row = test_api_->GetMainMenuGameControlsDetailsButton();
   switch_button = test_api_->GetMainMenuGameControlsFeatureSwitch();
   game_controls_button = test_api_->GetToolbarGameControlsButton();
-  auto* game_controls_tile = test_api_->GetMainMenuGameControlsTile();
+  const auto* game_controls_tile = test_api_->GetMainMenuGameControlsTile();
   // Enable Game Controls.
   LeftClickOn(switch_button);
   EXPECT_TRUE(detail_row->GetEnabled());
@@ -592,7 +678,7 @@ TEST_F(GameDashboardContextTest, GameControlsMenuFunctions) {
   OpenMenuCheckGameControlsUIState(
       /*hint_tile_states=*/
       {/*expect_exists=*/true, /*expect_enabled=*/true, /*expect_on=*/false},
-      /*details_row_exists=*/true,
+      /*details_row_exists=*/{/*expect_exists=*/true, /*expect_enabled=*/true},
       /*feature_switch_states=*/
       {/*expect_exists=*/true, /*expect_toggled=*/true},
       /*setup_exists=*/false);
@@ -644,12 +730,13 @@ TEST_F(GameDashboardContextTest, GameControlsEditMode) {
 TEST_F(GameDashboardContextTest, CompatModeArcGame) {
   // Create an ARC game window that supports Compat Mode.
   CreateGameWindow(/*is_arc_window=*/true);
-  game_window_->SetProperty(ash::kArcResizeLockTypeKey,
-                            ash::ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE);
 
   test_api_->OpenTheMainMenu();
 
-  auto* screen_size_button = test_api_->GetMainMenuScreenSizeSettingsButton();
+  const auto* screen_size_button =
+      test_api_->GetMainMenuScreenSizeSettingsButton();
   ASSERT_TRUE(screen_size_button);
   EXPECT_TRUE(screen_size_button->GetEnabled());
 }
@@ -657,13 +744,13 @@ TEST_F(GameDashboardContextTest, CompatModeArcGame) {
 TEST_F(GameDashboardContextTest, NonCompatModeArcGame) {
   // Create an ARC game window that doesn't support Compat Mode.
   CreateGameWindow(/*is_arc_window=*/true);
-  game_window_->SetProperty(
-      ash::kArcResizeLockTypeKey,
-      ash::ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE);
 
   test_api_->OpenTheMainMenu();
 
-  auto* screen_size_button = test_api_->GetMainMenuScreenSizeSettingsButton();
+  const auto* screen_size_button =
+      test_api_->GetMainMenuScreenSizeSettingsButton();
   ASSERT_TRUE(screen_size_button);
   EXPECT_FALSE(screen_size_button->GetEnabled());
   EXPECT_EQ(u"This app supports only this size.",
@@ -674,12 +761,13 @@ TEST_F(GameDashboardContextTest, NonCompatModeArcGame) {
 TEST_F(GameDashboardContextTest, SelectScreenSizeButton) {
   // Create an ARC game window.
   CreateGameWindow(/*is_arc_window=*/true);
-  game_window_->SetProperty(ash::kArcResizeLockTypeKey,
-                            ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE);
+  game_window_->SetProperty(kArcResizeLockTypeKey,
+                            ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE);
 
   test_api_->OpenTheMainMenu();
 
-  auto* screen_size_button = test_api_->GetMainMenuScreenSizeSettingsButton();
+  const auto* screen_size_button =
+      test_api_->GetMainMenuScreenSizeSettingsButton();
   ASSERT_TRUE(screen_size_button);
   ASSERT_TRUE(screen_size_button->GetEnabled());
 
@@ -722,15 +810,18 @@ TEST_F(GameDashboardContextTest, RecordingTimerStringFormat) {
   // Create an ARC game window.
   CreateGameWindow(/*is_arc_window=*/true);
 
+  // Verify recording duration is 0, by default.
+  EXPECT_EQ(u"00:00", test_api_->GetRecordingDuration());
+
   // Start recording the game window.
   test_api_->OpenTheMainMenu();
   test_api_->OpenTheToolbar();
-  auto* record_game_button = test_api_->GetToolbarRecordGameButton();
+  const auto* record_game_button = test_api_->GetToolbarRecordGameButton();
   ASSERT_TRUE(record_game_button);
   LeftClickOn(record_game_button);
 
   // Get timer and verify it's running.
-  const base::RepeatingTimer& timer = test_api_->GetRecordingTimer();
+  const auto& timer = test_api_->GetRecordingTimer();
   EXPECT_TRUE(timer.IsRunning());
 
   // Verify initial time of 0 seconds.
@@ -755,6 +846,66 @@ TEST_F(GameDashboardContextTest, RecordingTimerStringFormat) {
   // Advance clock by 23 hours, and verify hours doesn't overflow to days.
   AdvanceClock(base::Hours(23));
   EXPECT_EQ(u"24:00:30", test_api_->GetRecordingDuration());
+
+  // Stop the recording.
+  LeftClickOn(record_game_button);
+
+  // Verify recording duration is reset to 0.
+  EXPECT_EQ(u"00:00", test_api_->GetRecordingDuration());
+}
+
+// Verifies the welcome dialog displays when the game window first opens and
+// disappears after 4 seconds.
+TEST_F(GameDashboardContextTest, WelcomeDialogAutoDismisses) {
+  // Open the game window with the welcome dialog enabled.
+  SetShowWelcomeDialog(true);
+  CreateGameWindow(/*is_arc_window=*/true,
+                   /*set_arc_game_controls_flags_prop=*/true);
+
+  // Verify the welcome dialog is initially shown and is right aligned in the
+  // app window.
+  gfx::Rect welcome_dialog_bounds =
+      test_api_->GetWelcomeDialogWidget()->GetWindowBoundsInScreen();
+  EXPECT_EQ(welcome_dialog_bounds.x(),
+            (game_window_->GetBoundsInScreen().right() -
+             game_dashboard::kWelcomeDialogEdgePadding -
+             game_dashboard::kWelcomeDialogFixedWidth));
+
+  // Dismiss welcome dialog after 4 seconds and verify the dialog is no longer
+  // visible.
+  task_environment()->FastForwardBy(base::Seconds(4));
+  EXPECT_FALSE(test_api_->GetWelcomeDialogWidget());
+}
+
+// Verifies the welcome dialog disappears when the main menu view is opened.
+TEST_F(GameDashboardContextTest, WelcomeDialogDismissOnMainMenuOpening) {
+  // Open the game window with the welcome dialog enabled.
+  SetShowWelcomeDialog(true);
+  CreateGameWindow(/*is_arc_window=*/true,
+                   /*set_arc_game_controls_flags_prop=*/true);
+
+  // Open the main menu and verify the welcome dialog dismisses.
+  test_api_->OpenTheMainMenu();
+  EXPECT_FALSE(test_api_->GetWelcomeDialogWidget());
+}
+
+// Verifies the welcome dialog is centered when the app window width is small
+// enough.
+TEST_F(GameDashboardContextTest, WelcomeDialogWithSmallWindow) {
+  // Open a new game window with a width of 450.
+  SetShowWelcomeDialog(true);
+  SetAppBounds(gfx::Rect(50, 50, 450, 400));
+  CreateGameWindow(/*is_arc_window=*/true,
+                   /*set_arc_game_controls_flags_prop=*/true);
+
+  // Verify the welcome dialog is centered.
+  gfx::Rect welcome_dialog_bounds =
+      test_api_->GetWelcomeDialogWidget()->GetWindowBoundsInScreen();
+  EXPECT_EQ(welcome_dialog_bounds.x(),
+            (game_window_->GetBoundsInScreen().x() +
+             (game_window_->GetBoundsInScreen().width() -
+              game_dashboard::kWelcomeDialogFixedWidth) /
+                 2));
 }
 
 // -----------------------------------------------------------------------------
@@ -786,7 +937,7 @@ TEST_P(GameTypeGameDashboardContextTest,
        GameDashboardButtonWidget_InitialLocation) {
   const gfx::Point expected_button_center_point(
       game_window_->GetBoundsInScreen().top_center().x(),
-      kAppBounds.y() + frame_header_->GetHeaderHeight() / 2);
+      app_bounds().y() + frame_header_->GetHeaderHeight() / 2);
   EXPECT_EQ(expected_button_center_point,
             test_api_->GetGameDashboardButtonWidget()
                 ->GetNativeWindow()
@@ -798,10 +949,10 @@ TEST_P(GameTypeGameDashboardContextTest,
 // game window.
 TEST_P(GameTypeGameDashboardContextTest,
        GameDashboardButtonWidget_MoveWindowAndVerifyLocation) {
-  const gfx::Vector2d move_vector = gfx::Vector2d(100, 200);
-  aura::Window* native_window =
+  const auto move_vector = gfx::Vector2d(100, 200);
+  const auto* native_window =
       test_api_->GetGameDashboardButtonWidget()->GetNativeWindow();
-  const gfx::Rect expected_widget_location =
+  const auto expected_widget_location =
       native_window->GetBoundsInScreen() + move_vector;
 
   game_window_->SetBoundsInScreen(
@@ -814,8 +965,7 @@ TEST_P(GameTypeGameDashboardContextTest,
 TEST_P(GameTypeGameDashboardContextTest, OpenGameDashboardButtonWidget) {
   // Close the window and create a new game window without setting the
   // `kArcGameControlsFlagsKey` property.
-  game_window_.reset();
-  test_api_.reset();
+  CloseGameWindow();
   CreateGameWindow(IsArcGame(), /*set_arc_game_controls_flags_prop=*/false);
 
   // Verifies the main menu is closed.
@@ -833,6 +983,26 @@ TEST_P(GameTypeGameDashboardContextTest, OpenGameDashboardButtonWidget) {
 
   // Open the main menu dialog and verify the main menu is open.
   test_api_->OpenTheMainMenu();
+}
+
+// Verifies Game Controls UIs only show up on the ARC games.
+TEST_P(GameTypeGameDashboardContextTest, GameControlsUiExistence) {
+  const bool is_arc_game = IsArcGame();
+  if (is_arc_game) {
+    // The ARC game has Game Controls optout in this test.
+    game_window_->SetProperty(kArcGameControlsFlagsKey,
+                              ArcGameControlsFlag::kKnown);
+  }
+
+  OpenMenuCheckGameControlsUIState(
+      /*hint_tile_states=*/
+      {/*expect_exists=*/is_arc_game, /*expect_enabled=*/false,
+       /*expect_on=*/false},
+      /*details_row_exists=*/
+      {/*expect_exists=*/is_arc_game, /*expect_enabled=*/false},
+      /*feature_switch_states=*/
+      {/*expect_exists=*/false, /*expect_toggled=*/false},
+      /*setup_exists=*/is_arc_game);
 }
 
 // Verifies clicking the Game Dashboard button will close the main menu widget
@@ -853,9 +1023,10 @@ TEST_P(GameTypeGameDashboardContextTest, CloseMainMenuOutsideButtonWidget) {
   test_api_->OpenTheMainMenu();
 
   // Close the main menu dialog by clicking outside the main menu view bounds.
-  ui::test::EventGenerator* event_generator = GetEventGenerator();
-  const gfx::Point& new_location = {kAppBounds.x() + kAppBounds.width(),
-                                    kAppBounds.y() + kAppBounds.height()};
+  auto* event_generator = GetEventGenerator();
+  gfx::Rect game_bounds = app_bounds();
+  const gfx::Point& new_location = {game_bounds.x() + game_bounds.width(),
+                                    game_bounds.y() + game_bounds.height()};
   event_generator->set_current_screen_location(new_location);
   event_generator->ClickLeftButton();
 
@@ -923,14 +1094,14 @@ TEST_P(GameTypeGameDashboardContextTest, TakeScreenshotFromMainMenu) {
   test_api_->OpenTheMainMenu();
 
   // Retrieve the screenshot button and verify the initial state.
-  auto* screenshot_tile = test_api_->GetMainMenuScreenshotTile();
+  const auto* screenshot_tile = test_api_->GetMainMenuScreenshotTile();
   ASSERT_TRUE(screenshot_tile);
 
   LeftClickOn(screenshot_tile);
 
   // Verify that a screenshot is taken of the game window.
   const auto file_path = WaitForCaptureFileToBeSaved();
-  const gfx::Image image = ReadAndDecodeImageFile(file_path);
+  const auto image = ReadAndDecodeImageFile(file_path);
   EXPECT_EQ(image.Size(), game_window_->bounds().size());
 }
 
@@ -938,8 +1109,6 @@ TEST_P(GameTypeGameDashboardContextTest, TakeScreenshotFromMainMenu) {
 // if a recording session was started outside of the Game Dashboard.
 TEST_P(GameTypeGameDashboardContextTest,
        CaptureSessionStartedOutsideOfTheGameDashboard) {
-  auto* capture_mode_controller = CaptureModeController::Get();
-
   test_api_->OpenTheMainMenu();
 
   // Verify the game dashboard button is initially not in the recording state.
@@ -947,7 +1116,8 @@ TEST_P(GameTypeGameDashboardContextTest,
 
   // Retrieve the record game tile from the main menu, and verify it's
   // enabled and toggled off.
-  auto* main_menu_record_game_button = test_api_->GetMainMenuRecordGameTile();
+  const auto* main_menu_record_game_button =
+      test_api_->GetMainMenuRecordGameTile();
   EXPECT_TRUE(main_menu_record_game_button);
   EXPECT_TRUE(main_menu_record_game_button->GetEnabled());
   EXPECT_FALSE(main_menu_record_game_button->IsToggled());
@@ -955,11 +1125,13 @@ TEST_P(GameTypeGameDashboardContextTest,
   test_api_->OpenTheToolbar();
   // Retrieve the record game button from the toolbar, and verify it's
   // enabled and toggled off.
-  auto* toolbar_record_game_button = test_api_->GetToolbarRecordGameButton();
+  const auto* toolbar_record_game_button =
+      test_api_->GetToolbarRecordGameButton();
   EXPECT_TRUE(toolbar_record_game_button);
   EXPECT_TRUE(toolbar_record_game_button->GetEnabled());
   EXPECT_FALSE(toolbar_record_game_button->toggled());
 
+  const auto* capture_mode_controller = CaptureModeController::Get();
   // Start video recording from `CaptureModeController`.
   EXPECT_FALSE(capture_mode_controller->is_recording_in_progress());
   StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
@@ -979,7 +1151,15 @@ TEST_P(GameTypeGameDashboardContextTest,
   CaptureModeTestApi().StopVideoRecording();
   EXPECT_FALSE(capture_mode_controller->is_recording_in_progress());
 
-  // Verify the record game buttons are now enabled and toggled off.
+  // Verify the record game buttons are not enabled until the video file is
+  // finalized.
+  EXPECT_FALSE(capture_mode_controller->can_start_new_recording());
+  EXPECT_FALSE(main_menu_record_game_button->GetEnabled());
+  EXPECT_FALSE(main_menu_record_game_button->IsToggled());
+  EXPECT_FALSE(toolbar_record_game_button->GetEnabled());
+  EXPECT_FALSE(toolbar_record_game_button->toggled());
+  WaitForCaptureFileToBeSaved();
+  EXPECT_TRUE(capture_mode_controller->can_start_new_recording());
   EXPECT_TRUE(main_menu_record_game_button->GetEnabled());
   EXPECT_FALSE(main_menu_record_game_button->IsToggled());
   EXPECT_TRUE(toolbar_record_game_button->GetEnabled());
@@ -1044,13 +1224,13 @@ TEST_P(GameTypeGameDashboardContextTest, TakeScreenshotFromToolbar) {
   test_api_->OpenTheToolbar();
 
   // Click on the screenshot button within the toolbar.
-  IconButton* screenshot_button = test_api_->GetToolbarScreenshotButton();
+  const auto* screenshot_button = test_api_->GetToolbarScreenshotButton();
   ASSERT_TRUE(screenshot_button);
   LeftClickOn(screenshot_button);
 
   // Verify that a screenshot is taken of the game window.
   const auto file_path = WaitForCaptureFileToBeSaved();
-  const gfx::Image image = ReadAndDecodeImageFile(file_path);
+  const auto image = ReadAndDecodeImageFile(file_path);
   EXPECT_EQ(image.Size(), game_window_->GetBoundsInScreen().size());
 }
 
@@ -1080,27 +1260,6 @@ TEST_P(GameTypeGameDashboardContextTest, CollapseAndExpandToolbarWidget) {
   EXPECT_EQ(initial_height, updated_height);
 }
 
-// Verifies the color mode, user color, and scheme variant never change.
-TEST_P(GameTypeGameDashboardContextTest, ColorProviderKey) {
-  test_api_->OpenTheMainMenu();
-  test_api_->OpenTheToolbar();
-
-  const GameDashboardWidget* widgets[] = {
-      test_api_->GetGameDashboardButtonWidget(), test_api_->GetToolbarWidget()};
-
-  for (auto* widget : widgets) {
-    auto color_provider_key = widget->GetColorProviderKey();
-    EXPECT_EQ(ui::ColorProviderKey::ColorMode::kDark,
-              color_provider_key.color_mode);
-  }
-
-  // Update and verify the color mode doesn't change.
-  DarkLightModeController::Get()->SetDarkModeEnabledForTest(false);
-  for (auto* widget : widgets) {
-    EXPECT_EQ(ui::ColorProviderKey::ColorMode::kDark, widget->GetColorMode());
-  }
-}
-
 // Verifies the toolbar won't follow the mouse cursor outside of the game window
 // bounds.
 TEST_P(GameTypeGameDashboardContextTest, MoveToolbarOutOfBounds) {
@@ -1110,25 +1269,25 @@ TEST_P(GameTypeGameDashboardContextTest, MoveToolbarOutOfBounds) {
   ASSERT_EQ(test_api_->GetToolbarSnapLocation(),
             ToolbarSnapLocation::kTopRight);
 
-  gfx::Rect window_bounds = game_window_->GetBoundsInScreen();
-  int screen_point_x = kScreenBounds.x();
-  int screen_point_right = screen_point_x + kScreenBounds.width();
-  int screen_point_y = kScreenBounds.y();
-  int screen_point_bottom = screen_point_y + kScreenBounds.height();
+  auto window_bounds = game_window_->GetBoundsInScreen();
+  const int screen_point_x = kScreenBounds.x();
+  const int screen_point_right = screen_point_x + kScreenBounds.width();
+  const int screen_point_y = kScreenBounds.y();
+  const int screen_point_bottom = screen_point_y + kScreenBounds.height();
 
   // Verify the screen bounds are larger than the game bounds.
-  ASSERT_LT(screen_point_x, kAppBounds.x());
-  ASSERT_LT(screen_point_y, kAppBounds.y());
-  ASSERT_GT(screen_point_right, kAppBounds.x() + kAppBounds.width());
-  ASSERT_GT(screen_point_bottom, kAppBounds.y() + kAppBounds.height());
+  auto game_bounds = app_bounds();
+  ASSERT_LT(screen_point_x, game_bounds.x());
+  ASSERT_LT(screen_point_y, game_bounds.y());
+  ASSERT_GT(screen_point_right, game_bounds.x() + game_bounds.width());
+  ASSERT_GT(screen_point_bottom, game_bounds.y() + game_bounds.height());
 
   // Drag toolbar, moving the mouse past the game window to the top right corner
   // of the screen bounds, and verify the toolbar doesn't go past the game
   // window.
   DragToolbarToPoint(Movement::kMouse, {screen_point_right, screen_point_y},
                      false);
-  aura::Window* native_window =
-      test_api_->GetToolbarWidget()->GetNativeWindow();
+  const auto* native_window = test_api_->GetToolbarWidget()->GetNativeWindow();
   auto toolbar_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(toolbar_bounds.right(), window_bounds.right());
   EXPECT_EQ(toolbar_bounds.y(), window_bounds.y());
@@ -1223,50 +1382,58 @@ TEST_P(GameTypeGameDashboardContextTest, MoveToolbarWidgetViaArrowKeys) {
 TEST_P(GameTypeGameDashboardContextTest, VerifyToolbarPlacementInQuadrants) {
   test_api_->OpenTheMainMenu();
   test_api_->OpenTheToolbar();
-  gfx::Rect window_bounds = game_window_->GetBoundsInScreen();
-  gfx::Point window_center_point = window_bounds.CenterPoint();
-  int x_offset = window_bounds.width() / 4;
-  int y_offset = window_bounds.height() / 4;
+  const auto window_bounds = game_window_->GetBoundsInScreen();
+  const auto window_center_point = window_bounds.CenterPoint();
+  const int x_offset = window_bounds.width() / 4;
+  const int y_offset = window_bounds.height() / 4;
 
   // Verify initial placement in top right quadrant.
-  aura::Window* native_window =
-      test_api_->GetToolbarWidget()->GetNativeWindow();
+  auto game_bounds = app_bounds();
+  const auto* native_window = test_api_->GetToolbarWidget()->GetNativeWindow();
   auto toolbar_bounds = native_window->GetBoundsInScreen();
-  gfx::Size toolbar_size =
+  const auto toolbar_size =
       test_api_->GetToolbarWidget()->GetContentsView()->GetPreferredSize();
   const int frame_header_height = frame_header_->GetHeaderHeight();
   EXPECT_EQ(test_api_->GetToolbarSnapLocation(),
             ToolbarSnapLocation::kTopRight);
-  EXPECT_EQ(toolbar_bounds.x(),
-            kAppBounds.right() - kToolbarEdgePadding - toolbar_size.width());
-  EXPECT_EQ(toolbar_bounds.y(),
-            kAppBounds.y() + kToolbarEdgePadding + frame_header_height);
+  EXPECT_EQ(toolbar_bounds.x(), game_bounds.right() -
+                                    game_dashboard::kToolbarEdgePadding -
+                                    toolbar_size.width());
+  EXPECT_EQ(toolbar_bounds.y(), game_bounds.y() +
+                                    game_dashboard::kToolbarEdgePadding +
+                                    frame_header_height);
 
   // Move toolbar to top left quadrant and verify toolbar placement.
   DragToolbarToPoint(Movement::kMouse, {window_center_point.x() - x_offset,
                                         window_center_point.y() - y_offset});
   EXPECT_EQ(test_api_->GetToolbarSnapLocation(), ToolbarSnapLocation::kTopLeft);
   toolbar_bounds = native_window->GetBoundsInScreen();
-  EXPECT_EQ(toolbar_bounds.x(), kAppBounds.x() + kToolbarEdgePadding);
-  EXPECT_EQ(toolbar_bounds.y(),
-            kAppBounds.y() + kToolbarEdgePadding + frame_header_height);
+  EXPECT_EQ(toolbar_bounds.x(),
+            game_bounds.x() + game_dashboard::kToolbarEdgePadding);
+  EXPECT_EQ(toolbar_bounds.y(), game_bounds.y() +
+                                    game_dashboard::kToolbarEdgePadding +
+                                    frame_header_height);
 
   // Move toolbar to bottom right quadrant and verify toolbar placement.
   DragToolbarToPoint(Movement::kMouse, {window_center_point.x() + x_offset,
                                         window_center_point.y() + y_offset});
   toolbar_bounds = native_window->GetBoundsInScreen();
-  EXPECT_EQ(toolbar_bounds.x(),
-            kAppBounds.right() - kToolbarEdgePadding - toolbar_size.width());
-  EXPECT_EQ(toolbar_bounds.y(),
-            kAppBounds.bottom() - kToolbarEdgePadding - toolbar_size.height());
+  EXPECT_EQ(toolbar_bounds.x(), game_bounds.right() -
+                                    game_dashboard::kToolbarEdgePadding -
+                                    toolbar_size.width());
+  EXPECT_EQ(toolbar_bounds.y(), game_bounds.bottom() -
+                                    game_dashboard::kToolbarEdgePadding -
+                                    toolbar_size.height());
 
   // Move toolbar to bottom left quadrant and verify toolbar placement.
   DragToolbarToPoint(Movement::kMouse, {window_center_point.x() - x_offset,
                                         window_center_point.y() + y_offset});
   toolbar_bounds = native_window->GetBoundsInScreen();
-  EXPECT_EQ(toolbar_bounds.x(), kAppBounds.x() + kToolbarEdgePadding);
-  EXPECT_EQ(toolbar_bounds.y(),
-            kAppBounds.bottom() - kToolbarEdgePadding - toolbar_size.height());
+  EXPECT_EQ(toolbar_bounds.x(),
+            game_bounds.x() + game_dashboard::kToolbarEdgePadding);
+  EXPECT_EQ(toolbar_bounds.y(), game_bounds.bottom() -
+                                    game_dashboard::kToolbarEdgePadding -
+                                    toolbar_size.height());
 }
 
 // Verifies the toolbar's snap location is preserved even after the visibility
@@ -1276,8 +1443,8 @@ TEST_P(GameTypeGameDashboardContextTest, MoveAndHideToolbarWidget) {
   test_api_->OpenTheToolbar();
 
   // Move toolbar to bottom left quadrant and verify snap location is updated.
-  gfx::Rect window_bounds = game_window_->GetBoundsInScreen();
-  gfx::Point window_center_point = window_bounds.CenterPoint();
+  const auto window_bounds = game_window_->GetBoundsInScreen();
+  const auto window_center_point = window_bounds.CenterPoint();
   DragToolbarToPoint(Movement::kMouse,
                      {window_center_point.x() - (window_bounds.width() / 4),
                       window_center_point.y() + (window_bounds.height() / 4)});
@@ -1317,7 +1484,7 @@ class OnOverviewModeEndedWaiter : public OverviewObserver {
  private:
   base::RunLoop run_loop_;
   // Owned by Shell.
-  const raw_ptr<OverviewController, ExperimentalAsh> overview_controller_;
+  const raw_ptr<OverviewController> overview_controller_;
 };
 
 // Verifies that in overview mode, the Game Dashboard button is not visible, the
@@ -1335,16 +1502,16 @@ TEST_P(GameTypeGameDashboardContextTest, OverviewMode) {
   // Game Dashboard button is visible.
   EXPECT_TRUE(game_dashboard_button_widget->IsVisible());
   // Toolbar is visible.
-  auto* toolbar_widget = test_api_->GetToolbarWidget();
+  const auto* toolbar_widget = test_api_->GetToolbarWidget();
   ASSERT_TRUE(toolbar_widget);
   EXPECT_TRUE(toolbar_widget->IsVisible());
   // Main menu is visible.
-  auto* main_menu_widget = test_api_->GetMainMenuWidget();
+  const auto* main_menu_widget = test_api_->GetMainMenuWidget();
   ASSERT_TRUE(main_menu_widget);
   EXPECT_TRUE(main_menu_widget->IsVisible());
 
   EnterOverview();
-  auto* overview_controller = OverviewController::Get();
+  const auto* overview_controller = OverviewController::Get();
   ASSERT_TRUE(overview_controller->InOverviewSession());
 
   // Verify states in overview mode.
@@ -1402,8 +1569,8 @@ class GameDashboardStartAndStopCaptureSessionTest
 // Verifies the game window recording starts and stops for the given set of test
 // parameters.
 TEST_P(GameDashboardStartAndStopCaptureSessionTest, RecordGameFromMainMenu) {
-  auto* capture_mode_controller = CaptureModeController::Get();
-  const base::RepeatingTimer& timer = test_api_->GetRecordingTimer();
+  const auto* capture_mode_controller = CaptureModeController::Get();
+  const auto& timer = test_api_->GetRecordingTimer();
 
   test_api_->OpenTheMainMenu();
   EXPECT_FALSE(capture_mode_controller->is_recording_in_progress());
@@ -1412,7 +1579,7 @@ TEST_P(GameDashboardStartAndStopCaptureSessionTest, RecordGameFromMainMenu) {
 
   if (should_start_from_main_menu_) {
     // Retrieve the record game tile from the main menu.
-    auto* record_game_tile = test_api_->GetMainMenuRecordGameTile();
+    const auto* record_game_tile = test_api_->GetMainMenuRecordGameTile();
     ASSERT_TRUE(record_game_tile);
 
     // Start the video recording from the main menu.
@@ -1423,7 +1590,7 @@ TEST_P(GameDashboardStartAndStopCaptureSessionTest, RecordGameFromMainMenu) {
     CHECK(!test_api_->GetToolbarView());
     test_api_->OpenTheToolbar();
     test_api_->CloseTheMainMenu();
-    auto* record_game_button = test_api_->GetToolbarRecordGameButton();
+    const auto* record_game_button = test_api_->GetToolbarRecordGameButton();
     ASSERT_TRUE(record_game_button);
 
     // Start the video recording from the toolbar.

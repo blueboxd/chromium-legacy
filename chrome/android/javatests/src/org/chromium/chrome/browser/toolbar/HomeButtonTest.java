@@ -25,17 +25,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.Features;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.toolbar.home_button.HomeButton;
 import org.chromium.chrome.browser.toolbar.home_button.HomeButtonCoordinator;
-import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -54,7 +52,6 @@ public class HomeButtonTest extends BlankUiTestActivityTestCase {
     @Rule public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
 
     @Mock private SettingsLauncher mSettingsLauncher;
-    @Mock private UserEducationHelper mUserEducationHelper;
 
     private HomeButtonCoordinator mHomeButtonCoordinator;
     private int mIdHomeButton;
@@ -88,12 +85,6 @@ public class HomeButtonTest extends BlankUiTestActivityTestCase {
                             new HomeButtonCoordinator(
                                     getActivity(),
                                     homeButton,
-                                    mUserEducationHelper,
-                                    () -> false,
-                                    new OneshotSupplierImpl<>(),
-                                    () -> false,
-                                    () -> false,
-                                    new ObservableSupplierImpl<>(),
                                     HomepageManager.getInstance()::onMenuClick,
                                     () -> false);
                     HomepageManager.getInstance().setSettingsLauncherForTesting(mSettingsLauncher);

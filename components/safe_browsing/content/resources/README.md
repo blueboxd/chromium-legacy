@@ -129,6 +129,9 @@ See `download_file_types.proto` for all fields.
     * `DANGEROUS`: Always warn the user that this file may harm their
       computer. We let them continue or discard the file. If Safe
       Browsing returns a `SAFE` verdict, we still warn the user.
+        * Note that file types at this level can affect how our partner team
+          calculates the warning volume. Please reach out before adding a new
+          file type under this danger level.
     * `ALLOW_ON_USER_GESTURE`: Potentially dangerous, but is likely harmless if
       the user is familiar with host and if the download was intentional. Chrome
       doesn't warn the user if both of the following conditions are true:
@@ -139,9 +142,10 @@ See `download_file_types.proto` for all fields.
           the most recent midnight. This is taken to imply that the user has a
           history of visiting the site.
 
-      In addition, Chrome skips the warning if the download was explicit (i.e.
-      the user selected "Save link as ..." from the context menu), or if the
-      navigation that resulted in the download was initiated using the Omnibox.
+      In addition, Chrome skips the warning if the users preference enables Safe
+      Browsing or the download was explicit (i.e.  the user selected "Save link
+      as ..." from the context menu), or if the navigation that resulted in the
+      download was initiated using the Omnibox.
 
     If the `SafeBrowsingForTrustedSourcesEnabled` policy is set and the download
     originates from a Trusted source, no warnings will be shown even for types

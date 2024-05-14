@@ -44,9 +44,9 @@ class ASH_EXPORT AudioDetailedView
       public SessionObserver,
       public speech::SodaInstaller::Observer,
       public TrayDetailedView {
- public:
-  METADATA_HEADER(AudioDetailedView);
+  METADATA_HEADER(AudioDetailedView, TrayDetailedView)
 
+ public:
   explicit AudioDetailedView(DetailedViewDelegate* delegate);
 
   AudioDetailedView(const AudioDetailedView&) = delete;
@@ -196,14 +196,13 @@ class ASH_EXPORT AudioDetailedView
   int num_stream_ignore_ui_gains_ = 0;
 
   // Owned by the views hierarchy.
-  raw_ptr<HoverHighlightView, ExperimentalAsh> live_caption_view_ = nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> live_caption_icon_ = nullptr;
-  raw_ptr<Switch, ExperimentalAsh> live_caption_button_ = nullptr;
-  raw_ptr<HoverHighlightView, ExperimentalAsh> noise_cancellation_view_ =
-      nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> noise_cancellation_icon_ = nullptr;
-  raw_ptr<Switch, ExperimentalAsh> noise_cancellation_button_ = nullptr;
-  raw_ptr<views::Button, ExperimentalAsh> settings_button_ = nullptr;
+  raw_ptr<HoverHighlightView> live_caption_view_ = nullptr;
+  raw_ptr<views::ImageView> live_caption_icon_ = nullptr;
+  raw_ptr<Switch> live_caption_button_ = nullptr;
+  raw_ptr<HoverHighlightView> noise_cancellation_view_ = nullptr;
+  raw_ptr<views::ImageView> noise_cancellation_icon_ = nullptr;
+  raw_ptr<Switch> noise_cancellation_button_ = nullptr;
+  raw_ptr<views::Button> settings_button_ = nullptr;
 
   base::ScopedObservation<SessionController, SessionObserver>
       session_observation_{this};

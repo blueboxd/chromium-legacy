@@ -164,7 +164,7 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
         (length > 0) ? base::RandBytesAsString(length) : std::string();
 
     params->greased_http2_frame =
-        absl::optional<net::SpdySessionPool::GreasedHttp2Frame>(
+        std::optional<net::SpdySessionPool::GreasedHttp2Frame>(
             {type, flags, payload});
   }
 
@@ -187,14 +187,6 @@ bool ShouldDisableQuic(base::StringPiece quic_trial_group,
 
   return base::EqualsCaseInsensitiveASCII(
       GetVariationParam(quic_trial_params, "enable_quic"), "false");
-}
-
-bool ShouldEnableQuicProxiesForHttpsUrls(
-    const VariationParameters& quic_trial_params) {
-  return base::EqualsCaseInsensitiveASCII(
-      GetVariationParam(quic_trial_params,
-                        "enable_quic_proxies_for_https_urls"),
-      "true");
 }
 
 bool ShouldRetryWithoutAltSvcOnQuicErrors(
@@ -239,7 +231,7 @@ bool ShouldQuicGoAwaySessionsOnIpChange(
       "true");
 }
 
-absl::optional<bool> GetExponentialBackOffOnInitialDelay(
+std::optional<bool> GetExponentialBackOffOnInitialDelay(
     const VariationParameters& quic_trial_params) {
   if (base::EqualsCaseInsensitiveASCII(
           GetVariationParam(quic_trial_params,
@@ -253,7 +245,7 @@ absl::optional<bool> GetExponentialBackOffOnInitialDelay(
           "true")) {
     return true;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 int GetQuicIdleConnectionTimeoutSeconds(
@@ -579,8 +571,6 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
 
   if (params->enable_quic) {
-    params->enable_quic_proxies_for_https_urls =
-        ShouldEnableQuicProxiesForHttpsUrls(quic_trial_params);
     quic_params->connection_options =
         GetQuicConnectionOptions(quic_trial_params);
     quic_params->client_connection_options =

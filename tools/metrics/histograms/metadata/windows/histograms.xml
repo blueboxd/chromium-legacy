@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.CetEnabled" enum="BooleanEnabled"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>ajgo@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -57,7 +57,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.Enclave.{Type}.Available" enum="BooleanAvailable"
-    expires_after="2024-05-12">
+    expires_after="2024-07-14">
   <owner>ajgo@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -81,7 +81,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HasHighResolutionTimeTicks" enum="Boolean"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>brucedawson@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -91,7 +91,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -102,7 +102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HypervPresent" enum="BooleanEnabled"
-    expires_after="2024-06-01">
+    expires_after="2024-08-04">
   <owner>rkc@chromium.org</owner>
   <owner>vnagarnaik@google.com</owner>
   <owner>rockot@chromium.org</owner>
@@ -148,27 +148,6 @@ chromium-metrics-reviews@google.com.
     the installer. Recorded when Chrome is launched from the taskbar, and the
     install was done after the installer started pinning Chrome to the taskbar
     for Windows 10+.
-  </summary>
-</histogram>
-
-<histogram name="Windows.Menu.Win11Style" enum="BooleanWin11MenuStyle"
-    expires_after="M97">
-  <owner>kylixrd@chromium.org</owner>
-  <owner>robliao@chromium.org</owner>
-  <summary>
-    Indicates whether Windows 11 style menus are used. Recorded on menu
-    configuration initialization.
-  </summary>
-</histogram>
-
-<histogram name="Windows.OOPSelectFileDialog.ProcessError" enum="BooleanError"
-    expires_after="M82">
-  <owner>pmonette@chromium.org</owner>
-  <summary>
-    Indicates whether a connection error occured between the browser and the
-    shell handler process. This is usually caused by a crash in the utility
-    process. This is logged every time SelectFile() function is called and the
-    WinOOPSelectFileDialog feature is enabled.
   </summary>
 </histogram>
 
@@ -231,7 +210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.ProcessorFamily" enum="ProcessorFamily"
-    expires_after="2024-06-01">
+    expires_after="2024-08-04">
   <owner>rkc@chromium.org</owner>
   <owner>vnagarnaik@google.com</owner>
   <owner>rockot@chromium.org</owner>

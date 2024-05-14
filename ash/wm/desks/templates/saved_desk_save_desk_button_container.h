@@ -16,9 +16,9 @@ namespace ash {
 
 class ASH_EXPORT SavedDeskSaveDeskButtonContainer
     : public views::BoxLayoutView {
- public:
-  METADATA_HEADER(SavedDeskSaveDeskButtonContainer);
+  METADATA_HEADER(SavedDeskSaveDeskButtonContainer, views::BoxLayoutView)
 
+ public:
   SavedDeskSaveDeskButtonContainer(
       base::RepeatingClosure save_as_template_callback,
       base::RepeatingClosure save_for_later_callback);
@@ -59,10 +59,8 @@ class ASH_EXPORT SavedDeskSaveDeskButtonContainer
   SavedDeskSaveDeskButton* GetButtonFromType(
       SavedDeskSaveDeskButton::Type type);
 
-  raw_ptr<SavedDeskSaveDeskButton, ExperimentalAsh>
-      save_desk_as_template_button_ = nullptr;
-  raw_ptr<SavedDeskSaveDeskButton, ExperimentalAsh>
-      save_desk_for_later_button_ = nullptr;
+  raw_ptr<SavedDeskSaveDeskButton> save_desk_as_template_button_ = nullptr;
+  raw_ptr<SavedDeskSaveDeskButton> save_desk_for_later_button_ = nullptr;
 
   // Object responsible for observing accessibility setting changes.
   std::unique_ptr<SaveDeskButtonContainerAccessibilityObserver>

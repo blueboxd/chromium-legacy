@@ -30,7 +30,6 @@
 #include "media/base/media_log.h"
 #include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace chromecast {
 namespace media {
@@ -146,7 +145,9 @@ void CastRenderer::OnSubscribeToVideoGeometryChange(
     // default CastApplicationMediaInfo value below will be used.
     OnApplicationMediaInfoReceived(
         media_resource, client,
-        ::media::mojom::CastApplicationMediaInfo::New(std::string(), true));
+        ::media::mojom::CastApplicationMediaInfo::New(
+            std::string(), true /* mixer_audio_enabled */,
+            false /* is_audio_only_session */));
   }
 }
 

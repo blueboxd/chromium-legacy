@@ -14,6 +14,8 @@
 
 #include "mediapipe/framework/deps/file_helpers.h"
 
+#include "absl/strings/str_cat.h"
+
 #ifdef _WIN32
 #include <Windows.h>
 #include <direct.h>
@@ -28,7 +30,9 @@
 #include <sys/stat.h>
 
 #include <cerrno>
+#include <string>
 
+#include "absl/status/status.h"
 #include "mediapipe/framework/deps/file_path.h"
 #include "mediapipe/framework/port/canonical_errors.h"
 #include "mediapipe/framework/port/status.h"
@@ -202,6 +206,24 @@ absl::Status SetContents(absl::string_view file_name,
   return absl::OkStatus();
 }
 
+absl::Status AppendStringToFile(absl::string_view file_name,
+                                absl::string_view contents) {
+  FILE* fp = fopen(file_name.data(), "ab");
+  if (!fp) {
+    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+           << "Can't open file: " << file_name;
+  }
+
+  fwrite(contents.data(), sizeof(char), contents.size(), fp);
+  size_t write_error = ferror(fp);
+  if (fclose(fp) != 0 || write_error) {
+    return mediapipe::InternalErrorBuilder(MEDIAPIPE_LOC)
+           << "Error while writing file: " << file_name
+           << ". Error message: " << strerror(write_error);
+  }
+  return absl::OkStatus();
+}
+
 absl::Status MatchInTopSubdirectories(const std::string& parent_directory,
                                       const std::string& file_name,
                                       std::vector<std::string>* results) {
@@ -246,6 +268,25 @@ absl::Status Exists(absl::string_view file_name) {
   switch (errno) {
     case EACCES:
       return mediapipe::PermissionDeniedError("Insufficient permissions.");
+    default:
+      return absl::NotFoundError(
+          absl::StrCat("The path does not exist: ", file_name));
+  }
+}
+
+absl::Status IsDirectory(absl::string_view file_name) {
+  struct stat buffer;
+  int status;
+  status = stat(std::string(file_name).c_str(), &buffer);
+  if (status == 0) {
+    if ((buffer.st_mode & S_IFMT) == S_IFDIR) {
+      return absl::OkStatus();
+    }
+    return absl::FailedPreconditionError("The path is not a directory.");
+  }
+  switch (errno) {
+    case EACCES:
+      return absl::PermissionDeniedError("Insufficient permissions.");
     default:
       return absl::NotFoundError("The path does not exist.");
   }

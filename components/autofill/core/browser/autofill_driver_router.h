@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/types/optional_ref.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_forest.h"
@@ -248,22 +249,22 @@ class AutofillDriverRouter {
   void SetFormToBeProbablySubmitted(
       AutofillDriver* source,
       std::optional<FormData> form,
-      void (*callback)(AutofillDriver* target, const FormData* optional_form));
+      void (*callback)(AutofillDriver* target,
+                       base::optional_ref<const FormData> form));
 
   // Events called by the browser, passed to the renderer:
   // Keep in alphabetic order.
-  std::vector<FieldGlobalId> ApplyFormAction(
+  base::flat_set<FieldGlobalId> ApplyFormAction(
       AutofillDriver* source,
       mojom::ActionType action_type,
       mojom::ActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
-      const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
+      const base::flat_map<FieldGlobalId, FieldType>& field_type_map,
       void (*callback)(AutofillDriver* target,
                        mojom::ActionType action_type,
                        mojom::ActionPersistence action_persistence,
-                       FormRendererId form_renderer_id,
-                       const std::vector<FormFieldData>& fields));
+                       const FormData::FillData& form));
   void ApplyFieldAction(
       AutofillDriver* source,
       mojom::ActionPersistence action_persistence,
@@ -277,7 +278,7 @@ class AutofillDriverRouter {
                        const std::u16string& value));
   using BrowserFormHandler = AutofillDriver::BrowserFormHandler;
   using RendererFormHandler =
-      base::OnceCallback<void(const absl::optional<::autofill::FormData>&)>;
+      base::OnceCallback<void(const std::optional<::autofill::FormData>&)>;
   // Routes both the request *and* the response: it calls `callback` with
   // - the `target` driver that shall extract the form,
   // - the `form_id` to be extracted, and
@@ -339,11 +340,6 @@ class AutofillDriverRouter {
       const std::vector<FormDataPredictions>& type_predictions,
       void (*callback)(AutofillDriver* target,
                        const std::vector<FormDataPredictions>& predictions));
-  void SendFieldsEligibleForManualFillingToRenderer(
-      AutofillDriver* source,
-      const std::vector<FieldGlobalId>& fields,
-      void (*callback)(AutofillDriver* target,
-                       const std::vector<FieldRendererId>& fields));
 
   // Event called by the browser, passed to the browser:
   void OnContextMenuShownInField(

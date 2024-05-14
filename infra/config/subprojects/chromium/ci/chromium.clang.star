@@ -6,11 +6,12 @@
 load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
-load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations", "xcode")
+load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
+load("//lib/xcode.star", "xcode")
 
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
@@ -25,8 +26,11 @@ ci.defaults.set(
     # CFI builds will take even longer - around 11h.
     execution_timeout = 14 * time.hour,
     health_spec = health_spec.modified_default({
-        "Unhealthy": struct(
-            fail_rate = None,
+        "Unhealthy": health_spec.unhealthy_thresholds(
+            fail_rate = struct(),
+        ),
+        "Low Value": health_spec.low_value_thresholds(
+            fail_rate = struct(),
         ),
     }),
     properties = {
@@ -116,6 +120,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
@@ -157,6 +162,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -191,6 +197,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -224,6 +231,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -512,6 +520,7 @@ ci.builder(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
+                "checkout_pgo_profiles",
                 "clang_tot",
                 "android",
             ],
@@ -716,6 +725,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.RELEASE,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -745,6 +755,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.DEBUG,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -771,6 +782,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.RELEASE,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -798,6 +810,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.RELEASE,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -810,7 +823,6 @@ clang_tot_linux_builder(
             "release",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "mojo_fuzzer",
         ],
@@ -848,6 +860,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.RELEASE,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -875,6 +888,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.RELEASE,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -902,6 +916,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.RELEASE,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -928,6 +943,7 @@ clang_tot_linux_builder(
             build_config = builder_config.build_config.RELEASE,
             target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -953,6 +969,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -985,6 +1002,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1017,6 +1035,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1050,6 +1069,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1080,6 +1100,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1111,6 +1132,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1143,6 +1165,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1154,7 +1177,6 @@ ci.builder(
             "release",
             "chrome_with_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "minimal_symbols",
         ],
     ),
@@ -1237,6 +1259,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1330,7 +1353,7 @@ ci.builder(
         short_name = "sim",
     ),
     contact_team_email = "lexan@google.com",
-    xcode = xcode.x14main,
+    xcode = xcode.xcode_default,
 )
 
 ci.builder(
@@ -1371,7 +1394,7 @@ ci.builder(
         short_name = "dev",
     ),
     contact_team_email = "lexan@google.com",
-    xcode = xcode.x14main,
+    xcode = xcode.xcode_default,
 )
 
 clang_mac_builder(
@@ -1386,6 +1409,7 @@ clang_mac_builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1416,6 +1440,7 @@ clang_mac_builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
@@ -1445,13 +1470,13 @@ clang_mac_builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-clang-archive",
     ),
     gn_args = gn_args.config(
         configs = [
             "asan",
-            "disable_nacl",
             "clang_tot",
             "minimal_symbols",
             "release_builder",

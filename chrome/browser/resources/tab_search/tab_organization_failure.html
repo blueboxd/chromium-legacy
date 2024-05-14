@@ -3,12 +3,8 @@
     background-color: var(--color-bubble-footer-background);
     display: flex;
     flex-direction: column;
-    margin: 0 -20px;
+    margin: 0 -20px -20px -20px;
     padding: 16px var(--mwb-list-item-horizontal-margin);
-  }
-
-  .inline {
-    display: inline-block;
   }
 
   /* Explicitly provide a hard-coded width for each text block.
@@ -22,13 +18,19 @@
 
 <div class="tab-organization-container">
   <div class="tab-organization-text-container">
-    <div class="tab-organization-header">[[getTitle_(error)]]</div>
+    <div id="header"
+        class="tab-organization-header"
+        aria-live="polite"
+        aria-relevant="all">
+      [[getTitle_(error)]]
+    </div>
     <div class="tab-organization-body">
       [[getBodyPreLink_(error)]]
-      <div class="tab-organization-link inline"
+      <div class="tab-organization-link"
           role="link"
           tabindex="0"
-          on-click="onCheckNow_">
+          on-click="onCheckNow_"
+          on-keydown="onCheckNowKeyDown_">
         [[getBodyLink_(error)]]
       </div>
       [[getBodyPostLink_(error)]]
@@ -38,9 +40,14 @@
     <div class="footer">
       <div class="tab-organization-body">
         <b>$i18n{tipTitle}</b> $i18n{tipBody}
-      </div>
-      <div class="tab-organization-link" tabindex="0" on-click="onTipClick_">
-        $i18n{tipAction}
+        <div class="tab-organization-link"
+            role="link"
+            tabindex="0"
+            on-click="onTipClick_"
+            on-keydown="onTipKeyDown_"
+            aria-description="$i18n{tipAriaDescription}">
+          $i18n{tipAction}
+        </div>
       </div>
     </div>
   </template>

@@ -51,7 +51,8 @@ HttpCache::Writers::TransactionInfo::~TransactionInfo() = default;
 HttpCache::Writers::TransactionInfo::TransactionInfo(const TransactionInfo&) =
     default;
 
-HttpCache::Writers::Writers(HttpCache* cache, HttpCache::ActiveEntry* entry)
+HttpCache::Writers::Writers(HttpCache* cache,
+                            scoped_refptr<HttpCache::ActiveEntry> entry)
     : cache_(cache), entry_(entry) {
   DCHECK(cache_);
   DCHECK(entry_);
@@ -73,7 +74,7 @@ int HttpCache::Writers::Read(scoped_refptr<IOBuffer> buf,
   // with the data returned from that read.
   if (next_state_ != State::NONE) {
     WaitingForRead read_info(buf, buf_len, std::move(callback));
-    waiting_for_read_.insert(std::make_pair(transaction, std::move(read_info)));
+    waiting_for_read_.emplace(transaction, std::move(read_info));
     return ERR_IO_PENDING;
   }
 
@@ -106,7 +107,7 @@ bool HttpCache::Writers::StopCaching(bool keep_entry) {
   network_read_only_ = true;
   if (!keep_entry) {
     should_keep_entry_ = false;
-    cache_->WritersDoomEntryRestartTransactions(entry_);
+    cache_->WritersDoomEntryRestartTransactions(entry_.get());
   }
 
   return true;
@@ -568,7 +569,7 @@ void HttpCache::Writers::OnCacheWriteFailure() {
   if (all_writers_.empty()) {
     SetCacheCallback(false, TransactionSet());
   } else {
-    cache_->WritersDoomEntryRestartTransactions(entry_);
+    cache_->WritersDoomEntryRestartTransactions(entry_.get());
   }
 }
 

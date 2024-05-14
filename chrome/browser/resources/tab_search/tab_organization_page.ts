@@ -13,24 +13,29 @@ import './tab_organization_results.js';
 import './tab_organization_shared_style.css.js';
 
 import {CrFeedbackOption} from 'chrome://resources/cr_elements/cr_feedback_buttons/cr_feedback_buttons.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
-import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {TabOrganizationFailureElement} from './tab_organization_failure.js';
+import type {TabOrganizationInProgressElement} from './tab_organization_in_progress.js';
+import type {TabOrganizationNotStartedElement} from './tab_organization_not_started.js';
 import {getTemplate} from './tab_organization_page.html.js';
-import {Tab, TabOrganization, TabOrganizationError, TabOrganizationSession, TabOrganizationState, UserFeedback} from './tab_search.mojom-webui.js';
-import {TabSearchApiProxy, TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
+import type {TabOrganizationResultsElement} from './tab_organization_results.js';
+import type {Tab, TabOrganization, TabOrganizationSession} from './tab_search.mojom-webui.js';
+import {TabOrganizationError, TabOrganizationState, UserFeedback} from './tab_search.mojom-webui.js';
+import type {TabSearchApiProxy} from './tab_search_api_proxy.js';
+import {TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
 
-const BODY_VERTICAL_MARGIN: number = 32;
-const HEIGHT_ANIMATION_LENGTH: number = 250;
+const MIN_LOADING_ANIMATION_MS: number = 500;
 
 export interface TabOrganizationPageElement {
   $: {
-    contents: HTMLElement,
-    notStarted: HTMLElement,
-    inProgress: HTMLElement,
-    results: HTMLElement,
-    failure: HTMLElement,
+    notStarted: TabOrganizationNotStartedElement,
+    inProgress: TabOrganizationInProgressElement,
+    results: TabOrganizationResultsElement,
+    failure: TabOrganizationFailureElement,
   };
 }
 
@@ -46,6 +51,8 @@ export class TabOrganizationPageElement extends PolymerElement {
       tabs_: Array,
       error_: Object,
       availableHeight_: Number,
+      isLastOrganization_: Boolean,
+      organizationId_: Number,
 
       tabOrganizationStateEnum_: {
         type: Object,
@@ -54,22 +61,30 @@ export class TabOrganizationPageElement extends PolymerElement {
 
       showFRE_: {
         type: Boolean,
-        value: loadTimeData.getBoolean('showTabOrganizationFRE'),
+        value: () => loadTimeData.getBoolean('showTabOrganizationFRE'),
+      },
+
+      multiTabOrganization_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('multiTabOrganizationEnabled'),
       },
     };
   }
 
   private apiProxy_: TabSearchApiProxy = TabSearchApiProxyImpl.getInstance();
   private listenerIds_: number[] = [];
-  private state_: TabOrganizationState = TabOrganizationState.kNotStarted;
+  private state_: TabOrganizationState = TabOrganizationState.kInitializing;
   private name_: string;
   private tabs_: Tab[];
   private error_: TabOrganizationError = TabOrganizationError.kNone;
   private availableHeight_: number = 0;
   private sessionId_: number = -1;
   private organizationId_: number = -1;
+  private isLastOrganization_: boolean = false;
   private showFRE_: boolean;
+  private multiTabOrganization_: boolean;
   private documentVisibilityChangedListener_: () => void;
+  private futureState_: TabOrganizationState|null;
 
   static get template() {
     return getTemplate();
@@ -92,6 +107,8 @@ export class TabOrganizationPageElement extends PolymerElement {
     this.listenerIds_.push(
         callbackRouter.tabOrganizationSessionUpdated.addListener(
             this.setSession_.bind(this)));
+    this.listenerIds_.push(
+        callbackRouter.showFREChanged.addListener(this.setShowFre_.bind(this)));
     if (document.visibilityState === 'visible') {
       this.onVisible_();
     }
@@ -112,48 +129,11 @@ export class TabOrganizationPageElement extends PolymerElement {
     }
   }
 
-  updateContentsHeightAfterNextRender() {
-    afterNextRender(this, () => this.updateContentsHeight_());
-  }
-
-  private updateContentsHeight_() {
-    let contentsHeight = 0;
-    switch (this.state_) {
-      case TabOrganizationState.kNotStarted:
-        // Subtract padding out here and below as this is variable during
-        // animation and should not affect contents height.
-        contentsHeight = this.$.notStarted.scrollHeight -
-            this.getPaddingTopValue_(this.$.notStarted) + BODY_VERTICAL_MARGIN;
-        break;
-      case TabOrganizationState.kInProgress:
-        contentsHeight = this.$.inProgress.scrollHeight -
-            this.getPaddingTopValue_(this.$.inProgress) + BODY_VERTICAL_MARGIN;
-        break;
-      case TabOrganizationState.kSuccess:
-        contentsHeight = this.$.results.scrollHeight -
-            this.getPaddingTopValue_(this.$.results) + BODY_VERTICAL_MARGIN;
-        break;
-      case TabOrganizationState.kFailure:
-        contentsHeight = this.$.failure.scrollHeight -
-            this.getPaddingTopValue_(this.$.failure) + BODY_VERTICAL_MARGIN;
-        if (this.showFRE_) {
-          // If the failure footer is shown, exclude bottom margin as the
-          // footer should extend to the bottom of the bubble.
-          contentsHeight -= BODY_VERTICAL_MARGIN / 2;
-        }
-        break;
-    }
-    this.$.contents.style.height = contentsHeight + 'px';
-  }
-
   private onVisible_() {
-    // When the UI goes from not shown to shown, bypass height transition.
-    this.$.contents.classList.toggle('no-transition', true);
     this.updateAvailableHeight_();
-    // TODO(emshack): We should find a way to avoid using a timeout here.
-    setTimeout(
-        () => this.$.contents.classList.toggle('no-transition', false),
-        HEIGHT_ANIMATION_LENGTH);
+    // When the UI goes from not shown to shown, bypass any state change
+    // animations.
+    this.classList.toggle('changed-state', false);
   }
 
   // TODO(emshack): Consider moving the available height calculation into
@@ -165,13 +145,15 @@ export class TabOrganizationPageElement extends PolymerElement {
       const activeWindow = profileData.windows.find((t) => t.active);
       this.availableHeight_ =
           activeWindow ? activeWindow!.height : profileData.windows[0]!.height;
-      this.updateContentsHeight_();
     });
   }
 
-  private getPaddingTopValue_(element: HTMLElement): number {
-    const pxValue = getComputedStyle(element).getPropertyValue('padding-top');
-    return Number.parseInt(pxValue.trim().slice(0, -2), 10);
+  private setShowFre_(show: boolean) {
+    this.showFRE_ = show;
+  }
+
+  setSessionForTesting(session: TabOrganizationSession) {
+    this.setSession_(session);
   }
 
   private setSession_(session: TabOrganizationSession) {
@@ -182,14 +164,24 @@ export class TabOrganizationPageElement extends PolymerElement {
       this.name_ = mojoString16ToString(organization.name);
       this.tabs_ = organization.tabs;
       this.organizationId_ = organization.organizationId;
+      this.isLastOrganization_ = session.organizations.length === 1;
     } else {
       this.organizationId_ = -1;
     }
-    this.setState_(session.state);
+    this.maybeSetState_(session.state);
+  }
+
+  private maybeSetState_(state: TabOrganizationState) {
+    if (this.futureState_) {
+      this.futureState_ = state;
+      return;
+    }
+    this.setState_(state);
   }
 
   private setState_(state: TabOrganizationState) {
-    this.classList.toggle('changed-state', this.state_ !== state);
+    const changedState = this.state_ !== state;
+    this.classList.toggle('changed-state', changedState);
     this.classList.toggle(
         'from-not-started', this.state_ === TabOrganizationState.kNotStarted);
     this.classList.toggle(
@@ -199,9 +191,45 @@ export class TabOrganizationPageElement extends PolymerElement {
     this.classList.toggle(
         'from-failure', this.state_ === TabOrganizationState.kFailure);
     this.state_ = state;
-    // Wait for a rendering pass so the new state's scroll height is up to date
-    // with any new data.
-    this.updateContentsHeightAfterNextRender();
+    if (!changedState) {
+      return;
+    }
+    switch (state) {
+      case TabOrganizationState.kInitializing:
+        break;
+      case TabOrganizationState.kNotStarted:
+        this.$.notStarted.announceHeader();
+        break;
+      case TabOrganizationState.kInProgress:
+        this.$.inProgress.announceHeader();
+        break;
+      case TabOrganizationState.kSuccess:
+        this.$.results.announceHeader();
+        // Wait until the new state is visible after the transition to focus on
+        // the new UI.
+        this.$.results.addEventListener('animationend', () => {
+          this.$.results.focusInput();
+        }, {once: true});
+        break;
+      case TabOrganizationState.kFailure:
+        this.$.failure.announceHeader();
+        break;
+      default:
+        assertNotReached('Invalid tab organization state');
+    }
+
+    // Ensure the loading state appears for a sufficient amount of time, so as
+    // to not appear jumpy if the request completes quickly.
+    if (state === TabOrganizationState.kInProgress) {
+      this.futureState_ = TabOrganizationState.kInProgress;
+      setTimeout(() => this.applyFutureState_(), MIN_LOADING_ANIMATION_MS);
+    }
+  }
+
+  private applyFutureState_() {
+    assert(this.futureState_);
+    this.setState_(this.futureState_);
+    this.futureState_ = null;
   }
 
   private isState_(state: TabOrganizationState): boolean {
@@ -224,6 +252,10 @@ export class TabOrganizationPageElement extends PolymerElement {
     this.apiProxy_.requestTabOrganization();
   }
 
+  private onRefreshClick_() {
+    this.apiProxy_.rejectTabOrganization(this.sessionId_, this.organizationId_);
+  }
+
   private onCreateGroupClick_(event: CustomEvent<{name: string, tabs: Tab[]}>) {
     this.name_ = event.detail.name;
     this.tabs_ = event.detail.tabs;
@@ -233,7 +265,7 @@ export class TabOrganizationPageElement extends PolymerElement {
   }
 
   private onCheckNow_() {
-    this.apiProxy_.resetSession();
+    this.apiProxy_.restartSession();
   }
 
   private onTipClick_() {

@@ -58,6 +58,8 @@ public class TasksSurfaceProperties {
             LENS_BUTTON_CLICK_LISTENER = new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableBooleanPropertyKey MV_TILES_VISIBLE =
             IS_CONTAINER_VISIBLE;
+    public static final PropertyModel.WritableBooleanPropertyKey MAGIC_STACK_VISIBLE =
+            new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey QUERY_TILES_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableObjectPropertyKey<View.OnClickListener>
@@ -65,10 +67,6 @@ public class TasksSurfaceProperties {
     public static final PropertyModel.WritableIntPropertyKey TASKS_SURFACE_BODY_TOP_MARGIN =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableIntPropertyKey MV_TILES_CONTAINER_TOP_MARGIN =
-            new PropertyModel.WritableIntPropertyKey();
-    public static final PropertyModel.WritableIntPropertyKey MV_TILES_CONTAINER_LEFT_RIGHT_MARGIN =
-            new PropertyModel.WritableIntPropertyKey();
-    public static final PropertyModel.WritableIntPropertyKey SINGLE_TAB_TOP_MARGIN =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableIntPropertyKey TOP_TOOLBAR_PLACEHOLDER_HEIGHT =
             new PropertyModel.WritableIntPropertyKey();
@@ -99,11 +97,10 @@ public class TasksSurfaceProperties {
                 LENS_BUTTON_CLICK_LISTENER,
                 MV_TILES_VISIBLE,
                 QUERY_TILES_VISIBLE,
+                MAGIC_STACK_VISIBLE,
                 VOICE_SEARCH_BUTTON_CLICK_LISTENER,
                 TASKS_SURFACE_BODY_TOP_MARGIN,
                 MV_TILES_CONTAINER_TOP_MARGIN,
-                MV_TILES_CONTAINER_LEFT_RIGHT_MARGIN,
-                SINGLE_TAB_TOP_MARGIN,
                 RESET_TASK_SURFACE_HEADER_SCROLL_POSITION,
                 TOP_TOOLBAR_PLACEHOLDER_HEIGHT,
                 BACKGROUND_COLOR

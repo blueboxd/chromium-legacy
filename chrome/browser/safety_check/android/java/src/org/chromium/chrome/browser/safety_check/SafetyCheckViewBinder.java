@@ -10,14 +10,15 @@ import android.view.View;
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 
-import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
+import org.chromium.chrome.browser.safety_check.PasswordsCheckPreferenceProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 class SafetyCheckViewBinder {
-    private static final String PASSWORDS_KEY = "passwords";
+    public static final String PASSWORDS_KEY_ACCOUNT = "passwords_account";
+    public static final String PASSWORDS_KEY_LOCAL = "passwords_local";
     private static final String SAFE_BROWSING_KEY = "safe_browsing";
     private static final String UPDATES_KEY = "updates";
     private static final long MIN_TO_MS = 60 * 1000;
@@ -43,7 +44,8 @@ class SafetyCheckViewBinder {
             case PasswordsState.SAFE:
                 return context.getString(R.string.safety_check_passwords_safe);
             case PasswordsState.COMPROMISED_EXIST:
-                int compromised = model.get(SafetyCheckProperties.COMPROMISED_PASSWORDS);
+                int compromised =
+                        model.get(PasswordsCheckPreferenceProperties.COMPROMISED_PASSWORDS_COUNT);
                 return context.getResources()
                         .getQuantityString(
                                 R.plurals.safety_check_passwords_compromised_exist,
@@ -209,25 +211,7 @@ class SafetyCheckViewBinder {
 
     static void bind(
             PropertyModel model, SafetyCheckSettingsFragment fragment, PropertyKey propertyKey) {
-        if (SafetyCheckProperties.PASSWORDS_STATE == propertyKey) {
-            @PasswordsState int state = model.get(SafetyCheckProperties.PASSWORDS_STATE);
-            fragment.updateElementStatus(
-                    PASSWORDS_KEY, getStringForPasswords(fragment.getContext(), model, state));
-            SafetyCheckElementPreference preference = fragment.findPreference(PASSWORDS_KEY);
-            preference.setEnabled(true);
-            if (state == PasswordsState.UNCHECKED) {
-                preference.clearStatusIndicator();
-                preference.setEnabled(true);
-            } else if (state == PasswordsState.CHECKING) {
-                clearTimestampText(fragment);
-                preference.showProgressBar();
-                preference.setEnabled(false);
-            } else {
-                displayTimestampText(model, fragment);
-                preference.showStatusIcon(getStatusIconForPasswords(state));
-                preference.setEnabled(true);
-            }
-        } else if (SafetyCheckProperties.SAFE_BROWSING_STATE == propertyKey) {
+        if (SafetyCheckProperties.SAFE_BROWSING_STATE == propertyKey) {
             @SafeBrowsingState int state = model.get(SafetyCheckProperties.SAFE_BROWSING_STATE);
             fragment.updateElementStatus(SAFE_BROWSING_KEY, getStringForSafeBrowsing(state));
             SafetyCheckElementPreference preference = fragment.findPreference(SAFE_BROWSING_KEY);
@@ -261,11 +245,6 @@ class SafetyCheckViewBinder {
                 preference.showStatusIcon(getStatusIconForUpdates(state));
                 preference.setEnabled(true);
             }
-        } else if (SafetyCheckProperties.PASSWORDS_CLICK_LISTENER == propertyKey) {
-            fragment.findPreference(PASSWORDS_KEY)
-                    .setOnPreferenceClickListener(
-                            (Preference.OnPreferenceClickListener)
-                                    model.get(SafetyCheckProperties.PASSWORDS_CLICK_LISTENER));
         } else if (SafetyCheckProperties.SAFE_BROWSING_CLICK_LISTENER == propertyKey) {
             fragment.findPreference(SAFE_BROWSING_KEY)
                     .setOnPreferenceClickListener(
@@ -285,9 +264,49 @@ class SafetyCheckViewBinder {
                                                     .SAFETY_CHECK_BUTTON_CLICK_LISTENER));
         } else if (SafetyCheckProperties.LAST_RUN_TIMESTAMP == propertyKey) {
             displayTimestampText(model, fragment);
-        } else if (SafetyCheckProperties.COMPROMISED_PASSWORDS == propertyKey) {
+        } else {
+            assert false : "Unhandled property detected in SafetyCheckViewBinder!";
+        }
+    }
+
+    static void bindPasswordCheckPreferenceModel(
+            PropertyModel safetyCheckModel,
+            PropertyModel model,
+            SafetyCheckSettingsFragment fragment,
+            PropertyKey propertyKey,
+            String preferenceViewId) {
+        if (PasswordsCheckPreferenceProperties.PASSWORDS_STATE == propertyKey) {
+            @PasswordsState
+            int state = model.get(PasswordsCheckPreferenceProperties.PASSWORDS_STATE);
+            fragment.updateElementStatus(
+                    preferenceViewId, getStringForPasswords(fragment.getContext(), model, state));
+            SafetyCheckElementPreference preference = fragment.findPreference(preferenceViewId);
+            preference.setEnabled(true);
+            if (state == PasswordsState.UNCHECKED) {
+                preference.clearStatusIndicator();
+                preference.setEnabled(true);
+            } else if (state == PasswordsState.CHECKING) {
+                clearTimestampText(fragment);
+                preference.showProgressBar();
+                preference.setEnabled(false);
+            } else {
+                displayTimestampText(safetyCheckModel, fragment);
+                preference.showStatusIcon(getStatusIconForPasswords(state));
+                preference.setEnabled(true);
+            }
+        } else if (PasswordsCheckPreferenceProperties.PASSWORDS_CLICK_LISTENER == propertyKey) {
+            fragment.findPreference(preferenceViewId)
+                    .setOnPreferenceClickListener(
+                            (Preference.OnPreferenceClickListener)
+                                    model.get(
+                                            PasswordsCheckPreferenceProperties
+                                                    .PASSWORDS_CLICK_LISTENER));
+        } else if (PasswordsCheckPreferenceProperties.COMPROMISED_PASSWORDS_COUNT == propertyKey) {
             // Do nothing - this is handled by the PASSWORDS_STATE update.
             return;
+        } else if (PasswordsCheckPreferenceProperties.PASSWORDS_TITLE == propertyKey) {
+            SafetyCheckElementPreference preference = fragment.findPreference(preferenceViewId);
+            preference.setTitle(model.get(PasswordsCheckPreferenceProperties.PASSWORDS_TITLE));
         } else {
             assert false : "Unhandled property detected in SafetyCheckViewBinder!";
         }

@@ -132,6 +132,7 @@ struct FrameTokenWithPredecessor {
 // [4] https://html.spec.whatwg.org/multipage/input.html#attr-input-type
 // clang-format on
 struct FormData {
+  struct FillData;
   // Returns true if many members of forms |a| and |b| are identical.
   //
   // "Many" is intended to be "all", but currently the following members are not
@@ -159,7 +160,7 @@ struct FormData {
 
   // An identifier that is unique across all forms in all frames.
   // Must not be leaked to renderer process. See FieldGlobalId for details.
-  FormGlobalId global_id() const { return {host_frame, unique_renderer_id}; }
+  FormGlobalId global_id() const { return {host_frame, renderer_id}; }
 
   // TODO(crbug/1211834): This function is deprecated. Use FormData::DeepEqual()
   // instead.
@@ -219,9 +220,6 @@ struct FormData {
   // trees. For details, see RenderFrameHost::GetMainFrame().
   url::Origin main_frame_origin;
 
-  // True if this form is a form tag.
-  bool is_form_tag = true;
-
   // A unique identifier of the containing frame. This value is not serialized
   // because LocalFrameTokens must not be leaked to other renderer processes.
   LocalFrameToken host_frame;
@@ -229,7 +227,7 @@ struct FormData {
   // frame. In the browser process, it should only be used in conjunction with
   // |host_frame| to identify a field; see global_id(). It is not persistent
   // between page loads and therefore not used in comparison in SameFieldAs().
-  FormRendererId unique_renderer_id;
+  FormRendererId renderer_id;
 
   // A monotonically increasing counter that indicates the generation of the
   // form: if `f.version < g.version`, then `f` has been received from the
@@ -268,6 +266,22 @@ struct FormData {
 #if BUILDFLAG(IS_IOS)
   std::string frame_id;
 #endif
+};
+
+// Structure containing necessary information to be sent from the browser to the
+// renderer in order to fill a form.
+// See documentation of FormData for more info.
+struct FormData::FillData {
+  FillData();
+  explicit FillData(const FormData& form);
+
+  ~FillData();
+
+  // An identifier of the form that is unique among forms from the same frame.
+  FormRendererId renderer_id;
+
+  // A vector of all the fields in the form that we want the renderer to fill.
+  std::vector<FormFieldData::FillData> fields;
 };
 
 // Whether any of the fields in |form| is a non-empty password field.

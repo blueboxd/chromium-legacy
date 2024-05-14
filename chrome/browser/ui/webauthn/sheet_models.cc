@@ -1261,9 +1261,22 @@ std::u16string AuthenticatorQRSheetModel::GetSecurityKeyLabel() const {
 }
 
 std::u16string AuthenticatorQRSheetModel::GetOtherMechanismButtonLabel() const {
-  return base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI)
-             ? l10n_util::GetStringUTF16(IDS_WEBAUTHN_BACK)
-             : AuthenticatorSheetModelBase::GetOtherMechanismButtonLabel();
+  if (!base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI)) {
+    return AuthenticatorSheetModelBase::GetOtherMechanismButtonLabel();
+  }
+  // If the QR code sheet was the priority mechanism, the button taking the user
+  // to the selection sheet should read "Use a different passkey".
+  if (dialog_model()->priority_mechanism_index() &&
+      absl::holds_alternative<
+          AuthenticatorRequestDialogModel::Mechanism::AddPhone>(
+          dialog_model()
+              ->mechanisms()[*dialog_model()->priority_mechanism_index()]
+              .type)) {
+    return AuthenticatorSheetModelBase::GetOtherMechanismButtonLabel();
+  }
+  // Otherwise, the user must have tapped a button on the selection sheet to get
+  // here. The button taking the user to the selection sheet should read "Back".
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BACK);
 }
 
 // AuthenticatorConnectingSheetModel ------------------------------------------
@@ -1565,4 +1578,43 @@ void AuthenticatorPriorityMechanismSheetModel::OnAccept() {
   dialog_model()
       ->mechanisms()[*dialog_model()->priority_mechanism_index()]
       .callback.Run();
+}
+
+// AuthenticatorGPMCreatePinSheetModel -------------------------------------
+
+AuthenticatorGPMCreatePinSheetModel::AuthenticatorGPMCreatePinSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model,
+                                  OtherMechanismButtonVisibility::kHidden) {
+  // TODO(rgod): Add correct illustration.
+  vector_illustrations_.emplace(kPasskeyHeaderIcon, kPasskeyHeaderDarkIcon);
+}
+
+AuthenticatorGPMCreatePinSheetModel::~AuthenticatorGPMCreatePinSheetModel() =
+    default;
+
+std::u16string AuthenticatorGPMCreatePinSheetModel::GetStepTitle() const {
+  return u"Create a PIN for your Google Password Manager (UNTRANSLATED)";
+}
+
+std::u16string AuthenticatorGPMCreatePinSheetModel::GetStepDescription() const {
+  return u"Your PIN protects your data. You'll need it when you want to start "
+         u"using your passkeys on new devices. (UNTRANSLATED)";
+}
+
+bool AuthenticatorGPMCreatePinSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorGPMCreatePinSheetModel::IsAcceptButtonEnabled() const {
+  return false;
+}
+
+std::u16string AuthenticatorGPMCreatePinSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CONTINUE);
+}
+
+void AuthenticatorGPMCreatePinSheetModel::OnAccept() {
+  dialog_model()->OnGPMCreate();
 }

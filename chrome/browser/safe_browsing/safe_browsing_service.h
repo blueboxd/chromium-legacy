@@ -195,7 +195,7 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
       download::DownloadItem* download,
       ClientSafeBrowsingReportRequest::ReportType report_type,
       bool did_proceed,
-      absl::optional<bool> show_download_in_folder);
+      std::optional<bool> show_download_in_folder);
 
   // Sends phishy site report to backend. Returns true if the report is sent
   // successfully.
@@ -287,6 +287,9 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Creates a configured NetworkContextParams when the network service is in
   // use.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
+
+  // Logs metrics related to cookies.
+  void RecordStartupCookieMetrics(Profile* profile);
 
   std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
 

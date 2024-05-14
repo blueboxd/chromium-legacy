@@ -76,8 +76,6 @@ void UmaHistogramCounts10000WithBatteryStateVariant(const char* histogram_name,
 }  // namespace
 
 // static
-const char TabStatsTracker::kTabStatsDailyEventHistogramName[] =
-    "Tabs.TabsStatsDailyEventInterval";
 const char TabStatsTracker::UmaStatsReportingDelegate::
     kNumberOfTabsOnResumeHistogramName[] = "Tabs.NumberOfTabsOnResume";
 const char
@@ -119,10 +117,11 @@ const TabStatsDataStore::TabsStats& TabStatsTracker::tab_stats() const {
 TabStatsTracker::TabStatsTracker(PrefService* pref_service)
     : reporting_delegate_(std::make_unique<UmaStatsReportingDelegate>()),
       tab_stats_data_store_(std::make_unique<TabStatsDataStore>(pref_service)),
-      daily_event_(
-          std::make_unique<DailyEvent>(pref_service,
-                                       ::prefs::kTabStatsDailySample,
-                                       kTabStatsDailyEventHistogramName)) {
+      daily_event_(std::make_unique<DailyEvent>(
+          pref_service,
+          ::prefs::kTabStatsDailySample,
+          // Empty to skip recording the daily event type histogram.
+          /* histogram_name=*/std::string())) {
   DCHECK(pref_service);
 
   // Add owned observers to the list manually since they are about to be
@@ -171,12 +170,26 @@ TabStatsTracker::~TabStatsTracker() {
 
 // static
 void TabStatsTracker::SetInstance(std::unique_ptr<TabStatsTracker> instance) {
-  DCHECK_EQ(nullptr, g_tab_stats_tracker_instance);
+  CHECK(!g_tab_stats_tracker_instance);
   g_tab_stats_tracker_instance = instance.release();
 }
 
+// static
+void TabStatsTracker::ClearInstance() {
+  CHECK(g_tab_stats_tracker_instance);
+  delete g_tab_stats_tracker_instance;
+  g_tab_stats_tracker_instance = nullptr;
+}
+
+// static
 TabStatsTracker* TabStatsTracker::GetInstance() {
+  CHECK(g_tab_stats_tracker_instance);
   return g_tab_stats_tracker_instance;
+}
+
+// static
+bool TabStatsTracker::HasInstance() {
+  return g_tab_stats_tracker_instance != nullptr;
 }
 
 void TabStatsTracker::AddObserverAndSetInitialState(

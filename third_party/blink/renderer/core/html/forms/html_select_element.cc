@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
@@ -77,19 +78,6 @@ namespace blink {
 
 using mojom::blink::FormControlType;
 
-namespace {
-
-bool CanAssignToSelectSlot(const Node& node) {
-  // Even if options/optgroups are not rendered as children of menulist SELECT,
-  // we still need to add them to the flat tree through slotting since we need
-  // their ComputedStyle for popup rendering.
-  return node.HasTagName(html_names::kOptionTag) ||
-         node.HasTagName(html_names::kOptgroupTag) ||
-         node.HasTagName(html_names::kHrTag);
-}
-
-}  // namespace
-
 // https://html.spec.whatwg.org/#dom-htmloptionscollection-length
 static const unsigned kMaxListItems = 100000;
 
@@ -108,8 +96,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
   // Make sure SelectType is created after initializing |uses_menu_list_|.
   select_type_ = SelectType::Create(*this);
   SetHasCustomStyleCallbacks();
-  EnsureUserAgentShadowRoot().SetSlotAssignmentMode(
-      SlotAssignmentMode::kManual);
+  EnsureUserAgentShadowRoot();
 }
 
 HTMLSelectElement::~HTMLSelectElement() = default;
@@ -294,17 +281,15 @@ String HTMLSelectElement::Value() const {
 }
 
 void HTMLSelectElement::setValueForBinding(const String& value) {
-  if (!IsAutofilled()) {
-    SetValue(value);
-  } else {
-    String old_value = this->Value();
-    SetValue(value, false,
-             value != old_value ? WebAutofillState::kNotFilled
-                                : WebAutofillState::kAutofilled);
-    if (Page* page = GetDocument().GetPage()) {
-      page->GetChromeClient().JavaScriptChangedAutofilledValue(*this,
-                                                               old_value);
-    }
+  String old_value = this->Value();
+  bool was_autofilled = IsAutofilled();
+  SetValue(value, false,
+           !was_autofilled || value != old_value
+               ? WebAutofillState::kNotFilled
+               : WebAutofillState::kAutofilled);
+  if (Page* page = GetDocument().GetPage()) {
+    page->GetChromeClient().JavaScriptChangedValue(*this, old_value,
+                                                   was_autofilled);
   }
 }
 
@@ -1126,6 +1111,15 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
     return;
   }
 
+  if (SlottedButton() && SlottedDatalist()) {
+    // If there is a custom <button> and <datalist> at the same time, then the
+    // popover triggering code will handle everything for now.
+    // TODO(crbug.com/1511354): Implement keyboard behavior for stylable
+    // <select> to match <selectlist> and other OpenUI resolutions.
+    CHECK(RuntimeEnabledFeatures::StylableSelectEnabled());
+    return;
+  }
+
   if (select_type_->DefaultEventHandler(event)) {
     event.SetDefaultHandled();
     return;
@@ -1251,41 +1245,23 @@ void HTMLSelectElement::Trace(Visitor* visitor) const {
 }
 
 void HTMLSelectElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
-  // Even if UsesMenuList(), the <slot> is necessary to have ComputedStyles
-  // for <option>s. LayoutFlexibleBox::IsChildAllowed() rejects all of
-  // LayoutObject children except for MenuListInnerElement's.
-
-  option_slot_ = MakeGarbageCollected<HTMLSlotElement>(GetDocument());
-  root.AppendChild(option_slot_);
+  root.SetSlotAssignmentMode(SlotAssignmentMode::kManual);
   UpdateUserAgentShadowTree(root);
   select_type_->UpdateTextStyleAndContent();
 }
 
 void HTMLSelectElement::ManuallyAssignSlots() {
-  ShadowRoot* shadow_root = UserAgentShadowRoot();
-  DCHECK(shadow_root);
-
-  HeapVector<Member<Node>> option_nodes;
-  for (Node& child : NodeTraversal::ChildrenOf(*this)) {
-    if (!child.IsSlotable())
-      continue;
-    if (CanAssignToSelectSlot(child))
-      option_nodes.push_back(child);
-  }
-  option_slot_->Assign(option_nodes);
+  select_type_->ManuallyAssignSlots();
 }
 
 void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
-  // Remove all children of the ShadowRoot except for <slot>.
+  // Remove all children of the ShadowRoot so that select_type_ can set it up
+  // however it wants.
   Node* node = root.firstChild();
   while (node) {
-    if (IsA<HTMLSlotElement>(node)) {
-      node = node->nextSibling();
-    } else {
-      auto* will_be_removed = node;
-      node = node->nextSibling();
-      will_be_removed->remove();
-    }
+    auto* will_be_removed = node;
+    node = node->nextSibling();
+    will_be_removed->remove();
   }
   select_type_->CreateShadowSubtree(root);
 }
@@ -1309,8 +1285,9 @@ String HTMLSelectElement::ItemText(const Element& element) const {
   else if (auto* option = DynamicTo<HTMLOptionElement>(element))
     item_string = option->TextIndentedToRespectGroupLabel();
 
-  if (GetLayoutObject() && GetLayoutObject()->Style())
-    GetLayoutObject()->Style()->ApplyTextTransform(&item_string);
+  if (GetLayoutObject() && GetLayoutObject()->Style()) {
+    return GetLayoutObject()->Style()->ApplyTextTransform(item_string);
+  }
   return item_string;
 }
 
@@ -1495,6 +1472,15 @@ void HTMLSelectElement::showPicker(ExceptionState& exception_state) {
     return;
   }
 
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*this) ||
+      !GetLayoutBox()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "showPicker() requires the select is rendered.");
+    return;
+  }
+
   select_type_->ShowPicker();
 }
 
@@ -1541,10 +1527,28 @@ bool HTMLSelectElement::HandleInvokeInternal(HTMLElement& invoker,
     return false;
   }
 
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*this) ||
+      !GetLayoutBox()) {
+    String message = "Select cannot be invoked when not being rendered.";
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message));
+    return false;
+  }
+
   // Step 3. ... show the picker, if applicable, for this.
   select_type_->ShowPicker();
 
   return true;
+}
+
+HTMLButtonElement* HTMLSelectElement::SlottedButton() const {
+  return select_type_->SlottedButton();
+}
+
+HTMLDataListElement* HTMLSelectElement::SlottedDatalist() const {
+  return select_type_->SlottedDatalist();
 }
 
 }  // namespace blink

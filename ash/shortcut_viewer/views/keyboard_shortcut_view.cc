@@ -104,8 +104,7 @@ class KSVNoResultsImageView : public views::ImageView {
   }
 
  private:
-  const raw_ptr<ash::DarkLightModeControllerImpl, ExperimentalAsh>
-      dark_light_mode_controller_;
+  const raw_ptr<ash::DarkLightModeControllerImpl> dark_light_mode_controller_;
 };
 
 BEGIN_METADATA(KSVNoResultsImageView)
@@ -182,7 +181,8 @@ std::unique_ptr<ShortcutsListScrollView> CreateScrollView(
 }
 
 void UpdateAXNodeDataPosition(
-    std::vector<KeyboardShortcutItemView*>& shortcut_items) {
+    std::vector<raw_ptr<KeyboardShortcutItemView, VectorExperimental>>&
+        shortcut_items) {
   // Update list item AXNodeData position for assistive tool.
   const int number_shortcut_items = shortcut_items.size();
   for (int i = 0; i < number_shortcut_items; ++i) {
@@ -291,7 +291,7 @@ bool KeyboardShortcutView::AcceleratorPressed(
   return true;
 }
 
-void KeyboardShortcutView::Layout() {
+void KeyboardShortcutView::Layout(PassKey) {
   gfx::Rect content_bounds(GetContentsBounds());
   if (content_bounds.IsEmpty()) {
     return;
@@ -456,7 +456,8 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
 
   ash::ShortcutCategory current_category = ash::ShortcutCategory::kUnknown;
   KeyboardShortcutItemListView* item_list_view = nullptr;
-  std::vector<KeyboardShortcutItemView*> shortcut_items;
+  std::vector<raw_ptr<KeyboardShortcutItemView, VectorExperimental>>
+      shortcut_items;
   const bool already_has_tabs = categories_tabbed_pane_->GetTabCount() > 0;
   size_t tab_index = 0;
   views::View* const tab_contents = categories_tabbed_pane_->children()[1];
@@ -644,7 +645,7 @@ KSVSearchBoxView* KeyboardShortcutView::GetSearchBoxViewForTesting() {
   return search_box_view_;
 }
 
-const std::vector<KeyboardShortcutItemView*>&
+const std::vector<raw_ptr<KeyboardShortcutItemView, VectorExperimental>>&
 KeyboardShortcutView::GetFoundShortcutItemsForTesting() const {
   return found_shortcut_items_;
 }
@@ -664,7 +665,7 @@ void KeyboardShortcutView::UpdateActiveAndInactiveFrameColor() {
   window->SetProperty(chromeos::kFrameInactiveColorKey, background_color);
 }
 
-BEGIN_METADATA(KeyboardShortcutView, views::WidgetDelegateView)
+BEGIN_METADATA(KeyboardShortcutView)
 END_METADATA
 
 }  // namespace keyboard_shortcut_viewer

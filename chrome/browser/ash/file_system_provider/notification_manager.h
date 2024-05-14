@@ -25,8 +25,7 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
-namespace ash {
-namespace file_system_provider {
+namespace ash::file_system_provider {
 
 // Provided file systems's manager for showing notifications. Shows always
 // up to one notification. If more than one request is unresponsive, then
@@ -74,7 +73,7 @@ class NotificationManager : public NotificationManagerInterface,
   // clearing the list.
   void OnNotificationResult(NotificationResult result);
 
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile> profile_;
   ProvidedFileSystemInfo file_system_info_;
   CallbackMap callbacks_;
   std::unique_ptr<AppIconLoader> icon_loader_;
@@ -82,7 +81,6 @@ class NotificationManager : public NotificationManagerInterface,
   base::WeakPtrFactory<NotificationManager> weak_factory_{this};
 };
 
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_NOTIFICATION_MANAGER_H_

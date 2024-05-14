@@ -9,8 +9,10 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <optional>
 
 #include "build/build_config.h"
+#include "partition_alloc/lightweight_quarantine.h"
 #include "partition_alloc/partition_alloc-inl.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
@@ -140,7 +142,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadCacheRegistry {
   // Controls the thread cache size, by setting the multiplier to a value above
   // or below |ThreadCache::kDefaultMultiplier|.
   void SetThreadCacheMultiplier(float multiplier);
-  void SetLargestActiveBucketIndex(uint8_t largest_active_bucket_index);
+  void SetLargestActiveBucketIndex(uint16_t largest_active_bucket_index);
 
   // Controls the thread cache purging configuration.
   void SetPurgingConfiguration(
@@ -184,7 +186,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadCacheRegistry {
   internal::base::TimeDelta periodic_purge_next_interval_;
   bool is_purging_configured_ = false;
 
-  uint8_t largest_active_bucket_index_ = internal::BucketIndexLookup::GetIndex(
+  uint16_t largest_active_bucket_index_ = internal::BucketIndexLookup::GetIndex(
       ThreadCacheLimits::kDefaultSizeThreshold);
 };
 
@@ -294,10 +296,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadCache {
 
   ~ThreadCache();
 
-  // Force placement new.
-  void* operator new(size_t) = delete;
-  void* operator new(size_t, void* buffer) { return buffer; }
-  void operator delete(void* ptr) = delete;
+  // Disallow copy and move.
   ThreadCache(const ThreadCache&) = delete;
   ThreadCache(const ThreadCache&&) = delete;
   ThreadCache& operator=(const ThreadCache&) = delete;
@@ -399,6 +398,11 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadCache {
     ClearBucket(bucket, limit);
   }
 
+  internal::LightweightQuarantineBranch& GetSchedulerLoopQuarantineBranch() {
+    PA_DCHECK(scheduler_loop_quarantine_branch_.has_value());
+    return *scheduler_loop_quarantine_branch_;
+  }
+
  private:
   friend class tools::HeapDumper;
   friend class tools::ThreadCacheInspector;
@@ -407,6 +411,9 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadCache {
 
   explicit ThreadCache(PartitionRoot* root);
   static void Delete(void* thread_cache_ptr);
+
+  static void* operator new(size_t count);
+  static void operator delete(void* ptr);
 
   void PurgeInternal();
   template <bool crash_on_corruption>
@@ -467,6 +474,9 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadCache {
   // allocate.
   ThreadCache* next_ PA_GUARDED_BY(ThreadCacheRegistry::GetLock());
   ThreadCache* prev_ PA_GUARDED_BY(ThreadCacheRegistry::GetLock());
+
+  std::optional<internal::LightweightQuarantineBranch>
+      scheduler_loop_quarantine_branch_;
 
   friend class ThreadCacheRegistry;
   friend class PartitionAllocThreadCacheTest;
@@ -601,28 +611,29 @@ PA_ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
       internal::kPartitionCachelineSize == 64,
       "The computation below assumes that cache lines are 64 bytes long.");
   int distance_to_next_cacheline_in_16_bytes = 4 - ((slot_start >> 4) & 3);
+  // When BRP is on in the "previous slot" mode, this slot may have a BRP
+  // ref-count of the next, potentially allocated slot. Make sure we don't
+  // overwrite it.
+  // TODO(bartekn): Ok to overwriter in the "same slot" mode.
   int slot_size_remaining_in_16_bytes =
-#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-      // When BRP is on in the "previous slot" mode, this slot may have a BRP
-      // ref-count of the next, potentially allocated slot. Make sure we don't
-      // overwrite it.
-      (bucket.slot_size - sizeof(PartitionRefCount)) / 16;
-#else
-      bucket.slot_size / 16;
-#endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+      (bucket.slot_size - internal::kInSlotRefCountBufferSize) / 16;
 
   slot_size_remaining_in_16_bytes = std::min(
       slot_size_remaining_in_16_bytes, distance_to_next_cacheline_in_16_bytes);
 
   static const uint32_t poison_16_bytes[4] = {0xbadbad00, 0xbadbad00,
                                               0xbadbad00, 0xbadbad00};
-  // Give a hint to the compiler in hope it'll vectorize the loop.
-#if PA_HAS_BUILTIN(__builtin_assume_aligned)
-  void* slot_start_tagged = __builtin_assume_aligned(
-      internal::SlotStartAddr2Ptr(slot_start), internal::kAlignment);
+
+#if !(BUILDFLAG(IS_WIN) && defined(COMPONENT_BUILD))
+  void* slot_start_tagged = std::assume_aligned<internal::kAlignment>(
+      internal::SlotStartAddr2Ptr(slot_start));
 #else
+  // TODO(crbug.com/1429450): std::assume_aligned introuces an additional
+  // dependency: _libcpp_verbose_abort(const char*, ...).  It will cause
+  // "undefined symbol" error when linking allocator_shim.dll.
   void* slot_start_tagged = internal::SlotStartAddr2Ptr(slot_start);
 #endif
+
   uint32_t* address_aligned = static_cast<uint32_t*>(slot_start_tagged);
   for (int i = 0; i < slot_size_remaining_in_16_bytes; i++) {
     // Clang will expand the memcpy to a 16-byte write (movups on x86).

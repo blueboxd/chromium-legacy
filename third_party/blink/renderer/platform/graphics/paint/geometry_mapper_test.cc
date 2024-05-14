@@ -92,9 +92,9 @@ class GeometryMapperTest : public testing::Test,
   PropertyTreeStateOrAlias ancestor_state = PropertyTreeState::Root();
   gfx::RectF input_rect;
   FloatClipRect expected_visual_rect;
-  absl::optional<FloatClipRect> expected_visual_rect_expanded_for_compositing;
+  std::optional<FloatClipRect> expected_visual_rect_expanded_for_compositing;
   gfx::Vector2dF expected_translation_2d;
-  absl::optional<gfx::Transform> expected_transform;
+  std::optional<gfx::Transform> expected_transform;
   FloatClipRect expected_clip;
   bool expected_clip_has_transform_animation = false;
   bool expected_clip_has_sticky_transform = false;
@@ -356,7 +356,7 @@ TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
 
   auto inverse_rotate_transform = MakeRotationMatrix(-45, 0, 0);
   TransformPaintPropertyNode::State inverse_state{{inverse_rotate_transform}};
-  inverse_state.flags.flattens_inherited_transform = true;
+  inverse_state.flattens_inherited_transform = true;
   auto transform2 =
       TransformPaintPropertyNode::Create(*transform1, std::move(inverse_state));
   local_state.SetTransform(*transform2);

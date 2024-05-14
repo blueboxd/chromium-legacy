@@ -17,6 +17,7 @@ enum class PromoStyleImageType {
 };
 
 enum class BannerImageSizeType {
+  kShort,
   kStandard,
   kTall,
   kExtraTall,
@@ -52,6 +53,11 @@ enum class BannerImageSizeType {
 // When set to YES, the banner is hidden. Defaults to NO.
 @property(nonatomic, assign) BOOL shouldHideBanner;
 
+// When set to YES, use `PromoStyleBackgroundView` as background. Only available
+// with hidden banner. This value has to be set before the view is loaded.
+// Defaults to NO.
+@property(nonatomic, assign) BOOL usePromoStyleBackground;
+
 // The type of image to display in the header. This value has to be set before
 // the view is loaded. Defaults to kNone.
 // See `headerImage` to set the actual image.
@@ -68,6 +74,29 @@ enum class BannerImageSizeType {
 // kNone. before.
 @property(nonatomic, copy) NSString* headerAccessibilityLabel;
 
+// When set to YES, the header will be hidden when the content is taller than
+// the scroll view. This can make the content fully visible or require less
+// scrolling when using a smaller form factor device or a larger font size.
+// Once hidden, the header will not reappear. Default to NO.
+@property(nonatomic, assign) BOOL hideHeaderOnTallContent;
+
+// When set to YES, forces UIUserInterfaceStyleLight for the header views. This
+// value has to be set before the view is loaded. Default to NO.
+@property(nonatomic, assign) BOOL headerViewForceStyleLight;
+
+// The top margin percentage of the header view when there is no background.
+// Must be set before the view is loaded. Defaults to
+// `kNoBackgroundHeaderImageTopMarginPercentage`.
+@property(nonatomic, assign) CGFloat noBackgroundHeaderImageTopMarginPercentage;
+
+// The bottom margin of the header image, when the image is not of type kAvatar.
+// Must be set before the view is loaded. Defaults to `kDefaultMargin`.
+@property(nonatomic, assign) CGFloat headerImageBottomMargin;
+
+// The inset of the header image shadow. Must be set before the view is loaded.
+// Defaults to `kHeaderImageShadowShadowInset`.
+@property(nonatomic, assign) CGFloat headerImageShadowInset;
+
 // The label of the headline below the image. Must be set before the view is
 // loaded. This is declared public so the accessibility can be enabled.
 @property(nonatomic, strong) UILabel* titleLabel;
@@ -78,6 +107,10 @@ enum class BannerImageSizeType {
 // The margin on leading and trailing ends of the title label.
 // Must be set before the view is loaded. Defaults to `kTitleHorizontalMargin`.
 @property(nonatomic, assign) CGFloat titleHorizontalMargin;
+
+// Top margin of the title label when there is no header image set. Must be set
+// before the view is loaded. Defaults to zero.
+@property(nonatomic, assign) CGFloat titleTopMarginWhenNoHeaderImage;
 
 // The subtitle below the title. Must be set before the view is loaded.
 @property(nonatomic, copy) NSString* subtitleText;
@@ -105,6 +138,14 @@ enum class BannerImageSizeType {
 
 // The text for the primary action. Must be set before the view is loaded.
 @property(nonatomic, copy) NSString* primaryActionString;
+
+// The configuration update handler for the primaryActionButton. Must be set
+// before the view is loaded.
+@property(nonatomic, copy) UIButtonConfigurationUpdateHandler updateHandler;
+
+// The primary action button is enabled when set to YES, disabled when NO. The
+// button is enabled by default.
+@property(nonatomic, assign) BOOL primaryButtonEnabled;
 
 // The text for the secondary action. Must be set before the view is loaded. If
 // not set, there won't be a secondary action button.
@@ -144,6 +185,9 @@ enum class BannerImageSizeType {
 
 // Aligns the elements to the top of the view.
 @property(nonatomic, assign) BOOL topAlignedLayout;
+
+// Whether action buttons should have the same visual style.
+@property(nonatomic, assign) BOOL useEquallyWeightedButtons;
 
 @end
 

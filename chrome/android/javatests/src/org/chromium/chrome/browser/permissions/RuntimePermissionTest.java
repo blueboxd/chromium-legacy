@@ -17,7 +17,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.MaxAndroidSdkLevel;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -29,6 +31,7 @@ import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.permissions.PermissionsAndroidFeatureList;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 
@@ -72,7 +75,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 GEOLOCATION_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 /* javascriptToExecute= */ null,
@@ -83,6 +86,7 @@ public class RuntimePermissionTest {
     @MediumTest
     @Feature({"RuntimePermissions", "MediaPermissions"})
     @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @DisabledTest(message = "b/325085976")
     public void testAllowRuntimeCamera() throws Exception {
         String[] requestablePermission = new String[] {Manifest.permission.CAMERA};
         mTestAndroidPermissionDelegate =
@@ -93,7 +97,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: true, audio: false});",
@@ -114,7 +118,29 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
+                /* waitForMissingPermissionPrompt= */ false,
+                /* waitForUpdater= */ true,
+                "getUserMediaAndStopLegacy({video: false, audio: true});",
+                /* missingPermissionPromptTextId= */ 0);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RuntimePermissions", "MediaPermissions"})
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @Features.EnableFeatures(PermissionsAndroidFeatureList.ONE_TIME_PERMISSION)
+    public void testAllowRuntimeMicrophoneOneTime() throws Exception {
+        String[] requestablePermission = new String[] {Manifest.permission.RECORD_AUDIO};
+        mTestAndroidPermissionDelegate =
+                new TestAndroidPermissionDelegate(
+                        requestablePermission, RuntimePromptResponse.GRANT);
+        RuntimePermissionTestUtils.runTest(
+                mPermissionTestRule,
+                mTestAndroidPermissionDelegate,
+                MEDIA_TEST,
+                /* expectPermissionAllowed= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW_ONCE,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: false, audio: true});",
@@ -140,7 +166,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 GEOLOCATION_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ true,
                 /* waitForUpdater= */ true,
                 /* javascriptToExecute= */ null,
@@ -161,7 +187,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ true,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: true, audio: false});",
@@ -182,7 +208,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ true,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: false, audio: true});",
@@ -232,7 +258,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 DOWNLOAD_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ null,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.NONE,
                 /* waitForMissingPermissionPrompt= */ true,
                 /* waitForUpdater= */ false,
                 "document.getElementsByTagName('a')[0].click();",
@@ -258,7 +284,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 GEOLOCATION_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ false,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.DENY,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 /* javascriptToExecute= */ null,
@@ -280,7 +306,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: false, audio: true});",
@@ -295,7 +321,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ null,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.NONE,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: false, audio: true});",
@@ -317,7 +343,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: true, audio: false});",
@@ -332,7 +358,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ null,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.NONE,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: true, audio: false});",
@@ -358,7 +384,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 GEOLOCATION_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 /* javascriptToExecute= */ null,
@@ -385,7 +411,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 GEOLOCATION_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 /* javascriptToExecute= */ null,
@@ -408,7 +434,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: true, audio: false});",
@@ -430,7 +456,7 @@ public class RuntimePermissionTest {
                 mTestAndroidPermissionDelegate,
                 MEDIA_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 "getUserMediaAndStopLegacy({video: false, audio: true});",

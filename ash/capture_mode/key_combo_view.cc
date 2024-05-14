@@ -94,9 +94,9 @@ bool operator>(const ui::KeyboardCode lhs, const ui::KeyboardCode rhs) {
 
 // The container view that hosts the modifiers key item views.
 class ModifiersContainerView : public views::View {
- public:
-  METADATA_HEADER(ModifiersContainerView);
+  METADATA_HEADER(ModifiersContainerView, views::View)
 
+ public:
   explicit ModifiersContainerView() {
     views::BoxLayout* layout_manager =
         SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -139,7 +139,7 @@ class ModifiersContainerView : public views::View {
 
  private:
   void RemoveModifier(ui::KeyboardCode key_code) {
-    for (auto* child : children()) {
+    for (views::View* child : children()) {
       if (static_cast<KeyItemView*>(child)->key_code() == key_code) {
         RemoveChildViewT(child);
         return;
@@ -164,7 +164,7 @@ class ModifiersContainerView : public views::View {
   int current_modifiers_ = 0;
 };
 
-BEGIN_METADATA(ModifiersContainerView, views::View)
+BEGIN_METADATA(ModifiersContainerView)
 END_METADATA
 
 // -----------------------------------------------------------------------------
@@ -217,7 +217,7 @@ std::vector<ui::KeyboardCode> KeyComboView::GetModifierKeycodeVector() const {
   return key_codes;
 }
 
-BEGIN_METADATA(KeyComboView, views::View)
+BEGIN_METADATA(KeyComboView)
 END_METADATA
 
 }  // namespace ash

@@ -29,15 +29,13 @@ class EmbeddedPermissionPromptShowSystemPromptView
 
   std::u16string GetAccessibleWindowTitle() const override;
   std::u16string GetWindowTitle() const override;
+  bool ShowLoadingIcon() const override;
   void RunButtonCallback(int type) override;
 
  protected:
   std::vector<RequestLineConfiguration> GetRequestLinesConfiguration()
       const override;
   std::vector<ButtonConfiguration> GetButtonsConfiguration() const override;
-
- private:
-  std::u16string GetMessageText() const;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PERMISSIONS_EMBEDDED_PERMISSION_PROMPT_SHOW_SYSTEM_PROMPT_VIEW_H_

@@ -3,18 +3,20 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {AutofillManagerProxy, PaymentsManagerProxy, PersonalDataChangedListener} from 'chrome://settings/lazy_load.js';
+import type {AutofillManagerProxy, PaymentsManagerProxy, PersonalDataChangedListener} from 'chrome://settings/lazy_load.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 // clang-format on
 
-const ServerFieldType = chrome.autofillPrivate.ServerFieldType;
+const FieldType = chrome.autofillPrivate.FieldType;
 
 export const STUB_USER_ACCOUNT_INFO: chrome.autofillPrivate.AccountInfo = {
   email: 'stub-user@example.com',
   isSyncEnabledForAutofillProfiles: false,
   isEligibleForAddressAccountStorage: false,
+  isAutofillSyncToggleAvailable: false,
+  isAutofillSyncToggleEnabled: false,
 };
 
 /**
@@ -35,25 +37,25 @@ export function createAddressEntry(): chrome.autofillPrivate.AddressEntry {
   return {
     guid: makeGuid(),
     fields: [
-      {type: ServerFieldType.NAME_FULL, value: fullName},
-      {type: ServerFieldType.COMPANY_NAME, value: 'Google'},
+      {type: FieldType.NAME_FULL, value: fullName},
+      {type: FieldType.COMPANY_NAME, value: 'Google'},
       {
-        type: ServerFieldType.ADDRESS_HOME_STREET_ADDRESS,
+        type: FieldType.ADDRESS_HOME_STREET_ADDRESS,
         value: addressLines,
       },
-      {type: ServerFieldType.ADDRESS_HOME_STATE, value: 'CA'},
-      {type: ServerFieldType.ADDRESS_HOME_CITY, value: 'Venice'},
+      {type: FieldType.ADDRESS_HOME_STATE, value: 'CA'},
+      {type: FieldType.ADDRESS_HOME_CITY, value: 'Venice'},
       {
-        type: ServerFieldType.ADDRESS_HOME_ZIP,
+        type: FieldType.ADDRESS_HOME_ZIP,
         value: patternMaker('xxxxx', 10),
       },
-      {type: ServerFieldType.ADDRESS_HOME_COUNTRY, value: 'US'},
+      {type: FieldType.ADDRESS_HOME_COUNTRY, value: 'US'},
       {
-        type: ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
+        type: FieldType.PHONE_HOME_WHOLE_NUMBER,
         value: patternMaker('(xxx) xxx-xxxx', 10),
       },
       {
-        type: ServerFieldType.EMAIL_ADDRESS,
+        type: FieldType.EMAIL_ADDRESS,
         value: patternMaker('userxxxx@gmail.com', 16),
       },
     ],
@@ -193,6 +195,7 @@ export class TestAutofillManager extends TestBrowserProxy implements
       'removeAddress',
       'removePersonalDataManagerListener',
       'setPersonalDataManagerListener',
+      'setAutofillSyncToggleEnabled',
     ]);
 
     // Set these to have non-empty data.
@@ -202,6 +205,8 @@ export class TestAutofillManager extends TestBrowserProxy implements
         email: 'stub-user@example.com',
         isSyncEnabledForAutofillProfiles: true,
         isEligibleForAddressAccountStorage: false,
+        isAutofillSyncToggleAvailable: false,
+        isAutofillSyncToggleEnabled: false,
       },
     };
 
@@ -234,6 +239,10 @@ export class TestAutofillManager extends TestBrowserProxy implements
 
   removeAddress(_guid: string) {
     this.methodCalled('removeAddress');
+  }
+
+  setAutofillSyncToggleEnabled(_enabled: boolean) {
+    this.methodCalled('setAutofillSyncToggleEnabled');
   }
 
   /**

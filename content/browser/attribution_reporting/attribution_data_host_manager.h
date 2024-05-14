@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/attribution_reporting_runtime_features.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-forward.h"
 
@@ -42,8 +42,7 @@ struct GlobalRenderFrameHostId;
 
 // Interface responsible for coordinating `AttributionDataHost`s received from
 // the renderer.
-class AttributionDataHostManager
-    : public base::SupportsWeakPtr<AttributionDataHostManager> {
+class AttributionDataHostManager {
  public:
   virtual ~AttributionDataHostManager() = default;
 
@@ -132,8 +131,8 @@ class AttributionDataHostManager
       attribution_reporting::mojom::RegistrationEligibility,
       GlobalRenderFrameHostId render_frame_id,
       int64_t last_navigation_id,
-      absl::optional<blink::AttributionSrcToken> attribution_src_token,
-      absl::optional<std::string> devtools_request_id) = 0;
+      std::optional<blink::AttributionSrcToken> attribution_src_token,
+      std::optional<std::string> devtools_request_id) = 0;
 
   // Notifies the manager that a background attribution request has sent a
   // response. May be called multiple times for the same request; for redirects
@@ -159,10 +158,10 @@ class AttributionDataHostManager
   // use. Passes the topmost ancestor of the initiator render frame for
   // obtaining the page access report.
   // `navigation_id` is the id of the navigation for automatic beacons and
-  // `absl::nullopt` for event beacons.
+  // `std::nullopt` for event beacons.
   virtual void NotifyFencedFrameReportingBeaconStarted(
       BeaconId beacon_id,
-      absl::optional<int64_t> navigation_id,
+      std::optional<int64_t> navigation_id,
       attribution_reporting::SuitableOrigin source_origin,
       bool is_within_fenced_frame,
       AttributionInputEvent input_event,
@@ -182,6 +181,9 @@ class AttributionDataHostManager
       GURL reporting_url,
       const net::HttpResponseHeaders* headers,
       bool is_final_response) = 0;
+
+  // Get a WeakPtr to the implementation instance.
+  virtual base::WeakPtr<AttributionDataHostManager> AsWeakPtr() = 0;
 };
 
 }  // namespace content

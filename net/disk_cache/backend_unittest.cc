@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 
 #include "base/containers/queue.h"
 #include "base/files/file.h"
@@ -61,7 +62,6 @@
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using disk_cache::EntryResult;
 using net::test::IsError;
@@ -831,8 +831,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   net::TestCompletionCallback cb;
 
   // Blocking shouldn't be needed to create the cache.
-  absl::optional<base::ScopedDisallowBlocking> disallow_blocking(
-      absl::in_place);
+  std::optional<base::ScopedDisallowBlocking> disallow_blocking(std::in_place);
   std::unique_ptr<disk_cache::BackendImpl> cache(
       std::make_unique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
                                                 net::DISK_CACHE, nullptr));
@@ -5518,105 +5517,120 @@ TEST_F(DiskCacheBackendTest, SimpleDoomIter) {
   run_loop.Run();
 }
 
-// See https://crbug.com/1486958
+// See https://crbug.com/1486958 for non-corrupting version,
+// https://crbug.com/1510452 for corrupting one.
 TEST_F(DiskCacheBackendTest, SimpleOpenIter) {
   constexpr int kEntries = 50;
 
   SetSimpleCacheMode();
-  // Note: this test relies on InitCache() making sure the index is ready.
-  InitCache();
 
-  // We create a whole bunch of entries so that deleting them will hopefully
-  // finish after the iteration, in order to reproduce timing for the bug.
-  for (int i = 0; i < kEntries; ++i) {
-    disk_cache::Entry* entry = nullptr;
-    ASSERT_THAT(CreateEntry(base::NumberToString(i), &entry), IsOk());
-    entry->Close();
-  }
-  RunUntilIdle();  // Make sure close completes.
-  EXPECT_EQ(kEntries, cache_->GetEntryCount());
+  for (bool do_corrupt : {false, true}) {
+    SCOPED_TRACE(do_corrupt);
 
-  // Iterate once to get the order.
-  base::queue<std::string> keys;
-  auto iterator = cache_->CreateIterator();
-  base::RunLoop run_loop;
-  base::RepeatingCallback<void(EntryResult)> collect_entry_key =
-      base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
-        if (result.net_error() == net::ERR_FAILED) {
-          run_loop.Quit();
-          return;  // iteration complete.
-        }
-        ASSERT_EQ(result.net_error(), net::OK);
-        disk_cache::Entry* entry = result.ReleaseEntry();
-        keys.push(entry->GetKey());
-        entry->Close();
-        result = iterator->OpenNextEntry(collect_entry_key);
-        EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
-      });
+    // Note: this test relies on InitCache() making sure the index is ready.
+    InitCache();
 
-  disk_cache::EntryResult result = iterator->OpenNextEntry(collect_entry_key);
-  ASSERT_EQ(result.net_error(), net::ERR_IO_PENDING);
-  run_loop.Run();
+    // We create a whole bunch of entries so that deleting them will hopefully
+    // finish after the iteration, in order to reproduce timing for the bug.
+    for (int i = 0; i < kEntries; ++i) {
+      disk_cache::Entry* entry = nullptr;
+      ASSERT_THAT(CreateEntry(base::NumberToString(i), &entry), IsOk());
+      entry->Close();
+    }
+    RunUntilIdle();  // Make sure close completes.
+    EXPECT_EQ(kEntries, cache_->GetEntryCount());
 
-  // Open all entries with iterator...
-  int opened = 0;
-  int iter_opened = 0;
-  bool iter_done = false;
-  auto all_done = [&]() { return opened == kEntries && iter_done; };
+    // Iterate once to get the order.
+    std::list<std::string> keys;
+    auto iterator = cache_->CreateIterator();
+    base::RunLoop run_loop;
+    base::RepeatingCallback<void(EntryResult)> collect_entry_key =
+        base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
+          if (result.net_error() == net::ERR_FAILED) {
+            run_loop.Quit();
+            return;  // iteration complete.
+          }
+          ASSERT_EQ(result.net_error(), net::OK);
+          disk_cache::Entry* entry = result.ReleaseEntry();
+          keys.push_back(entry->GetKey());
+          entry->Close();
+          result = iterator->OpenNextEntry(collect_entry_key);
+          EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
+        });
 
-  iterator = cache_->CreateIterator();
-  base::RunLoop run_loop2;
-  base::RepeatingCallback<void(EntryResult)> handle_entry =
-      base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
-        ++iter_opened;
-        if (result.net_error() == net::ERR_FAILED) {
-          EXPECT_EQ(iter_opened - 1, kEntries);
-          iter_done = true;
+    disk_cache::EntryResult result = iterator->OpenNextEntry(collect_entry_key);
+    ASSERT_EQ(result.net_error(), net::ERR_IO_PENDING);
+    run_loop.Run();
+
+    // Corrupt all the files, if we're exercising that.
+    if (do_corrupt) {
+      for (const auto& key : keys) {
+        EXPECT_TRUE(disk_cache::simple_util::CreateCorruptFileForTests(
+            key, cache_path_));
+      }
+    }
+
+    // Open all entries with iterator...
+    int opened = 0;
+    int iter_opened = 0;
+    bool iter_done = false;
+    auto all_done = [&]() { return opened == kEntries && iter_done; };
+
+    iterator = cache_->CreateIterator();
+    base::RunLoop run_loop2;
+    base::RepeatingCallback<void(EntryResult)> handle_entry =
+        base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
+          ++iter_opened;
+          if (result.net_error() == net::ERR_FAILED) {
+            EXPECT_EQ(iter_opened - 1, do_corrupt ? 0 : kEntries);
+            iter_done = true;
+            if (all_done()) {
+              run_loop2.Quit();
+            }
+            return;  // iteration complete.
+          }
+          EXPECT_EQ(result.net_error(), net::OK);
+          result = iterator->OpenNextEntry(handle_entry);
+          EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
+        });
+
+    result = iterator->OpenNextEntry(handle_entry);
+    ASSERT_EQ(result.net_error(), net::ERR_IO_PENDING);
+
+    // ... while simultaneously opening them via name.
+    auto handle_open_result =
+        base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
+          int expected_status = do_corrupt ? net::ERR_FAILED : net::OK;
+          if (result.net_error() == expected_status) {
+            ++opened;
+          }
           if (all_done()) {
             run_loop2.Quit();
           }
-          return;  // iteration complete.
-        }
-        EXPECT_EQ(result.net_error(), net::OK);
-        result = iterator->OpenNextEntry(handle_entry);
-        EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
-      });
+        });
 
-  result = iterator->OpenNextEntry(handle_entry);
-  ASSERT_EQ(result.net_error(), net::ERR_IO_PENDING);
+    base::RepeatingClosure open_one_entry = base::BindLambdaForTesting([&]() {
+      std::string key = keys.front();
+      keys.pop_front();
+      disk_cache::EntryResult result =
+          cache_->OpenEntry(key, net::DEFAULT_PRIORITY, handle_open_result);
+      if (result.net_error() != net::ERR_IO_PENDING) {
+        handle_open_result.Run(std::move(result));
+      }
 
-  // ... while simultaneously opening them via name.
-  auto handle_open_result =
-      base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
-        if (result.net_error() == net::OK) {
-          ++opened;
-        }
-        if (all_done()) {
-          run_loop2.Quit();
-        }
-      });
+      if (!keys.empty()) {
+        base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, open_one_entry);
+      }
+    });
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                             open_one_entry);
 
-  base::RepeatingClosure open_one_entry = base::BindLambdaForTesting([&]() {
-    std::string key = keys.front();
-    keys.pop();
-    disk_cache::EntryResult result =
-        cache_->OpenEntry(key, net::DEFAULT_PRIORITY, handle_open_result);
-    if (result.net_error() != net::ERR_IO_PENDING) {
-      handle_open_result.Run(std::move(result));
-    }
+    run_loop2.Run();
 
-    if (!keys.empty()) {
-      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
-                                                               open_one_entry);
-    }
-  });
-  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
-                                                           open_one_entry);
-
-  run_loop2.Run();
-
-  // Should not have eaten any entries.
-  EXPECT_EQ(kEntries, cache_->GetEntryCount());
+    // Should not have eaten any entries, if not corrupting them.
+    EXPECT_EQ(do_corrupt ? 0 : kEntries, cache_->GetEntryCount());
+  }
 }
 
 // Make sure that if we close an entry in callback from open/create we do not
@@ -5635,4 +5649,130 @@ TEST_F(DiskCacheBackendTest, BlockFileImmediateCloseNoDangle) {
                           }));
   EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
   run_loop.Run();
+}
+
+// Test that when a write causes a doom, it doesn't result in wrong delivery
+// order of callbacks due to re-entrant operation execution.
+TEST_F(DiskCacheBackendTest, SimpleWriteOrderEviction) {
+  SetSimpleCacheMode();
+  SetMaxSize(4096);
+  InitCache();
+
+  // Writes of [1, 2, ..., kMaxSize] are more than enough to trigger eviction,
+  // as (1 + 80)*80/2 * 2 = 6480 (last * 2 since two streams are written).
+  constexpr int kMaxSize = 80;
+
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      CacheTestCreateAndFillBuffer(kMaxSize, /*no_nulls=*/false);
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry("key", &entry), IsOk());
+  ASSERT_TRUE(entry);
+
+  bool expected_next_write_stream_1 = true;
+  int expected_next_write_size = 1;
+  int next_offset = 0;
+  base::RunLoop run_loop;
+  for (int size = 1; size <= kMaxSize; ++size) {
+    entry->WriteData(/*index=*/1, /*offset = */ next_offset, buffer.get(),
+                     /*buf_len=*/size,
+                     base::BindLambdaForTesting([&](int result) {
+                       EXPECT_TRUE(expected_next_write_stream_1);
+                       EXPECT_EQ(result, expected_next_write_size);
+                       expected_next_write_stream_1 = false;
+                     }),
+                     /*truncate=*/true);
+    // Stream 0 writes are used here because unlike with stream 1 ones,
+    // WriteDataInternal can succeed and queue response callback immediately.
+    entry->WriteData(/*index=*/0, /*offset = */ next_offset, buffer.get(),
+                     /*buf_len=*/size,
+                     base::BindLambdaForTesting([&](int result) {
+                       EXPECT_FALSE(expected_next_write_stream_1);
+                       EXPECT_EQ(result, expected_next_write_size);
+                       expected_next_write_stream_1 = true;
+                       ++expected_next_write_size;
+                       if (expected_next_write_size == (kMaxSize + 1)) {
+                         run_loop.Quit();
+                       }
+                     }),
+                     /*truncate=*/true);
+    next_offset += size;
+  }
+
+  entry->Close();
+  run_loop.Run();
+}
+
+// Test that when a write causes a doom, it doesn't result in wrong delivery
+// order of callbacks due to re-entrant operation execution. Variant that
+// uses stream 0 ops only.
+TEST_F(DiskCacheBackendTest, SimpleWriteOrderEvictionStream0) {
+  SetSimpleCacheMode();
+  SetMaxSize(4096);
+  InitCache();
+
+  // Writes of [1, 2, ..., kMaxSize] are more than enough to trigger eviction,
+  // as (1 + 120)*120/2 = 7260.
+  constexpr int kMaxSize = 120;
+
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      CacheTestCreateAndFillBuffer(kMaxSize, /*no_nulls=*/false);
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry("key", &entry), IsOk());
+  ASSERT_TRUE(entry);
+
+  int expected_next_write_size = 1;
+  int next_offset = 0;
+  base::RunLoop run_loop;
+  for (int size = 1; size <= kMaxSize; ++size) {
+    // Stream 0 writes are used here because unlike with stream 1 ones,
+    // WriteDataInternal can succeed and queue response callback immediately.
+    entry->WriteData(/*index=*/0, /*offset = */ next_offset, buffer.get(),
+                     /*buf_len=*/size,
+                     base::BindLambdaForTesting([&](int result) {
+                       EXPECT_EQ(result, expected_next_write_size);
+                       ++expected_next_write_size;
+                       if (expected_next_write_size == (kMaxSize + 1)) {
+                         run_loop.Quit();
+                       }
+                     }),
+                     /*truncate=*/true);
+    next_offset += size;
+  }
+
+  entry->Close();
+  run_loop.Run();
+}
+
+// Test to make sure that if entry creation triggers eviction, a queued up
+// close (possible with optimistic ops) doesn't run from within creation
+// completion handler (which is indirectly detected as a dangling pointer).
+TEST_F(DiskCacheBackendTest, SimpleNoCloseFromWithinCreate) {
+  SetSimpleCacheMode();
+  SetMaxSize(4096);
+  InitCache();
+
+  // Make entries big enough to force their eviction.
+  constexpr int kDataSize = 4097;
+
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(kDataSize);
+  CacheTestFillBuffer(buffer->data(), kDataSize, false);
+
+  for (int i = 0; i < 100; ++i) {
+    std::string key = base::NumberToString(i);
+    EntryResult entry_result =
+        cache_->CreateEntry(key, net::HIGHEST, base::DoNothing());
+    ASSERT_EQ(entry_result.net_error(), net::OK);
+    disk_cache::Entry* entry = entry_result.ReleaseEntry();
+    // Doing stream 0 write to avoid need for thread round-trips for it to take
+    // effect if SimpleEntryImpl runs it.
+    entry->WriteData(/*index=*/0, /*offset = */ 0, buffer.get(),
+                     /*buf_len=*/kDataSize,
+                     base::BindLambdaForTesting(
+                         [&](int result) { EXPECT_EQ(kDataSize, result); }),
+                     /*truncate=*/true);
+    entry->Close();
+  }
+  RunUntilIdle();
 }

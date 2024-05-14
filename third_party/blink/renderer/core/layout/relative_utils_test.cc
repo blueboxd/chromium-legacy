@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
 namespace {
@@ -22,7 +23,7 @@ const LayoutUnit kZero{0};
 class RelativeUtilsTest : public testing::Test {
  protected:
   void SetUp() override {
-    initial_style_ = ComputedStyle::CreateInitialStyleSingleton();
+    initial_style_ = ComputedStyle::GetInitialStyleSingleton();
   }
 
   const ComputedStyle* CreateStyle(LayoutUnit top,
@@ -42,6 +43,7 @@ class RelativeUtilsTest : public testing::Test {
   }
 
   Persistent<const ComputedStyle> initial_style_;
+  test::TaskEnvironment task_environment_;
   LogicalSize container_size_;
 };
 

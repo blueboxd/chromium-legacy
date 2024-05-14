@@ -8,7 +8,7 @@
 #include <optional>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
@@ -24,8 +24,10 @@
 #include "ash/wm/window_cycle/window_cycle_item_view.h"
 #include "ash/wm/window_cycle/window_cycle_list.h"
 #include "ash/wm/window_mini_view.h"
+#include "ash/wm/wm_constants.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
@@ -106,8 +108,8 @@ constexpr base::TimeDelta kToggleModeScaleDuration = base::Milliseconds(150);
 WindowMiniViewBase* BuildAndConfigureCycleView(
     aura::Window* window,
     views::View* mirror_container,
-    std::vector<WindowMiniViewBase*>& cycle_views,
-    const std::vector<aura::Window*>& windows,
+    std::vector<raw_ptr<WindowMiniViewBase, VectorExperimental>>& cycle_views,
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows,
     const bool same_app_only) {
   if (auto* snap_group_controller = SnapGroupController::Get()) {
     if (auto* snap_group =
@@ -239,16 +241,15 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
                 no_recent_items_label_->font_list().GetFontSize())
             .DeriveWithWeight(gfx::Font::Weight::NORMAL));
     no_recent_items_label_->SetVisible(windows.empty());
-    no_recent_items_label_->SetPreferredSize(
-        gfx::Size(tab_slider_->GetPreferredSize().width() +
-                      2 * WindowCycleView::kInsideBorderHorizontalPaddingDp,
-                  WindowCycleItemView::kFixedPreviewHeightDp +
-                      WindowMiniView::kHeaderHeightDp +
-                      kMirrorContainerVerticalPaddingDp +
-                      kInsideBorderVerticalPaddingDp + 8));
+    no_recent_items_label_->SetPreferredSize(gfx::Size(
+        tab_slider_->GetPreferredSize().width() +
+            2 * WindowCycleView::kInsideBorderHorizontalPaddingDp,
+        WindowCycleItemView::kFixedPreviewHeightDp +
+            kWindowMiniViewHeaderHeight + kMirrorContainerVerticalPaddingDp +
+            kInsideBorderVerticalPaddingDp + 8));
   }
 
-  for (auto* window : windows) {
+  for (aura::Window* window : windows) {
     if (auto* view = BuildAndConfigureCycleView(
             window, mirror_container_, cycle_views_, windows, same_app_only)) {
       cycle_views_.push_back(view);
@@ -326,7 +327,7 @@ void WindowCycleView::ScaleCycleView(const gfx::Rect& screen_bounds) {
 gfx::Rect WindowCycleView::GetTargetBounds() const {
   // The widget is sized clamped to the screen bounds. Its child, the mirror
   // container which is parent to all the previews may be larger than the
-  // widget as some previews will be offscreen. In `Layout()` of `cycle_view_`
+  // widget as some previews will be offscreen. When `cycle_view_` does layout
   // the mirror container will be slid back and forth depending on the target
   // window.
   gfx::Rect widget_rect = root_window_->GetBoundsInScreen();
@@ -347,7 +348,7 @@ void WindowCycleView::UpdateWindows(const WindowList& windows) {
   if (no_windows)
     return;
 
-  for (auto* window : windows) {
+  for (aura::Window* window : windows) {
     if (auto* view = BuildAndConfigureCycleView(
             window, mirror_container_, cycle_views_, windows, same_app_only_)) {
       cycle_views_.push_back(view);
@@ -394,7 +395,7 @@ void WindowCycleView::ScrollToWindow(aura::Window* target) {
   horizontal_distance_dragged_ = 0.f;
 
   if (GetWidget())
-    Layout();
+    DeprecatedLayoutImmediately();
 }
 
 void WindowCycleView::SetTargetWindow(aura::Window* new_target) {
@@ -461,7 +462,7 @@ void WindowCycleView::HandleWindowDestruction(aura::Window* destroying_window,
   // With one of its children now gone, we must re-layout `mirror_container_`.
   // This must happen before `ScrollToWindow()` to make sure our own `Layout()`
   // works correctly when it's calculating highlight bounds.
-  parent->Layout();
+  parent->DeprecatedLayoutImmediately();
   SetTargetWindow(new_target);
   ScrollToWindow(new_target);
 }
@@ -479,7 +480,7 @@ void WindowCycleView::DestroyContents() {
 
 void WindowCycleView::Drag(float delta_x) {
   horizontal_distance_dragged_ += delta_x;
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void WindowCycleView::StartFling(float velocity_x) {
@@ -495,7 +496,7 @@ void WindowCycleView::StartFling(float velocity_x) {
 bool WindowCycleView::OnFlingStep(float offset) {
   DCHECK(fling_handler_);
   horizontal_distance_dragged_ += offset;
-  Layout();
+  DeprecatedLayoutImmediately();
   return true;
 }
 
@@ -520,7 +521,7 @@ bool WindowCycleView::IsTabSliderFocused() const {
 
 aura::Window* WindowCycleView::GetWindowAtPoint(
     const gfx::Point& screen_point) {
-  for (const auto* view : cycle_views_) {
+  for (const ash::WindowMiniViewBase* view : cycle_views_) {
     if (auto* window = view->GetWindowAtPoint(screen_point)) {
       return window;
     }
@@ -569,7 +570,7 @@ gfx::Size WindowCycleView::CalculatePreferredSize() const {
   return size;
 }
 
-void WindowCycleView::Layout() {
+void WindowCycleView::Layout(PassKey) {
   if (is_destroying_)
     return;
 
@@ -658,10 +659,9 @@ void WindowCycleView::Layout() {
     no_recent_items_label_->SetBoundsRect(no_recent_item_bounds_);
   }
 
-  // Enable animations only after the first `Layout()` pass. If `this` is
-  // animating or `defer_widget_bounds_update_`, don't animate as well since
-  // the cycle view is already being animated or just finished animating for
-  // mode switch.
+  // Enable animations only after the first layout pass. If `this` is animating
+  // or `defer_widget_bounds_update_`, don't animate as well since the cycle
+  // view is already being animated or just finished animating for mode switch.
   std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
   std::optional<ui::AnimationThroughputReporter> reporter;
   if (!first_layout && !this->layer()->GetAnimator()->is_animating() &&
@@ -703,7 +703,7 @@ void WindowCycleView::Layout() {
 void WindowCycleView::OnImplicitAnimationsCompleted() {
   layer()->SetClipRect(gfx::Rect());
   if (defer_widget_bounds_update_) {
-    // This triggers a `Layout()` so reset `defer_widget_bounds_update_` after
+    // This triggers layout, so reset `defer_widget_bounds_update_` after
     // calling `SetBounds()` to prevent the mirror container from animating.
     GetWidget()->SetBounds(GetTargetBounds());
     defer_widget_bounds_update_ = false;
@@ -721,7 +721,7 @@ gfx::Rect WindowCycleView::GetContentContainerBounds() const {
 
 WindowMiniViewBase* WindowCycleView::GetCycleViewForWindow(
     aura::Window* window) const {
-  for (auto* view : cycle_views_) {
+  for (ash::WindowMiniViewBase* view : cycle_views_) {
     if (view->Contains(window)) {
       return view;
     }
@@ -729,7 +729,7 @@ WindowMiniViewBase* WindowCycleView::GetCycleViewForWindow(
   return nullptr;
 }
 
-BEGIN_METADATA(WindowCycleView, views::WidgetDelegateView)
+BEGIN_METADATA(WindowCycleView)
 END_METADATA
 
 }  // namespace ash

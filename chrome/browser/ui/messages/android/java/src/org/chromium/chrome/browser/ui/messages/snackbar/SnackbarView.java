@@ -27,8 +27,12 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeControllerFactory;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgePadAdjuster;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeSupplier;
 import org.chromium.chrome.ui.messages.R;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
+import org.chromium.components.browser_ui.widget.InsetObserver;
 import org.chromium.components.browser_ui.widget.text.TemplatePreservingTextView;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -40,7 +44,7 @@ import org.chromium.ui.interpolators.Interpolators;
  */
 // TODO (jianli): Change this class and its methods back to package protected after the offline
 // indicator experiment is done.
-public class SnackbarView {
+public class SnackbarView implements InsetObserver.WindowInsetObserver {
     private static final int MAX_LINES = 5;
 
     private final WindowAndroid mWindowAndroid;
@@ -51,15 +55,16 @@ public class SnackbarView {
     private final ImageView mProfileImageView;
     private final int mAnimationDuration;
     private final boolean mIsTablet;
+    @Nullable private final EdgeToEdgeSupplier mEdgeToEdgeSupplier;
+    @Nullable private final EdgeToEdgePadAdjuster mEdgeToEdgePadAdjuster;
     private ViewGroup mOriginalParent;
     protected ViewGroup mParent;
     protected Snackbar mSnackbar;
     private View mRootContentView;
 
-    // Variables used to calculate the virtual keyboard's height.
+    // Variables used to adjust view position and size when visible frame is changed.
     private Rect mCurrentVisibleRect = new Rect();
     private Rect mPreviousVisibleRect = new Rect();
-    private int[] mTempLocation = new int[2];
 
     private OnLayoutChangeListener mLayoutListener =
             new OnLayoutChangeListener() {
@@ -80,13 +85,14 @@ public class SnackbarView {
 
     /**
      * Creates an instance of the {@link SnackbarView}.
+     *
      * @param activity The activity that displays the snackbar.
      * @param listener An {@link OnClickListener} that will be called when the action button is
-     *                 clicked.
+     *     clicked.
      * @param snackbar The snackbar to be displayed.
      * @param parentView The ViewGroup used to display this snackbar.
      * @param windowAndroid The WindowAndroid used for starting animation. If it is null,
-     *                      Animator#start is called instead.
+     *     Animator#start is called instead.
      */
     public SnackbarView(
             Activity activity,
@@ -94,6 +100,29 @@ public class SnackbarView {
             Snackbar snackbar,
             ViewGroup parentView,
             @Nullable WindowAndroid windowAndroid) {
+        this(activity, listener, snackbar, parentView, windowAndroid, null);
+    }
+
+    /**
+     * Creates an instance of the {@link SnackbarView}.
+     *
+     * @param activity The activity that displays the snackbar.
+     * @param listener An {@link OnClickListener} that will be called when the action button is
+     *     clicked.
+     * @param snackbar The snackbar to be displayed.
+     * @param parentView The ViewGroup used to display this snackbar.
+     * @param windowAndroid The WindowAndroid used for starting animation. If it is null,
+     *     Animator#start is called instead.
+     * @param edgeToEdgeSupplier The supplier publishes the changes of the edge-to-edge state and
+     *     the expected bottom paddings when edge-to-edge is on.
+     */
+    public SnackbarView(
+            Activity activity,
+            OnClickListener listener,
+            Snackbar snackbar,
+            ViewGroup parentView,
+            @Nullable WindowAndroid windowAndroid,
+            @Nullable EdgeToEdgeSupplier edgeToEdgeSupplier) {
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity);
         mOriginalParent = parentView;
         mWindowAndroid = windowAndroid;
@@ -111,6 +140,11 @@ public class SnackbarView {
         mActionButtonView = (TextView) mContainerView.findViewById(R.id.snackbar_button);
         mActionButtonView.setOnClickListener(listener);
         mProfileImageView = (ImageView) mContainerView.findViewById(R.id.snackbar_profile_image);
+        mEdgeToEdgeSupplier = edgeToEdgeSupplier;
+        mEdgeToEdgePadAdjuster =
+                edgeToEdgeSupplier != null
+                        ? EdgeToEdgeControllerFactory.createForView(mSnackbarView)
+                        : null;
 
         updateInternal(snackbar, false);
     }
@@ -139,6 +173,9 @@ public class SnackbarView {
                         startAnimatorOnSurfaceView(animator);
                     }
                 });
+        if (mEdgeToEdgeSupplier != null) {
+            mEdgeToEdgeSupplier.registerAdjuster(mEdgeToEdgePadAdjuster);
+        }
     }
 
     public void dismiss() {
@@ -159,22 +196,25 @@ public class SnackbarView {
                     }
                 });
         startAnimatorOnSurfaceView(moveAnimator);
+        if (mEdgeToEdgeSupplier != null) {
+            mEdgeToEdgeSupplier.unregisterAdjuster(mEdgeToEdgePadAdjuster);
+        }
     }
 
-    /** Adjusts the position of the snackbar on top of the soft keyboard, if any. */
+    /**
+     * Adjusts the position when visible area is updated, such as resizing the window, in order to
+     * ensure its maximum width.
+     */
     void adjustViewPosition() {
         mParent.getWindowVisibleDisplayFrame(mCurrentVisibleRect);
         // Only update if the visible frame has changed, otherwise there will be a layout loop.
         if (!mCurrentVisibleRect.equals(mPreviousVisibleRect)) {
             mPreviousVisibleRect.set(mCurrentVisibleRect);
-
             FrameLayout.LayoutParams lp = getLayoutParams();
 
-            int prevBottomMargin = lp.bottomMargin;
             int prevWidth = lp.width;
             int prevGravity = lp.gravity;
 
-            lp.bottomMargin = getBottomMarginForLayout();
             if (mIsTablet) {
                 int margin =
                         mParent.getResources()
@@ -184,10 +224,7 @@ public class SnackbarView {
                 lp.width = Math.min(width, mParent.getWidth() - 2 * margin);
                 lp.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
             }
-
-            if (prevBottomMargin != lp.bottomMargin
-                    || prevWidth != lp.width
-                    || prevGravity != lp.gravity) {
+            if (prevWidth != lp.width || prevGravity != lp.gravity) {
                 mContainerView.setLayoutParams(lp);
             }
         }
@@ -195,12 +232,6 @@ public class SnackbarView {
 
     protected int getYPositionForMoveAnimation() {
         return mContainerView.getHeight() + getLayoutParams().bottomMargin;
-    }
-
-    protected int getBottomMarginForLayout() {
-        mParent.getLocationInWindow(mTempLocation);
-        int keyboardHeight = mParent.getHeight() + mTempLocation[1] - mCurrentVisibleRect.bottom;
-        return Math.max(0, keyboardHeight);
     }
 
     /**
@@ -396,5 +427,13 @@ public class SnackbarView {
         } else {
             view.setText(text);
         }
+    }
+
+    public ViewGroup getViewForTesting() {
+        return mSnackbarView;
+    }
+
+    public EdgeToEdgePadAdjuster getEdgeToEdgePadAdjusterForTesting() {
+        return mEdgeToEdgePadAdjuster;
     }
 }

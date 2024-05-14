@@ -30,6 +30,7 @@
 #include "chrome/browser/download/download_history.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -50,7 +51,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "extensions/buildflags/buildflags.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
@@ -332,8 +332,9 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   download::SimpleDownloadManager::DownloadVector items;
   notifier_.GetManager()->GetAllDownloads(&items);
-  for (auto* item : items)
+  for (download::DownloadItem* item : items) {
     OnDownloadCreated(notifier_.GetManager(), item);
+  }
   history_->QueryDownloads(base::BindOnce(&DownloadHistory::QueryCallback,
                                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -409,7 +410,7 @@ void DownloadHistory::LoadHistoryDownloads(
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         row.guid, loading_id_, row.current_path, row.target_path, url_chain,
         row.referrer_url, storage_partition_config, row.tab_url,
-        row.tab_referrer_url, absl::nullopt, row.mime_type,
+        row.tab_referrer_url, std::nullopt, row.mime_type,
         row.original_mime_type, row.start_time, row.end_time, row.etag,
         row.last_modified, row.received_bytes, row.total_bytes,
         std::string(),  // TODO(asanka): Need to persist and restore hash of

@@ -336,9 +336,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Returns true if audio output is muted for a device.
   bool IsOutputMutedForDevice(uint64_t device_id);
 
-  // Returns true if audio output is forced muted.
-  bool IsOutputForceMuted();
-
   // Returns true if audio output is muted for the system by policy.
   bool IsOutputMutedByPolicy();
 
@@ -713,6 +710,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   const AudioDevice* GetDeviceFromStableDeviceId(
       uint64_t stable_device_id) const;
+
   const AudioDevice* GetKeyboardMic() const;
 
   const AudioDevice* GetHotwordDevice() const;
@@ -890,9 +888,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Calling dbus to get system AEC supported flag.
   void GetSystemAecSupported();
 
-  // Calling dbus to get system AEC supported flag on main thread.
-  void GetSystemAecSupportedOnMainThread();
-
   // Handle dbus callback for GetSystemNoiseCancellationSupported.
   void HandleGetNoiseCancellationSupported(
       OnNoiseCancellationSupportedCallback callback,
@@ -902,18 +897,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void HandleGetHfpMicSrSupported(OnHfpMicSrSupportedCallback callback,
                                   std::optional<bool> hfp_mic_sr_supported);
 
-  // Handle dbus callback for GetSpeakOnMuteDetectionEnabled.
-  void HandleGetSpeakOnMuteDetectionEnabled(
-      std::optional<bool> speak_on_mute_detection_enabled);
-
   // Handle dbus callback for GetSystemAecSupported.
   void HandleGetSystemAecSupported(std::optional<bool> system_aec_supported);
 
   // Calling dbus to get the system AEC group id if available.
   void GetSystemAecGroupId();
-
-  // Calling dbus to get any available system AEC group id on main thread.
-  void GetSystemAecGroupIdOnMainThread();
 
   // Handle dbus callback for GetSystemAecGroupId.
   void HandleGetSystemAecGroupId(std::optional<int32_t> system_aec_group_id);
@@ -921,17 +909,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Calling dbus to get system NS supported flag.
   void GetSystemNsSupported();
 
-  // Calling dbus to get system NS supported flag on main thread.
-  void GetSystemNsSupportedOnMainThread();
-
   // Handle dbus callback for GetSystemNsSupported.
   void HandleGetSystemNsSupported(std::optional<bool> system_ns_supported);
 
   // Calling dbus to get system AGC supported flag.
   void GetSystemAgcSupported();
-
-  // Calling dbus to get system AGC supported flag on main thread.
-  void GetSystemAgcSupportedOnMainThread();
 
   // Handle dbus callback for GetSystemAgcSupported.
   void HandleGetSystemAgcSupported(std::optional<bool> system_agc_supported);

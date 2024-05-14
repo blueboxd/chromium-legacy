@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/files/file.h"
@@ -51,8 +52,7 @@ class DictionaryUpdateObserver {
 // See http://crbug.com/73699.
 // Shared spellchecking logic/data for a RenderProcess. All RenderViews use
 // this object to perform spellchecking tasks.
-class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
-                   public spellcheck::mojom::SpellChecker {
+class SpellCheck : public spellcheck::mojom::SpellChecker {
  public:
   // TODO(groby): I wonder if this can be private, non-mac only.
   class SpellcheckRequest;
@@ -98,9 +98,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   // If the word is spelled correctly, the vector is empty.
   // If optional_suggestions is NULL, suggested words will not be looked up.
   // Note that doing suggest lookups can be slow.
-  bool SpellCheckWord(const char16_t* text_begin,
-                      size_t position_in_text,
-                      size_t text_length,
+  bool SpellCheckWord(std::u16string_view text,
                       spellcheck::mojom::SpellCheckHost& host,
                       size_t* misspelling_start,
                       size_t* misspelling_len,
@@ -111,9 +109,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   // useful if the suggestions must be merged with another list of suggestions,
   // for example in the case of the Windows hybrid spellchecker.
   bool SpellCheckWord(
-      const char16_t* text_begin,
-      size_t position_in_text,
-      size_t text_length,
+      std::u16string_view text,
       spellcheck::mojom::SpellCheckHost& host,
       size_t* misspelling_start,
       size_t* misspelling_len,
@@ -121,9 +117,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
 
   // Overload of SpellCheckWord for skipping optional suggestions with a
   // nullptr, used to disambiguate between the other two overloads.
-  bool SpellCheckWord(const char16_t* text_begin,
-                      size_t position_in_text,
-                      size_t text_length,
+  bool SpellCheckWord(std::u16string_view text,
                       spellcheck::mojom::SpellCheckHost& host,
                       size_t* misspelling_start,
                       size_t* misspelling_len,

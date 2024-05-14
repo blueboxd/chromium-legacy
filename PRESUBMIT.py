@@ -118,7 +118,8 @@ _TEST_ONLY_WARNING = (
     'to tell the PRESUBMIT script that the code is inside a *ForTesting()\n'
     'method and can be ignored. Do not do this inside production code.\n'
     'The android-binary-size trybot will block if the method exists in the\n'
-    'release apk.')
+    'release apk.\n'
+    'Note: this warning might be a false positive (crbug.com/1196548).')
 
 
 @dataclass
@@ -315,7 +316,7 @@ _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
           'ash/webui/common/resources/multidevice_setup/multidevice_setup_browser_proxy.js',
           'ash/webui/common/resources/quick_unlock/lock_screen_constants.ts',
           'ash/webui/common/resources/smb_shares/smb_browser_proxy.js',
-          'ash/webui/connectivity_diagnostics/resources/connectivity_diagnostics.js',
+          'ash/webui/connectivity_diagnostics/resources/connectivity_diagnostics.ts',
           'ash/webui/diagnostics_ui/resources/diagnostics_browser_proxy.ts',
           'ash/webui/multidevice_debug/resources/logs.js',
           'ash/webui/multidevice_debug/resources/webui.js',
@@ -891,7 +892,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         r'chrome/browser/web_applications/test/web_app_test_utils\.cc',
         r'chrome/browser/web_applications/test/web_app_test_utils\.cc',
         r'chrome/browser/win/conflicts/module_blocklist_cache_util_unittest\.cc',
-        r'chrome/chrome_cleaner/logging/detailed_info_sampler\.cc',
         r'chromeos/ash/components/memory/userspace_swap/swap_storage_unittest\.cc',
         r'chromeos/ash/components/memory/userspace_swap/userspace_swap\.cc',
         r'components/metrics/metrics_state_manager\.cc',
@@ -974,18 +974,24 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/(\babsl::Span\b|#include <span>)',
+      r'/(\babsl::Span\b|#include <span>|\bstd::span\b)',
       (
-        'absl::Span is banned and <span> is not allowed yet ',
+        'absl::Span and std::span are not allowed ',
         '(https://crbug.com/1414652). Use base::span instead.',
       ),
       True,
       [
+        # Included for conversions between base and std.
+        r'base/containers/span.h',
+        # Test base::span<> compatibility against std::span<>.
+        r'base/containers/span_unittest.cc',
         # Needed to use QUICHE API.
         r'services/network/web_transport\.cc',
         r'chrome/browser/ip_protection/.*',
         # Not an error in third_party folders.
-        _THIRD_PARTY_EXCEPT_BLINK
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # //base/numerics can't use base or absl.
+        r'base/numerics/.*'
       ],
     ),
     BanRule(
@@ -996,6 +1002,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       True,
       [
         # Needed to use liburlpattern API.
+        r'components/url_pattern/.*',
+        r'services/network/shared_dictionary/simple_url_pattern_matcher\.cc',
         r'third_party/blink/renderer/core/url_pattern/.*',
         r'third_party/blink/renderer/modules/manifest/manifest_parser\.cc',
         # Needed to use QUICHE API.
@@ -1190,6 +1198,30 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
+      r'/\bstd::execution::(par|seq)\b',
+      (
+           'std::execution::(par|seq) is banned; they do not fit into '
+           ' Chrome\'s threading model, and libc++ doesn\'t have full '
+           'support.'
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],
+    ),
+    BanRule(
+      r'/\bstd::bit_cast\b',
+      (
+        'std::bit_cast is banned; use base::bit_cast instead for values and '
+        'standard C++ casting when pointers are involved.',
+      ),
+      True,
+      [
+        # Don't warn in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # //base/numerics can't use base or absl.
+        r'base/numerics/.*'
+      ],
+    ),
+    BanRule(
       r'/\bstd::(c8rtomb|mbrtoc8)\b',
       (
         'std::c8rtomb() and std::mbrtoc8() are banned.',
@@ -1244,8 +1276,9 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
       True,
       [
-        # NO_UNIQUE_ADDRESS provides canonical access.
-        r'^base/compiler_specific.h',
+        # NO_UNIQUE_ADDRESS / PA_NO_UNIQUE_ADDRESS provide canonical access.
+        r'^base/compiler_specific\.h',
+        r'^base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific\.h',
         # Not an error in third_party folders.
         _THIRD_PARTY_EXCEPT_BLINK,
       ],
@@ -1746,7 +1779,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
-      pattern = r'\bg_signal_connect',
+      pattern = r'/\bg_signal_connect',
       explanation = (
         'Use ScopedGSignal instead of g_signal_connect*()',
       ),
@@ -1771,6 +1804,17 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         '^chrome/browser/ui/startup/bad_flags_prompt.cc',
         '^content/shell/browser/shell_content_browser_client.cc'
       )
+    ),
+    BanRule(
+      pattern = r'/\babsl::(optional|nullopt|make_optional|in_place|in_place_t)\b',
+      explanation = (
+         'Don\'t use `absl::optional`. Use `std::optional`.',
+      ),
+      # TODO(b/40288126): Enforce after completing the rewrite.
+      treat_as_error = False,
+      excluded_paths = [
+        _THIRD_PARTY_EXCEPT_BLINK,
+      ]
     ),
 )
 
@@ -2560,35 +2604,6 @@ def CheckNoBannedFunctions(input_api, output_api):
                                       '\n'.join(errors)))
     return result
 
-def CheckNoLayoutCallsInTests(input_api, output_api):
-    """Make sure there are no explicit calls to View::Layout() in tests"""
-    warnings = []
-    ban_rule = BanRule(
-        r'/(\.|->)Layout\(\);',
-        (
-        'Direct calls to View::Layout() are not allowed in tests. '
-        'If the view must be laid out here, use RunScheduledLayout(view). It '
-        'is found in //ui/views/test/views_test_utils.h. '
-        'See http://crbug.com/1350521 for more details.',
-        ),
-        False,
-    )
-    file_filter = lambda f: input_api.re.search(
-        r'_(unittest|browsertest|ui_test).*\.(cc|mm)$', f.LocalPath())
-    for f in input_api.AffectedFiles(file_filter = file_filter):
-        for line_num, line in f.ChangedContents():
-            problems = _GetMessageForMatchingType(input_api, f,
-                                                  line_num, line,
-                                                  ban_rule)
-            if problems:
-                warnings.extend(problems)
-    result = []
-    if (warnings):
-        result.append(
-            output_api.PresubmitPromptWarning(
-                'Banned call to View::Layout() in tests.\n\n'.join(warnings)))
-    return result
-
 def _CheckAndroidNoBannedImports(input_api, output_api):
     """Make sure that banned java imports are not used."""
     errors = []
@@ -3226,7 +3241,6 @@ def CheckSpamLogging(input_api, output_api):
             r"^chrome/browser/ui/startup/startup_browser_creator\.cc$",
             r"^chrome/browser/browser_switcher/bho/.*",
             r"^chrome/browser/diagnostics/diagnostics_writer\.cc$",
-            r"^chrome/chrome_cleaner/.*",
             r"^chrome/chrome_elf/dll_hash/dll_hash_main\.cc$",
             r"^chrome/installer/setup/.*",
             r"^chromecast/",
@@ -4359,60 +4373,6 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
     return results
 
 
-def _CheckAndroidTestJUnitFrameworkImport(input_api, output_api):
-    """Checks that junit.framework.* is no longer used."""
-    deprecated_junit_framework_pattern = input_api.re.compile(
-        r'^import junit\.framework\..*;', input_api.re.MULTILINE)
-    sources = lambda x: input_api.FilterSourceFile(
-        x, files_to_check=[r'.*\.java$'], files_to_skip=None)
-    errors = []
-    for f in input_api.AffectedFiles(file_filter=sources):
-        for line_num, line in f.ChangedContents():
-            if deprecated_junit_framework_pattern.search(line):
-                errors.append("%s:%d" % (f.LocalPath(), line_num))
-
-    results = []
-    if errors:
-        results.append(
-            output_api.PresubmitError(
-                'APIs from junit.framework.* are deprecated, please use JUnit4 framework'
-                '(org.junit.*) from //third_party/junit. Contact yolandyan@chromium.org'
-                ' if you have any question.', errors))
-    return results
-
-
-def _CheckAndroidTestJUnitInheritance(input_api, output_api):
-    """Checks that if new Java test classes have inheritance.
-       Either the new test class is JUnit3 test or it is a JUnit4 test class
-       with a base class, either case is undesirable.
-    """
-    class_declaration_pattern = input_api.re.compile(r'^public class \w*Test ')
-
-    sources = lambda x: input_api.FilterSourceFile(
-        x, files_to_check=[r'.*Test\.java$'], files_to_skip=None)
-    errors = []
-    for f in input_api.AffectedFiles(file_filter=sources):
-        if not f.OldContents():
-            class_declaration_start_flag = False
-            for line_num, line in f.ChangedContents():
-                if class_declaration_pattern.search(line):
-                    class_declaration_start_flag = True
-                if class_declaration_start_flag and ' extends ' in line:
-                    errors.append('%s:%d' % (f.LocalPath(), line_num))
-                if '{' in line:
-                    class_declaration_start_flag = False
-
-    results = []
-    if errors:
-        results.append(
-            output_api.PresubmitPromptWarning(
-                'The newly created files include Test classes that inherits from base'
-                ' class. Please do not use inheritance in JUnit4 tests or add new'
-                ' JUnit3 tests. Contact yolandyan@chromium.org if you have any'
-                ' questions.', errors))
-    return results
-
-
 def _CheckAndroidTestAnnotationUsage(input_api, output_api):
     """Checks that android.test.suitebuilder.annotation.* is no longer used."""
     deprecated_annotation_import_pattern = input_api.re.compile(
@@ -5312,9 +5272,6 @@ def ChecksAndroidSpecificOnUpload(input_api, output_api):
     results.extend(_CheckAndroidDebuggableBuild(input_api, output_api))
     results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
     results.extend(_CheckAndroidToastUsage(input_api, output_api))
-    results.extend(_CheckAndroidTestJUnitInheritance(input_api, output_api))
-    results.extend(_CheckAndroidTestJUnitFrameworkImport(
-        input_api, output_api))
     results.extend(_CheckAndroidTestAnnotationUsage(input_api, output_api))
     results.extend(_CheckAndroidWebkitImports(input_api, output_api))
     results.extend(_CheckAndroidXmlStyle(input_api, output_api, True))
@@ -5539,7 +5496,7 @@ _NON_INCLUSIVE_TERMS = (
         # ...' will not. This may require some tweaking to catch these cases
         # without triggering a lot of false positives. Leaving it naive and
         # less matchy for now.
-        r'/\b(?i)((black|white)list|master|slave)\b',  # nocheck
+        r'/(?i)\b((black|white)list|master|slave)\b',  # nocheck
         (
             'Please don\'t use blacklist, whitelist, '  # nocheck
             'or slave in your',  # nocheck
@@ -6298,10 +6255,10 @@ def CheckStrings(input_api, output_api):
         """
         valid_types = {
             'plural': (frozenset(
-                ['=0', '=1', 'zero', 'one', 'two', 'few', 'many',
+                ['=0', '=1', '=2', '=3', 'zero', 'one', 'two', 'few', 'many',
                  'other']), frozenset(['=1', 'other'])),
             'selectordinal': (frozenset(
-                ['=0', '=1', 'zero', 'one', 'two', 'few', 'many',
+                ['=0', '=1', '=2', '=3', 'zero', 'one', 'two', 'few', 'many',
                  'other']), frozenset(['one', 'other'])),
             'select': (frozenset(), frozenset(['other'])),
         }
@@ -7228,7 +7185,7 @@ def CheckDanglingUntriaged(input_api, output_api):
         "https://chromium.googlesource.com/chromium/src/+/main/docs/dangling_ptr_guide.md\n" +
         "\n" +
         "To disable this warning, please add in the commit description:\n" +
-        "DanglingUntriaged-notes: <rational for new untriaged dangling " +
+        "DanglingUntriaged-notes: <rationale for new untriaged dangling " +
         "pointers>"
     )
     return [output_api.PresubmitPromptWarning(message)]

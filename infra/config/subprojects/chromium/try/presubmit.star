@@ -106,13 +106,13 @@ presubmit_builder(
                     "buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
                     "buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg",
                     "buildtools/reclient_cfgs/nacl/rewrapper_linux.cfg",
-                    "buildtools/reclient_cfgs/nacl/rewrapper_windows.cfg",
                 ],
             },
         ],
     },
     tryjob = try_.job(
         location_filters = [
+            "buildtools/reclient_cfgs/.+",
             "tools/clang/scripts/update.py",
             "DEPS",
         ],
@@ -178,6 +178,7 @@ presubmit_builder(
     executable = "recipe:presubmit",
     builderless = True,
     os = os.WINDOWS_DEFAULT,
+    ssd = True,
     execution_timeout = 40 * time.minute,
     properties = {
         "$depot_tools/presubmit": {

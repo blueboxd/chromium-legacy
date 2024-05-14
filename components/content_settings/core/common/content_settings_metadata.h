@@ -14,6 +14,7 @@ struct StructTraits;
 }  // namespace mojo
 namespace content_settings::mojom {
 class RuleMetaDataDataView;
+enum class TpcdMetadataRuleSource;
 }  // namespace content_settings::mojom
 
 namespace content_settings {
@@ -43,6 +44,14 @@ class RuleMetaData {
     session_model_ = session_model;
   }
 
+  mojom::TpcdMetadataRuleSource tpcd_metadata_rule_source() const {
+    return tpcd_metadata_rule_source_;
+  }
+  void set_tpcd_metadata_rule_source(
+      mojom::TpcdMetadataRuleSource const rule_source) {
+    tpcd_metadata_rule_source_ = rule_source;
+  }
+
   base::TimeDelta lifetime() const { return lifetime_; }
 
   // Sets member variables based on `constraints`.
@@ -53,6 +62,11 @@ class RuleMetaData {
   // be nonnegative.
   void SetExpirationAndLifetime(base::Time expiration,
                                 base::TimeDelta lifetime);
+
+  // Returns whether the Rule is expired. Expiration is handled by
+  // HostContentSettingsMap automatically, clients do not have to check this
+  // attribute manually.
+  bool IsExpired() const;
 
   // Computes the setting's lifetime, based on the lifetime and expiration that
   // were read from persistent storage.
@@ -81,6 +95,12 @@ class RuleMetaData {
   SessionModel session_model_ = SessionModel::Durable;
   // The lifetime of the setting. This may be zero iff `expiration_` is zero.
   base::TimeDelta lifetime_;
+  // TPCD Metadata Source (go/measure3pcddtdeployment).
+  // TODO(http://b/324406007): The impl is currently specific to the TPCD
+  // Metadata Source and is expected to be cleaned up with the mitigation
+  // cleanup.
+  mojom::TpcdMetadataRuleSource tpcd_metadata_rule_source_ =
+      static_cast<mojom::TpcdMetadataRuleSource>(0);
 };
 
 }  // namespace content_settings

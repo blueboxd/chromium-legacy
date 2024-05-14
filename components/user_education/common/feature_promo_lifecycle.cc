@@ -71,7 +71,8 @@ FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
       switch (promo_type_) {
         case PromoType::kLegacy:
         case PromoType::kToast:
-          return FeaturePromoResult::Success();
+          return data->is_dismissed ? FeaturePromoResult::kPermanentlyDismissed
+                                    : FeaturePromoResult::Success();
         case PromoType::kCustomAction:
         case PromoType::kSnooze:
         case PromoType::kTutorial:
@@ -86,6 +87,7 @@ FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
                  ? FeaturePromoResult::kPermanentlyDismissed
                  : FeaturePromoResult::Success();
     case PromoSubtype::kLegalNotice:
+    case PromoSubtype::kActionableAlert:
       return data->is_dismissed ? FeaturePromoResult::kPermanentlyDismissed
                                 : FeaturePromoResult::Success();
   }
@@ -278,7 +280,7 @@ void FeaturePromoLifecycle::RecordShown() {
 
   // Record Promo type
   UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.Type", promo_type_);
-  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.SubType",
+  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.Subtype",
                             promo_subtype_);
   std::string type_action_name = "UserEducation.MessageShown.";
   switch (promo_subtype_) {
@@ -291,6 +293,10 @@ void FeaturePromoLifecycle::RecordShown() {
     case PromoSubtype::kLegalNotice:
       // Ends with a period.
       type_action_name.append("LegalNotice.");
+      break;
+    case PromoSubtype::kActionableAlert:
+      // Ends with a period.
+      type_action_name.append("ActionableAlert.");
       break;
   }
   switch (promo_type_) {

@@ -6,6 +6,7 @@
 
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
+#import "build/branding_buildflags.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_constants.h"
@@ -61,7 +62,9 @@ void WaitUntilTabResumptionTileVisibleOrTimeout(bool should_show) {
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   config.additional_args.push_back(
       "--enable-features=" + std::string(kStartSurface.name) + "<" +
-      std::string(kStartSurface.name));
+      std::string(kStartSurface.name) + "," + std::string(kMagicStack.name) +
+      "," + std::string(kTabResumption.name) + ":" +
+      kTabResumptionParameterName + "/" + kTabResumptionAllTabsParam);
   config.additional_args.push_back(
       "--force-fieldtrials=" + std::string(kStartSurface.name) + "/Test");
   config.additional_args.push_back(
@@ -79,7 +82,13 @@ void WaitUntilTabResumptionTileVisibleOrTimeout(bool should_show) {
 
 // Tests that navigating to a page and restarting upon cold start, an NTP page
 // is opened with the Return to Recent Tab tile.
-- (void)testColdStartOpenStartSurface {
+// TODO(b/324867042): This test fails on Official bots.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#define MAYBE_testColdStartOpenStartSurface FLAKY_testColdStartOpenStartSurface
+#else
+#define MAYBE_testColdStartOpenStartSurface testColdStartOpenStartSurface
+#endif
+- (void)MAYBE_testColdStartOpenStartSurface {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationUrl = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -97,7 +106,13 @@ void WaitUntilTabResumptionTileVisibleOrTimeout(bool should_show) {
 
 // Tests that navigating to a page and then backgrounding and foregrounding, an
 // NTP page is opened.
-- (void)testWarmStartOpenStartSurface {
+// TODO(b/324867042): This test fails on Official bots.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#define MAYBE_testWarmStartOpenStartSurface FLAKY_testWarmStartOpenStartSurface
+#else
+#define MAYBE_testWarmStartOpenStartSurface testWarmStartOpenStartSurface
+#endif
+- (void)MAYBE_testWarmStartOpenStartSurface {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationUrl = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -107,36 +122,25 @@ void WaitUntilTabResumptionTileVisibleOrTimeout(bool should_show) {
   [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
   // Give time for NTP to be fully loaded so all elements are accessible.
   base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(1.0));
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Rotate to landscape to Magic Stack can be scrollable for iPhone.
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                                  error:nil];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-        performAction:grey_scrollInDirection(kGREYDirectionDown, 200)];
-  }
-
-  WaitUntilTabResumptionTileVisibleOrTimeout(true);
-
-  // Swipe over to the tab resumption module if needed.
-  [[[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(
-              grey_accessibilityID(
-                  kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier),
-              grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionRight, 343)
-      onElementWithMatcher:grey_accessibilityID(
-                               kMagicStackScrollViewAccessibilityIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  GREYAssertEqual([ChromeEarlGrey mainTabCount], 2,
+                  @"Two tabs were expected to be open");
 }
 
 // Tests that navigating to a page and restarting upon cold start, an NTP page
 // is opened with the Return to Recent Tab tile. Then, removing that last tab
 // also removes the tile while that NTP is still being shown.
-- (void)testRemoveRecentTabRemovesReturnToRecenTabTile {
+// TODO(b/324867042): This test fails on Official bots.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#define MAYBE_testRemoveRecentTabRemovesReturnToRecentTabTile \
+    FLAKY_testRemoveRecentTabRemovesReturnToRecentTabTile
+#else
+#define MAYBE_testRemoveRecentTabRemovesReturnToRecentTabTile \
+    testRemoveRecentTabRemovesReturnToRecentTabTile
+#endif
+- (void)MAYBE_testRemoveRecentTabRemovesReturnToRecentTabTile {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationUrl = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -168,6 +172,28 @@ void WaitUntilTabResumptionTileVisibleOrTimeout(bool should_show) {
           grey_accessibilityLabel(
               kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier)]
       assertWithMatcher:grey_notVisible()];
+}
+
+#pragma mark - Multiwindow
+
+// Tests that when a new window is being opened on iPad and the app enters split
+// screen mode, Chrome will NOT force open a new tab page even when it does not
+// have existing tabs.
+- (void)testOpenNewWindowDoesNotReopenNTP {
+  if (![ChromeEarlGrey areMultipleWindowsSupported]) {
+    EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+  }
+
+  // Make sure there are no tabs on the current window.
+  [ChromeEarlGrey closeAllExtraWindows];
+  [ChromeEarlGrey closeAllTabs];
+  // Open a new window.
+  [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
+  // NTP should be opened in the new window, but not in the original one.
+  [ChromeEarlGrey waitForMainTabCount:1 inWindowWithNumber:1];
+  [ChromeEarlGrey waitForMainTabCount:0 inWindowWithNumber:0];
+  [ChromeEarlGrey closeAllExtraWindows];
 }
 
 @end

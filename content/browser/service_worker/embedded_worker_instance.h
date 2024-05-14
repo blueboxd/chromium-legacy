@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/check_op.h"
@@ -27,7 +28,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/embedded_worker_status.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -266,13 +266,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       ContentBrowserClient::URLLoaderFactoryType factory_type,
       const std::string& devtools_worker_token);
 
-  // Returns the unique token that has been generated to identify this worker
-  // instance, and its corresponding GlobalScope in the renderer process. If the
-  // service worker is not currently running, this is absl::nullopt.
-  const absl::optional<blink::ServiceWorkerToken>& token() const {
-    return token_;
-  }
-
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
   struct StartInfo;
@@ -417,12 +410,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // requests initiated from the service worker. The impl lives on the UI
   // thread, and |coep_reporter_| has the ownership of the impl instance.
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
-
-  // A unique identifier for this service worker instance. This is unique across
-  // the browser process, but not persistent across service worker restarts.
-  // This token is set every time the worker starts, and is plumbed through to
-  // the corresponding ServiceWorkerGlobalScope in the renderer process.
-  absl::optional<blink::ServiceWorkerToken> token_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};
 };

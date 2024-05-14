@@ -6,7 +6,7 @@
 #define COMPONENTS_CONTENT_SETTINGS_CORE_TEST_CONTENT_SETTINGS_MOCK_PROVIDER_H_
 
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
-#include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
+#include "components/content_settings/core/browser/content_settings_origin_value_map.h"
 #include "components/content_settings/core/common/content_settings_metadata.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -29,14 +29,20 @@ class MockProvider : public ObservableProvider {
       bool incognito,
       const PartitionKey& partition_key =
           PartitionKey::WipGetDefault()) const override;
+  std::unique_ptr<Rule> GetRule(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      bool off_the_record,
+      const PartitionKey& partition_key) const override;
 
   bool SetWebsiteSetting(const ContentSettingsPattern& requesting_url_pattern,
                          const ContentSettingsPattern& embedding_url_pattern,
                          ContentSettingsType content_type,
                          base::Value&& value,
-                         const ContentSettingConstraints& constraint = {},
+                         const ContentSettingConstraints& constraints = {},
                          const PartitionKey& partition_key =
-                             PartitionKey::WipGetDefault()) override;
+                             PartitionKey::GetDefaultForTesting()) override;
 
   void ClearAllContentSettingsRules(
       ContentSettingsType content_type,
@@ -50,7 +56,7 @@ class MockProvider : public ObservableProvider {
   bool read_only() const { return read_only_; }
 
  private:
-  OriginIdentifierValueMap value_map_;
+  OriginValueMap value_map_;
   bool read_only_;
 };
 

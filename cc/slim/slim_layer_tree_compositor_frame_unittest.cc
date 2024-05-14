@@ -8,13 +8,11 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "cc/base/region.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
-#include "cc/slim/features.h"
 #include "cc/slim/layer.h"
 #include "cc/slim/nine_patch_layer.h"
 #include "cc/slim/solid_color_layer.h"
@@ -51,7 +49,6 @@ using testing::ElementsAre;
 class SlimLayerTreeCompositorFrameTest : public testing::Test {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kSlimCompositor);
     layer_tree_ = std::make_unique<TestLayerTreeImpl>(&client_);
     layer_tree_->SetVisible(true);
 
@@ -78,7 +75,7 @@ class SlimLayerTreeCompositorFrameTest : public testing::Test {
 
   viz::CompositorFrame ProduceFrame(
       std::optional<viz::HitTestRegionList>* out_list = nullptr) {
-    layer_tree_->SetNeedsRedraw();
+    layer_tree_->SetNeedsAnimate();
     EXPECT_TRUE(layer_tree_->NeedsBeginFrames());
     base::TimeTicks frame_time = base::TimeTicks::Now();
     base::TimeDelta interval = viz::BeginFrameArgs::DefaultInterval();
@@ -120,7 +117,6 @@ class SlimLayerTreeCompositorFrameTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestLayerTreeClient client_;
   std::unique_ptr<TestLayerTreeImpl> layer_tree_;
   base::WeakPtr<TestFrameSinkImpl> frame_sink_;
@@ -154,7 +150,8 @@ TEST_F(SlimLayerTreeCompositorFrameTest, CompositorFrameMetadataBasics) {
   layer_tree_->SetViewportRectAndScale(viewport_, /*device_scale_factor=*/2.0f,
                                        local_surface_id_);
   layer_tree_->set_background_color(SkColors::kBlue);
-  layer_tree_->set_display_transform_hint(gfx::OVERLAY_TRANSFORM_ROTATE_90);
+  layer_tree_->set_display_transform_hint(
+      gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_90);
   layer_tree_->UpdateTopControlsVisibleHeight(5.0f);
   {
     viz::CompositorFrame frame = ProduceFrame();
@@ -164,7 +161,7 @@ TEST_F(SlimLayerTreeCompositorFrameTest, CompositorFrameMetadataBasics) {
     EXPECT_EQ(sequence_id_, metadata.begin_frame_ack.frame_id.sequence_number);
     EXPECT_EQ(2.0f, metadata.device_scale_factor);
     EXPECT_EQ(SkColors::kBlue, metadata.root_background_color);
-    EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90,
+    EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_90,
               metadata.display_transform_hint);
     EXPECT_EQ(5.0f, metadata.top_controls_visible_height);
   }

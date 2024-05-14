@@ -57,15 +57,17 @@ bool IsHttpServerError(int status_code) {
 }
 
 bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
-  if (!base::DeleteFile(filepath))
+  if (!base::DeleteFile(filepath)) {
     return false;
+  }
 
   return DeleteEmptyDirectory(filepath.DirName());
 }
 
 bool DeleteEmptyDirectory(const base::FilePath& dir_path) {
-  if (!base::IsDirectoryEmpty(dir_path))
+  if (!base::IsDirectoryEmpty(dir_path)) {
     return true;
+  }
 
   return base::DeleteFile(dir_path);
 }
@@ -93,12 +95,14 @@ bool VerifyFileHash256(const base::FilePath& filepath,
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
   int64_t file_size = 0;
-  if (!base::GetFileSize(filepath, &file_size))
+  if (!base::GetFileSize(filepath, &file_size)) {
     return false;
+  }
   if (file_size > 0) {
     base::MemoryMappedFile mmfile;
-    if (!mmfile.Initialize(filepath))
+    if (!mmfile.Initialize(filepath)) {
       return false;
+    }
     hasher->Update(mmfile.data(), mmfile.length());
   }
 
@@ -157,18 +161,18 @@ CrxInstaller::Result InstallFunctionWrapper(
                                   : InstallError::GENERIC_ERROR);
 }
 
-absl::optional<base::Value::Dict> ReadManifest(
+std::optional<base::Value::Dict> ReadManifest(
     const base::FilePath& unpack_path) {
   base::FilePath manifest =
       unpack_path.Append(FILE_PATH_LITERAL("manifest.json"));
   if (!base::PathExists(manifest)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
   std::unique_ptr<base::Value> root = deserializer.Deserialize(nullptr, &error);
   if (!root || !root->is_dict()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return std::move(root->GetDict());
 }

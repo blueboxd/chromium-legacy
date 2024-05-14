@@ -94,44 +94,49 @@ TEST_F(AccessibilityTest, HistogramTest) {
   histogram_tester.ExpectTotalCount(
       "Accessibility.Performance.AXObjectCacheImpl.Incremental.String", 0);
 
-  ui::AXTreeUpdate response;
-  ScopedFreezeAXCache freeze(cache);
-  cache.SerializeEntireTree(/* max_node_count */ 1000,
-                            base::TimeDelta::FiniteMax(), &response);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Snapshot", 1);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental", 0);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.Float", 0);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.Int", 0);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.HTML", 0);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.String", 0);
+  {
+    ui::AXTreeUpdate response;
+    ScopedFreezeAXCache freeze(cache);
+    cache.SerializeEntireTree(/* max_node_count */ 1000,
+                              base::TimeDelta::FiniteMax(), &response);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Snapshot", 1);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental", 0);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.Float", 0);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.Int", 0);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.HTML", 0);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.String", 0);
+  }
 
-  std::vector<ui::AXTreeUpdate> updates;
-  std::vector<ui::AXEvent> events;
-  bool has_plugin_tree_source = false;
-  bool had_end_of_test_event = true;
-  bool had_load_complete_messages = true;
-  bool need_to_send_location_changes = false;
-  cache.SerializeDirtyObjectsAndEvents(
-      has_plugin_tree_source, updates, events, had_end_of_test_event,
-      had_load_complete_messages, need_to_send_location_changes);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Snapshot", 1);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental", 1);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.Float", 1);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.Int", 1);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.HTML", 1);
-  histogram_tester.ExpectTotalCount(
-      "Accessibility.Performance.AXObjectCacheImpl.Incremental.String", 1);
+  {
+    std::vector<ui::AXTreeUpdate> updates;
+    std::vector<ui::AXEvent> events;
+    bool has_plugin_tree_source = false;
+    bool had_end_of_test_event = true;
+    bool had_load_complete_messages = true;
+    bool need_to_send_location_changes = false;
+    ScopedFreezeAXCache freeze(cache);
+    cache.SerializeDirtyObjectsAndEvents(
+        has_plugin_tree_source, updates, events, had_end_of_test_event,
+        had_load_complete_messages, need_to_send_location_changes);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Snapshot", 1);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental", 1);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.Float", 1);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.Int", 1);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.HTML", 1);
+    histogram_tester.ExpectTotalCount(
+        "Accessibility.Performance.AXObjectCacheImpl.Incremental.String", 1);
+  }
 }
 
 TEST_F(AccessibilityTest, RemoveReferencesToAXID) {
@@ -191,6 +196,28 @@ TEST_F(AccessibilityTest, PauseUpdatesAfterMaxNumberQueued) {
   ASSERT_EQ(0u, MockAXObject::num_children_changed_calls_);
 }
 
+TEST_F(AccessibilityTest, UpdateAXForAllDocumentsAfterPausedUpdates) {
+  auto& document = GetDocument();
+  auto* ax_object_cache =
+      To<AXObjectCacheImpl>(document.ExistingAXObjectCache());
+  DCHECK(ax_object_cache);
+
+  wtf_size_t max_updates = 1;
+  ax_object_cache->SetMaxPendingUpdatesForTesting(max_updates);
+
+  UpdateAllLifecyclePhasesForTest();
+  AXObject* root = ax_object_cache->Root();
+  // Queue one update too many.
+  ax_object_cache->DeferTreeUpdate(
+      AXObjectCacheImpl::TreeUpdateReason::kChildrenChanged, root);
+  ax_object_cache->DeferTreeUpdate(
+      AXObjectCacheImpl::TreeUpdateReason::kChildrenChanged, root);
+
+  ax_object_cache->UpdateAXForAllDocuments();
+  ScopedFreezeAXCache freeze(*ax_object_cache);
+  CHECK(!root->NeedsToUpdateCachedValues());
+}
+
 class AXViewTransitionTest : public testing::Test {
  public:
   AXViewTransitionTest() {}
@@ -241,8 +268,7 @@ class AXViewTransitionTest : public testing::Test {
   }
 
  protected:
-  test::TaskEnvironment task_environment_{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
 

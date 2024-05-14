@@ -222,7 +222,7 @@ class VmCameraMicManagerTest : public testing::Test {
   // indicators notifications.
   void ExpectNotificationsExist(std::set<std::string> notification_ids) {
     std::set<std::string> all_privacy_indicators_notifications;
-    for (auto* notification :
+    for (message_center::Notification* notification :
          message_center::MessageCenter::Get()->GetVisibleNotifications()) {
       // Leaves out any parent container.
       if (!notification || notification->group_parent()) {
@@ -246,8 +246,7 @@ class VmCameraMicManagerTest : public testing::Test {
       fake_user_manager_;
   TestingProfile testing_profile_;
 
-  raw_ptr<FakeNotificationDisplayService, ExperimentalAsh>
-      fake_display_service_;
+  raw_ptr<FakeNotificationDisplayService> fake_display_service_;
   std::unique_ptr<VmCameraMicManager> vm_camera_mic_manager_;
 
   base::test::ScopedFeatureList scoped_feature_list_;

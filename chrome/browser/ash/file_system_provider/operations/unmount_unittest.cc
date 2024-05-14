@@ -19,9 +19,7 @@
 #include "extensions/browser/event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
-namespace file_system_provider {
-namespace operations {
+namespace ash::file_system_provider::operations {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
@@ -32,8 +30,8 @@ const int kRequestId = 2;
 
 class FileSystemProviderOperationsUnmountTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsUnmountTest() {}
-  ~FileSystemProviderOperationsUnmountTest() override {}
+  FileSystemProviderOperationsUnmountTest() = default;
+  ~FileSystemProviderOperationsUnmountTest() override = default;
 
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
@@ -117,6 +115,4 @@ TEST_F(FileSystemProviderOperationsUnmountTest, OnError) {
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, event_result);
 }
 
-}  // namespace operations
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider::operations

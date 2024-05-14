@@ -352,6 +352,27 @@ NSAttributedString* TextForTabCount(int count, CGFloat font_size) {
                                          }];
 }
 
+NSAttributedString* TextForTabGroupCount(int count, CGFloat font_size) {
+  NSString* string;
+  if (count <= 0) {
+    string = @"";
+  } else if (count < 100) {
+    string = [NSString stringWithFormat:@"+%d", count];
+  } else {
+    string = @"99+";
+  }
+
+  UIFont* font = [UIFont systemFontOfSize:font_size weight:UIFontWeightMedium];
+  UIFontDescriptor* descriptor = [font.fontDescriptor
+      fontDescriptorWithDesign:UIFontDescriptorSystemDesignRounded];
+  font = [UIFont fontWithDescriptor:descriptor size:font_size];
+
+  return
+      [[NSAttributedString alloc] initWithString:string
+                                      attributes:@{NSFontAttributeName : font}];
+}
+
+#if !defined(__IPHONE_16_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_16_0
 void RegisterEditMenuItem(UIMenuItem* item) {
   UIMenuController* menu = [UIMenuController sharedMenuController];
   NSArray<UIMenuItem*>* items = [menu menuItems];
@@ -366,6 +387,7 @@ void RegisterEditMenuItem(UIMenuItem* item) {
 
   [menu setMenuItems:items];
 }
+#endif
 
 UIView* ViewHierarchyRootForView(UIView* view) {
   if (view.window) {
@@ -388,4 +410,23 @@ bool IsScrollViewScrolledToBottom(UIScrollView* scroll_view) {
                               scroll_view.adjustedContentInset.bottom -
                               scroll_view.bounds.size.height;
   return scroll_view.contentOffset.y >= scrollable_height;
+}
+
+CGFloat DeviceCornerRadius() {
+  UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
+
+  UIWindow* window = nil;
+  for (UIScene* scene in UIApplication.sharedApplication.connectedScenes) {
+    UIWindowScene* windowScene =
+        base::apple::ObjCCastStrict<UIWindowScene>(scene);
+    UIWindow* firstWindow = [windowScene.windows firstObject];
+    if (firstWindow) {
+      window = firstWindow;
+      break;
+    }
+  }
+
+  const BOOL isRoundedDevice =
+      (idiom == UIUserInterfaceIdiomPhone && window.safeAreaInsets.bottom);
+  return isRoundedDevice ? 40.0 : 0.0;
 }

@@ -112,6 +112,7 @@
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_store/smart_bubble_stats_store.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
+#include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/permissions/permission_actions_history.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/prefs/pref_service.h"
@@ -292,10 +293,11 @@ std::vector<std::string>
 ChromeBrowsingDataRemoverDelegate::GetDomainsForDeferredCookieDeletion(
     content::StoragePartition* storage_partition,
     uint64_t remove_mask) {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordsAccountStorage)) {
-    return {};
-  }
+#if BUILDFLAG(IS_ANDROID)
+  // On Android the identity model isn't based on Gaia cookies, so they can be
+  // wiped immediately without influencing the wiping of account-scoped data.
+  return {};
+#else
   // The Google/Gaia cookies we care about live in the default StoragePartition.
   if (!storage_partition->GetConfig().is_default() ||
       (remove_mask & constants::DEFERRED_COOKIE_DELETION_DATA_TYPES) == 0) {
@@ -315,6 +317,7 @@ ChromeBrowsingDataRemoverDelegate::GetDomainsForDeferredCookieDeletion(
     domains.insert(domain);
   }
   return {domains.begin(), domains.end()};
+#endif
 }
 
 void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
@@ -428,7 +431,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       history_service->DeleteLocalAndRemoteHistoryBetween(
           WebHistoryServiceFactory::GetForProfile(profile_), delete_begin_,
-          delete_end_, CreateTaskCompletionClosure(TracingDataType::kHistory),
+          delete_end_, history::kNoAppIdFilter,
+          CreateTaskCompletionClosure(TracingDataType::kHistory),
           &history_task_tracker_);
     }
     if (ClipboardRecentContent::GetInstance())
@@ -739,6 +743,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     content::HostZoomMap* zoom_map =
         content::HostZoomMap::GetDefaultForBrowserContext(profile_);
     zoom_map->ClearZoomLevels(delete_begin, delete_end_);
+
+    // Discard exceptions weren't stored with timestamps, so they all must be
+    // cleared.
+    performance_manager::user_tuning::prefs::ClearTabDiscardExceptions(
+        prefs, delete_begin_, delete_end_);
 #endif  // !BUILDFLAG(IS_ANDROID)
   }
 
@@ -940,16 +949,22 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (account_store) {
-      // A sync completion callback is passed in for account
-      // passwords, in order to ensure that the passwords are cleared before the
-      // user is signed out via cookie deletion.
-      // TODO:(crbug.com/1167715) - Test that associated compromised credentials
-      // are removed.
+      // Desktop must wait for DATA_TYPE_ACCOUNT_PASSWORDS deletions to be
+      // uploaded to the sync server before deleting any other types (because
+      // deleting DATA_TYPE_COOKIES first would revoke the account storage
+      // opt-in and prevent the upload).
+      // On Android, the account storage doesn't depend on cookies, so there's
+      // no need to wait.
+      base::OnceCallback<void(bool)> sync_completion;
+#if !BUILDFLAG(IS_ANDROID)
+      sync_completion =
+          CreateTaskCompletionCallback(TracingDataType::kAccountPasswordsSynced,
+                                       constants::DATA_TYPE_ACCOUNT_PASSWORDS);
+#endif
       account_store->RemoveLoginsByURLAndTime(
           filter, delete_begin_, delete_end_,
           CreateTaskCompletionClosure(TracingDataType::kAccountPasswords),
-          CreateTaskCompletionCallback(TracingDataType::kAccountPasswordsSynced,
-                                       constants::DATA_TYPE_ACCOUNT_PASSWORDS));
+          std::move(sync_completion));
     }
   }
 

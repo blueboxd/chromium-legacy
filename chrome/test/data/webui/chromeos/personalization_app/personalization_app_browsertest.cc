@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/webui/personalization_app/test/personalization_app_mojom_banned_mocha_test_base.h"
+#include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_mocha_test_base.h"
 #include "content/public/test/browser_test.h"
 
 namespace ash::personalization_app {
@@ -139,8 +141,19 @@ IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest,
       "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, SeaPenRouterElement) {
+  RunTest("chromeos/personalization_app/sea_pen_router_element_test.js",
+          "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, SeaPenTemplateQuery) {
   RunTest("chromeos/personalization_app/sea_pen_template_query_element_test.js",
+          "mocha.run()");
+}
+
+// TODO(b/322108635): Re-enable when the flakiness is resolved.
+IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, SeaPenTemplates) {
+  RunTest("chromeos/personalization_app/sea_pen_templates_element_test.js",
           "mocha.run()");
 }
 
@@ -194,10 +207,6 @@ IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, WallpaperSubpage) {
           "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, WallpaperSubpageTop) {
-  RunTest("chromeos/personalization_app/wallpaper_subpage_top_element_test.js",
-          "mocha.run()");
-}
 IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, ZoneCustomization) {
   RunTest("chromeos/personalization_app/zone_customization_element_test.js",
           "mocha.run()");
@@ -210,6 +219,49 @@ using PersonalizationAppControllerTest =
 IN_PROC_BROWSER_TEST_F(PersonalizationAppControllerTest, All) {
   RunTest("chromeos/personalization_app/personalization_app_controller_test.js",
           "mocha.run()");
+}
+
+// Tests the entire chrome://personalization application, including the mojom
+// bindings. Some mojom providers are fake test implementations, some are real
+// implementations but with mocked out network handler helper classes.
+using PersonalizationAppBrowserTest = PersonalizationAppMochaTestBase;
+
+// TODO(crbug.com/1517028): Re-enable this test flakily failing on dbg builds.
+#if !defined(NDEBUG)
+#define MAYBE_Main DISABLED_Main
+#else
+#define MAYBE_Main Main
+#endif
+IN_PROC_BROWSER_TEST_F(PersonalizationAppBrowserTest, MAYBE_Main) {
+  RunTestWithoutTestLoader(
+      "chromeos/personalization_app/personalization_app_test.js",
+      "runMochaSuite('main page')");
+}
+
+IN_PROC_BROWSER_TEST_F(PersonalizationAppBrowserTest, AmbientModeAllowed) {
+  ash::AmbientClient::Get()->SetAmbientModeAllowedForTesting(true);
+  RunTestWithoutTestLoader(
+      "chromeos/personalization_app/personalization_app_test.js",
+      "runMochaSuite('ambient mode allowed')");
+}
+
+IN_PROC_BROWSER_TEST_F(PersonalizationAppBrowserTest, AmbientModeDisallowed) {
+  ash::AmbientClient::Get()->SetAmbientModeAllowedForTesting(false);
+  RunTestWithoutTestLoader(
+      "chromeos/personalization_app/personalization_app_test.js",
+      "runMochaSuite('ambient mode disallowed')");
+}
+
+IN_PROC_BROWSER_TEST_F(PersonalizationAppBrowserTest, WallpaperSubpage) {
+  RunTestWithoutTestLoader(
+      "chromeos/personalization_app/personalization_app_test.js",
+      "runMochaSuite('ambient mode disallowed')");
+}
+
+IN_PROC_BROWSER_TEST_F(PersonalizationAppBrowserTest, DynamicColor) {
+  RunTestWithoutTestLoader(
+      "chromeos/personalization_app/personalization_app_test.js",
+      "runMochaSuite('dynamic color')");
 }
 
 }  // namespace ash::personalization_app

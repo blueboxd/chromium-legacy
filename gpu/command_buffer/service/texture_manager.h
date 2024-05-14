@@ -18,7 +18,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -52,8 +51,7 @@ class TextureRef;
 // all references have been released.
 class GPU_GLES2_EXPORT TexturePassthrough final
     : public TextureBase,
-      public base::RefCounted<TexturePassthrough>,
-      public base::SupportsWeakPtr<TexturePassthrough> {
+      public base::RefCounted<TexturePassthrough> {
  public:
   TexturePassthrough(GLuint service_id, GLenum target);
 
@@ -1208,7 +1206,8 @@ class GPU_GLES2_EXPORT TextureManager
 
   scoped_refptr<FeatureInfo> feature_info_;
 
-  std::vector<FramebufferManager*> framebuffer_managers_;
+  std::vector<raw_ptr<FramebufferManager, VectorExperimental>>
+      framebuffer_managers_;
 
   // Info for each texture in the system.
   typedef std::unordered_map<GLuint, scoped_refptr<TextureRef>> TextureMap;
@@ -1242,7 +1241,8 @@ class GPU_GLES2_EXPORT TextureManager
   // The default textures for each target (texture name = 0)
   scoped_refptr<TextureRef> default_textures_[kNumDefaultTextures];
 
-  std::vector<DestructionObserver*> destruction_observers_;
+  std::vector<raw_ptr<DestructionObserver, VectorExperimental>>
+      destruction_observers_;
 
   uint32_t current_service_id_generation_;
 

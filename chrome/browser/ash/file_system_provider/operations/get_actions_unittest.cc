@@ -24,9 +24,7 @@
 #include "storage/browser/file_system/async_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
-namespace file_system_provider {
-namespace operations {
+namespace ash::file_system_provider::operations {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
@@ -47,7 +45,7 @@ class CallbackLogger {
     Event(const Event&) = delete;
     Event& operator=(const Event&) = delete;
 
-    virtual ~Event() {}
+    virtual ~Event() = default;
 
     const Actions& actions() const { return actions_; }
     base::File::Error result() const { return result_; }
@@ -57,12 +55,12 @@ class CallbackLogger {
     base::File::Error result_;
   };
 
-  CallbackLogger() {}
+  CallbackLogger() = default;
 
   CallbackLogger(const CallbackLogger&) = delete;
   CallbackLogger& operator=(const CallbackLogger&) = delete;
 
-  virtual ~CallbackLogger() {}
+  virtual ~CallbackLogger() = default;
 
   void OnGetActions(const Actions& actions, base::File::Error result) {
     events_.push_back(std::make_unique<Event>(actions, result));
@@ -93,8 +91,8 @@ void CreateRequestValueFromJSON(const std::string& json, RequestValue* result) {
 
 class FileSystemProviderOperationsGetActionsTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsGetActionsTest() {}
-  ~FileSystemProviderOperationsGetActionsTest() override {}
+  FileSystemProviderOperationsGetActionsTest() = default;
+  ~FileSystemProviderOperationsGetActionsTest() override = default;
 
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
@@ -229,6 +227,4 @@ TEST_F(FileSystemProviderOperationsGetActionsTest, OnError) {
   ASSERT_EQ(0u, event->actions().size());
 }
 
-}  // namespace operations
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider::operations

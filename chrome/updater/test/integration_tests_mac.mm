@@ -52,8 +52,9 @@ namespace {
 
 base::FilePath GetExecutablePath() {
   base::FilePath out_dir;
-  if (!base::PathService::Get(base::DIR_EXE, &out_dir))
+  if (!base::PathService::Get(base::DIR_EXE, &out_dir)) {
     return base::FilePath();
+  }
   return out_dir.Append(GetExecutableRelativePath());
 }
 
@@ -62,8 +63,9 @@ std::optional<base::FilePath> GetActiveFile(UpdaterScope /*scope*/,
   // The active user is always managed in the updater scope for the user.
   const std::optional<base::FilePath> path =
       GetLibraryFolderPath(UpdaterScope::kUser);
-  if (!path)
+  if (!path) {
     return std::nullopt;
+  }
 
   return path->AppendASCII(COMPANY_SHORTNAME_STRING)
       .AppendASCII(COMPANY_SHORTNAME_STRING "SoftwareUpdate")
@@ -333,8 +335,8 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_TRUE(persisted_data->GetBrandCode(kKippleApp).empty());
   EXPECT_TRUE(persisted_data->GetBrandPath(kKippleApp).empty());
   EXPECT_TRUE(persisted_data->GetFingerprint(kKippleApp).empty());
-  EXPECT_EQ(persisted_data->GetDateLastActive(kKippleApp), -2);
-  EXPECT_EQ(persisted_data->GetDateLastRollCall(kKippleApp), -2);
+  EXPECT_EQ(persisted_data->GetDateLastActive(kKippleApp), -1);
+  EXPECT_EQ(persisted_data->GetDateLastRollCall(kKippleApp), -1);
 
   // App PopularApp.
   const std::string kPopularApp = "com.chromium.PopularApp";
@@ -360,8 +362,8 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_EQ(persisted_data->GetExistenceCheckerPath(kCorruptedApp),
             base::FilePath("/"));
   EXPECT_EQ(persisted_data->GetAP(kCorruptedApp), "canary");
-  EXPECT_EQ(persisted_data->GetDateLastActive(kCorruptedApp), -2);
-  EXPECT_EQ(persisted_data->GetDateLastRollCall(kCorruptedApp), -2);
+  EXPECT_EQ(persisted_data->GetDateLastActive(kCorruptedApp), -1);
+  EXPECT_EQ(persisted_data->GetDateLastRollCall(kCorruptedApp), -1);
 }
 
 void InstallApp(UpdaterScope scope,
@@ -479,6 +481,10 @@ void ExpectAppVersion(UpdaterScope scope,
           ->GetProductVersion(app_id);
   EXPECT_TRUE(app_version.IsValid());
   EXPECT_EQ(version, app_version);
+}
+
+void ExpectPrepareToRunBundleSuccess(const base::FilePath& bundle_path) {
+  EXPECT_TRUE(PrepareToRunBundle(bundle_path));
 }
 
 }  // namespace updater::test

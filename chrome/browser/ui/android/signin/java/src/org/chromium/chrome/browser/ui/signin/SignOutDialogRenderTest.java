@@ -28,6 +28,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -71,6 +73,8 @@ public class SignOutDialogRenderTest {
 
     @Mock private SigninMetricsUtils.Natives mSigninMetricsUtilsNativeMock;
 
+    @Mock private PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeNativeMock;
+
     @Mock private SigninManager mSigninManagerMock;
 
     @Mock private IdentityManager mIdentityManagerMock;
@@ -88,7 +92,7 @@ public class SignOutDialogRenderTest {
     @Before
     public void setUp() {
         mocker.mock(SigninMetricsUtilsJni.TEST_HOOKS, mSigninMetricsUtilsNativeMock);
-        Profile.setLastUsedProfileForTesting(mProfile);
+        mocker.mock(PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeNativeMock);
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
         when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
         when(IdentityServicesProvider.get().getIdentityManager(any()))
@@ -195,6 +199,7 @@ public class SignOutDialogRenderTest {
                     mSignOutDialogCoordinator =
                             new SignOutDialogCoordinator(
                                     mActivityTestRule.getActivity(),
+                                    mProfile,
                                     mActivityTestRule.getActivity().getModalDialogManager(),
                                     mListenerMock,
                                     ActionType.REVOKE_SYNC_CONSENT,
@@ -209,6 +214,7 @@ public class SignOutDialogRenderTest {
                     mSignOutDialogCoordinator =
                             new SignOutDialogCoordinator(
                                     mActivityTestRule.getActivity(),
+                                    mProfile,
                                     mActivityTestRule.getActivity().getModalDialogManager(),
                                     mListenerMock,
                                     ActionType.CLEAR_PRIMARY_ACCOUNT,

@@ -12,14 +12,17 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_metrics.h"
 #include "base/check_op.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -27,6 +30,7 @@
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/env.h"
 #include "ui/display/screen.h"
 #include "ui/display/tablet_state.h"
@@ -106,7 +110,7 @@ bool InTabletMode() {
 }
 
 bool TopTwoVisibleWindowsBothSnapped(
-    const std::vector<aura::Window*>& windows) {
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
   int windows_size = windows.size();
   if (windows_size < 2)
     return false;
@@ -117,7 +121,7 @@ bool TopTwoVisibleWindowsBothSnapped(
   if (!top_snap_window_state->IsSnapped())
     return false;
 
-  for (auto* window : base::Reversed(windows)) {
+  for (aura::Window* window : base::Reversed(windows)) {
     // Skip the top one.
     if (window == windows.back())
       continue;
@@ -150,14 +154,21 @@ SplitViewMetricsController::DeviceOrientation GetDeviceOrientation(
              : SplitViewMetricsController::DeviceOrientation::kPortrait;
 }
 
-chromeos::WindowStateType GetOppositeSnapType(aura::Window* window) {
-  CHECK(window);
-  WindowState* window_state = WindowState::Get(window);
-  CHECK(window_state->IsSnapped());
-  return window_state->GetStateType() ==
-                 chromeos::WindowStateType::kPrimarySnapped
-             ? chromeos::WindowStateType::kSecondarySnapped
-             : chromeos::WindowStateType::kPrimarySnapped;
+// Records the pref value of `kSnapWindowSuggestions` at the time a window is
+// snapped.
+void MaybeRecordSnapWindowSuggestions(
+    WindowSnapActionSource snap_action_source) {
+  if (!CanSnapActionSourceStartFasterSplitView(snap_action_source)) {
+    return;
+  }
+  PrefService* pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  if (!pref_service) {
+    return;
+  }
+  base::UmaHistogramBoolean(
+      BuildSnapWindowSuggestionsHistogramName(snap_action_source),
+      pref_service->GetBoolean(prefs::kSnapWindowSuggestions));
 }
 
 }  // namespace
@@ -354,6 +365,11 @@ void SplitViewMetricsController::OnPostWindowStateTypeChange(
 
   // We only care if a window is snapped or unsnapped.
   bool is_snapped = window_state->IsSnapped();
+  if (is_snapped) {
+    MaybeRecordSnapWindowSuggestions(
+        window_state->snap_action_source().value_or(
+            WindowSnapActionSource::kNotSpecified));
+  }
   bool was_snapped = chromeos::IsSnappedWindowStateType(old_type);
   if (is_snapped == was_snapped)
     return;
@@ -579,7 +595,7 @@ void SplitViewMetricsController::InitObservedWindowsOnActiveDesk() {
       current_desk_
           ->GetDeskContainerForRoot(split_view_controller_->root_window())
           ->children();
-  for (auto* window : windows) {
+  for (aura::Window* window : windows) {
     if (!CanIncludeWindowInMruList(window))
       continue;
     AddObservedWindow(window);
@@ -630,7 +646,7 @@ bool SplitViewMetricsController::
     return false;
 
   return TopTwoVisibleWindowsBothSnapped(
-      std::vector<aura::Window*>(begin_iter, iter));
+      std::vector<raw_ptr<aura::Window, VectorExperimental>>(begin_iter, iter));
 }
 
 void SplitViewMetricsController::RecordSnapTwoWindowsDuration(

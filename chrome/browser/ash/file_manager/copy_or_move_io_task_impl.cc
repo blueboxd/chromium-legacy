@@ -54,6 +54,11 @@ namespace file_manager::io_task {
 
 namespace {
 
+bool* DestinationNoSpace() {
+  static bool destination_no_space = false;
+  return &destination_no_space;
+}
+
 // Starts the copy operation via FileSystemOperationRunner.
 storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,
@@ -186,6 +191,12 @@ bool CopyOrMoveIOTaskImpl::IsCrossFileSystemForTesting(
   return IsCrossFileSystem(profile, source_url, destination_url);
 }
 
+// static
+void CopyOrMoveIOTaskImpl::SetDestinationNoSpaceForTesting(
+    bool destination_no_space) {
+  *DestinationNoSpace() = destination_no_space;
+}
+
 void CopyOrMoveIOTaskImpl::Execute(IOTask::ProgressCallback progress_callback,
                                    IOTask::CompleteCallback complete_callback) {
   progress_callback_ = std::move(progress_callback);
@@ -253,7 +264,8 @@ void CopyOrMoveIOTaskImpl::VerifyTransfer() {
                                      progress_->GetDestinationFolder()) &&
       user_manager::UserManager::Get()->GetLoggedInUsers().size() > 1) {
     // Check none of the logged in users are managed.
-    for (auto* user : user_manager::UserManager::Get()->GetLoggedInUsers()) {
+    for (user_manager::User* user :
+         user_manager::UserManager::Get()->GetLoggedInUsers()) {
       Profile* user_profile = Profile::FromBrowserContext(
           ash::BrowserContextHelper::Get()->GetBrowserContextByUser(user));
       if (user_profile->GetProfilePolicyConnector()->IsManaged()) {
@@ -402,7 +414,7 @@ void CopyOrMoveIOTaskImpl::GotFreeDiskSpace(int64_t free_space) {
     }
   }
 
-  if (required_bytes > free_space) {
+  if (required_bytes > free_space || *DestinationNoSpace()) {
     progress_->outputs.emplace_back(progress_->GetDestinationFolder(),
                                     base::File::FILE_ERROR_NO_SPACE);
     LOG(ERROR) << "Insufficient free space in destination";
@@ -565,6 +577,7 @@ void CopyOrMoveIOTaskImpl::CopyOrMoveFile(
   // Use it to automatically resolve the conflict (no need to ask the UI).
   if (!conflict_resolve_.empty()) {
     ResumeParams params;
+    params.conflict_params.emplace();
     params.conflict_params->conflict_resolve = conflict_resolve_;
     params.conflict_params->conflict_apply_to_all = true;
     ResumeCopyOrMoveFile(idx, std::move(replace_url),
@@ -583,17 +596,18 @@ void CopyOrMoveIOTaskImpl::CopyOrMoveFile(
 
   // Enter state PAUSED: send pause params to the UI, to ask the user how to
   // resolve the file name conflict.
-  progress_->state = State::kPaused;
-  progress_->pause_params.conflict_params->conflict_name =
-      basename.AsUTF8Unsafe();
-  progress_->pause_params.conflict_params->conflict_multiple =
-      (idx < progress_->sources.size() - 1) ? true : false;
-  progress_->pause_params.conflict_params->conflict_is_directory =
-      progress_->sources[idx].is_directory;
   auto destination_folder = file_system_context_->CreateCrackedFileSystemURL(
       progress_->GetDestinationFolder().storage_key(),
       progress_->GetDestinationFolder().mount_type(),
       progress_->GetDestinationFolder().virtual_path());
+  progress_->state = State::kPaused;
+  progress_->pause_params.conflict_params.emplace();
+  progress_->pause_params.conflict_params->conflict_name =
+      basename.AsUTF8Unsafe();
+  progress_->pause_params.conflict_params->conflict_is_directory =
+      progress_->sources[idx].is_directory;
+  progress_->pause_params.conflict_params->conflict_multiple =
+      (idx < progress_->sources.size() - 1);
   progress_->pause_params.conflict_params->conflict_target_url =
       destination_folder.ToGURL().spec();
   progress_callback_.Run(*progress_);

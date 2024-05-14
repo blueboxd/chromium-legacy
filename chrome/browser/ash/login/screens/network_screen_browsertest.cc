@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ash/login/screens/network_screen.h"
+
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_switches.h"
-#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_target_device_connection_broker.h"
-#include "chrome/browser/ash/login/screens/network_screen.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
@@ -161,7 +161,7 @@ class NetworkScreenTest : public OobeBaseTest {
     auto expected_subtitle_text = l10n_util::GetStringFUTF8(
         IDS_NETWORK_SELECTION_ERROR,
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME),
-        base::UTF8ToUTF16(base::StringPiece(kWifiNetworkName)));
+        base::UTF8ToUTF16(std::string_view(kWifiNetworkName)));
     test::OobeJS()
         .CreateElementTextContentWaiter(expected_subtitle_text,
                                         kNetworkScreenErrorSubtitile)
@@ -171,7 +171,7 @@ class NetworkScreenTest : public OobeBaseTest {
   base::HistogramTester histogram_tester_;
 
  private:
-  raw_ptr<NetworkScreen, DanglingUntriaged | ExperimentalAsh> network_screen_;
+  raw_ptr<NetworkScreen, DanglingUntriaged> network_screen_;
   base::test::TestFuture<NetworkScreen::Result> screen_result_waiter_;
   std::unique_ptr<NetworkStateTestHelper> network_helper_;
 };
@@ -306,39 +306,6 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   // Trigger timeout explicitly for test.
   network_screen()->connection_timer_.FireNow();
   WaitForErrorMessageToBeShown();
-}
-
-// The network screen should be skipped if the device can connect and it's using
-// zero-touch hands-off enrollment.
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, HandsOffCanConnect_Skipped) {
-  SetUpConnectedEthernet();
-  // Configure the UI to use Hands-Off Enrollment flow. This cannot be done in
-  // the `SetUpCommandLine` method, because the welcome screen would also be
-  // skipped, causing the network screen to be shown before we could set up this
-  // test class properly.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
-
-  ShowNetworkScreen();
-  EXPECT_EQ(WaitForScreenExitResult(), NetworkScreen::Result::NOT_APPLICABLE);
-}
-
-// The network screen should NOT be skipped if the connection times out, even if
-// it's using zero-touch hands-off enrollment.
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, HandsOffTimeout_NotSkipped) {
-  // Configure the UI to use Hands-Off Enrollment flow. This cannot be done in
-  // the `SetUpCommandLine` method, because the welcome screen would also be
-  // skipped, causing the network screen to be shown before we could set up this
-  // test class properly.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
-
-  ShowNetworkScreen();
-  SetUpConnectingToWifiNetwork();
-  // Trigger timeout explicitly for test.
-  network_screen()->connection_timer_.FireNow();
-  WaitForErrorMessageToBeShown();
-  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, EthernetConnection_Skipped) {

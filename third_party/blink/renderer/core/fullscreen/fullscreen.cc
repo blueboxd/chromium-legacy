@@ -225,11 +225,16 @@ void GoFullscreen(Element& element,
     DCHECK(!HasFullscreenFlag(element));
   }
 
-  // If there are any open popovers, close them.
+  // Proposed new behavior: top layer elements like dialogs and fullscreen
+  // elements can be nested inside popovers.
+  // Old/existing behavior: showing a modal dialog or fullscreen
+  // element should hide all open popovers.
+  auto* hide_until = HTMLElement::TopLayerElementPopoverAncestor(
+      element, TopLayerElementType::kFullscreen);
+  DCHECK(RuntimeEnabledFeatures::NestedTopLayerSupportEnabled() || !hide_until);
   HTMLElement::HideAllPopoversUntil(
-      nullptr, document, HidePopoverFocusBehavior::kNone,
-      HidePopoverTransitionBehavior::kFireEventsAndWaitForTransitions,
-      HidePopoverIndependence::kHideUnrelated);
+      hide_until, document, HidePopoverFocusBehavior::kNone,
+      HidePopoverTransitionBehavior::kFireEventsAndWaitForTransitions);
 
   // To fullscreen an |element| within a |document|, set the |element|'s
   // fullscreen flag and add it to |document|'s top layer.
@@ -381,6 +386,14 @@ bool AllowedToRequestFullscreen(Document& document) {
           document.GetExecutionContext()) &&
       document.GetFrame()->IsTransientAllowFullscreenActive()) {
     UseCounter::Count(document, WebFeature::kFullscreenAllowedByScreensChange);
+    return true;
+  }
+
+  // The document is configured to allow "Automatic Fullscreen" requests,
+  // waiving the user gesture requirement.
+  if (!document.GetSettings()
+           ->GetRequireTransientActivationForHtmlFullscreen()) {
+    UseCounter::Count(document, WebFeature::kFullscreenAllowedByContentSetting);
     return true;
   }
 

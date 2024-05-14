@@ -61,18 +61,14 @@ namespace {
 // Size of the timestamp cache, needs to be large enough for frame-reordering.
 constexpr size_t kTimestampCacheSize = 128;
 
-absl::optional<VideoPixelFormat> GetPixelFormatForBitDepth(uint8_t bit_depth) {
+std::optional<VideoPixelFormat> GetPixelFormatForBitDepth(uint8_t bit_depth) {
   constexpr auto kSupportedBitDepthAndGfxFormats = base::MakeFixedFlatMap<
       uint8_t, gfx::BufferFormat>({
-#if BUILDFLAG(IS_OZONE)
     {8u, gfx::BufferFormat::YUV_420_BIPLANAR}, {10u, gfx::BufferFormat::P010},
-#else
-    {8u, gfx::BufferFormat::RGBX_8888},
-#endif  // BUILDFLAG(IS_OZONE)
   });
   if (!base::Contains(kSupportedBitDepthAndGfxFormats, bit_depth)) {
     VLOGF(1) << "Unsupported bit depth: " << base::strict_cast<int>(bit_depth);
-    return absl::nullopt;
+    return std::nullopt;
   }
   return GfxBufferFormatToVideoPixelFormat(
       kSupportedBitDepthAndGfxFormats.at(bit_depth));
@@ -122,7 +118,7 @@ std::unique_ptr<VideoDecoderMixin> VaapiVideoDecoder::Create(
 }
 
 // static
-absl::optional<SupportedVideoDecoderConfigs>
+std::optional<SupportedVideoDecoderConfigs>
 VaapiVideoDecoder::GetSupportedConfigs() {
   return ConvertFromSupportedProfiles(
       VaapiWrapper::GetSupportedDecodeProfiles(),
@@ -415,7 +411,7 @@ void VaapiVideoDecoder::HandleDecodeTask() {
       // task. Switch to the idle state if we ran out of buffers to decode.
       std::move(current_decode_task_->decode_done_cb_)
           .Run(DecoderStatus::Codes::kOk);
-      current_decode_task_ = absl::nullopt;
+      current_decode_task_ = std::nullopt;
       if (!decode_task_queue_.empty()) {
         ScheduleNextDecodeTask();
       } else {
@@ -484,7 +480,7 @@ void VaapiVideoDecoder::ClearDecodeTaskQueue(DecoderStatus status) {
 
   if (current_decode_task_) {
     std::move(current_decode_task_->decode_done_cb_).Run(status);
-    current_decode_task_ = absl::nullopt;
+    current_decode_task_ = std::nullopt;
   }
 
   while (!decode_task_queue_.empty()) {
@@ -512,14 +508,8 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
     return nullptr;
   }
 
-  // |frame|s coming from ARC++ are not GpuMemoryBuffer-backed, but they have
-  // DmaBufs whose fd numbers are consistent along the lifetime of the VA
-  // surfaces they back.
-  DCHECK(frame->GetGpuMemoryBuffer() || frame->HasDmaBufs());
-  const gfx::GpuMemoryBufferId frame_id =
-      frame->GetGpuMemoryBuffer()
-          ? frame->GetGpuMemoryBuffer()->GetId()
-          : gfx::GpuMemoryBufferId(frame->DmabufFds()[0].get());
+  const gfx::GpuMemoryBufferId frame_id = GetSharedMemoryId(*frame);
+  DCHECK(frame_id.is_valid());
 
   scoped_refptr<VASurface> va_surface;
   if (!base::Contains(allocated_va_surfaces_, frame_id)) {
@@ -679,7 +669,7 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
     return;
 
   const uint8_t bit_depth = decoder_->GetBitDepth();
-  const absl::optional<VideoPixelFormat> format =
+  const std::optional<VideoPixelFormat> format =
       GetPixelFormatForBitDepth(bit_depth);
   if (!format) {
     SetErrorState(base::StringPrintf("unsupported bit depth: %d", bit_depth));
@@ -800,21 +790,21 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
       aspect_ratio_.GetNaturalSize(decoder_visible_rect);
 
 #if BUILDFLAG(IS_LINUX)
-  absl::optional<DmabufVideoFramePool::CreateFrameCB> allocator =
+  std::optional<DmabufVideoFramePool::CreateFrameCB> allocator =
       base::BindRepeating(&AllocateCustomFrameProxy, weak_this_);
   std::vector<ImageProcessor::PixelLayoutCandidate> candidates = {
       {.fourcc = *format_fourcc,
        .size = decoder_pic_size,
        .modifier = gfx::NativePixmapHandle::kNoModifier}};
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  absl::optional<DmabufVideoFramePool::CreateFrameCB> allocator = absl::nullopt;
+  std::optional<DmabufVideoFramePool::CreateFrameCB> allocator = std::nullopt;
 
   std::vector<ImageProcessor::PixelLayoutCandidate> candidates = {
       {.fourcc = *format_fourcc,
        .size = decoder_pic_size,
        .modifier = gfx::NativePixmapHandle::kNoModifier}};
 #else
-  absl::optional<DmabufVideoFramePool::CreateFrameCB> allocator = absl::nullopt;
+  std::optional<DmabufVideoFramePool::CreateFrameCB> allocator = std::nullopt;
 
   // TODO(b/203240043): We assume that the |dummy_frame|'s modifier matches the
   // buffer returned by the video frame pool. We should create a test to make
@@ -878,12 +868,13 @@ VaapiVideoDecoder::AllocateCustomFrameProxy(
     const gfx::Size& natural_size,
     bool use_protected,
     bool use_linear_buffers,
+    bool needs_detiling,
     base::TimeDelta timestamp) {
   if (!decoder)
     return CroStatus::Codes::kFailedToCreateVideoFrame;
-  return decoder->AllocateCustomFrame(format, coded_size, visible_rect,
-                                      natural_size, use_protected,
-                                      use_linear_buffers, timestamp);
+  return decoder->AllocateCustomFrame(
+      format, coded_size, visible_rect, natural_size, use_protected,
+      use_linear_buffers, needs_detiling, timestamp);
 }
 
 CroStatus::Or<scoped_refptr<VideoFrame>> VaapiVideoDecoder::AllocateCustomFrame(
@@ -893,11 +884,13 @@ CroStatus::Or<scoped_refptr<VideoFrame>> VaapiVideoDecoder::AllocateCustomFrame(
     const gfx::Size& natural_size,
     bool use_protected,
     bool use_linear_buffers,
+    bool needs_detiling,
     base::TimeDelta timestamp) {
   DVLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_ == State::kChangingResolution || state_ == State::kDecoding);
   DCHECK(!use_linear_buffers);
+  DCHECK(!needs_detiling);
 
   scoped_refptr<VASurface> surface;
   switch (format) {
@@ -1065,7 +1058,7 @@ void VaapiVideoDecoder::Flush() {
   // Notify the client flushing is done.
   std::move(current_decode_task_->decode_done_cb_)
       .Run(DecoderStatus::Codes::kOk);
-  current_decode_task_ = absl::nullopt;
+  current_decode_task_ = std::nullopt;
 
   // Wait for new decodes, no decode tasks should be queued while flushing.
   SetState(State::kWaitingForInput);

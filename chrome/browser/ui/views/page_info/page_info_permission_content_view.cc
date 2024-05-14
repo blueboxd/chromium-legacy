@@ -18,6 +18,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/toggle_button.h"
@@ -28,7 +29,8 @@
 PageInfoPermissionContentView::PageInfoPermissionContentView(
     PageInfo* presenter,
     ChromePageInfoUiDelegate* ui_delegate,
-    ContentSettingsType type)
+    ContentSettingsType type,
+    content::WebContents* web_contents)
     : presenter_(presenter), type_(type), ui_delegate_(ui_delegate) {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
@@ -103,11 +105,12 @@ PageInfoPermissionContentView::PageInfoPermissionContentView(
   icon_->SetProperty(views::kMarginsKey, gfx::Insets::VH(margin, 0));
   toggle_button_->SetProperty(views::kMarginsKey, gfx::Insets::VH(margin, 0));
 
-  MaybeAddMediaPreview();
-
-  AddChildView(PageInfoViewFactory::CreateSeparator(
+  auto* separator = AddChildView(PageInfoViewFactory::CreateSeparator(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_HORIZONTAL_SEPARATOR_PADDING_PAGE_INFO_VIEW)));
+
+  MaybeAddMediaPreview(web_contents, *separator);
+
   // TODO(crbug.com/1225563): Consider to use permission specific text.
   AddChildView(std::make_unique<RichHoverButton>(
       base::BindRepeating(
@@ -126,7 +129,13 @@ PageInfoPermissionContentView::PageInfoPermissionContentView(
   presenter_->InitializeUiState(this, base::DoNothing());
 }
 
-PageInfoPermissionContentView::~PageInfoPermissionContentView() = default;
+PageInfoPermissionContentView::~PageInfoPermissionContentView() {
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
+  if (active_devices_media_preview_coordinator_) {
+    active_devices_media_preview_coordinator_->UpdateDevicePreferenceRanking();
+  }
+#endif
+}
 
 void PageInfoPermissionContentView::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
@@ -191,7 +200,9 @@ void PageInfoPermissionContentView::PermissionChanged() {
                                       permission_.is_one_time);
 }
 
-void PageInfoPermissionContentView::MaybeAddMediaPreview() {
+void PageInfoPermissionContentView::MaybeAddMediaPreview(
+    content::WebContents* web_contents,
+    views::View& preceding_separator) {
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
   if (!base::FeatureList::IsEnabled(features::kCameraMicPreview)) {
     return;
@@ -202,14 +213,21 @@ void PageInfoPermissionContentView::MaybeAddMediaPreview() {
     return;
   }
 
-  AddChildView(PageInfoViewFactory::CreateSeparator(
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_HORIZONTAL_SEPARATOR_PADDING_PAGE_INFO_VIEW)));
+  preceding_separator.GetProperty(views::kMarginsKey)->set_bottom(0);
 
   auto view_type = type_ == ContentSettingsType::MEDIASTREAM_CAMERA
                        ? MediaCoordinator::ViewType::kCameraOnly
                        : MediaCoordinator::ViewType::kMicOnly;
-  media_preview_coordinator_.emplace(view_type, *this, /*index=*/std::nullopt,
-                                     /*is_subsection=*/true);
+  active_devices_media_preview_coordinator_.emplace(web_contents, view_type,
+                                                    /*parent_view=*/this);
+
+  AddChildView(PageInfoViewFactory::CreateSeparator(
+                   ChromeLayoutProvider::Get()->GetDistanceMetric(
+                       DISTANCE_HORIZONTAL_SEPARATOR_PADDING_PAGE_INFO_VIEW)))
+      ->GetProperty(views::kMarginsKey)
+      ->set_top(0);
 #endif
 }
+
+BEGIN_METADATA(PageInfoPermissionContentView)
+END_METADATA

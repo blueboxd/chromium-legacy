@@ -23,9 +23,9 @@ def IsComponentsAutofillFileAffected(input_api, name_suffix):
       input_api, lambda f: IsComponentsAutofillFile(f, name_suffix))
 
 def _CheckNoBaseTimeCalls(input_api, output_api):
-  """Checks that no files call base::Time::Now() or base::TimeTicks::Now()."""
+  """Checks that no files call base::Time::Now()."""
   pattern = input_api.re.compile(
-      r'(base::(Time|TimeTicks)::Now)\(\)',
+      r'(base::Time::Now)\(\)',
       input_api.re.MULTILINE)
   files = []
   for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
@@ -37,20 +37,18 @@ def _CheckNoBaseTimeCalls(input_api, output_api):
 
   if len(files):
     return [ output_api.PresubmitPromptWarning(
-        'Consider to not call base::Time::Now() or base::TimeTicks::Now() ' +
-        'directly but use AutofillClock::Now() and '+
-        'Autofill::TickClock::NowTicks(), respectively. These clocks can be ' +
-        'manipulated through TestAutofillClock and TestAutofillTickClock '+
-        'for testing purposes, and using AutofillClock and AutofillTickClock '+
+        'Consider to not call base::Time::Now() directly but use ' +
+        'AutofillClock::Now(). This clock can be manipulated through ' +
+        'TestAutofillClock for testing purposes, and using AutofillClock and ' +
         'throughout Autofill code makes sure Autofill tests refers to the '+
         'same (potentially manipulated) clock.',
         files) ]
   return []
 
-def _CheckNoServerFieldTypeCasts(input_api, output_api):
-  """Checks that no files cast (e.g., raw integers to) ServerFieldTypes."""
+def _CheckNoFieldTypeCasts(input_api, output_api):
+  """Checks that no files cast (e.g., raw integers to) FieldTypes."""
   pattern = input_api.re.compile(
-      r'_cast<\s*ServerFieldType\b',
+      r'_cast<\s*FieldType\b',
       input_api.re.MULTILINE)
   files = []
   for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
@@ -62,9 +60,9 @@ def _CheckNoServerFieldTypeCasts(input_api, output_api):
 
   if len(files):
     return [ output_api.PresubmitPromptWarning(
-        'Do not cast raw integers to ServerFieldType to prevent values that ' +
+        'Do not cast raw integers to FieldType to prevent values that ' +
         'have no corresponding enum constant or are deprecated. Use '+
-        'ToSafeServerFieldType() instead.',
+        'ToSafeFieldType() instead.',
         files) ]
   return []
 
@@ -158,11 +156,11 @@ def _CheckNoUsageOfUniqueRendererId(
                      if autofill_files_pattern.search(f.LocalPath())]
 
   warning_files = []
-  unique_renderer_id_call = re.compile(
+  renderer_id_call = re.compile(
       r'\.UniqueRendererForm(Control)?Id', re.MULTILINE)
   for autofill_file, file_content in concerned_files:
     allowed_matches = 2 if special_file.search(autofill_file.LocalPath()) else 0
-    matches = re.finditer(unique_renderer_id_call, file_content)
+    matches = re.finditer(renderer_id_call, file_content)
     if (len(list(matches)) > allowed_matches):
       warning_files.append(autofill_file)
 
@@ -175,7 +173,7 @@ def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
   results.extend(_CheckNoBaseTimeCalls(input_api, output_api))
-  results.extend(_CheckNoServerFieldTypeCasts(input_api, output_api))
+  results.extend(_CheckNoFieldTypeCasts(input_api, output_api))
   results.extend(_CheckFeatureNames(input_api, output_api))
   results.extend(_CheckWebViewExposedExperiments(input_api, output_api))
   results.extend(_CheckModificationOfLegacyRegexPatterns(input_api, output_api))

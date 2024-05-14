@@ -30,9 +30,25 @@ struct StreamingResponse {
   bool is_complete = false;
 };
 
-using OptimizationGuideModelStreamingExecutionResult =
-    base::expected<const StreamingResponse,
-                   OptimizationGuideModelExecutionError>;
+struct OptimizationGuideModelStreamingExecutionResult {
+  OptimizationGuideModelStreamingExecutionResult();
+  explicit OptimizationGuideModelStreamingExecutionResult(
+      base::expected<const StreamingResponse,
+                     OptimizationGuideModelExecutionError> response,
+      bool provided_by_on_device,
+      std::unique_ptr<ModelQualityLogEntry> log_entry = nullptr);
+
+  ~OptimizationGuideModelStreamingExecutionResult();
+  OptimizationGuideModelStreamingExecutionResult(
+      OptimizationGuideModelStreamingExecutionResult&& src);
+
+  base::expected<const StreamingResponse, OptimizationGuideModelExecutionError>
+      response;
+  // True if the response was computed on-device.
+  bool provided_by_on_device = false;
+  // The log entry will be null until `StreamingResponse.is_complete` is true.
+  std::unique_ptr<ModelQualityLogEntry> log_entry;
+};
 
 // The callback for receiving the model execution result and model quality log
 // entry.
@@ -43,8 +59,8 @@ using OptimizationGuideModelExecutionResultCallback =
 // The callback for receiving streamed output from the model. The log entry will
 // be null until `StreamingResponse.is_complete` is true.
 using OptimizationGuideModelExecutionResultStreamingCallback =
-    base::RepeatingCallback<void(OptimizationGuideModelStreamingExecutionResult,
-                                 std::unique_ptr<ModelQualityLogEntry>)>;
+    base::RepeatingCallback<void(
+        OptimizationGuideModelStreamingExecutionResult)>;
 
 // Interface for model execution.
 class OptimizationGuideModelExecutor {

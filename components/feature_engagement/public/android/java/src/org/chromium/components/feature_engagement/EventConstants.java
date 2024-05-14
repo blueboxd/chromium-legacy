@@ -150,10 +150,6 @@ public final class EventConstants {
     /** Shared Highlighting button event */
     public static final String IPH_SHARED_HIGHLIGHTING_USED = "iph_shared_highlighting_used";
 
-    /** Webnotes Stylize feature used from Sharing Hub */
-    public static final String SHARING_HUB_WEBNOTES_STYLIZE_USED =
-            "sharing_hub_webnotes_stylize_used";
-
     /** AutoDark disabled from app menu events. */
     public static final String AUTO_DARK_DISABLED_IN_APP_MENU = "auto_dark_disabled_in_app_menu";
 
@@ -181,13 +177,6 @@ public final class EventConstants {
 
     /** Desktop site default-on message gesture event. */
     public static final String DESKTOP_SITE_DEFAULT_ON_GESTURE = "desktop_site_default_on_gesture";
-
-    /** Desktop site opt-in message primary action event. */
-    public static final String DESKTOP_SITE_OPT_IN_PRIMARY_ACTION =
-            "desktop_site_opt_in_primary_action";
-
-    /** Desktop site opt-in message gesture event. */
-    public static final String DESKTOP_SITE_OPT_IN_GESTURE = "desktop_site_opt_in_gesture";
 
     /** An app menu desktop site exception addition event. */
     public static final String APP_MENU_DESKTOP_SITE_EXCEPTION_ADDED =

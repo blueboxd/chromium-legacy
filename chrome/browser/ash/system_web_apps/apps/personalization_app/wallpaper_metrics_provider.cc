@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,11 +25,17 @@ void WallpaperMetricsProvider::ProvideCurrentSessionData(
   if (!info || !ash::IsOnlineWallpaper(info->type)) {
     return;
   }
-  CHECK(info->unit_id);
-  base::UmaHistogramSparse("Ash.Wallpaper.Image.Settled",
-                           info->unit_id.value());
-  CHECK(!info->collection_id.empty());
-  const int collection_id_hash = base::PersistentHash(info->collection_id);
-  base::UmaHistogramSparse("Ash.Wallpaper.Collection.Settled",
-                           collection_id_hash);
+  base::UmaHistogramBoolean("Ash.Wallpaper.Image.Settled.HasUnitId",
+                            info->unit_id.has_value());
+  if (info->unit_id.has_value()) {
+    base::UmaHistogramSparse("Ash.Wallpaper.Image.Settled",
+                             info->unit_id.value());
+  }
+  base::UmaHistogramBoolean("Ash.Wallpaper.Image.Settled.HasCollectionId",
+                            !info->collection_id.empty());
+  if (!info->collection_id.empty()) {
+    const int collection_id_hash = base::PersistentHash(info->collection_id);
+    base::UmaHistogramSparse("Ash.Wallpaper.Collection.Settled",
+                             collection_id_hash);
+  }
 }

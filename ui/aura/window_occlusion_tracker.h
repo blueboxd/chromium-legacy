@@ -12,7 +12,6 @@
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/scoped_multi_source_observation.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/aura_export.h"
@@ -145,13 +144,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // Returns true if there are ignored animating windows.
   bool HasIgnoredAnimatingWindows() const { return !animated_windows_.empty(); }
 
-  // Set a callback to determine whether a window has content to draw in
-  // addition to layer type check (window layer type != ui::LAYER_NOT_DRAWN).
-  using WindowHasContentCallback = base::RepeatingCallback<bool(const Window*)>;
-  void set_window_has_content_callback(WindowHasContentCallback callback) {
-    window_has_content_callback_ = std::move(callback);
-  }
-
   // Set the factory to create WindowOcclusionChangeBuilder.
   using OcclusionChangeBuilderFactory =
       base::RepeatingCallback<std::unique_ptr<WindowOcclusionChangeBuilder>()>;
@@ -165,6 +157,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
  private:
   friend class test::WindowOcclusionTrackerTestApi;
   friend class Env;
+  friend void Window::GetDebugInfo(const aura::Window* active_window,
+                                   const aura::Window* focused_window,
+                                   const aura::Window* capture_window,
+                                   std::ostringstream* out) const;
   friend std::unique_ptr<WindowOcclusionTracker>::deleter_type;
 
   struct RootWindowState {
@@ -215,10 +211,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // Returns true if |window| can occlude other windows (e.g. because it is
   // not transparent or has opaque regions for occlusion).
   // |window| must be visible.
-  bool VisibleWindowCanOccludeOtherWindows(Window* window) const;
+  bool VisibleWindowCanOccludeOtherWindows(const Window* window) const;
 
   // Returns true if |window| has content.
-  bool WindowHasContent(Window* window) const;
+  bool WindowHasContent(const Window* window) const;
 
   // Removes windows whose bounds and transform are not animated from
   // |animated_windows_|. Marks the root of those windows as dirty.
@@ -403,9 +399,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   base::ScopedMultiSourceObservation<Window, WindowObserver>
       window_observations_{this};
 
-  // Callback to be invoked for additional window has content check.
-  WindowHasContentCallback window_has_content_callback_;
-
   // Optional factory to create occlusion change builder.
   OcclusionChangeBuilderFactory occlusion_change_builder_factory_;
 
@@ -413,9 +406,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // occlusion based on target bounds, opacity, transform, and visibility
   // values. If the occlusion tracker is not computing for a specific window
   // (most of the time it is not), this will be nullptr.
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION Window* target_occlusion_window_ = nullptr;
+  raw_ptr<Window> target_occlusion_window_ = nullptr;
 };
 
 }  // namespace aura

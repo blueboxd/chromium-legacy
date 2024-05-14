@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -113,9 +114,11 @@ namespace metrics_util = password_manager::metrics_util;
 class PasswordBubbleInteractiveUiTest : public ManagePasswordsTest {
  public:
   PasswordBubbleInteractiveUiTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::
-            kNewConfirmationBubbleForGeneratedPasswords);
+    scoped_feature_list_.InitWithFeatures(
+        {password_manager::features::
+             kNewConfirmationBubbleForGeneratedPasswords,
+         password_manager::features::kButterOnDesktopFollowup},
+        {});
   }
 
   PasswordBubbleInteractiveUiTest(const PasswordBubbleInteractiveUiTest&) =
@@ -1000,7 +1003,35 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
                       OnIncompatibleAction::kIgnoreAndContinue,
                       "Screenshot can only run in pixel_tests on Windows."),
                   Screenshot(ManagePasswordsDetailsView::kTopView,
-                             std::string(), "4385094"));
+                             std::string(), "5189779"));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordBubbleInteractiveUiTest,
+    NavigateToManagementDetailsViewWithMoveFooterVisibleAndTakeScreenshot) {
+  const char kFirstCredentialsRow[] = "FirstCredentialsRow";
+
+  std::unique_ptr<base::AutoReset<bool>> bypass_user_auth_for_testing =
+      GetController()->BypassUserAuthtForTesting();
+  auto setup_passwords = [this]() {
+    ConfigurePasswordSync(SyncConfiguration::kAccountStorageOnly);
+    SetupManagingPasswords(GURL(u"http://test-url.com"));
+  };
+
+  RunTestSequence(
+      Do(setup_passwords), PressButton(kPasswordsOmniboxKeyIconElementId),
+      WaitForShow(ManagePasswordsView::kTopView),
+      EnsurePresent(ManagePasswordsListView::kTopView),
+      NameChildViewByType<RichHoverButton>(ManagePasswordsListView::kTopView,
+                                           kFirstCredentialsRow),
+      PressButton(kFirstCredentialsRow),
+      WaitForShow(ManagePasswordsDetailsView::kTopView),
+      EnsureNotPresent(ManagePasswordsListView::kTopView),
+      // Screenshots are supposed only on Windows.
+      SetOnIncompatibleAction(
+          OnIncompatibleAction::kIgnoreAndContinue,
+          "Screenshot can only run in pixel_tests on Windows."),
+      Screenshot(ManagePasswordsView::kFooterId, std::string(), "5189779"));
 }
 
 class SharedPasswordsNotificationBubbleInteractiveUiTest
@@ -1031,8 +1062,8 @@ IN_PROC_BROWSER_TEST_F(SharedPasswordsNotificationBubbleInteractiveUiTest,
   PasswordForm shared_credentials = CreateSharedCredentials(test_url);
   shared_credentials.sharing_notification_displayed = false;
 
-  std::vector<const password_manager::PasswordForm*> forms = {
-      &shared_credentials};
+  std::vector<raw_ptr<const password_manager::PasswordForm, VectorExperimental>>
+      forms = {&shared_credentials};
 
   auto setup_shared_passwords = [&]() {
     GetController()->OnPasswordAutofilled(forms, url::Origin::Create(test_url),
@@ -1060,8 +1091,8 @@ IN_PROC_BROWSER_TEST_F(
       CreateSharedCredentials(test_url, u"username2");
   shared_credentials2.sharing_notification_displayed = false;
 
-  std::vector<const password_manager::PasswordForm*> forms = {
-      &shared_credentials1, &shared_credentials2};
+  std::vector<raw_ptr<const password_manager::PasswordForm, VectorExperimental>>
+      forms = {&shared_credentials1, &shared_credentials2};
 
   auto setup_shared_passwords = [&]() {
     GetController()->OnPasswordAutofilled(forms, url::Origin::Create(test_url),
@@ -1091,8 +1122,8 @@ IN_PROC_BROWSER_TEST_F(
       CreateSharedCredentials(test_url, u"username2", u"Sender Two");
   shared_credentials2.sharing_notification_displayed = false;
 
-  std::vector<const password_manager::PasswordForm*> forms = {
-      &shared_credentials1, &shared_credentials2};
+  std::vector<raw_ptr<const password_manager::PasswordForm, VectorExperimental>>
+      forms = {&shared_credentials1, &shared_credentials2};
 
   auto setup_shared_passwords = [&]() {
     GetController()->OnPasswordAutofilled(forms, url::Origin::Create(test_url),
@@ -1115,8 +1146,8 @@ IN_PROC_BROWSER_TEST_F(
   PasswordForm shared_credentials = CreateSharedCredentials(test_url);
   shared_credentials.sharing_notification_displayed = true;
 
-  std::vector<const password_manager::PasswordForm*> forms = {
-      &shared_credentials};
+  std::vector<raw_ptr<const password_manager::PasswordForm, VectorExperimental>>
+      forms = {&shared_credentials};
 
   auto setup_shared_passwords = [&]() {
     GetController()->OnPasswordAutofilled(forms, url::Origin::Create(test_url),

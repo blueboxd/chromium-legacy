@@ -5,7 +5,7 @@
 #include "ash/capture_mode/capture_mode_test_util.h"
 
 #include "ash/accessibility/a11y_feature_type.h"
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/autoclick/autoclick_controller.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_controller.h"
@@ -349,7 +349,7 @@ IconButton* GetCloseButton() {
 const message_center::Notification* GetPreviewNotification() {
   const message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
-  for (const auto* notification : notifications) {
+  for (const message_center::Notification* notification : notifications) {
     if (notification->id() == kScreenCaptureNotificationId) {
       return notification;
     }

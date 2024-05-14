@@ -38,6 +38,29 @@ class FormStructureRationalizer {
   // hints like max-length=4.
   void RationalizeAutocompleteAttributes(LogManager* log_manager);
 
+  // Sets the types of all contenteditables to UNKNOWN_TYPE in order to disable
+  // autofilling of and importing from contenteditables.
+  //
+  // Usually, a contenteditable's type is UNKNOWN_TYPE anyway. Let's take a look
+  // how a contenteditable may be assigned another type:
+  // - Autocomplete: The contenteditable may have an autocomplete attribute.
+  // - Heuristics: While the contenteditable is extracted as a separate form
+  //   with only a single field by AutofillAgent, it may be flattened into a
+  //   larger form (if the contenteditable lives in an iframe and the user
+  //   interacted with it) that qualifies for heuristic type detection
+  //   (kMinRequiredFieldsForHeuristics) by AutofillDriverRouter. However,
+  //   currently no parsing rule matches FormControlType::kContentEditable, so
+  //   the heuristic type is UNKNOWN_TYPE.
+  // - Crowdsourcing: The focus-change and form-submission events that trigger
+  //   crowdsourcing are not detected for contenteditables. But the
+  //   contenteditable may be flattened into a form (see the previous bullet
+  //   point) for which these events are triggered. Thus, the contenteditable
+  //   could have a non-UNKNOWN_TYPE server type.
+  //
+  // AutofillContextMenuManager and AutocompleteHistoryManager ignore
+  // contenteditables in their own code.
+  void RationalizeContentEditables(LogManager* log_manager);
+
   // Tunes the fields with identical predictions.
   // The `form_signature` is needed for logging.
   void RationalizeRepeatedFields(FormSignature form_signature,
@@ -108,23 +131,23 @@ class FormStructureRationalizer {
   // also autofilled to take care of the synthetic fields.
   void ApplyRationalizationsToHiddenSelects(
       size_t field_index,
-      ServerFieldType new_type,
+      FieldType new_type,
       FormSignature form_signature,
       AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Returns true if we can replace server predictions with the heuristics one.
   bool HeuristicsPredictionsAreApplicable(size_t upper_index,
                                           size_t lower_index,
-                                          ServerFieldType first_type,
-                                          ServerFieldType second_type);
+                                          FieldType first_type,
+                                          FieldType second_type);
 
   // Applies upper type to upper field, and lower type to lower field, and
   // applies the rationalization also to hidden select fields if necessary.
   void ApplyRationalizationsToFields(
       size_t upper_index,
       size_t lower_index,
-      ServerFieldType upper_type,
-      ServerFieldType lower_type,
+      FieldType upper_type,
+      FieldType lower_type,
       FormSignature form_signature,
       AutofillMetrics::FormInteractionsUkmLogger*);
 
@@ -135,7 +158,7 @@ class FormStructureRationalizer {
   // Set fields_[|field_index|] to |new_type| and log this change.
   void ApplyRationalizationsToFieldAndLog(
       size_t field_index,
-      ServerFieldType new_type,
+      FieldType new_type,
       FormSignature form_signature,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
 

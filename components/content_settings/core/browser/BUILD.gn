@@ -16,14 +16,17 @@ static_library("browser") {
     "content_settings_observable_provider.cc",
     "content_settings_observable_provider.h",
     "content_settings_observer.h",
-    "content_settings_origin_identifier_value_map.cc",
-    "content_settings_origin_identifier_value_map.h",
+    "content_settings_origin_value_map.cc",
+    "content_settings_origin_value_map.h",
+    "content_settings_partitioned_origin_value_map.cc",
+    "content_settings_partitioned_origin_value_map.h",
     "content_settings_policy_provider.cc",
     "content_settings_policy_provider.h",
     "content_settings_pref.cc",
     "content_settings_pref.h",
     "content_settings_pref_provider.cc",
     "content_settings_pref_provider.h",
+    "content_settings_provider.cc",
     "content_settings_provider.h",
     "content_settings_registry.cc",
     "content_settings_registry.h",
@@ -38,8 +41,6 @@ static_library("browser") {
     "cookie_settings.h",
     "host_content_settings_map.cc",
     "host_content_settings_map.h",
-    "host_indexed_content_settings.cc",
-    "host_indexed_content_settings.h",
     "private_network_settings.cc",
     "private_network_settings.h",
     "user_modifiable_provider.cc",
@@ -84,7 +85,6 @@ static_library("browser") {
       "//components/policy:generated",
       "//components/policy/core/browser",
       "//components/privacy_sandbox:privacy_sandbox_prefs",
-      "//third_party/blink/public/common:headers",
     ]
   }
 
@@ -94,12 +94,12 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "content_settings_partitioned_origin_value_map_unittest.cc",
     "content_settings_pref_unittest.cc",
     "content_settings_registry_unittest.cc",
     "content_settings_rule_unittest.cc",
     "content_settings_utils_unittest.cc",
     "cookie_settings_unittest.cc",
-    "host_indexed_content_settings_unittest.cc",
     "website_settings_registry_unittest.cc",
   ]
 
@@ -125,6 +125,7 @@ source_set("unit_tests") {
     "//extensions/buildflags",
     "//net",
     "//ppapi/buildflags:buildflags",
+    "//services/preferences/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//url",
@@ -140,7 +141,6 @@ source_set("unit_tests") {
     deps += [
       "//components/policy:generated",
       "//components/policy/core/browser:test_support",
-      "//third_party/blink/public/common:headers",
     ]
   }
 }

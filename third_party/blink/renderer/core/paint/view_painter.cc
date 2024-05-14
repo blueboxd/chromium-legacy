@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/box_background_paint_context.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
@@ -74,13 +74,21 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   if (layout_view_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  bool has_hit_test_data =
-      ObjectPainter(layout_view_).ShouldRecordSpecialHitTestData(paint_info);
   bool painting_background_in_contents_space =
       paint_info.IsPaintingBackgroundInContentsSpace();
+  bool paints_hit_test_data =
+      (RuntimeEnabledFeatures::HitTestOpaquenessEnabled() &&
+       painting_background_in_contents_space) ||
+      ObjectPainter(layout_view_).ShouldRecordSpecialHitTestData(paint_info);
 
   Element* element = DynamicTo<Element>(layout_view_.GetNode());
-  bool has_region_capture_data = element && element->GetRegionCaptureCropId();
+  bool paints_region_capture_data =
+      element && element->GetRegionCaptureCropId() &&
+      // TODO(wangxianzhu): This is to avoid the side-effect of
+      // HitTestOpaqueness on region capture data. Verify if the side-effect
+      // really matters.
+      !(painting_background_in_contents_space &&
+        paint_info.ShouldSkipBackground());
   bool paints_scroll_hit_test =
       !painting_background_in_contents_space &&
       layout_view_.FirstFragment().PaintProperties()->Scroll();
@@ -91,8 +99,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     }
     return false;
   }();
-  if (!layout_view_.HasBoxDecorationBackground() && !has_hit_test_data &&
-      !paints_scroll_hit_test && !has_region_capture_data &&
+  if (!layout_view_.HasBoxDecorationBackground() && !paints_hit_test_data &&
+      !paints_scroll_hit_test && !paints_region_capture_data &&
       !is_represented_via_pseudo_elements) {
     return;
   }
@@ -128,7 +136,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   auto root_element_background_painting_state =
       layout_view_.FirstFragment().ContentsProperties();
 
-  absl::optional<ScopedPaintChunkProperties> scoped_properties;
+  std::optional<ScopedPaintChunkProperties> scoped_properties;
 
   bool painted_separate_backdrop = false;
   bool painted_separate_effect = false;
@@ -194,13 +202,13 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
                           *background_client, painted_separate_backdrop,
                           painted_separate_effect);
   }
-  if (has_hit_test_data) {
+  if (paints_hit_test_data) {
     ObjectPainter(layout_view_)
         .RecordHitTestData(paint_info, pixel_snapped_background_rect,
                            *background_client);
   }
 
-  if (has_region_capture_data) {
+  if (paints_region_capture_data) {
     BoxPainter(layout_view_)
         .RecordRegionCaptureData(paint_info,
                                  PhysicalRect(pixel_snapped_background_rect),
@@ -401,13 +409,14 @@ void ViewPainter::PaintRootElementGroup(
     context.FillRect(paint_rect, Color(), auto_dark_mode, SkBlendMode::kClear);
   }
 
-  BackgroundImageGeometry geometry(layout_view_, background_image_offset);
+  BoxBackgroundPaintContext bg_paint_context(layout_view_,
+                                             background_image_offset);
   BoxModelObjectPainter box_model_painter(layout_view_);
   for (const auto* fill_layer : base::Reversed(reversed_paint_list)) {
     DCHECK(fill_layer->Clip() == EFillBox::kBorder);
     box_model_painter.PaintFillLayer(paint_info, Color(), *fill_layer,
                                      PhysicalRect(paint_rect),
-                                     kBackgroundBleedNone, geometry);
+                                     kBackgroundBleedNone, bg_paint_context);
   }
 
   if (should_draw_background_in_separate_buffer && !painted_separate_effect)

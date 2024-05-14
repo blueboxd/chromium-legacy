@@ -429,6 +429,42 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Nearby.Presence.Credentials.Storage.LocalPublicDatabaseInitializationResult"
+    enum="BooleanSuccess" expires_after="2024-07-10">
+  <owner>polner@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the result of an initialization attempt of the local public
+    credential database in the Nearby Presence Credential Storage component.
+    Emitted after an initialization attempt completes.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Presence.Credentials.Storage.PrivateDatabaseInitializationResult"
+    enum="BooleanSuccess" expires_after="2024-07-10">
+  <owner>polner@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the result of an initialization attempt of the private credential
+    database in the Nearby Presence Credential Storage component. Emitted after
+    an initialization attempt completes.
+  </summary>
+</histogram>
+
+<histogram
+    name="Nearby.Presence.Credentials.Storage.RemotePublicDatabaseInitializationResult"
+    enum="BooleanSuccess" expires_after="2024-07-10">
+  <owner>polner@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the result of an initialization attempt of the remote public
+    credential database in the Nearby Presence Credential Storage component.
+    Emitted after an initialization attempt completes.
+  </summary>
+</histogram>
+
+<histogram
     name="Nearby.Presence.Credentials.Storage.SaveLocalPublicCredentials.Result"
     enum="BooleanSuccess" expires_after="2024-07-10">
   <owner>polner@google.com</owner>
@@ -1020,6 +1056,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Nearby.Share.Error" enum="NearbyShareError"
+    expires_after="2024-07-10">
+  <owner>cclem@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records a unique error code for every site in the code where an error
+    condition is recognized.
+  </summary>
+</histogram>
+
 <histogram name="Nearby.Share.IsKnownContact" enum="BooleanKnown"
     expires_after="2024-07-10">
   <owner>pushi@google.com</owner>
@@ -1131,6 +1177,34 @@ chromium-metrics-reviews@google.com.
     Once the user confirms device visibility onboarding is complete. Emitted
     when the user cancels onboarding during one of the steps or on successful
     completion.
+  </summary>
+</histogram>
+
+<histogram name="Nearby.Share.Onboarding.{EntryPoint}.Result"
+    enum="NearbyShareOnboardingFinalState" expires_after="2024-07-10">
+  <owner>brandosocarras@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records how far the user, whom entered the onboarding flow via EntryPoint,
+    made it through the onboarding flow. Emitted when onboarding is complete or
+    the user cancels during one of the steps.
+  </summary>
+  <token key="EntryPoint">
+    <variant name="NearbyDeviceTryingToShareNotification"
+        summary="Nearby device trying to share notification"/>
+    <variant name="Settings" summary="Settings page"/>
+    <variant name="ShareSheet" summary="Share Sheet"/>
+    <variant name="Tray" summary="Tray"/>
+  </token>
+</histogram>
+
+<histogram name="Nearby.Share.PairedKeyVerificationError"
+    enum="NearbySharePairedKeyVerificationError" expires_after="2024-07-10">
+  <owner>cclem@google.com</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Records the reason why paired key verification failed. Emitted whenever the
+    PairedKeyVerificationRunner returns kFail.
   </summary>
 </histogram>
 

@@ -61,9 +61,9 @@ namespace ash {
 // should be general enough that it can be used for anything download-related.
 // See http://b/298692153 for details.
 class ASH_EXPORT FeatureTile : public views::Button {
- public:
-  METADATA_HEADER(FeatureTile);
+  METADATA_HEADER(FeatureTile, views::Button)
 
+ public:
   // Used in the FeatureTile constructor to set the tile view type.
   enum class TileType {
     kPrimary = 0,
@@ -249,11 +249,10 @@ class ASH_EXPORT FeatureTile : public views::Button {
   void UpdateLabelForDownloadState();
 
   // Ensures the ink drop is painted above the button's background.
-  raw_ptr<views::InkDropContainerView, ExperimentalAsh> ink_drop_container_ =
-      nullptr;
+  raw_ptr<views::InkDropContainerView> ink_drop_container_ = nullptr;
 
   // The vector icon for the tile, if one is set.
-  raw_ptr<const gfx::VectorIcon, ExperimentalAsh> vector_icon_ = nullptr;
+  raw_ptr<const gfx::VectorIcon> vector_icon_ = nullptr;
 
   // Customized value for the tile's background color and foreground color.
   std::optional<ui::ColorId> background_color_;
@@ -262,10 +261,10 @@ class ASH_EXPORT FeatureTile : public views::Button {
   std::optional<ui::ColorId> foreground_toggled_color_;
 
   // Owned by views hierarchy.
-  raw_ptr<views::ImageButton, ExperimentalAsh> icon_button_ = nullptr;
-  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
-  raw_ptr<views::Label, ExperimentalAsh> sub_label_ = nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> drill_in_arrow_ = nullptr;
+  raw_ptr<views::ImageButton> icon_button_ = nullptr;
+  raw_ptr<views::Label> label_ = nullptr;
+  raw_ptr<views::Label> sub_label_ = nullptr;
+  raw_ptr<views::ImageView> drill_in_arrow_ = nullptr;
   raw_ptr<views::FlexLayoutView> title_container_ = nullptr;
 
   // The radius of the tile's curved edges.

@@ -341,8 +341,8 @@ int QuicProxyClientSocket::DoSendRequest() {
 
   if (proxy_delegate_) {
     HttpRequestHeaders proxy_delegate_headers;
-    proxy_delegate_->OnBeforeTunnelRequestServerOnly(
-        proxy_chain_, proxy_chain_index_, &proxy_delegate_headers);
+    proxy_delegate_->OnBeforeTunnelRequest(proxy_chain_, proxy_chain_index_,
+                                           &proxy_delegate_headers);
     request_.extra_headers.MergeFrom(proxy_delegate_headers);
   }
 
@@ -355,7 +355,7 @@ int QuicProxyClientSocket::DoSendRequest() {
                        request_line, &request_.extra_headers);
 
   spdy::Http2HeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(request_, absl::nullopt,
+  CreateSpdyHeadersFromHttpRequest(request_, std::nullopt,
                                    request_.extra_headers, &headers);
 
   return stream_->WriteHeaders(std::move(headers), false, nullptr);
@@ -404,7 +404,7 @@ int QuicProxyClientSocket::DoReadReplyComplete(int result) {
       response_.headers.get());
 
   if (proxy_delegate_) {
-    int rv = proxy_delegate_->OnTunnelHeadersReceivedServerOnly(
+    int rv = proxy_delegate_->OnTunnelHeadersReceived(
         proxy_chain_, proxy_chain_index_, *response_.headers);
     if (rv != OK) {
       DCHECK_NE(ERR_IO_PENDING, rv);

@@ -40,7 +40,7 @@ namespace {
 // This helper thunk wraps a WeakPtr into an 'Optional' value, so the WeakPtr is
 // only dereferenced after rescheduling the task on the specified task runner.
 template <typename F, typename... Args>
-void CallbackThunk(absl::optional<base::WeakPtr<DecoderWrapper>> decoder_client,
+void CallbackThunk(std::optional<base::WeakPtr<DecoderWrapper>> decoder_client,
                    scoped_refptr<base::SequencedTaskRunner> task_runner,
                    F f,
                    Args... args) {
@@ -381,6 +381,14 @@ void DecoderWrapper::OnFrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   DVLOGF(4) << current_frame_index_;
   DCHECK_CALLED_ON_VALID_SEQUENCE(worker_sequence_checker_);
   DCHECK(video_frame->metadata().power_efficient);
+
+  // Technically VideoDecoder clients shouldn't care about |video_frame|'s'
+  // timestamps but we do because we feed non-zeros in DecodeNextFragmentTask().
+  // Note that we cannot enforce non-strictly monotonically increasing time
+  // deltas because the feeding order might not be the same as the output order
+  // (e.g. in H.264 with B-frames the output order would be the "presentation"
+  // order and not the "decode" or "transmission" order).
+  DCHECK_NE(video_frame->timestamp(), base::TimeDelta());
 
   frame_renderer_->RenderFrame(video_frame);
 

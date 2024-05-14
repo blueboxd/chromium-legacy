@@ -34,6 +34,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -43,8 +45,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -141,7 +141,7 @@ public class TabSuggestionMessageCardTest {
 
     private void enteringTabSwitcherAndVerifySuggestionIsShown(String suggestionText) {
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(allOf(withParent(withId(R.id.tab_grid_message_item)), withText(suggestionText)))
                 .check(matches(isDisplayed()));
     }
@@ -200,34 +200,6 @@ public class TabSuggestionMessageCardTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({BASE_PARAMS + ENABLE_GROUP_SUGGESTION_PARAM})
-    @DisabledTest(message = "Flaky, see crbug.com/1469393")
-    public void groupTabSuggestionReviewedAndAccepted() {
-        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-
-        enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);
-        reviewSuggestion();
-        acceptSuggestion(R.id.tab_list_editor_group_menu_item);
-
-        onViewWaiting(allOf(withParent(withId(R.id.snackbar)), withText("3 tabs grouped")));
-    }
-
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({BASE_PARAMS + ENABLE_GROUP_SUGGESTION_PARAM})
-    @DisabledTest(message = "crbug.com/1257781")
-    public void groupTabSuggestionReviewedAndDismissed() {
-        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-
-        enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);
-        reviewSuggestion();
-        dismissSuggestion(true);
-
-        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
-    }
-
-    @Test
-    @MediumTest
     @CommandLineFlags.Add({
         BASE_PARAMS + ENABLE_GROUP_SUGGESTION_PARAM + ENABLE_CLOSE_SUGGESTION_PARAM
     })
@@ -260,7 +232,7 @@ public class TabSuggestionMessageCardTest {
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
 
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
         dismissSuggestion(false);

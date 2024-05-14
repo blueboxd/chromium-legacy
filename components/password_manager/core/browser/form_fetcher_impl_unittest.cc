@@ -14,12 +14,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
-#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store/interactions_stats.h"
@@ -247,20 +245,19 @@ auto WeakAddress(Matcher m) {
 
 class FormFetcherImplTestBase : public testing::Test {
  public:
-  explicit FormFetcherImplTestBase(bool create_account_store)
+  explicit FormFetcherImplTestBase(bool create_profile_store,
+                                   bool create_account_store)
       : form_digest_(PasswordForm::Scheme::kHtml,
                      kTestHttpURL,
                      GURL(kTestHttpURL)) {
-    profile_mock_store_ = new testing::NiceMock<MockPasswordStoreInterface>;
-    client_.set_profile_store(profile_mock_store_.get());
-
-    if (!create_account_store) {
-      feature_list_.InitAndDisableFeature(
-          password_manager::features::kEnablePasswordsAccountStorage);
+    if (create_profile_store) {
+      profile_mock_store_ = new testing::NiceMock<MockPasswordStoreInterface>;
+      client_.set_profile_store(profile_mock_store_.get());
     } else {
-      feature_list_.InitAndEnableFeature(
-          password_manager::features::kEnablePasswordsAccountStorage);
+      client_.set_profile_store(nullptr);
+    }
 
+    if (create_account_store) {
       account_mock_store_ = new testing::NiceMock<MockPasswordStoreInterface>;
       client_.set_account_store(account_mock_store_.get());
     }
@@ -270,8 +267,10 @@ class FormFetcherImplTestBase : public testing::Test {
   }
 
   void SetUp() override {
-    ON_CALL(*profile_mock_store_, GetSmartBubbleStatsStore)
-        .WillByDefault(Return(&mock_smart_bubble_stats_store_));
+    if (profile_mock_store_) {
+      ON_CALL(*profile_mock_store_, GetSmartBubbleStatsStore)
+          .WillByDefault(Return(&mock_smart_bubble_stats_store_));
+    }
   }
 
   FormFetcherImplTestBase(const FormFetcherImplTestBase&) = delete;
@@ -282,9 +281,11 @@ class FormFetcherImplTestBase : public testing::Test {
  protected:
   // A wrapper around form_fetcher_.Fetch(), adding the call expectations.
   void Fetch() {
-    EXPECT_CALL(*profile_mock_store_,
-                GetLogins(form_digest_, WeakAddress<PasswordStoreConsumer>(
-                                            form_fetcher_.get())));
+    if (profile_mock_store_) {
+      EXPECT_CALL(*profile_mock_store_,
+                  GetLogins(form_digest_, WeakAddress<PasswordStoreConsumer>(
+                                              form_fetcher_.get())));
+    }
     if (account_mock_store_) {
       EXPECT_CALL(*account_mock_store_,
                   GetLogins(form_digest_, WeakAddress<PasswordStoreConsumer>(
@@ -313,7 +314,6 @@ class FormFetcherImplTestBase : public testing::Test {
 
   PasswordStoreConsumer* store_consumer() { return form_fetcher_.get(); }
 
-  base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment task_environment_;
   PasswordFormDigest form_digest_;
   scoped_refptr<MockPasswordStoreInterface> profile_mock_store_;
@@ -330,7 +330,8 @@ class FormFetcherImplTest : public FormFetcherImplTestBase,
                             public testing::WithParamInterface<bool> {
  public:
   FormFetcherImplTest()
-      : FormFetcherImplTestBase(/*create_account_store=*/GetParam()) {}
+      : FormFetcherImplTestBase(/*create_profile_store=*/true,
+                                /*create_account_store=*/GetParam()) {}
 };
 
 // Check that the absence of PasswordStore results is handled correctly.
@@ -1004,7 +1005,8 @@ INSTANTIATE_TEST_SUITE_P(,
 class MultiStoreFormFetcherTest : public FormFetcherImplTestBase {
  public:
   MultiStoreFormFetcherTest()
-      : FormFetcherImplTestBase(/*create_account_store=*/true) {}
+      : FormFetcherImplTestBase(/*create_profile_store=*/true,
+                                /*create_account_store=*/true) {}
 };
 
 TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherClonesState) {
@@ -1307,6 +1309,25 @@ TEST_F(MultiStoreFormFetcherTest, AccountBackendErrorResetsOnNewFetch) {
       /*account_store_results=*/std::move(form_results));
 
   EXPECT_EQ(form_fetcher_->GetProfileStoreBackendError(), std::nullopt);
+}
+
+class NoStoreFormFetcherTest : public FormFetcherImplTestBase {
+ public:
+  NoStoreFormFetcherTest()
+      : FormFetcherImplTestBase(/*create_profile_store=*/false,
+                                /*create_account_store=*/false) {}
+};
+
+TEST_F(NoStoreFormFetcherTest, NoStoreTest) {
+  form_fetcher_->AddConsumer(&consumer_);
+  EXPECT_CALL(consumer_, OnFetchCompleted);
+  Fetch();
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
+  EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
+  EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
+  EXPECT_EQ(form_fetcher_->GetProfileStoreBackendError(), std::nullopt);
+  EXPECT_EQ(form_fetcher_->GetAccountStoreBackendError(), std::nullopt);
 }
 
 }  // namespace password_manager

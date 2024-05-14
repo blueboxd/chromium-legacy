@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/autofill/model/automation/automation_app_interface.h"
 
+#import <map>
+#import <string_view>
+
 #import "base/containers/contains.h"
 #import "base/json/json_reader.h"
 #import "base/strings/sys_string_conversions.h"
@@ -24,11 +27,10 @@ using autofill::PersonalDataManagerFactory;
 
 namespace {
 
-// Converts a string (from the test recipe) to the autofill ServerFieldType it
+// Converts a string (from the test recipe) to the autofill FieldType it
 // represents.
-autofill::ServerFieldType ServerFieldTypeFromString(const std::string& str,
-                                                    NSError** error) {
-  static std::map<const std::string, autofill::ServerFieldType>
+autofill::FieldType FieldTypeFromString(std::string_view str, NSError** error) {
+  static std::map<std::string_view, autofill::FieldType>
       string_to_field_type_map;
 
   // Only init the string to autofill field type map on the first call.
@@ -38,9 +40,8 @@ autofill::ServerFieldType ServerFieldTypeFromString(const std::string& str,
   if (string_to_field_type_map.empty()) {
     for (size_t i = autofill::NO_SERVER_DATA;
          i < autofill::MAX_VALID_FIELD_TYPE; ++i) {
-      autofill::AutofillType autofill_type(
-          static_cast<autofill::ServerFieldType>(i));
-      string_to_field_type_map[autofill_type.ToString()] =
+      autofill::AutofillType autofill_type(static_cast<autofill::FieldType>(i));
+      string_to_field_type_map[autofill_type.ToStringView()] =
           autofill_type.GetStorableType();
     }
 
@@ -48,7 +49,7 @@ autofill::ServerFieldType ServerFieldTypeFromString(const std::string& str,
          i <= static_cast<size_t>(autofill::HtmlFieldType::kMaxValue); ++i) {
       autofill::AutofillType autofill_type(
           static_cast<autofill::HtmlFieldType>(i));
-      string_to_field_type_map[autofill_type.ToString()] =
+      string_to_field_type_map[autofill_type.ToStringView()] =
           autofill_type.GetStorableType();
     }
   }
@@ -106,8 +107,7 @@ NSError* PrepareAutofillProfileWithValues(
 
     const std::string field_type = type_container->GetString();
     NSError* error = nil;
-    autofill::ServerFieldType type =
-        ServerFieldTypeFromString(field_type, &error);
+    autofill::FieldType type = FieldTypeFromString(field_type, &error);
     if (error) {
       return error;
     }

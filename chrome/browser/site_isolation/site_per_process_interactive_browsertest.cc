@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
@@ -9,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -18,14 +21,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/guest_view/browser/guest_view_base.h"
-#include "components/guest_view/browser/guest_view_manager_delegate.h"
-#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/focused_node_details.h"
@@ -43,11 +42,11 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "pdf/buildflags.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -55,6 +54,17 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "base/test/with_feature_override.h"
+#include "chrome/browser/pdf/test_pdf_viewer_stream_manager.h"
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
+#include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
+#include "pdf/pdf_features.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 namespace autofill {
 class AutofillPopupDelegate;
@@ -77,12 +87,8 @@ size_t GetNumberOfRenderWidgetHosts() {
 // Waits and polls the current number of RenderWidgetHosts and stops when the
 // number reaches |target_count|.
 void WaitForRenderWidgetHostCount(size_t target_count) {
-  while (GetNumberOfRenderWidgetHosts() != target_count) {
-    base::RunLoop run_loop;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(base::test::RunUntil(
+      [&]() { return GetNumberOfRenderWidgetHosts() == target_count; }));
 }
 
 }  // namespace
@@ -1108,10 +1114,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(child, GetScreenSize());
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(), {.tab_fullscreen = true});
     EXPECT_TRUE(ExecJs(child, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    waiter.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1140,10 +1146,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(child, original_child_size);
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(),
+                                           {.tab_fullscreen = false});
     EXPECT_TRUE(ExecJs(child, "exitFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    waiter.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1203,10 +1210,10 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   std::set<std::string> expected_events = {"main_frame", "child", "grandchild"};
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(), {.tab_fullscreen = true});
     EXPECT_TRUE(ExecJs(grandchild, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1230,7 +1237,8 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   AddResizeListener(grandchild, original_grandchild_size);
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(),
+                                           {.tab_fullscreen = false});
     switch (exit_method) {
       case FullscreenExitMethod::JS_CALL:
         EXPECT_TRUE(ExecJs(grandchild, "exitFullscreen()"));
@@ -1243,7 +1251,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
         NOTREACHED();
     }
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1360,10 +1368,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // browser finishes the fullscreen transition.
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(), {.tab_fullscreen = true});
     EXPECT_TRUE(ExecJs(c_middle, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1397,11 +1405,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(c_middle, c_middle_original_size);
   {
     content::DOMMessageQueue queue(web_contents);
-    FullscreenNotificationObserver fullscreen_observer(browser());
+    ui_test_utils::FullscreenWaiter waiter(browser(),
+                                           {.tab_fullscreen = false});
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
                                                 false, false, false, false));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    fullscreen_observer.Wait();
+    waiter.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1446,19 +1455,22 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                      content::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
   EXPECT_EQ(true,
             EvalJs(child, "document.body == document.pointerLockElement"));
-  EXPECT_TRUE(main_frame->GetView()->IsMouseLocked());
+  EXPECT_TRUE(main_frame->GetView()->IsPointerLocked());
 
   EXPECT_TRUE(ExecJs(main_frame,
                      "document.querySelector('iframe').parentNode."
                      "removeChild(document.querySelector('iframe'))"));
-  EXPECT_FALSE(main_frame->GetView()->IsMouseLocked());
+  EXPECT_FALSE(main_frame->GetView()->IsPointerLocked());
 }
 
+#if BUILDFLAG(ENABLE_PDF)
 // Base test class for interactive tests which load and test PDF files.
 class SitePerProcessInteractivePDFTest
-    : public SitePerProcessInteractiveBrowserTest {
+    : public base::test::WithFeatureOverride,
+      public SitePerProcessInteractiveBrowserTest {
  public:
-  SitePerProcessInteractivePDFTest() : test_guest_view_manager_(nullptr) {}
+  SitePerProcessInteractivePDFTest()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfOopif) {}
 
   SitePerProcessInteractivePDFTest(const SitePerProcessInteractivePDFTest&) =
       delete;
@@ -1469,24 +1481,68 @@ class SitePerProcessInteractivePDFTest
 
   void SetUpOnMainThread() override {
     SitePerProcessInteractiveBrowserTest::SetUpOnMainThread();
-    test_guest_view_manager_ = factory_.GetOrCreateTestGuestViewManager(
-        browser()->profile(), extensions::ExtensionsAPIClient::Get()
-                                  ->CreateGuestViewManagerDelegate());
+    if (UseOopif()) {
+      factory_ = std::make_unique<pdf::TestPdfViewerStreamManagerFactory>();
+    } else {
+      auto factory =
+          std::make_unique<guest_view::TestGuestViewManagerFactory>();
+      test_guest_view_manager_ = factory->GetOrCreateTestGuestViewManager(
+          browser()->profile(), extensions::ExtensionsAPIClient::Get()
+                                    ->CreateGuestViewManagerDelegate());
+      factory_ = std::move(factory);
+    }
   }
 
   void TearDownOnMainThread() override {
     test_guest_view_manager_ = nullptr;
+    factory_ = absl::monostate();
     SitePerProcessInteractiveBrowserTest::TearDownOnMainThread();
   }
 
+  bool UseOopif() const { return GetParam(); }
+
  protected:
-  guest_view::TestGuestViewManager* test_guest_view_manager() const {
+  guest_view::TestGuestViewManager* GetTestGuestViewManager() const {
     return test_guest_view_manager_;
   }
 
+  pdf::TestPdfViewerStreamManager* GetTestPdfViewerStreamManager() const {
+    return absl::get<std::unique_ptr<pdf::TestPdfViewerStreamManagerFactory>>(
+               factory_)
+        ->GetTestPdfViewerStreamManager(
+            browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
+  void CreateTestPdfViewerStreamManager() const {
+    absl::get<std::unique_ptr<pdf::TestPdfViewerStreamManagerFactory>>(factory_)
+        ->CreatePdfViewerStreamManager(
+            browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
+  void WaitUntilPdfLoaded(content::RenderFrameHost* embedder_host) {
+    if (UseOopif()) {
+      ASSERT_TRUE(
+          GetTestPdfViewerStreamManager()->WaitUntilPdfLoaded(embedder_host));
+    } else {
+      auto* guest_view =
+          GetTestGuestViewManager()->WaitForSingleGuestViewCreated();
+      ASSERT_TRUE(guest_view);
+      auto* embedder_web_contents =
+          browser()->tab_strip_model()->GetActiveWebContents();
+      EXPECT_NE(embedder_web_contents->GetPrimaryMainFrame(),
+                guest_view->GetGuestMainFrame());
+
+      extensions::TestMimeHandlerViewGuest::WaitForGuestLoadStartThenStop(
+          guest_view);
+    }
+  }
+
  private:
-  guest_view::TestGuestViewManagerFactory factory_;
-  raw_ptr<guest_view::TestGuestViewManager> test_guest_view_manager_ = nullptr;
+  absl::variant<absl::monostate,
+                std::unique_ptr<guest_view::TestGuestViewManagerFactory>,
+                std::unique_ptr<pdf::TestPdfViewerStreamManagerFactory>>
+      factory_;
+  raw_ptr<guest_view::TestGuestViewManager> test_guest_view_manager_;
 };
 
 // This test loads a PDF inside an OOPIF and then verifies that context menu
@@ -1498,16 +1554,19 @@ class SitePerProcessInteractivePDFTest
 #else
 #define MAYBE_ContextMenuPositionForEmbeddedPDFInCrossOriginFrame \
   ContextMenuPositionForEmbeddedPDFInCrossOriginFrame
-#endif
-IN_PROC_BROWSER_TEST_F(
+#endif  // (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)) &&
+        // defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessInteractivePDFTest,
     MAYBE_ContextMenuPositionForEmbeddedPDFInCrossOriginFrame) {
   // Navigate to a page with an <iframe>.
   GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
 
-  // Initially, no guests are created.
-  EXPECT_EQ(0U, test_guest_view_manager()->num_guests_created());
+  if (!UseOopif()) {
+    // Initially, no guests are created.
+    EXPECT_EQ(0U, GetTestGuestViewManager()->num_guests_created());
+  }
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1523,16 +1582,14 @@ IN_PROC_BROWSER_TEST_F(
 
   // Ensure the page finishes loading without crashing.
   EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
+  content::RenderFrameHost* iframe_host =
+      ChildFrameAt(active_web_contents->GetPrimaryMainFrame(), 0);
+  ASSERT_TRUE(iframe_host);
+  content::RenderFrameHost* embedder_host = ChildFrameAt(iframe_host, 0);
+  ASSERT_TRUE(embedder_host);
+  WaitUntilPdfLoaded(embedder_host);
 
-  // Wait until the guest contents for PDF is created.
-  guest_view::GuestViewBase* guest_view =
-      test_guest_view_manager()->WaitForSingleGuestViewCreated();
-  ASSERT_TRUE(guest_view);
-  extensions::TestMimeHandlerViewGuest::WaitForGuestLoadStartThenStop(
-      guest_view);
-
-  content::RenderWidgetHostView* child_view =
-      ChildFrameAt(active_web_contents->GetPrimaryMainFrame(), 0)->GetView();
+  content::RenderWidgetHostView* child_view = iframe_host->GetView();
 
   ContextMenuWaiter menu_waiter;
 
@@ -1561,7 +1618,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(point_in_root_window.y(), menu_waiter.params().y);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessInteractivePDFTest,
                        LoadingPdfDoesNotStealFocus) {
   // Load test HTML, and verify the text area has focus.
   GURL main_url(embedded_test_server()->GetURL("/pdf/two_iframes.html"));
@@ -1584,6 +1641,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   content::RenderFrameHost* main_frame =
       embedder_web_contents->GetPrimaryMainFrame();
   content::RenderFrameHost* child_text_area = ChildFrameAt(main_frame, 0);
+  content::RenderFrameHost* iframe_pdf = ChildFrameAt(main_frame, 1);
+  ASSERT_TRUE(iframe_pdf);
   ASSERT_TRUE(content::ExecJs(child_text_area, "window.focus();"));
   bool starts_focused =
       content::EvalJs(
@@ -1611,9 +1670,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
                       embedder_web_contents->GetRenderWidgetHostView()
                           ->GetRenderWidgetHost())
                << ", iframe_text = " << child_text_area
-               << ", iframe_pdf = " << ChildFrameAt(main_frame, 1);
+               << ", iframe_pdf = " << iframe_pdf;
   }
   ASSERT_TRUE(starts_focused);
+
+  if (UseOopif()) {
+    // Create the manager first, since the following script doesn't block until
+    // navigation is complete.
+    CreateTestPdfViewerStreamManager();
+  }
 
   GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ASSERT_TRUE(content::ExecJs(
@@ -1621,14 +1686,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
       content::JsReplace("document.getElementById('iframe2').src = $1;",
                          pdf_url.spec())));
 
-  // Verify the pdf has loaded.
-  auto* guest_view = test_guest_view_manager()->WaitForSingleGuestViewCreated();
-  ASSERT_TRUE(guest_view);
-  EXPECT_NE(embedder_web_contents->GetPrimaryMainFrame(),
-            guest_view->GetGuestMainFrame());
-
-  extensions::TestMimeHandlerViewGuest::WaitForGuestLoadStartThenStop(
-      guest_view);
+  WaitUntilPdfLoaded(iframe_pdf);
 
   // Make sure the text area still has focus.
   ASSERT_TRUE(
@@ -1643,6 +1701,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
           "});")
           .ExtractBool());
 }
+
+// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// launches.
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(SitePerProcessInteractivePDFTest);
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
  public:
@@ -1692,15 +1755,12 @@ void WaitForFramePositionUpdated(content::RenderFrameHost* render_frame_host,
                                  const gfx::Point& sample_point,
                                  const gfx::Point& transformed_point,
                                  float bound) {
-  while ((transformed_point -
-          render_frame_host->GetView()->TransformPointToRootCoordSpace(
-              sample_point))
-             .Length() > bound) {
-    base::RunLoop run_loop;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(base::test::RunUntil([&]() {
+    return (transformed_point -
+            render_frame_host->GetView()->TransformPointToRootCoordSpace(
+                sample_point))
+               .Length() <= bound;
+  }));
 }
 
 // This test verifies that when clicking outside the bounds of a date picker

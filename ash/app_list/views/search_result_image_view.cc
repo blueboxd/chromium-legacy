@@ -48,8 +48,9 @@ constexpr gfx::Insets kFocusRingInsets =
 constexpr double kDraggedImageOpacity = 0.6;
 
 class ImagePreviewView : public views::ImageButton {
+  METADATA_HEADER(ImagePreviewView, views::ImageButton)
+
  public:
-  METADATA_HEADER(ImagePreviewView);
   ImagePreviewView() {
     SetInstallFocusRingOnFocus(false);
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -74,14 +75,15 @@ class ImagePreviewView : public views::ImageButton {
   }
 };
 
-BEGIN_METADATA(ImagePreviewView, views::ImageButton)
+BEGIN_METADATA(ImagePreviewView)
 END_METADATA
 
 }  // namespace
 
 SearchResultImageView::SearchResultImageView(
     int index,
-    SearchResultImageListView* list_view)
+    SearchResultImageListView* list_view,
+    SearchResultImageViewDelegate* image_view_delegate)
     : index_(index), list_view_(list_view) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   result_image_ = AddChildView(std::make_unique<ImagePreviewView>());
@@ -106,7 +108,7 @@ SearchResultImageView::SearchResultImageView(
   SetCallback(base::BindRepeating(&SearchResultImageView::OnImageViewPressed,
                                   base::Unretained(this)));
 
-  set_drag_controller(SearchResultImageViewDelegate::Get());
+  set_drag_controller(image_view_delegate);
 }
 
 void SearchResultImageView::OnImageViewPressed(const ui::Event& event) {
@@ -198,7 +200,7 @@ void SearchResultImageView::OnMetadataChanged() {
 
 SearchResultImageView::~SearchResultImageView() = default;
 
-BEGIN_METADATA(SearchResultImageView, SearchResultBaseView)
+BEGIN_METADATA(SearchResultImageView)
 END_METADATA
 
 }  // namespace ash

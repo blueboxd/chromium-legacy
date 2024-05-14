@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
+#include <optional>
 #include <string>
 
 #include "base/command_line.h"
@@ -45,7 +47,6 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
@@ -335,7 +336,7 @@ TEST_F(ChromePermissionRequestManagerTest,
 
   ASSERT_TRUE(
       QuietNotificationPermissionUiConfig::IsAdaptiveActivationDryRunEnabled());
-  absl::optional<bool> has_three_consecutive_denies =
+  std::optional<bool> has_three_consecutive_denies =
       permissions::PermissionsClient::Get()
           ->HadThreeConsecutiveNotificationPermissionDenies(profile());
   ASSERT_TRUE(has_three_consecutive_denies.has_value());
@@ -378,7 +379,7 @@ TEST_F(ChromePermissionRequestManagerTest,
   }
   auto entries = ukm_recorder.GetEntriesByName("Permission");
   ASSERT_EQ(4u, entries.size());
-  auto* entry = entries.back();
+  auto* entry = entries.back().get();
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "SatisfiedAdaptiveTriggers"),
             1);
 

@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model_states.h"
@@ -23,6 +24,7 @@
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/widget/widget_observer.h"
 
 #if BUILDFLAG(IS_LINUX)
@@ -46,9 +48,9 @@
 #endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
 
 namespace views {
-class FlexLayoutView;
 class FrameBackground;
 class Label;
+class View;
 }  // namespace views
 
 namespace {
@@ -63,9 +65,9 @@ class PictureInPictureBrowserFrameView
       public ContentSettingImageView::Delegate,
       public views::WidgetObserver,
       public gfx::AnimationDelegate {
- public:
-  METADATA_HEADER(PictureInPictureBrowserFrameView);
+  METADATA_HEADER(PictureInPictureBrowserFrameView, BrowserNonClientFrameView)
 
+ public:
   PictureInPictureBrowserFrameView(BrowserFrame* frame,
                                    BrowserView* browser_view);
   PictureInPictureBrowserFrameView(const PictureInPictureBrowserFrameView&) =
@@ -96,7 +98,7 @@ class PictureInPictureBrowserFrameView
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnThemeChanged() override;
-  void Layout() override;
+  void Layout(PassKey) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
 #if BUILDFLAG(IS_LINUX)
@@ -177,9 +179,6 @@ class PictureInPictureBrowserFrameView
   // Returns the insets of the window frame borders.
   gfx::Insets FrameBorderInsets() const;
 
-  // Returns the insets of the window frame borders for resizing.
-  gfx::Insets ResizeBorderInsets() const;
-
   // Returns the height of the top bar area, including the window top border.
   int GetTopAreaHeight() const;
 
@@ -228,6 +227,16 @@ class PictureInPictureBrowserFrameView
   void set_close_reason(CloseReason close_reason) {
     close_reason_ = close_reason;
   }
+
+  AutoPipSettingOverlayView* get_auto_pip_setting_overlay_view_for_testing() {
+    return auto_pip_setting_overlay_;
+  }
+
+ protected:
+  views::View* top_bar_container_view() { return top_bar_container_view_; }
+
+  // Returns the insets of the window frame borders for resizing.
+  virtual gfx::Insets ResizeBorderInsets() const;
 
  private:
   CloseReason close_reason_ = CloseReason::kOther;
@@ -328,7 +337,8 @@ class PictureInPictureBrowserFrameView
   raw_ptr<views::FlexLayoutView> button_container_view_ = nullptr;
 
   // The content setting views for icons and bubbles.
-  std::vector<ContentSettingImageView*> content_setting_views_;
+  std::vector<raw_ptr<ContentSettingImageView, VectorExperimental>>
+      content_setting_views_;
 
   raw_ptr<CloseImageButton> close_image_button_ = nullptr;
   raw_ptr<views::View> back_to_tab_button_ = nullptr;

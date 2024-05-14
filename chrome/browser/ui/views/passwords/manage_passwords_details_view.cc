@@ -26,6 +26,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -220,10 +221,8 @@ std::unique_ptr<views::View> CreatePasswordLabelWithEyeIconView(
       std::make_unique<views::BoxLayoutView>();
   auto* password_label_ptr = password_label_with_eye_icon_view->AddChildView(
       std::move(password_label));
-  password_label_ptr->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                               views::MaximumFlexSizeRule::kScaleToMaximum));
+  password_label_ptr->SetProperty(views::kBoxLayoutFlexKey,
+                                  views::BoxLayoutFlexSpecification());
 
   auto* eye_icon = password_label_with_eye_icon_view->AddChildView(
       CreateVectorToggleImageButton(views::Button::PressedCallback()));
@@ -554,7 +553,8 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
       static_cast<int>(ManagePasswordsViewIDs::kPasswordLabel));
   if (!password_form.federation_origin.opaque()) {
     // Federated credentials, there is no note and no copy password button.
-    AddChildView(CreateDetailsRow(kKeyIcon, std::move(password_label)));
+    AddChildView(CreateDetailsRow(vector_icons::kPasswordManagerIcon,
+                                  std::move(password_label)));
     return;
   }
   auto copy_password_button_callback =
@@ -567,7 +567,7 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
               PasswordManagementBubbleInteractions::
                   kPasswordCopyButtonClicked));
   AddChildView(CreateDetailsRowWithActionButton(
-      kKeyIcon,
+      vector_icons::kPasswordManagerIcon,
       CreatePasswordLabelWithEyeIconView(std::move(password_label),
                                          on_activity_callback_),
       kCopyIcon,
@@ -675,3 +675,6 @@ void ManagePasswordsDetailsView::OnUserInputChanged() {
 }
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ManagePasswordsDetailsView, kTopView);
+
+BEGIN_METADATA(ManagePasswordsDetailsView)
+END_METADATA

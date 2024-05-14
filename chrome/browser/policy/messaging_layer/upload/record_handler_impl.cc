@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -22,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
 #include "base/token.h"
 #include "base/types/expected.h"
@@ -30,14 +32,13 @@
 #include "base/values.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/policy/messaging_layer/proto/synced/log_upload_event.pb.h"
+#include "chrome/browser/policy/messaging_layer/upload/encrypted_reporting_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/event_upload_size_controller.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job.h"
 #include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
 #include "chrome/browser/policy/messaging_layer/upload/server_uploader.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector.h"
 #include "components/reporting/proto/synced/configuration_file.pb.h"
-#include "components/reporting/proto/synced/record.pb.h"
-#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/proto/synced/upload_tracker.pb.h"
 #include "components/reporting/resources/resource_manager.h"
 #include "components/reporting/util/encrypted_reporting_json_keys.h"
@@ -47,16 +48,15 @@
 #include "components/reporting/util/task_runner_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 namespace {
 
 // Priority could come back as an int or as a std::string, this function handles
 // both situations.
-static absl::optional<Priority> GetPriorityProtoFromSequenceInformationValue(
+std::optional<Priority> GetPriorityProtoFromSequenceInformationValue(
     const base::Value::Dict& sequence_information) {
-  const absl::optional<int> int_priority_result =
+  const std::optional<int> int_priority_result =
       sequence_information.FindInt(json_keys::kPriority);
   if (int_priority_result.has_value()) {
     return Priority(int_priority_result.value());
@@ -67,14 +67,14 @@ static absl::optional<Priority> GetPriorityProtoFromSequenceInformationValue(
   if (!str_priority_result) {
     LOG(ERROR) << "Field priority is missing from SequenceInformation: "
                << sequence_information;
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   Priority priority;
   if (!Priority_Parse(*str_priority_result, &priority)) {
     LOG(ERROR) << "Unable to parse field priority in SequenceInformation: "
                << sequence_information;
-    return absl::nullopt;
+    return std::nullopt;
   }
   return priority;
 }
@@ -82,8 +82,8 @@ static absl::optional<Priority> GetPriorityProtoFromSequenceInformationValue(
 #if BUILDFLAG(IS_CHROMEOS)
 // Returns true if `generation_guid` is required and missing.
 // Returns false otherwise.
-static bool IsMissingGenerationGuid(const std::string* generation_guid) {
-  if (!SequenceInformationDictionaryBuilder::GenerationGuidIsRequired()) {
+bool IsMissingGenerationGuid(const std::string* generation_guid) {
+  if (!EncryptedReportingClient::GenerationGuidIsRequired()) {
     return false;
   }
   return !generation_guid || generation_guid->empty();
@@ -92,11 +92,10 @@ static bool IsMissingGenerationGuid(const std::string* generation_guid) {
 
 // Returns true if any required sequence info is missing. Returns
 // false otherwise.
-static bool IsMissingSequenceInformation(
-    const std::string* sequencing_id,
-    const std::string* generation_id,
-    const absl::optional<Priority> priority_result,
-    const std::string* generation_guid) {
+bool IsMissingSequenceInformation(const std::string* sequencing_id,
+                                  const std::string* generation_id,
+                                  const std::optional<Priority> priority_result,
+                                  const std::string* generation_guid) {
   return !sequencing_id || !generation_id || generation_id->empty() ||
 #if BUILDFLAG(IS_CHROMEOS)
          IsMissingGenerationGuid(generation_guid) ||
@@ -109,10 +108,10 @@ static bool IsMissingSequenceInformation(
 // Returns true if `generation_guid` can be parsed as a GUID or if
 // `generation_guid` does not need to be parsed based on the type of device.
 // Returns false otherwise.
-static bool GenerationGuidIsValid(const std::string& generation_guid) {
+bool GenerationGuidIsValid(const std::string& generation_guid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (generation_guid.empty() &&
-      !SequenceInformationDictionaryBuilder::GenerationGuidIsRequired()) {
+      !EncryptedReportingClient::GenerationGuidIsRequired()) {
     // This is a legacy ChromeOS managed device and is not required to have
     // a `generation_guid`.
     return true;
@@ -123,11 +122,13 @@ static bool GenerationGuidIsValid(const std::string& generation_guid) {
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Processes LOG_UPLOAD event.
-void ProcessFileUpload(base::WeakPtr<FileUploadJob::Delegate> delegate,
-                       Priority priority,
-                       Record record_copy,
-                       const ScopedReservation& scoped_reservation,
-                       base::OnceCallback<void(Status)> done_cb) {
+void ProcessFileUpload(
+    Priority priority,
+    Record record_copy,
+    const ScopedReservation& scoped_reservation,
+    base::RepeatingCallback<std::unique_ptr<FileUploadJob::Delegate>()>
+        delegate_factory,
+    base::OnceCallback<void(Status)> done_cb) {
   // Here we need to determine which events we got. It would be better to
   // use protobuf reflection and detect upload_settings presence in the event,
   // but protobuf_lite library included in Chrome does not expose reflection.
@@ -157,7 +158,7 @@ void ProcessFileUpload(base::WeakPtr<FileUploadJob::Delegate> delegate,
       // whole `upload_settings` (including retry count).
       FileUploadJob::Manager::GetInstance()->Register(
           priority, std::move(record_copy), std::move(log_upload_event),
-          delegate,
+          delegate_factory.Run(),
           base::BindOnce(
               [](ScopedReservation scoped_reservation,
                  base::OnceCallback<void(Status)> done_cb,
@@ -372,11 +373,12 @@ class RecordHandlerImpl::ReportUploader
     : public TaskRunnerContext<CompletionResponse> {
  public:
   ReportUploader(
-      base::WeakPtr<FileUploadJob::Delegate> delegate,
       bool need_encryption_key,
       int config_file_version,
       std::vector<EncryptedRecord> records,
       ScopedReservation scoped_reservation,
+      base::RepeatingCallback<std::unique_ptr<FileUploadJob::Delegate>()>
+          delegate_factory,
       CompletionCallback upload_complete_cb,
       EncryptionKeyAttachedCallback encryption_key_attached_cb,
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
@@ -390,7 +392,7 @@ class RecordHandlerImpl::ReportUploader
   void StartUpload();
   void LogNumRecordsInUpload(size_t num_records);
   void ResumeUpload(size_t next_record);
-  void FinalizeUpload();
+  void UploadRequest(size_t next_record);
   void OnUploadComplete(StatusOr<base::Value::Dict> response);
   void HandleFailedUpload(Status status);
   void HandleSuccessfulUpload(base::Value::Dict last_response);
@@ -404,25 +406,24 @@ class RecordHandlerImpl::ReportUploader
   //   "priority": 3
   //   "generationGuid": "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
   // }
-  absl::optional<EncryptedRecord> HandleFailedUploadedSequenceInformation(
+  std::optional<EncryptedRecord> HandleFailedUploadedSequenceInformation(
       const base::Value::Dict& sequence_information);
-
-  const base::WeakPtr<FileUploadJob::Delegate> delegate_;
 
   bool need_encryption_key_ GUARDED_BY_CONTEXT(sequence_checker_);
   int config_file_version_ GUARDED_BY_CONTEXT(sequence_checker_);
   std::vector<EncryptedRecord> records_ GUARDED_BY_CONTEXT(sequence_checker_);
   ScopedReservation scoped_reservation_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  std::unique_ptr<UploadEncryptedReportingRequestBuilder> request_builder_
-      GUARDED_BY_CONTEXT(sequence_checker_);
+  // File upload delegate factory.
+  const base::RepeatingCallback<std::unique_ptr<FileUploadJob::Delegate>()>
+      delegate_factory_;
 
   // Encryption key delivery callback.
   EncryptionKeyAttachedCallback encryption_key_attached_cb_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Set for the highest record being uploaded.
-  absl::optional<SequenceInformation> highest_sequence_information_
+  std::optional<SequenceInformation> highest_sequence_information_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Set to |true| if force_confirm flag is present. |false| by default.
@@ -432,21 +433,22 @@ class RecordHandlerImpl::ReportUploader
 };
 
 RecordHandlerImpl::ReportUploader::ReportUploader(
-    base::WeakPtr<FileUploadJob::Delegate> delegate,
     bool need_encryption_key,
     int config_file_version,
     std::vector<EncryptedRecord> records,
     ScopedReservation scoped_reservation,
+    base::RepeatingCallback<std::unique_ptr<FileUploadJob::Delegate>()>
+        delegate_factory,
     CompletionCallback completion_cb,
     EncryptionKeyAttachedCallback encryption_key_attached_cb,
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
     : TaskRunnerContext<CompletionResponse>(std::move(completion_cb),
                                             sequenced_task_runner),
-      delegate_(delegate),
       need_encryption_key_(need_encryption_key),
       config_file_version_(config_file_version),
       records_(std::move(records)),
       scoped_reservation_(std::move(scoped_reservation)),
+      delegate_factory_(delegate_factory),
       encryption_key_attached_cb_(std::move(encryption_key_attached_cb)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -459,7 +461,7 @@ void RecordHandlerImpl::ReportUploader::OnStart() {
     Status empty_records =
         Status(error::INVALID_ARGUMENT, "records_ was empty");
     LOG(ERROR) << empty_records;
-    Complete(base::unexpected(empty_records));
+    Complete(base::unexpected(std::move(empty_records)));
     return;
   }
 
@@ -484,8 +486,6 @@ void RecordHandlerImpl::ReportUploader::StartUpload() {
              base::Unretained(this), records_.size());
   }
 
-  request_builder_ = std::make_unique<UploadEncryptedReportingRequestBuilder>(
-      need_encryption_key_, config_file_version_);
   ResumeUpload(/*next_record=*/0);
 }
 
@@ -516,7 +516,6 @@ void RecordHandlerImpl::ReportUploader::ResumeUpload(size_t next_record) {
     auto& record = records_.at(next_record++);
     if (!record.has_record_copy()) {
       // Regular event, add it for upload and proceed.
-      request_builder_->AddRecord(std::move(record), scoped_reservation_);
       continue;
     }
     // Asynchronously process event, add it for upload and proceed if
@@ -525,65 +524,46 @@ void RecordHandlerImpl::ReportUploader::ResumeUpload(size_t next_record) {
     auto record_copy = std::move(*record.mutable_record_copy());
     record.clear_record_copy();
     auto resume_cb = base::BindPostTaskToCurrentDefault(base::BindOnce(
-        [](RecordHandlerImpl::ReportUploader* self, EncryptedRecord record,
-           size_t next_record, Status processed_status) {
+        [](RecordHandlerImpl::ReportUploader* self, size_t next_record,
+           Status processed_status) {
           if (!processed_status.ok()) {
             // Event not processed, stop before it.
             // Do not add the current event and any later ones.
-            self->FinalizeUpload();
+            self->UploadRequest(next_record);
             return;
           }
           // Event processed (next upload tracking event posted, if needed),
           // add current event to upload (`record_copy` has been removed
           // from it) and proceed.
-          DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
-          self->request_builder_->AddRecord(std::move(record),
-                                            self->scoped_reservation_);
           self->ResumeUpload(next_record);  // Already advanced!
         },
         base::Unretained(this),  // `ReportUploader` destructs on completion.
-        std::move(record), next_record));
-    FileUploadJob::Manager::GetInstance()->sequenced_task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProcessFileUpload, delegate_, priority,
-                                  std::move(record_copy),
-                                  ScopedReservation(0uL, scoped_reservation_),
-                                  std::move(resume_cb)));
+        next_record));
+    ProcessFileUpload(priority, std::move(record_copy),
+                      ScopedReservation(0uL, scoped_reservation_),
+                      delegate_factory_, std::move(resume_cb));
     return;  // We will resume on `resume_cb`
   }
 
-  FinalizeUpload();
+  UploadRequest(next_record);
 }
 
-void RecordHandlerImpl::ReportUploader::FinalizeUpload() {
+void RecordHandlerImpl::ReportUploader::UploadRequest(size_t next_record) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Records have been captured in the request, safe to clear the vector.
-  records_.clear();
+  CHECK_LE(next_record, records_.size());
+  // Release records beyond `next_record`.
+  records_.erase(records_.begin() + next_record, records_.end());
 
-  // Assign random UUID as the request id for server side log correlation
-  const auto request_id = base::Token::CreateRandom().ToString();
-  request_builder_->SetRequestId(request_id);
-
-  auto request_result = request_builder_->Build();
-  request_builder_.reset();
-  if (!request_result.has_value()) {
-    HandleFailedUpload(
-        Status(error::FAILED_PRECONDITION, "Failure to build request"));
-    return;
-  }
-
-  auto response_cb = base::BindPostTask(
-      base::SequencedTaskRunner::GetCurrentDefault(),
+  // Upload selected records on UI.
+  auto response_cb = base::BindPostTaskToCurrentDefault(
       base::BindOnce(&RecordHandlerImpl::ReportUploader::OnUploadComplete,
                      base::Unretained(this)));
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          [](base::Value::Dict request,
-             ReportingServerConnector::ResponseCallback response_cb) {
-            ReportingServerConnector::UploadEncryptedReport(
-                std::move(request), std::move(response_cb));
-          },
-          std::move(request_result.value()), std::move(response_cb)));
+      base::BindOnce(&ReportingServerConnector::UploadEncryptedReport,
+                     need_encryption_key_, config_file_version_,
+                     std::move(records_), std::move(scoped_reservation_),
+                     std::move(response_cb)));
 }
 
 void RecordHandlerImpl::ReportUploader::OnUploadComplete(
@@ -611,7 +591,7 @@ void RecordHandlerImpl::ReportUploader::HandleFailedUpload(Status status) {
     return;
   }
 
-  Complete(base::unexpected(status));
+  Complete(base::unexpected(std::move(status)));
 }
 
 void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload(
@@ -757,13 +737,13 @@ void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload(
       Status(error::INTERNAL, "Unable to upload any records")));
 }
 
-absl::optional<EncryptedRecord>
+std::optional<EncryptedRecord>
 RecordHandlerImpl::ReportUploader::HandleFailedUploadedSequenceInformation(
     const base::Value::Dict& sequence_information) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!highest_sequence_information_.has_value()) {
     LOG(ERROR) << "highest_sequence_information_ has no value.";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   auto seq_info_result = SequenceInformationValueToProto(sequence_information);
@@ -772,7 +752,7 @@ RecordHandlerImpl::ReportUploader::HandleFailedUploadedSequenceInformation(
                << json_keys::kFirstFailedUploadedRecord << "."
                << json_keys::kFailedUploadedRecord << ":"
                << sequence_information;
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   SequenceInformation& seq_info = seq_info_result.value();
@@ -788,7 +768,7 @@ RecordHandlerImpl::ReportUploader::HandleFailedUploadedSequenceInformation(
       seq_info.sequencing_id() !=
           highest_sequence_information_->sequencing_id() + 1) {
     LOG(ERROR) << "Sequence info fields are incorrect.";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Build a gap record and return it.
@@ -805,14 +785,12 @@ void RecordHandlerImpl::ReportUploader::Complete(
 
 RecordHandlerImpl::RecordHandlerImpl(
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
-    std::unique_ptr<FileUploadJob::Delegate> delegate)
+    base::RepeatingCallback<std::unique_ptr<FileUploadJob::Delegate>()>
+        delegate_factory)
     : sequenced_task_runner_(sequenced_task_runner),
-      delegate_(std::move(delegate)) {}
+      delegate_factory_(delegate_factory) {}
 
-RecordHandlerImpl::~RecordHandlerImpl() {
-  FileUploadJob::Manager::GetInstance()->sequenced_task_runner()->DeleteSoon(
-      FROM_HERE, std::move(delegate_));
-}
+RecordHandlerImpl::~RecordHandlerImpl() = default;
 
 void RecordHandlerImpl::HandleRecords(
     bool need_encryption_key,
@@ -821,16 +799,10 @@ void RecordHandlerImpl::HandleRecords(
     ScopedReservation scoped_reservation,
     CompletionCallback upload_complete_cb,
     EncryptionKeyAttachedCallback encryption_key_attached_cb) {
-  // Prepare weak pointer to delegate for ChromeOS Ash case only, since
-  // file uploads are not available in other configurations: `delegate_` is
-  // nullptr there, and so is the weak pointer.
-  base::WeakPtr<FileUploadJob::Delegate> delegate;
-  if (delegate_.get()) {
-    delegate = delegate_->GetWeakPtr();
-  }
   Start<RecordHandlerImpl::ReportUploader>(
-      delegate, need_encryption_key, config_file_version, std::move(records),
-      std::move(scoped_reservation), std::move(upload_complete_cb),
-      std::move(encryption_key_attached_cb), sequenced_task_runner_);
+      need_encryption_key, config_file_version, std::move(records),
+      std::move(scoped_reservation), delegate_factory_,
+      std::move(upload_complete_cb), std::move(encryption_key_attached_cb),
+      sequenced_task_runner_);
 }
 }  // namespace reporting

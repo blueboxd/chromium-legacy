@@ -11,6 +11,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,6 +37,7 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler.BackPressResult;
 import org.chromium.ui.base.TestActivity;
 
@@ -55,6 +58,8 @@ public class HubCoordinatorUnitTest {
     @Mock private HubLayoutController mHubLayoutController;
     @Mock private Pane mTabSwitcherPane;
     @Mock private Pane mIncognitoTabSwitcherPane;
+    @Mock private MenuButtonCoordinator mMenuButtonCoordinator;
+    @Mock private DisplayButtonData mReferenceButtonData;
 
     private ObservableSupplierImpl<Boolean> mHubVisibilitySupplier = new ObservableSupplierImpl<>();
     private ObservableSupplierImpl<Boolean> mTabSwitcherBackPressSupplier =
@@ -64,26 +69,29 @@ public class HubCoordinatorUnitTest {
     private ObservableSupplierImpl<Tab> mTabSupplier = new ObservableSupplierImpl<>();
     private ObservableSupplierImpl<Integer> mPreviousLayoutTypeSupplier =
             new ObservableSupplierImpl<>();
+    private ObservableSupplierImpl<DisplayButtonData> mReferenceButtonDataSupplier =
+            new ObservableSupplierImpl<>();
     private PaneManager mPaneManager;
     private FrameLayout mRootView;
     private HubCoordinator mHubCoordinator;
 
     @Before
     public void setUp() {
+        mReferenceButtonDataSupplier.set(mReferenceButtonData);
         when(mTabSwitcherPane.getPaneId()).thenReturn(PaneId.TAB_SWITCHER);
         when(mTabSwitcherPane.getHandleBackPressChangedSupplier())
                 .thenReturn(mTabSwitcherBackPressSupplier);
         when(mTabSwitcherPane.getActionButtonDataSupplier())
                 .thenReturn(new ObservableSupplierImpl<>());
         when(mTabSwitcherPane.getReferenceButtonDataSupplier())
-                .thenReturn(new ObservableSupplierImpl<>());
+                .thenReturn(mReferenceButtonDataSupplier);
         when(mIncognitoTabSwitcherPane.getPaneId()).thenReturn(PaneId.INCOGNITO_TAB_SWITCHER);
         when(mIncognitoTabSwitcherPane.getHandleBackPressChangedSupplier())
                 .thenReturn(mIncognitoTabSwitcherBackPressSupplier);
         when(mIncognitoTabSwitcherPane.getActionButtonDataSupplier())
                 .thenReturn(new ObservableSupplierImpl<>());
         when(mIncognitoTabSwitcherPane.getReferenceButtonDataSupplier())
-                .thenReturn(new ObservableSupplierImpl<>());
+                .thenReturn(mReferenceButtonDataSupplier);
         when(mTab.getId()).thenReturn(TAB_ID);
         when(mTab.isIncognito()).thenReturn(false);
         when(mIncognitoTab.getId()).thenReturn(INCOGNITO_TAB_ID);
@@ -99,7 +107,7 @@ public class HubCoordinatorUnitTest {
                         .registerPane(
                                 PaneId.INCOGNITO_TAB_SWITCHER,
                                 LazyOneshotSupplier.fromValue(mIncognitoTabSwitcherPane));
-        mPaneManager = new PaneManagerImpl(builder, mHubVisibilitySupplier);
+        mPaneManager = spy(new PaneManagerImpl(builder, mHubVisibilitySupplier));
 
         assertTrue(mPaneManager.focusPane(PaneId.TAB_SWITCHER));
         assertEquals(mTabSwitcherPane, mPaneManager.getFocusedPaneSupplier().get());
@@ -111,7 +119,12 @@ public class HubCoordinatorUnitTest {
         activity.setContentView(mRootView);
 
         mHubCoordinator =
-                new HubCoordinator(mRootView, mPaneManager, mHubLayoutController, mTabSupplier);
+                new HubCoordinator(
+                        mRootView,
+                        mPaneManager,
+                        mHubLayoutController,
+                        mTabSupplier,
+                        mMenuButtonCoordinator);
         ShadowLooper.runUiThreadTasks();
         mRootView.getChildCount();
         assertNotEquals(0, mRootView.getChildCount());
@@ -279,5 +292,21 @@ public class HubCoordinatorUnitTest {
         // Exit Hub navigation.
         assertEquals(BackPressResult.SUCCESS, mHubCoordinator.handleBackPress());
         verify(mHubLayoutController).selectTabAndHideHubLayout(eq(TAB_ID));
+    }
+
+    @Test
+    @SmallTest
+    public void testFocusPane() {
+        reset(mPaneManager);
+        mHubCoordinator.focusPane(PaneId.TAB_SWITCHER);
+        verify(mPaneManager).focusPane(PaneId.TAB_SWITCHER);
+    }
+
+    @Test
+    @SmallTest
+    public void testSelectTabAndHideHub() {
+        int tabId = 5;
+        mHubCoordinator.selectTabAndHideHub(tabId);
+        verify(mHubLayoutController).selectTabAndHideHubLayout(tabId);
     }
 }

@@ -47,9 +47,9 @@
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_model.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_utils.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_model.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_prefs.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_coordinator.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_background.h"
@@ -118,6 +119,7 @@
 #include "ui/views/cascading_property.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/proposed_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -203,8 +205,9 @@ class TabstripLikeBackground : public views::Background {
 }  // namespace
 
 class ToolbarView::ContainerView : public views::View {
+  METADATA_HEADER(ContainerView, views::View)
+
  public:
-  METADATA_HEADER(ContainerView);
   // Calling PreferredSizeChanged() will trigger the parent's
   // ChildPreferredSizeChanged.
   // Bubble up calls to ChildPreferredSizeChanged.
@@ -385,9 +388,13 @@ void ToolbarView::Init() {
 
   location_bar_ = container_view_->AddChildView(std::move(location_bar));
 
-  if (extensions_container)
+  if (extensions_container) {
     extensions_container_ =
         container_view_->AddChildView(std::move(extensions_container));
+    extensions_toolbar_coordinator_ =
+        std::make_unique<ExtensionsToolbarCoordinator>(browser_,
+                                                       extensions_container_);
+  }
 
   if (toolbar_divider) {
     toolbar_divider_ =
@@ -397,7 +404,7 @@ void ToolbarView::Init() {
                   GetLayoutConstant(TOOLBAR_DIVIDER_HEIGHT)));
   }
 
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     pinned_toolbar_actions_container_ = container_view_->AddChildView(
         std::make_unique<PinnedToolbarActionsContainer>(browser_view_));
   }
@@ -422,9 +429,12 @@ void ToolbarView::Init() {
     }
   }
 
-  // Only show the Battery Saver button when it is not controlled by the OS. On
-  // ChromeOS the battery icon in the shelf shows the same information.
-  if (!performance_manager::user_tuning::IsBatterySaverModeManagedByOS()) {
+  // Only show the Battery Saver button when it is not controlled by the OS and
+  // the performance side panel is not enabled. On ChromeOS the battery icon in
+  // the shelf shows the same information.
+  if (!performance_manager::user_tuning::IsBatterySaverModeManagedByOS() &&
+      !base::FeatureList::IsEnabled(
+          performance_manager::features::kPerformanceControlsSidePanel)) {
     battery_saver_button_ = container_view_->AddChildView(
         std::make_unique<BatterySaverButton>(browser_view_));
   }
@@ -443,7 +453,7 @@ void ToolbarView::Init() {
     send_tab_to_self_button_ =
         container_view_->AddChildView(std::move(send_tab_to_self_button));
 
-  if (!base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (!features::IsSidePanelPinningEnabled()) {
     if (companion::IsCompanionFeatureEnabled()) {
       side_panel_container_ = container_view_->AddChildView(
           std::make_unique<SidePanelToolbarContainer>(browser_view_));
@@ -652,7 +662,7 @@ void ToolbarView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   PageActionIconView* const bookmark_star_icon =
       GetPageActionIconView(PageActionIconType::kBookmarkStar);
 
-  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
+  std::unique_ptr<BubbleSignInPromoDelegate> delegate;
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   delegate =
       std::make_unique<BookmarkBubbleSignInDelegate>(browser_->profile());
@@ -775,7 +785,7 @@ gfx::Size ToolbarView::GetMinimumSize() const {
   return size;
 }
 
-void ToolbarView::Layout() {
+void ToolbarView::Layout(PassKey) {
   // If we have not been initialized yet just do nothing.
   if (!initialized_)
     return;
@@ -807,10 +817,14 @@ void ToolbarView::Layout() {
     }
   }
 
-  // Use two-pass layout solution to avoid overflow button being interfere with
-  // toolbar elements space allocation. The button itself should just be an
-  // indicator of overflow not the cause. (See crbug.com/1484294)
-  // In the first pass turn off overflow button right before each layout.
+  // Use two-pass solution to avoid the overflow button interfering with toolbar
+  // element space allocation. The button itself should just be an indicator of
+  // overflow, not the cause (see crbug.com/1484294). In the first pass, hide
+  // the overflow button and calculate other buttons' visibility to determine if
+  // overflow occurs. Do NOT explicitly call LayoutSuperclass() in the first
+  // pass to prevent animation conflicts with the second pass (see
+  // crbug.com/1517065). The second pass will set the overflow button visibility
+  // to the overflow state determined by the first pass.
   // TODO(pengchaocai): Explore possible optimizations.
   if (toolbar_controller_) {
     // TODO(crbug.com/1499021) Move this logic into LayoutManager.
@@ -819,12 +833,11 @@ void ToolbarView::Layout() {
         toolbar_controller_->overflow_button()->GetVisible();
     manual_layout_util.SetViewHidden(toolbar_controller_->overflow_button(),
                                      true);
-    AccessiblePaneView::Layout();
-    if (toolbar_controller_->ShouldShowOverflowButton()) {
+
+    if (toolbar_controller_->ShouldShowOverflowButton(size())) {
       // This is the second pass layout that shows overflow button if necessary.
       manual_layout_util.SetViewHidden(toolbar_controller_->overflow_button(),
                                        false);
-      AccessiblePaneView::Layout();
       if (!was_overflow_button_visible) {
         base::RecordAction(
             base::UserMetricsAction("ResponsiveToolbar.OverflowButtonShown"));
@@ -835,11 +848,11 @@ void ToolbarView::Layout() {
             base::UserMetricsAction("ResponsiveToolbar.OverflowButtonHidden"));
       }
     }
-  } else {
-    // Call super implementation to ensure layout manager and child layouts
-    // happen.
-    AccessiblePaneView::Layout();
   }
+
+  // Call super implementation to ensure layout manager and child layouts
+  // happen.
+  LayoutSuperclass<AccessiblePaneView>(this);
 }
 
 void ToolbarView::OnThemeChanged() {
@@ -853,19 +866,42 @@ void ToolbarView::OnThemeChanged() {
   SchedulePaint();
 }
 
+// The implementation of this method is subtle.
+// The goal is to create rounded corners in the top-left and top-right corners,
+// allowing background_view_left_ and background_view_right_ to peek through. In
+// order for the corners to look good, we must use antialiasing on the clip
+// paths. When there are fractional device scale factors (e.g. 1.5), it's easy
+// (common even) to have straight edges of the clip path end up on non-integral
+// boundaries (e.g. y=68.5). This is unavoidable. Antialiasing turns these
+// non-integral boundary clip paths into 2-pixel "fuzzy" boundaries, which in
+// turn causes misalignment with other views::Views which assume the boundaries
+// are exact. Solving this problem completely will require a rethink of how we
+// implement fractional device scale factors in Chrome. In the meanwhile, the
+// implementation of this method minimizes the length of straight edges of the
+// clip path to minimize issues. To do this we carve out the two corners, and
+// then take the inverse as our clip path.
 void ToolbarView::UpdateClipPath() {
   const int corner_radius = GetLayoutConstant(TOOLBAR_CORNER_RADIUS);
   SkPath path;
   const gfx::Rect local_bounds = GetLocalBounds();
-  path.moveTo(0, local_bounds.height());
+
+  // Carve out top-left.
+  path.moveTo(0, 0);
   path.lineTo(0, corner_radius);
   path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
              SkPathDirection::kCW, corner_radius, 0);
-  path.lineTo(local_bounds.width() - corner_radius, 0);
+  path.lineTo(0, 0);
+
+  // Carve out top-right.
+  path.moveTo(local_bounds.width() - corner_radius, 0);
   path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
              SkPathDirection::kCW, local_bounds.width(), corner_radius);
-  path.lineTo(local_bounds.width(), local_bounds.height());
-  path.lineTo(0, local_bounds.height());
+  path.lineTo(local_bounds.width(), 0);
+  path.lineTo(local_bounds.width() - corner_radius, 0);
+
+  // Take the inverse so we keep everything else. Artifacts are confined to the
+  // corners.
+  path.setFillType(SkPathFillType::kInverseWinding);
   container_view_->SetClipPath(path);
 }
 
@@ -950,14 +986,13 @@ void ToolbarView::InitLayout() {
   }
 
   if (pinned_toolbar_actions_container_) {
-    const views::FlexSpecification toolbar_actions_flex_rule =
+    pinned_toolbar_actions_container_->SetProperty(
+        views::kFlexBehaviorKey,
         views::FlexSpecification(
-            pinned_toolbar_actions_container_->GetAnimatingLayoutManager()
-                ->GetDefaultFlexRule())
-            .WithOrder(kToolbarActionsFlexOrder);
-
-    pinned_toolbar_actions_container_->SetProperty(views::kFlexBehaviorKey,
-                                                   toolbar_actions_flex_rule);
+            base::BindRepeating(
+                &PinnedToolbarActionsContainer::CustomFlexRule,
+                base::Unretained(pinned_toolbar_actions_container_)))
+            .WithOrder(kToolbarActionsFlexOrder));
   } else if (side_panel_container_) {
     const views::FlexSpecification side_panel_flex_rule =
         views::FlexSpecification(
@@ -980,9 +1015,9 @@ void ToolbarView::InitLayout() {
 
     // TODO(crbug.com/1479588): Ignore containers till issue addressed.
     toolbar_controller_ = std::make_unique<ToolbarController>(
-        ToolbarController::GetDefaultResponsiveElements(),
+        ToolbarController::GetDefaultResponsiveElements(browser_),
         ToolbarController::GetDefaultOverflowOrder(), kToolbarFlexOrderStart,
-        container_view_, overflow_button_);
+        container_view_, overflow_button_, pinned_toolbar_actions_container_);
 
     overflow_button_->set_create_menu_model_callback(
         base::BindRepeating(&ToolbarController::CreateOverflowMenuModel,
@@ -1197,7 +1232,7 @@ void ToolbarView::LoadImages() {
 
 void ToolbarView::OnShowHomeButtonChanged() {
   home_->SetVisible(show_home_button_.GetValue());
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -1218,6 +1253,6 @@ void ToolbarView::OnTouchUiChanged() {
   }
 }
 
-BEGIN_METADATA(ToolbarView, views::AccessiblePaneView)
+BEGIN_METADATA(ToolbarView)
 ADD_READONLY_PROPERTY_METADATA(bool, AppMenuFocused)
 END_METADATA

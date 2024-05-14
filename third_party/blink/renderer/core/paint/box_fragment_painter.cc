@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/layout/table/layout_table.h"
 #include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/box_background_paint_context.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
@@ -37,9 +37,6 @@
 #include "third_party/blink/renderer/core/paint/frame_set_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/mathml_painter.h"
-#include "third_party/blink/renderer/core/paint/table_painters.h"
-#include "third_party/blink/renderer/core/paint/text_combine_painter.h"
-#include "third_party/blink/renderer/core/paint/text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -50,6 +47,9 @@
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
+#include "third_party/blink/renderer/core/paint/table_painters.h"
+#include "third_party/blink/renderer/core/paint/text_combine_painter.h"
+#include "third_party/blink/renderer/core/paint/text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
@@ -115,7 +115,7 @@ inline bool IsVisibleToHitTest(const ComputedStyle& style,
 inline bool IsVisibleToHitTest(const FragmentItem& item,
                                const HitTestRequest& request) {
   const ComputedStyle& style = item.Style();
-  if (item.Type() != FragmentItem::kSvgText) {
+  if (!item.IsSvgText()) {
     return IsVisibleToPaint(item, style) && IsVisibleToHitTest(style, request);
   }
 
@@ -438,8 +438,8 @@ void BoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
 
   // For text-combine-upright:all, we need to realize canvas here for scaling
   // to fit text content in 1em and shear for "font-style: oblique -15deg".
-  absl::optional<DrawingRecorder> recorder;
-  absl::optional<GraphicsContextStateSaver> graphics_context_state_saver;
+  std::optional<DrawingRecorder> recorder;
+  std::optional<GraphicsContextStateSaver> graphics_context_state_saver;
   const auto* const text_combine =
       DynamicTo<LayoutTextCombine>(box_fragment_.GetLayoutObject());
   if (UNLIKELY(text_combine)) {
@@ -476,14 +476,21 @@ void BoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
     // We need to call PaintObject twice: one for painting background in the
     // border box space, and the other for painting background in the scrolling
     // contents space.
-    auto paint_location = To<LayoutBox>(*box_fragment_.GetLayoutObject())
-                              .GetBackgroundPaintLocation();
+    const LayoutBox& box = To<LayoutBox>(*box_fragment_.GetLayoutObject());
+    auto paint_location = box.GetBackgroundPaintLocation();
     if (!(paint_location & kBackgroundPaintInBorderBoxSpace))
       info.SetSkipsBackground(true);
     PaintObject(info, paint_offset);
     info.SetSkipsBackground(false);
 
-    if (paint_location & kBackgroundPaintInContentsSpace) {
+    if ((RuntimeEnabledFeatures::HitTestOpaquenessEnabled() &&
+         // We need to record hit test data for the scrolling contents.
+         box.ScrollsOverflow()) ||
+        (paint_location & kBackgroundPaintInContentsSpace)) {
+      if (!(paint_location & kBackgroundPaintInContentsSpace)) {
+        DCHECK(RuntimeEnabledFeatures::HitTestOpaquenessEnabled());
+        info.SetSkipsBackground(true);
+      }
       // If possible, paint overflow controls before scrolling background to
       // make it easier to merge scrolling background and scrolling contents
       // into the same layer. The function checks if it's appropriate to paint
@@ -493,7 +500,9 @@ void BoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
       info.SetIsPaintingBackgroundInContentsSpace(true);
       PaintObject(info, paint_offset);
       info.SetIsPaintingBackgroundInContentsSpace(false);
+      info.SetSkipsBackground(false);
     }
+
     if (ShouldPaintDescendantBlockBackgrounds(original_phase))
       info.phase = PaintPhase::kDescendantBlockBackgroundsOnly;
   }
@@ -687,7 +696,7 @@ void BoxFragmentPainter::PaintCaretsIfNeeded(
 
   // Apply overflow clip if needed.
   // reveal-caret-of-multiline-contenteditable.html needs this.
-  absl::optional<ScopedPaintChunkProperties> paint_chunk_properties;
+  std::optional<ScopedPaintChunkProperties> paint_chunk_properties;
   if (const auto* fragment = paint_state.FragmentToPaint()) {
     if (const auto* properties = fragment->PaintProperties()) {
       if (const auto* overflow_clip = properties->OverflowClip()) {
@@ -753,7 +762,7 @@ void BoxFragmentPainter::PaintLineBoxes(const PaintInfo& paint_info,
   DCHECK(items_);
   EnsureInlineContext();
   InlineCursor children(box_fragment_, *items_);
-  absl::optional<ScopedSVGPaintState> paint_state;
+  std::optional<ScopedSVGPaintState> paint_state;
   if (box_fragment_.IsSvgText())
     paint_state.emplace(*box_fragment_.GetLayoutObject(), paint_info);
 
@@ -891,8 +900,8 @@ void BoxFragmentPainter::PaintFloatingChildren(
     const PaintInfo& paint_info) {
   DCHECK(container.HasFloatingDescendantsForPaint());
   const PaintInfo* local_paint_info = &paint_info;
-  absl::optional<ScopedPaintState> paint_state;
-  absl::optional<ScopedBoxContentsPaintState> contents_paint_state;
+  std::optional<ScopedPaintState> paint_state;
+  std::optional<ScopedBoxContentsPaintState> contents_paint_state;
   if (const auto* box = DynamicTo<LayoutBox>(container.GetLayoutObject())) {
     paint_state.emplace(To<PhysicalBoxFragment>(container), paint_info);
     contents_paint_state.emplace(*paint_state, *box);
@@ -994,15 +1003,15 @@ void BoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
     return;
   }
 
-  // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
-  BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
-      box_fragment_.GetLayoutObject()));
-
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
                            paint_info.phase, VisualRect(paint_offset));
   PhysicalRect paint_rect(paint_offset, box_fragment_.Size());
+  // TODO(eae): Switch to LayoutNG version of BoxBackgroundPaintContext.
+  BoxBackgroundPaintContext bg_paint_context(
+      *static_cast<const LayoutBoxModelObject*>(
+          box_fragment_.GetLayoutObject()));
   PaintMaskImages(paint_info, paint_rect, *box_fragment_.GetLayoutObject(),
-                  geometry, box_fragment_.SidesToInclude());
+                  bg_paint_context, box_fragment_.SidesToInclude());
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
@@ -1021,7 +1030,7 @@ void BoxFragmentPainter::PaintBoxDecorationBackground(
 
   PhysicalRect paint_rect;
   const DisplayItemClient* background_client = nullptr;
-  absl::optional<ScopedBoxContentsPaintState> contents_paint_state;
+  std::optional<ScopedBoxContentsPaintState> contents_paint_state;
   gfx::Rect visual_rect;
   if (paint_info.IsPaintingBackgroundInContentsSpace()) {
     // For the case where we are painting the background in the contents space,
@@ -1063,7 +1072,12 @@ void BoxFragmentPainter::PaintBoxDecorationBackground(
   }
 
   Element* element = DynamicTo<Element>(layout_object.GetNode());
-  if (element && element->GetRegionCaptureCropId()) {
+  if (element && element->GetRegionCaptureCropId() &&
+      // TODO(wangxianzhu): This is to avoid the side-effect of
+      // HitTestOpaqueness on region capture data. Verify if the side-effect
+      // really matters.
+      !(paint_info.IsPaintingBackgroundInContentsSpace() &&
+        paint_info.ShouldSkipBackground())) {
     paint_info.context.GetPaintController().RecordRegionCaptureData(
         *background_client, *(element->GetRegionCaptureCropId()),
         ToPixelSnappedRect(paint_rect));
@@ -1089,14 +1103,14 @@ void BoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   }
 
   const auto& box = To<LayoutBox>(*box_fragment_.GetLayoutObject());
-  absl::optional<DisplayItemCacheSkipper> cache_skipper;
+  std::optional<DisplayItemCacheSkipper> cache_skipper;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       ShouldSkipPaintUnderInvalidationChecking(box)) {
     cache_skipper.emplace(paint_info.context);
   }
 
   if (box.CanCompositeBackgroundAttachmentFixed() &&
-      BackgroundImageGeometry::HasBackgroundFixedToViewport(box)) {
+      BoxBackgroundPaintContext::HasBackgroundFixedToViewport(box)) {
     PaintCompositeBackgroundAttachmentFixed(paint_info, background_client,
                                             box_decoration_data);
     if (box_decoration_data.ShouldPaintBorder()) {
@@ -1472,10 +1486,10 @@ void BoxFragmentPainter::PaintBackground(
   if (layout_box.BackgroundIsKnownToBeObscured())
     return;
 
-  BackgroundImageGeometry geometry(box_fragment_);
+  BoxBackgroundPaintContext bg_paint_context(box_fragment_);
   PaintFillLayers(paint_info, background_color,
                   box_fragment_.Style().BackgroundLayers(), paint_rect,
-                  geometry, bleed_avoidance);
+                  bg_paint_context, bleed_avoidance);
 }
 
 void BoxFragmentPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info) {
@@ -1527,7 +1541,6 @@ void BoxFragmentPainter::PaintInlineItems(const PaintInfo& paint_info,
     }
     switch (item->Type()) {
       case FragmentItem::kText:
-      case FragmentItem::kSvgText:
       case FragmentItem::kGeneratedText:
         if (!item->IsHiddenForPaint())
           PaintTextItem(*cursor, paint_info, paint_offset, parent_offset);
@@ -1733,6 +1746,12 @@ void BoxFragmentPainter::PaintBoxItem(const FragmentItem& item,
   }
 
   if (child_fragment.IsAtomicInline() || child_fragment.IsListMarker()) {
+    // Establish a display item fragment scope here, in case there are multiple
+    // fragment items for the same layout object. This is unusual for atomic
+    // inlines, but might happen e.g. if an text-overflow ellipsis is associated
+    // with the layout object.
+    ScopedDisplayItemFragment display_item_fragment(paint_info.context,
+                                                    item.FragmentId());
     PaintFragment(child_fragment, paint_info);
     return;
   }
@@ -1851,14 +1870,6 @@ PhysicalRect BoxFragmentPainter::AdjustRectForScrolledContent(
       physical.ScrollSize() +
       PhysicalSize(borders.HorizontalSum(), borders.VerticalSum());
   return scrolled_paint_rect;
-}
-
-PhysicalBoxStrut BoxFragmentPainter::ComputeBorders() const {
-  return GetPhysicalFragment().Borders();
-}
-
-PhysicalBoxStrut BoxFragmentPainter::ComputePadding() const {
-  return GetPhysicalFragment().Padding();
 }
 
 BoxPainterBase::FillLayerInfo BoxFragmentPainter::GetFillLayerInfo(
@@ -2109,8 +2120,7 @@ bool BoxFragmentPainter::HitTestTextItem(const HitTestContext& hit_test,
   if (!IsVisibleToHitTest(text_item, hit_test.result->GetHitTestRequest()))
     return false;
 
-  if (text_item.Type() == FragmentItem::kSvgText &&
-      text_item.HasSvgTransformForBoundingBox()) {
+  if (text_item.IsSvgText() && text_item.HasSvgTransformForBoundingBox()) {
     const gfx::QuadF quad = text_item.SvgUnscaledQuad();
     if (!hit_test.location.Intersects(quad))
       return false;

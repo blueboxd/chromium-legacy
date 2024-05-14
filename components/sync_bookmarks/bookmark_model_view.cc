@@ -110,18 +110,13 @@ void BookmarkModelView::SetURL(const bookmarks::BookmarkNode* node,
                           bookmarks::metrics::BookmarkEditSource::kOther);
 }
 
-const bookmarks::BookmarkNode* BookmarkModelView::GetNodeByUuid(
-    const base::Uuid& uuid) const {
-  return bookmark_model_->GetNodeByUuid(uuid);
-}
-
 const bookmarks::BookmarkNode* BookmarkModelView::AddFolder(
     const bookmarks::BookmarkNode* parent,
     size_t index,
     const std::u16string& title,
     const bookmarks::BookmarkNode::MetaInfoMap* meta_info,
-    absl::optional<base::Time> creation_time,
-    absl::optional<base::Uuid> uuid) {
+    std::optional<base::Time> creation_time,
+    std::optional<base::Uuid> uuid) {
   return bookmark_model_->AddFolder(parent, index, title, meta_info,
                                     creation_time, uuid);
 }
@@ -132,8 +127,8 @@ const bookmarks::BookmarkNode* BookmarkModelView::AddURL(
     const std::u16string& title,
     const GURL& url,
     const bookmarks::BookmarkNode::MetaInfoMap* meta_info,
-    absl::optional<base::Time> creation_time,
-    absl::optional<base::Uuid> uuid) {
+    std::optional<base::Time> creation_time,
+    std::optional<base::Uuid> uuid) {
   return bookmark_model_->AddURL(parent, index, title, url, meta_info,
                                  creation_time, uuid);
 }
@@ -179,10 +174,25 @@ BookmarkModelViewUsingLocalOrSyncableNodes::mobile_node() const {
   return underlying_model()->mobile_node();
 }
 
+void BookmarkModelViewUsingLocalOrSyncableNodes::EnsurePermanentNodesExist() {
+  // Local-or-syncable permanent folders always exist, nothing to be done.
+  CHECK(bookmark_bar_node());
+  CHECK(other_node());
+  CHECK(mobile_node());
+}
+
 void BookmarkModelViewUsingLocalOrSyncableNodes::RemoveAllSyncableNodes() {
   // Relevant on iOS only, to delete all account bookmarks in a dedicated
   // BookmarkModel instance.
   underlying_model()->RemoveAllUserBookmarks();
+}
+
+const bookmarks::BookmarkNode*
+BookmarkModelViewUsingLocalOrSyncableNodes::GetNodeByUuid(
+    const base::Uuid& uuid) const {
+  return underlying_model()->GetNodeByUuid(
+      uuid,
+      bookmarks::BookmarkModel::NodeTypeForUuidLookup::kLocalOrSyncableNodes);
 }
 
 BookmarkModelViewUsingAccountNodes::BookmarkModelViewUsingAccountNodes(
@@ -207,9 +217,22 @@ const bookmarks::BookmarkNode* BookmarkModelViewUsingAccountNodes::mobile_node()
   return underlying_model()->account_mobile_node();
 }
 
+void BookmarkModelViewUsingAccountNodes::EnsurePermanentNodesExist() {
+  underlying_model()->CreateAccountPermanentFolders();
+  CHECK(bookmark_bar_node());
+  CHECK(other_node());
+  CHECK(mobile_node());
+}
+
 void BookmarkModelViewUsingAccountNodes::RemoveAllSyncableNodes() {
-  // TODO(crbug.com/1494120): Implement deletion properly.
-  NOTIMPLEMENTED();
+  underlying_model()->RemoveAccountPermanentFolders();
+}
+
+const bookmarks::BookmarkNode*
+BookmarkModelViewUsingAccountNodes::GetNodeByUuid(
+    const base::Uuid& uuid) const {
+  return underlying_model()->GetNodeByUuid(
+      uuid, bookmarks::BookmarkModel::NodeTypeForUuidLookup::kAccountNodes);
 }
 
 }  // namespace sync_bookmarks

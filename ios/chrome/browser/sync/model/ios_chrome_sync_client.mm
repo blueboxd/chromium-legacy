@@ -9,11 +9,11 @@
 #import "base/feature_list.h"
 #import "base/functional/bind.h"
 #import "base/logging.h"
-#import "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
-#import "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
-#import "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
-#import "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
+#import "components/autofill/core/browser/webdata/addresses/autofill_profile_sync_bridge.h"
+#import "components/autofill/core/browser/webdata/autocomplete/autocomplete_sync_bridge.h"
 #import "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#import "components/autofill/core/browser/webdata/payments/autofill_wallet_metadata_sync_bridge.h"
+#import "components/autofill/core/browser/webdata/payments/autofill_wallet_sync_bridge.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/browser_sync/browser_sync_switches.h"
 #import "components/browser_sync/sync_api_component_factory_impl.h"
@@ -42,7 +42,7 @@
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/model/consent_auditor_factory.h"
 #import "ios/chrome/browser/dom_distiller/model/dom_distiller_service_factory.h"
-#import "ios/chrome/browser/favicon/favicon_service_factory.h"
+#import "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #import "ios/chrome/browser/history/model/history_service_factory.h"
 #import "ios/chrome/browser/metrics/model/google_groups_updater_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
@@ -266,9 +266,15 @@ IOSChromeSyncClient::GetSyncApiComponentFactory() {
 }
 
 bool IOSChromeSyncClient::IsCustomPassphraseAllowed() {
-  // TODO(crbug.com/1502574): Reconsider if this should integrate with
-  // SupervisedUserSettingsServiceFactory, along with corresponding
-  // logic in the UI.
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForBrowserState(
+              browser_state_);
+  if (supervised_user_settings_service) {
+    return supervised_user_settings_service->IsCustomPassphraseAllowed();
+  }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return true;
 }
 

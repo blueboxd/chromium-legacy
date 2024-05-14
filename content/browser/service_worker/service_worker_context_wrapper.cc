@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -16,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -30,6 +30,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/loader/url_loader_factory_utils.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -57,11 +58,11 @@
 #include "net/base/url_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/url_loader_factory_builder.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/service_worker/embedded_worker_status.h"
@@ -88,9 +89,6 @@ BASE_FEATURE(kServiceWorkerStorageControlOnThreadPool,
 
 const base::FeatureParam<int> kUpdateDelayParam{
     &blink::features::kServiceWorkerUpdateDelay, "update_delay_in_ms", 1000};
-
-base::LazyInstance<ServiceWorkerContextWrapper::URLLoaderFactoryInterceptor>::
-    Leaky g_loader_factory_interceptor = LAZY_INSTANCE_INITIALIZER;
 
 void DidFindRegistrationForStartActiveWorker(
     ServiceWorkerContextWrapper::StatusCallback callback,
@@ -785,7 +783,7 @@ void ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchMessage(
 
   // As we don't track tasks between workers and renderers, we can nullify the
   // message's parent task ID.
-  message.parent_task_id = absl::nullopt;
+  message.parent_task_id = std::nullopt;
 
   // TODO(https://crbug.com/1295029): Don't post task to the UI thread. Instead,
   // make all call sites run on the UI thread.
@@ -916,7 +914,7 @@ void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(
 void ServiceWorkerContextWrapper::WarmUpServiceWorker(
     const GURL& document_url,
     const blink::StorageKey& key,
-    ServiceWorkerContextCore::WarmUpServiceWorkerCallback callback) {
+    WarmUpServiceWorkerCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
@@ -930,6 +928,12 @@ void ServiceWorkerContextWrapper::WarmUpServiceWorker(
   // takes time to compute. Hence avoid calling it when the given URL clearly
   // doesn't register service workers.
   if (!OriginCanAccessServiceWorkers(document_url)) {
+    std::move(callback).Run();
+    return;
+  }
+
+  // Only warm-up http or https URLs. Do not warm-up extensions and others.
+  if (!document_url.SchemeIsHTTPOrHTTPS()) {
     std::move(callback).Run();
     return;
   }
@@ -1463,7 +1467,7 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
 
   context_core_->EndProcessingWarmingUp();
 
-  absl::optional<ServiceWorkerContextCore::WarmUpRequest> request =
+  std::optional<ServiceWorkerContextCore::WarmUpRequest> request =
       context_core_->PopNextWarmUpRequest();
 
   if (!request) {
@@ -1658,7 +1662,7 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForNavigationHint(
 }
 
 void ServiceWorkerContextWrapper::DidFindRegistrationForWarmUp(
-    ServiceWorkerContextCore::WarmUpServiceWorkerCallback callback,
+    WarmUpServiceWorkerCallback callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   TRACE_EVENT1("ServiceWorker", "DidFindRegistrationForWarmUp", "status",
@@ -1686,7 +1690,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForWarmUp(
 
 void ServiceWorkerContextWrapper::DidWarmUpServiceWorker(
     const GURL& scope,
-    ServiceWorkerContextCore::WarmUpServiceWorkerCallback callback,
+    WarmUpServiceWorkerCallback callback,
     blink::ServiceWorkerStatusCode code) {
   TRACE_EVENT2("ServiceWorker", "DidWarmUpServiceWorker", "url", scope.spec(),
                "code", blink::ServiceWorkerStatusToString(code));
@@ -1816,15 +1820,7 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForUpdateCheck(
   // devtools? It is currently not recorded at all.
   return GetLoaderFactoryForBrowserInitiatedRequest(
       scope,
-      /*version_id=*/absl::nullopt, std::move(client_security_state));
-}
-
-// static
-void ServiceWorkerContextWrapper::SetURLLoaderFactoryInterceptorForTesting(
-    const URLLoaderFactoryInterceptor& interceptor) {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  g_loader_factory_interceptor.Get() = interceptor;
+      /*version_id=*/std::nullopt, std::move(client_security_state));
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -1840,7 +1836,7 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForMainScriptFetch(
 scoped_refptr<network::SharedURLLoaderFactory>
 ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
     const GURL& scope,
-    absl::optional<int64_t> version_id,
+    std::optional<int64_t> version_id,
     network::mojom::ClientSecurityStatePtr client_security_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -1855,8 +1851,7 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
   const url::Origin scope_origin = url::Origin::Create(scope);
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
-  mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver =
-      remote.InitWithNewPipeAndPassReceiver();
+  network::URLLoaderFactoryBuilder factory_builder;
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
   bool bypass_redirect_checks = false;
@@ -1868,8 +1863,8 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
       storage_partition_->browser_context(), /*frame=*/nullptr,
       ChildProcessHost::kInvalidUniqueID,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
-      scope_origin, /*navigation_id=*/absl::nullopt, ukm::kInvalidSourceIdObj,
-      &pending_receiver, &header_client, &bypass_redirect_checks,
+      scope_origin, /*navigation_id=*/std::nullopt, ukm::kInvalidSourceIdObj,
+      factory_builder, &header_client, &bypass_redirect_checks,
       /*disable_secure_dns=*/nullptr,
       /*factory_override=*/nullptr,
       /*navigation_response_task_runner=*/nullptr);
@@ -1877,36 +1872,41 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
   // If we have a version_id, we are fetching a worker main script. We have a
   // DevtoolsAgentHost ready for the worker and we can add the devtools override
   // before instantiating the URLFactoryLoader.
-  if (version_id.has_value()) {
-    devtools_instrumentation::
-        WillCreateURLLoaderFactoryForServiceWorkerMainScript(
-            this, version_id.value(), &pending_receiver);
+  if (auto params = devtools_instrumentation::WillCreateURLLoaderFactoryParams::
+          ForServiceWorkerMainScript(this, version_id)) {
+    params->Run(
+        /*is_navigation=*/true, /*is_download=*/false, factory_builder,
+        /*factory_override=*/nullptr);
   }
 
   bool use_client_header_factory = header_client.is_valid();
   if (use_client_header_factory) {
-    NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
-        std::move(header_client), std::move(pending_receiver),
+    remote = NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
+        std::move(header_client), std::move(factory_builder),
         storage_partition());
   } else {
     DCHECK(storage_partition());
     if (base::FeatureList::IsEnabled(
             features::kPrivateNetworkAccessForWorkers)) {
-      if (g_loader_factory_interceptor.Get()) {
-        g_loader_factory_interceptor.Get().Run(&pending_receiver);
+      if (url_loader_factory::GetTestingInterceptor()) {
+        url_loader_factory::GetTestingInterceptor().Run(
+            network::mojom::kBrowserProcessId, factory_builder);
       }
 
       network::mojom::URLLoaderFactoryParamsPtr params =
           storage_partition_->CreateURLLoaderFactoryParams();
       params->client_security_state = std::move(client_security_state);
-      storage_partition_->GetNetworkContext()->CreateURLLoaderFactory(
-          std::move(pending_receiver), std::move(params));
+      remote =
+          std::move(factory_builder)
+              .Finish<mojo::PendingRemote<network::mojom::URLLoaderFactory>>(
+                  storage_partition_->GetNetworkContext(), std::move(params));
     } else {
       // Set up a Mojo connection to the network loader factory if it's not been
       // created yet.
-      scoped_refptr<network::SharedURLLoaderFactory> network_factory =
-          storage_partition_->GetURLLoaderFactoryForBrowserProcess();
-      network_factory->Clone(std::move(pending_receiver));
+      remote =
+          std::move(factory_builder)
+              .Finish<mojo::PendingRemote<network::mojom::URLLoaderFactory>>(
+                  storage_partition_->GetURLLoaderFactoryForBrowserProcess());
     }
   }
 

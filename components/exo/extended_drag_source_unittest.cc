@@ -32,6 +32,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/test/shell_surface_builder.h"
 #include "components/exo/test/test_data_device_delegate.h"
+#include "components/exo/test/test_data_source_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
@@ -48,6 +49,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
+using ::exo::test::TestDataSourceDelegate;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -162,8 +164,8 @@ class ExtendedDragSourceTest : public test::ExoTestBase {
         exo_test_helper()->CreateGpuMemoryBuffer(size));
   }
 
-  raw_ptr<ash::DragDropController, DanglingUntriaged | ExperimentalAsh>
-      drag_drop_controller_ = nullptr;
+  raw_ptr<ash::DragDropController, DanglingUntriaged> drag_drop_controller_ =
+      nullptr;
   std::unique_ptr<Seat> seat_;
   std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<ExtendedDragSource> extended_drag_source_;
@@ -322,8 +324,8 @@ class WindowObserverHookChecker : public aura::WindowObserver {
               ());
 
  private:
-  raw_ptr<aura::Window, ExperimentalAsh> surface_window_ = nullptr;
-  raw_ptr<aura::Window, ExperimentalAsh> dragged_window_ = nullptr;
+  raw_ptr<aura::Window> surface_window_ = nullptr;
+  raw_ptr<aura::Window> dragged_window_ = nullptr;
 };
 
 TEST_F(ExtendedDragSourceTest, DragSurfaceNotMappedYet) {
@@ -698,7 +700,7 @@ TEST_F(ExtendedDragSourceTest, DragToAnotherDisplay) {
   auto configure_callback = base::BindLambdaForTesting(
       [&](const gfx::Rect& bounds, chromeos::WindowStateType state_type,
           bool resizing, bool activated, const gfx::Vector2d& origin_offset,
-          float raster_scale,
+          float raster_scale, aura::Window::OcclusionState occlusion_state,
           std::optional<chromeos::WindowStateType> restore_state_type) {
         drop_bounds = bounds;
         return ++serial;

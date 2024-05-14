@@ -68,17 +68,16 @@ class ExternallyManagedAppManager {
  public:
   struct InstallResult {
     InstallResult();
-    explicit InstallResult(
-        webapps::InstallResultCode code,
-        absl::optional<webapps::AppId> app_id = absl::nullopt,
-        bool did_uninstall_and_replace = false);
+    explicit InstallResult(webapps::InstallResultCode code,
+                           std::optional<webapps::AppId> app_id = std::nullopt,
+                           bool did_uninstall_and_replace = false);
     InstallResult(const InstallResult&);
     ~InstallResult();
 
     bool operator==(const InstallResult& other) const;
 
     webapps::InstallResultCode code;
-    absl::optional<webapps::AppId> app_id;
+    std::optional<webapps::AppId> app_id;
     bool did_uninstall_and_replace = false;
     // When adding fields, please update the `==` and `<<` operators to include
     // the new field.
@@ -214,11 +213,12 @@ class ExternallyManagedAppManager {
     std::map<GURL, bool> uninstall_results;
   };
 
-  base::Value SynchronizeInstalledAppsOnLockAcquired(
+  void SynchronizeInstalledAppsOnLockAcquired(
       std::vector<ExternalInstallOptions> desired_apps_install_options,
       ExternalInstallSource install_source,
       SynchronizeCallback callback,
-      AllAppsLock& lock);
+      AllAppsLock& lock,
+      base::Value::Dict& debug_value);
 
   void InstallForSynchronizeCallback(
       ExternalInstallSource source,
@@ -233,11 +233,12 @@ class ExternallyManagedAppManager {
   void PostMaybeStartNext();
 
   void MaybeStartNext();
-  void MaybeStartNextOnLockAcquired(AllAppsLock& lock);
+  void MaybeStartNextOnLockAcquired(AllAppsLock& lock,
+                                    base::Value::Dict& debug_value);
 
   void StartInstallationTask(
       std::unique_ptr<TaskAndCallback> task,
-      absl::optional<webapps::AppId> installed_placeholder_app_id);
+      std::optional<webapps::AppId> installed_placeholder_app_id);
 
   bool RunNextRegistration();
 

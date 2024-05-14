@@ -43,12 +43,10 @@ import org.chromium.chrome.browser.autofill.options.AutofillOptionsCoordinator;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment;
 import org.chromium.chrome.browser.autofill.settings.AutofillCreditCardEditor;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
-import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragmentBasic;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsSettings;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -66,6 +64,7 @@ import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFra
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.safe_browsing.settings.SafeBrowsingSettingsFragmentBase;
+import org.chromium.chrome.browser.safety_check.SafetyCheckBridge;
 import org.chromium.chrome.browser.safety_check.SafetyCheckCoordinator;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.safety_check.SafetyCheckUpdatesDelegateImpl;
@@ -96,6 +95,7 @@ import org.chromium.components.browser_ui.widget.displaystyle.ViewResizerUtil;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.privacy_sandbox.TrackingProtectionSettings;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -275,7 +275,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     @NonNull
     private Integer getItemOffset(DisplayStyle displayStyle) {
         if (displayStyle.isWide()) {
-            return ViewResizerUtil.computePaddingForWideDisplay(this, mMinWidePaddingPixels);
+            return ViewResizerUtil.computePaddingForWideDisplay(this, null, mMinWidePaddingPixels);
         }
         return 0;
     }
@@ -312,7 +312,8 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                         (sheet) -> {},
                         getWindow(),
                         KeyboardVisibilityDelegate.getInstance(),
-                        () -> sheetContainer);
+                        () -> sheetContainer,
+                        () -> 0);
 
         mBottomSheetControllerSupplier.set(mBottomSheetController);
     }
@@ -464,26 +465,16 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     private void initBackPressHandler() {
         // Handlers registered last will be called first.
         registerMainFragmentBackPressHandler();
-        if (ChromeFeatureList.sPrivacyGuidePostMVP.isEnabled()) {
-            registerBottomSheetBackPressHandler();
-        }
+        registerBottomSheetBackPressHandler();
     }
 
     private void registerMainFragmentBackPressHandler() {
         Fragment activeFragment = getMainFragment();
-        if (BackPressManager.isSecondaryActivityEnabled()) {
-            if (activeFragment instanceof BackPressHandler) {
-                BackPressHelper.create(
-                        activeFragment.getViewLifecycleOwner(),
-                        getOnBackPressedDispatcher(),
-                        (BackPressHandler) activeFragment,
-                        SecondaryActivity.SETTINGS);
-            }
-        } else if (activeFragment instanceof BackPressHelper.ObsoleteBackPressedHandler) {
+        if (activeFragment instanceof BackPressHandler) {
             BackPressHelper.create(
                     activeFragment.getViewLifecycleOwner(),
                     getOnBackPressedDispatcher(),
-                    (BackPressHelper.ObsoleteBackPressedHandler) activeFragment,
+                    (BackPressHandler) activeFragment,
                     SecondaryActivity.SETTINGS);
         }
     }
@@ -494,19 +485,11 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         BackPressHandler bottomSheetBackPressHandler =
                 mBottomSheetController.getBottomSheetBackPressHandler();
         if (bottomSheetBackPressHandler != null) {
-            if (BackPressManager.isSecondaryActivityEnabled()) {
-                BackPressHelper.create(
-                        this,
-                        getOnBackPressedDispatcher(),
-                        bottomSheetBackPressHandler,
-                        SecondaryActivity.SETTINGS);
-            } else {
-                BackPressHelper.create(
-                        this,
-                        getOnBackPressedDispatcher(),
-                        mBottomSheetController::handleBackPress,
-                        SecondaryActivity.SETTINGS);
-            }
+            BackPressHelper.create(
+                    this,
+                    getOnBackPressedDispatcher(),
+                    bottomSheetBackPressHandler,
+                    SecondaryActivity.SETTINGS);
         }
     }
 
@@ -544,10 +527,12 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             SafetyCheckCoordinator.create(
                     (SafetyCheckSettingsFragment) fragment,
                     new SafetyCheckUpdatesDelegateImpl(),
+                    new SafetyCheckBridge(mProfile),
                     mSettingsLauncher,
                     SyncConsentActivityLauncherImpl.get(),
                     getModalDialogManagerSupplier(),
-                    SyncServiceFactory.getForProfile(mProfile));
+                    SyncServiceFactory.getForProfile(mProfile),
+                    UserPrefs.get(mProfile));
         }
         if (fragment instanceof PasswordCheckFragmentView) {
             PasswordCheckComponentUiFactory.create(

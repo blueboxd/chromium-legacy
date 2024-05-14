@@ -95,7 +95,7 @@ class WorkerMainScriptLoaderTest : public testing::Test {
     void FollowRedirect(const std::vector<std::string>&,
                         const net::HttpRequestHeaders&,
                         const net::HttpRequestHeaders&,
-                        const absl::optional<GURL>&) override {}
+                        const std::optional<GURL>&) override {}
     void SetPriority(net::RequestPriority priority,
                      int32_t intra_priority_value) override {}
     void PauseReadingBodyFromNet() override {}
@@ -125,7 +125,8 @@ class WorkerMainScriptLoaderTest : public testing::Test {
         int64_t request_id,
         const url::SchemeHostPort& final_url,
         network::mojom::URLResponseHeadPtr head,
-        network::mojom::RequestDestination request_destination) override {}
+        network::mojom::RequestDestination request_destination,
+        bool is_ad_resource) override {}
     void NotifyResourceTransferSizeUpdated(
         int64_t request_id,
         int32_t transfer_size_diff) override {}

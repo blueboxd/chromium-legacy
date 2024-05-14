@@ -182,7 +182,7 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
 
     if ((converter->type() == InputDeviceType::INPUT_DEVICE_USB ||
          converter->type() == InputDeviceType::INPUT_DEVICE_BLUETOOTH) &&
-        converter->HasKeyboard()) {
+        (converter->HasKeyboard() || converter->HasMouse())) {
       converter->SetReceivedValidInputCallback(base::BindRepeating(
           &InputDeviceFactoryEvdev::UpdateDevicesOnImposterOverride,
           base::Unretained(this)));
@@ -439,6 +439,11 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
           input_device_settings_.enable_internal_keyboard_filter,
           input_device_settings_.internal_keyboard_allowed_keys);
     }
+
+    // Block modifiers on the current converter if the device id exists in
+    // `input_device_settings_.blocked_modifiers_devices`
+    converter->SetBlockModifiers(base::Contains(
+        input_device_settings_.blocked_modifiers_devices, converter->id()));
 
     converter->ApplyDeviceSettings(input_device_settings_);
 

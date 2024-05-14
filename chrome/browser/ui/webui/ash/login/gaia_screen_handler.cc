@@ -52,14 +52,12 @@
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
-#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/profiles/signin_profile_handler.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/auth_notification_types.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service.h"
@@ -242,7 +240,7 @@ void GetVersionAndConsent(std::string* out_version, bool* out_consent) {
 user_manager::UserType CalculateUserType(const AccountId& account_id) {
   CHECK(account_id.GetAccountType() != AccountType::ACTIVE_DIRECTORY);
 
-  return user_manager::USER_TYPE_REGULAR;
+  return user_manager::UserType::kRegular;
 }
 
 chromeos::PinDialogManager* GetLoginScreenPinDialogManager() {
@@ -334,11 +332,13 @@ GaiaScreenHandler::GaiaScreenHandler(
           ErrorScreensHistogramHelper::ErrorParentScreen::kSignin)) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
+  HttpAuthDialog::AddObserver(this);
 }
 
 GaiaScreenHandler::~GaiaScreenHandler() {
   if (is_security_token_pin_enabled_)
     GetLoginScreenPinDialogManager()->RemovePinDialogHost(this);
+  HttpAuthDialog::RemoveObserver(this);
 }
 
 void GaiaScreenHandler::LoadGaia(const login::GaiaContext& context) {
@@ -353,7 +353,7 @@ void GaiaScreenHandler::LoadGaia(const login::GaiaContext& context) {
         user_manager::UserManager::Get()->FindUser(account_id);
 
     if (user && user->using_saml() &&
-        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+        user->GetType() == user_manager::UserType::kPublicAccount) {
       public_saml_url_fetcher_ =
           std::make_unique<PublicSamlUrlFetcher>(account_id);
       public_saml_url_fetcher_->Fetch(std::move(partition_call));
@@ -453,8 +453,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
     // but preserve a policy file referencing an owner: https://crbug.com/850139
     const user_manager::User* owner_user =
         user_manager::UserManager::Get()->FindUser(owner_account_id);
-    if (owner_user &&
-        owner_user->GetType() == user_manager::UserType::USER_TYPE_CHILD) {
+    if (owner_user && owner_user->GetType() == user_manager::UserType::kChild) {
       params.Set("obfuscatedOwnerId", owner_account_id.GetGaiaId());
     }
   }
@@ -673,7 +672,7 @@ void GaiaScreenHandler::DeclareJSCallbacks() {
   AddCallback("completeAuthentication",
               &GaiaScreenHandler::HandleCompleteAuthenticationEvent);
   AddCallback("usingSAMLAPI", &GaiaScreenHandler::HandleUsingSAMLAPI);
-  AddCallback("recordSAMLProvider",
+  AddCallback("recordSamlProvider",
               &GaiaScreenHandler::HandleRecordSAMLProvider);
   AddCallback("samlChallengeMachineKey",
               &GaiaScreenHandler::HandleSamlChallengeMachineKey);
@@ -690,7 +689,7 @@ void GaiaScreenHandler::DeclareJSCallbacks() {
   AddCallback("passwordEntered", &GaiaScreenHandler::HandlePasswordEntered);
   AddCallback("showLoadingTimeoutError",
               &GaiaScreenHandler::HandleShowLoadingTimeoutError);
-  AddCallback("getDeviceId", &GaiaScreenHandler::HandleGetDeviceId);
+  AddCallback("getDeviceIdForLogin", &GaiaScreenHandler::HandleGetDeviceId);
 }
 
 void GaiaScreenHandler::HandleAuthenticatorLoaded() {
@@ -961,7 +960,7 @@ void GaiaScreenHandler::HandleLaunchSAMLPublicSession(
       user_manager::KnownUser(g_browser_process->local_state())
           .GetAccountId(email, std::string() /* id */, AccountType::UNKNOWN);
 
-  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, account_id);
+  UserContext context(user_manager::UserType::kPublicAccount, account_id);
 
   auto& existing_user_controller =
       CHECK_DEREF(ExistingUserController::current_controller());
@@ -1254,12 +1253,7 @@ void GaiaScreenHandler::Show() {
   network_state_informer_->AddObserver(this);
 
   // Start listening for HTTP login requests.
-  registrar_.Add(this, chrome::NOTIFICATION_AUTH_NEEDED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
-                 content::NotificationService::AllSources());
+  enable_ash_httpauth_ = HttpAuthDialog::Enable();
 
   base::Value::Dict data;
   if (LoginDisplayHost::default_host())
@@ -1272,7 +1266,7 @@ void GaiaScreenHandler::Show() {
 void GaiaScreenHandler::Hide() {
   hidden_ = true;
   network_state_informer_->RemoveObserver(this);
-  registrar_.RemoveAll();
+  enable_ash_httpauth_.reset();
 }
 
 void GaiaScreenHandler::LoadGaiaAsync(const AccountId& account_id) {
@@ -1642,43 +1636,37 @@ void GaiaScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
   }
 }
 
-void GaiaScreenHandler::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_AUTH_NEEDED: {
-      network_state_ignored_until_proxy_auth_ = true;
-      update_state_callback_.Cancel();
-      break;
-    }
-    case chrome::NOTIFICATION_AUTH_SUPPLIED: {
-      if (IsGaiaHiddenByError()) {
-        // Start listening to network state notifications immediately, hoping
-        // that the network will switch to ONLINE soon.
-        update_state_callback_.Cancel();
-        ReenableNetworkStateUpdatesAfterProxyAuth();
-      } else {
-        // Gaia is not hidden behind an error yet. Discard last cached network
-        // state notification and wait for `kProxyAuthTimeout` before
-        // considering network update notifications again (hoping the network
-        // will become ONLINE by then).
-        update_state_callback_.Cancel();
-        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-            FROM_HERE,
-            base::BindOnce(
-                &GaiaScreenHandler::ReenableNetworkStateUpdatesAfterProxyAuth,
-                weak_factory_.GetWeakPtr()),
-            kProxyAuthTimeout);
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_AUTH_CANCELLED: {
-      update_state_callback_.Cancel();
-      ReenableNetworkStateUpdatesAfterProxyAuth();
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification " << type;
+void GaiaScreenHandler::HttpAuthDialogShown(
+    content::WebContents* web_contents) {
+  network_state_ignored_until_proxy_auth_ = true;
+  update_state_callback_.Cancel();
+}
+
+void GaiaScreenHandler::HttpAuthDialogCancelled(
+    content::WebContents* web_contents) {
+  update_state_callback_.Cancel();
+  ReenableNetworkStateUpdatesAfterProxyAuth();
+}
+
+void GaiaScreenHandler::HttpAuthDialogSupplied(
+    content::WebContents* web_contents) {
+  if (IsGaiaHiddenByError()) {
+    // Start listening to network state notifications immediately, hoping
+    // that the network will switch to ONLINE soon.
+    update_state_callback_.Cancel();
+    ReenableNetworkStateUpdatesAfterProxyAuth();
+  } else {
+    // Gaia is not hidden behind an error yet. Discard last cached network
+    // state notification and wait for `kProxyAuthTimeout` before
+    // considering network update notifications again (hoping the network
+    // will become ONLINE by then).
+    update_state_callback_.Cancel();
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            &GaiaScreenHandler::ReenableNetworkStateUpdatesAfterProxyAuth,
+            weak_factory_.GetWeakPtr()),
+        kProxyAuthTimeout);
   }
 }
 
@@ -1720,7 +1708,7 @@ void GaiaScreenHandler::CheckIfAllowlisted(const std::string& user_email) {
 }
 
 void GaiaScreenHandler::ToggleLoadingUI(bool is_shown) {
-  CallExternalAPI("toggleLoadingUI", is_shown);
+  CallExternalAPI("toggleLoadingUi", is_shown);
 }
 
 void GaiaScreenHandler::SetQuickStartEnabled() {
@@ -1741,8 +1729,13 @@ GaiaScreenHandler::GaiaScreenMode GaiaScreenHandler::GetGaiaScreenMode(
       em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
     if (email.empty()) {
       return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
+    } else if (features::IsGaiaReauthEndpointEnabled()) {
+      // Email is not empty, i.e. this is an existing user going through reauth.
+      // This means they should use Gaia reauth endpoint regardless of
+      // LoginAuthenticationBehavior policy and this should be reflected in
+      // their screen mode.
+      return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
     }
-
     user_manager::KnownUser known_user(g_browser_process->local_state());
     // If there's a populated email, we must check first that this user is using
     // SAML in order to decide whether to show the interstitial page.

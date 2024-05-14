@@ -11,6 +11,7 @@
 
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_picker.mojom.h"
 #include "chrome/common/channel_info.h"
@@ -42,8 +43,11 @@ constexpr char kArRangeValue[] = "wide";
 constexpr char kMediaFilterName[] = "media_filter";
 constexpr char kMediaFilterValue[] = "gif,tinygif";
 
+constexpr char kClientKeyName[] = "client_key";
+constexpr char kClientKeyValue[] = "chromeos";
+
 constexpr char kPosName[] = "pos";
-const int64_t kTimeoutMs = 10000;
+constexpr base::TimeDelta kTimeout = base::Milliseconds(10000);
 
 std::unique_ptr<EndpointFetcher> CreateEndpointFetcher(
     const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -54,7 +58,7 @@ std::unique_ptr<EndpointFetcher> CreateEndpointFetcher(
       /*url=*/url,
       /*http_method=*/kHttpMethod,
       /*content_type=*/kHttpContentType,
-      /*timeout_ms=*/kTimeoutMs,
+      /*timeout=*/kTimeout,
       /*post_data=*/"",
       /*headers=*/std::vector<std::string>(),
       /*annotation_tag=*/annotation_tag,
@@ -165,6 +169,7 @@ GURL GetUrl(const char* endpoint, const std::optional<std::string>& pos) {
                                        kContentFilterName, kContentFilterValue);
   url = net::AppendQueryParameter(url, kArRangeName, kArRangeValue);
   url = net::AppendQueryParameter(url, kMediaFilterName, kMediaFilterValue);
+  url = net::AppendQueryParameter(url, kClientKeyName, kClientKeyValue);
   if (pos) {
     url = net::AppendQueryParameter(url, kPosName, pos.value());
   }
@@ -255,7 +260,9 @@ void GifTenorApiFetcher::FetchCategories(
   )");
 
   auto endpoint_fetcher = endpoint_fetcher_creator_.Run(
-      url_loader_factory, GURL(kTenorBaseUrl).Resolve(kCategoriesApi),
+      url_loader_factory,
+      net::AppendQueryParameter(GURL(kTenorBaseUrl).Resolve(kCategoriesApi),
+                                kClientKeyName, kClientKeyValue),
       kTrafficAnnotation);
   auto* const endpoint_fetcher_ptr = endpoint_fetcher.get();
   endpoint_fetcher_ptr->PerformRequest(
@@ -389,6 +396,7 @@ void GifTenorApiFetcher::FetchGifSearch(
 
   GURL url = GetUrl(kSearchApi, pos);
   url = net::AppendQueryParameter(url, "q", query);
+  url = net::AppendQueryParameter(url, kClientKeyName, kClientKeyValue);
 
   auto endpoint_fetcher = endpoint_fetcher_creator_.Run(url_loader_factory, url,
                                                         kTrafficAnnotation);
@@ -434,8 +442,10 @@ void GifTenorApiFetcher::FetchGifsByIds(
 
   auto endpoint_fetcher = endpoint_fetcher_creator_.Run(
       url_loader_factory,
-      net::AppendQueryParameter(GURL(kTenorBaseUrl).Resolve(kPostsApi), "ids",
-                                base::JoinString(ids, ",")),
+      net::AppendQueryParameter(
+          net::AppendQueryParameter(GURL(kTenorBaseUrl).Resolve(kPostsApi),
+                                    kClientKeyName, kClientKeyValue),
+          "ids", base::JoinString(ids, ",")),
       kTrafficAnnotation);
   auto* const endpoint_fetcher_ptr = endpoint_fetcher.get();
   endpoint_fetcher_ptr->PerformRequest(

@@ -13,6 +13,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
+#include "extensions/common/extension_id.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 
@@ -36,10 +37,10 @@ class TCPServerSocketEventDispatcher : public BrowserContextKeyedAPI {
   ~TCPServerSocketEventDispatcher() override;
 
   // Server socket is active, start accepting connections from it.
-  void OnServerSocketListen(const std::string& extension_id, int socket_id);
+  void OnServerSocketListen(const ExtensionId& extension_id, int socket_id);
 
   // Server socket is active again, start accepting connections from it.
-  void OnServerSocketResume(const std::string& extension_id, int socket_id);
+  void OnServerSocketResume(const ExtensionId& extension_id, int socket_id);
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<TCPServerSocketEventDispatcher>*
@@ -66,15 +67,16 @@ class TCPServerSocketEventDispatcher : public BrowserContextKeyedAPI {
     AcceptParams(const AcceptParams& other);
     ~AcceptParams();
 
-    raw_ptr<content::BrowserContext> browser_context;
-    std::string extension_id;
+    content::BrowserThread::ID thread_id;
+    raw_ptr<void, LeakedDanglingUntriaged> browser_context_id;
+    ExtensionId extension_id;
     scoped_refptr<ServerSocketData> server_sockets;
     scoped_refptr<ClientSocketData> client_sockets;
     int socket_id;
   };
 
   // Start an accept and register a callback.
-  void StartSocketAccept(const std::string& extension_id, int socket_id);
+  void StartSocketAccept(const ExtensionId& extension_id, int socket_id);
 
   // Start an accept and register a callback.
   static void StartAccept(const AcceptParams& params);
@@ -88,11 +90,17 @@ class TCPServerSocketEventDispatcher : public BrowserContextKeyedAPI {
       mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
       mojo::ScopedDataPipeProducerHandle send_pipe_handle);
 
+  // Post an extension event from |thread_id| to UI thread
+  static void PostEvent(const AcceptParams& params,
+                        std::unique_ptr<Event> event);
+
   // Dispatch an extension event on to EventRouter instance on UI thread.
-  static void DispatchEvent(content::BrowserContext* browser_context,
-                            const std::string& extension_id,
+  static void DispatchEvent(void* browser_context_id,
+                            const ExtensionId& extension_id,
                             std::unique_ptr<Event> event);
 
+  // Usually IO thread (except for unit testing).
+  content::BrowserThread::ID thread_id_;
   raw_ptr<content::BrowserContext> browser_context_;
   scoped_refptr<ServerSocketData> server_sockets_;
   scoped_refptr<ClientSocketData> client_sockets_;

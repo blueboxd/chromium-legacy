@@ -54,7 +54,7 @@ class NearbyConnectionsManagerImpl
   void StopDiscovery() override;
   void Connect(std::vector<uint8_t> endpoint_info,
                const std::string& endpoint_id,
-               absl::optional<std::vector<uint8_t>> bluetooth_mac_address,
+               std::optional<std::vector<uint8_t>> bluetooth_mac_address,
                DataUsage data_usage,
                NearbyConnectionCallback callback) override;
   void Disconnect(const std::string& endpoint_id) override;
@@ -70,9 +70,9 @@ class NearbyConnectionsManagerImpl
   Payload* GetIncomingPayload(int64_t payload_id) override;
   void Cancel(int64_t payload_id) override;
   void ClearIncomingPayloads() override;
-  absl::optional<std::string> GetAuthenticationToken(
+  std::optional<std::string> GetAuthenticationToken(
       const std::string& endpoint_id) override;
-  absl::optional<std::vector<uint8_t>> GetRawAuthenticationToken(
+  std::optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
   void RegisterBandwidthUpgradeListener(
       base::WeakPtr<BandwidthUpgradeListener> listener) override;
@@ -159,16 +159,14 @@ class NearbyConnectionsManagerImpl
                      NearbyFileHandler::CreateFileResult result);
 
   // For metrics.
-  absl::optional<Medium> GetUpgradedMedium(
-      const std::string& endpoint_id) const;
+  std::optional<Medium> GetUpgradedMedium(const std::string& endpoint_id) const;
 
-  raw_ptr<ash::nearby::NearbyProcessManager, ExperimentalAsh> process_manager_;
+  raw_ptr<ash::nearby::NearbyProcessManager> process_manager_;
   std::unique_ptr<ash::nearby::NearbyProcessManager::NearbyProcessReference>
       process_reference_;
   NearbyFileHandler file_handler_;
-  raw_ptr<IncomingConnectionListener, ExperimentalAsh>
-      incoming_connection_listener_ = nullptr;
-  raw_ptr<DiscoveryListener, ExperimentalAsh> discovery_listener_ = nullptr;
+  raw_ptr<IncomingConnectionListener> incoming_connection_listener_ = nullptr;
+  raw_ptr<DiscoveryListener> discovery_listener_ = nullptr;
   base::WeakPtr<BandwidthUpgradeListener> bandwidth_upgrade_listener_;
   base::flat_set<std::string> discovered_endpoints_;
   // A map of endpoint_id to NearbyConnectionCallback.

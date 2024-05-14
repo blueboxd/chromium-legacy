@@ -7,13 +7,13 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
+      "name": "LayoutNGBlockFlow (positioned, children-inline) DIV class='container'",
       "bounds": [200, 200],
       "drawsContent": false,
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
+      "name": "LayoutNGBlockFlow (positioned, children-inline) DIV class='container'",
       "bounds": [185, 185],
       "drawsContent": false,
       "transform": 1
@@ -30,6 +30,12 @@
       "bounds": [15, 185],
       "contentsOpaque": true,
       "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned, children-inline) DIV class='container'",
+      "bounds": [185, 290],
+      "drawsContent": false,
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='child first'",

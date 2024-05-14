@@ -58,8 +58,8 @@
 
 using base::RandDouble;
 using base::UnguessableToken;
-typedef extensions::ExtensionDownloaderDelegate::Error Error;
-typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
+using Error = extensions::ExtensionDownloaderDelegate::Error;
+using PingResult = extensions::ExtensionDownloaderDelegate::PingResult;
 
 namespace {
 
@@ -815,7 +815,7 @@ void ExtensionUpdater::InstallCRXFile(FetchedCRXFile crx_file) {
 
 void ExtensionUpdater::OnInstallerDone(
     const UnguessableToken& token,
-    const absl::optional<CrxInstallError>& error) {
+    const std::optional<CrxInstallError>& error) {
   auto iter = running_crx_installs_.find(token);
   DCHECK(iter != running_crx_installs_.end());
   FetchedCRXFile& crx_file = iter->second;

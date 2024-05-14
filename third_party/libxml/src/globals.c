@@ -20,13 +20,13 @@
 #include <libxml/xmlerror.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlIO.h>
-#include <libxml/HTMLparser.h>
 #include <libxml/parser.h>
 #include <libxml/threads.h>
 #include <libxml/tree.h>
 #include <libxml/SAX.h>
 #include <libxml/SAX2.h>
 
+#include "private/dict.h"
 #include "private/error.h"
 #include "private/globals.h"
 #include "private/threads.h"
@@ -76,13 +76,15 @@ struct _xmlGlobalState {
     void *waitHandle;
 #endif
 
+#ifdef LIBXML_THREAD_ENABLED
+    unsigned localRngState[2];
+#endif
+
 #define XML_OP XML_DECLARE_MEMBER
 XML_GLOBALS_ALLOC
 XML_GLOBALS_ERROR
-XML_GLOBALS_HTML
 XML_GLOBALS_IO
 XML_GLOBALS_PARSER
-XML_GLOBALS_SAVE
 XML_GLOBALS_TREE
 #undef XML_OP
 };
@@ -100,8 +102,14 @@ static xmlMutex xmlThrDefMutex;
  * On Darwin, thread-local storage destructors seem to be run before
  * pthread thread-specific data destructors. This causes ASan to
  * report a use-after-free.
+ *
+ * On Windows, we can't use TLS in static builds. The RegisterWait
+ * callback would run after TLS was deallocated.
  */
-#if defined(XML_THREAD_LOCAL) && !defined(__APPLE__)
+#if defined(XML_THREAD_LOCAL) && \
+    !defined(__APPLE__) && \
+    (!defined(HAVE_WIN32_THREADS) || \
+     !defined(LIBXML_STATIC) || defined(LIBXML_STATIC_FOR_DLL))
 #define USE_TLS
 #endif
 
@@ -117,6 +125,13 @@ static XML_THREAD_LOCAL xmlGlobalState globalState;
 #if defined(__GNUC__) && \
     defined(__GLIBC__) && \
     __GLIBC__ * 100 + __GLIBC_MINOR__ < 234
+
+#pragma weak pthread_getspecific
+#pragma weak pthread_setspecific
+#pragma weak pthread_key_create
+#pragma weak pthread_key_delete
+#pragma weak pthread_equal
+#pragma weak pthread_self
 
 #define XML_PTHREAD_WEAK
 
@@ -151,6 +166,10 @@ xmlFreeGlobalState(void *state);
  *	All the user accessible global variables of the library		*
  *									*
  ************************************************************************/
+
+#ifdef LIBXML_THREAD_ENABLED
+static unsigned xmlMainThreadRngState[2];
+#endif
 
 /*
  * Memory allocation routines
@@ -252,7 +271,7 @@ static int xmlDefaultBufferSizeThrDef = BASE_BUFFER_SIZE;
  *
  * Global setting, DEPRECATED.
  */
-int oldXMLWDcompatibility = 0; /* DEPRECATED */
+const int oldXMLWDcompatibility = 0; /* DEPRECATED */
 /**
  * xmlParserDebugEntities:
  *
@@ -262,8 +281,7 @@ int oldXMLWDcompatibility = 0; /* DEPRECATED */
  * while handling entities.
  * Disabled by default
  */
-int xmlParserDebugEntities = 0;
-static int xmlParserDebugEntitiesThrDef = 0;
+const int xmlParserDebugEntities = 0;
 /**
  * xmlDoValidityCheckingDefaultValue:
  *
@@ -277,7 +295,7 @@ static int xmlDoValidityCheckingDefaultValueThrDef = 0;
 /**
  * xmlGetWarningsDefaultValue:
  *
- * DEPRECATED: Don't use
+ * DEPRECATED: Use the modern options API with XML_PARSE_NOWARNING.
  *
  * Global setting, indicate that the DTD validation should provide warnings.
  * Activated by default.
@@ -448,7 +466,7 @@ static int xmlSaveNoEmptyTagsThrDef = 0;
  *
  * Default SAX version1 handler for XML, builds the DOM tree
  */
-xmlSAXHandlerV1 xmlDefaultSAXHandler = {
+const xmlSAXHandlerV1 xmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
     xmlSAX2IsStandalone,
     xmlSAX2HasInternalSubset,
@@ -488,7 +506,7 @@ xmlSAXHandlerV1 xmlDefaultSAXHandler = {
  * The default SAX Locator
  * { getPublicId, getSystemId, getLineNumber, getColumnNumber}
  */
-xmlSAXLocator xmlDefaultSAXLocator = {
+const xmlSAXLocator xmlDefaultSAXLocator = {
     xmlSAX2GetPublicId,
     xmlSAX2GetSystemId,
     xmlSAX2GetLineNumber,
@@ -504,7 +522,7 @@ xmlSAXLocator xmlDefaultSAXLocator = {
  *
  * Default old SAX v1 handler for HTML, builds the DOM tree
  */
-xmlSAXHandlerV1 htmlDefaultSAXHandler = {
+const xmlSAXHandlerV1 htmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
     NULL,
     NULL,
@@ -566,7 +584,13 @@ void xmlInitGlobalsInternal(void) {
             (pthread_getspecific != NULL) &&
             (pthread_setspecific != NULL) &&
             (pthread_key_create != NULL) &&
-            (pthread_key_delete != NULL);
+            (pthread_key_delete != NULL) &&
+            /*
+             * pthread_equal can be inline, resuting in -Waddress warnings.
+             * Let's assume it's available if all the other functions are.
+             */
+            /* (pthread_equal != NULL) && */
+            (pthread_self != NULL);
     if (libxml_is_threaded == 0)
         return;
 #endif /* XML_PTHREAD_WEAK */
@@ -577,6 +601,11 @@ void xmlInitGlobalsInternal(void) {
     globalkey = TlsAlloc();
 #endif
     mainthread = GetCurrentThreadId();
+#endif
+
+#ifdef LIBXML_THREAD_ENABLED
+    xmlMainThreadRngState[0] = xmlGlobalRandom();
+    xmlMainThreadRngState[1] = xmlGlobalRandom();
 #endif
 }
 
@@ -738,20 +767,13 @@ static void
 xmlInitGlobalState(xmlGlobalStatePtr gs) {
     xmlMutexLock(&xmlThrDefMutex);
 
-#if defined(LIBXML_HTML_ENABLED) && defined(LIBXML_LEGACY_ENABLED) && defined(LIBXML_SAX1_ENABLED)
-    inithtmlDefaultSAXHandler(&gs->gs_htmlDefaultSAXHandler);
+#ifdef LIBXML_THREAD_ENABLED
+    gs->localRngState[0] = xmlGlobalRandom();
+    gs->localRngState[1] = xmlGlobalRandom();
 #endif
 
-    gs->gs_oldXMLWDcompatibility = 0;
     gs->gs_xmlBufferAllocScheme = xmlBufferAllocSchemeThrDef;
     gs->gs_xmlDefaultBufferSize = xmlDefaultBufferSizeThrDef;
-#if defined(LIBXML_SAX1_ENABLED) && defined(LIBXML_LEGACY_ENABLED)
-    initxmlDefaultSAXHandler(&gs->gs_xmlDefaultSAXHandler, 1);
-#endif /* LIBXML_SAX1_ENABLED */
-    gs->gs_xmlDefaultSAXLocator.getPublicId = xmlSAX2GetPublicId;
-    gs->gs_xmlDefaultSAXLocator.getSystemId = xmlSAX2GetSystemId;
-    gs->gs_xmlDefaultSAXLocator.getLineNumber = xmlSAX2GetLineNumber;
-    gs->gs_xmlDefaultSAXLocator.getColumnNumber = xmlSAX2GetColumnNumber;
     gs->gs_xmlDoValidityCheckingDefaultValue =
          xmlDoValidityCheckingDefaultValueThrDef;
 #ifdef LIBXML_THREAD_ALLOC_ENABLED
@@ -778,7 +800,6 @@ xmlInitGlobalState(xmlGlobalStatePtr gs) {
     gs->gs_xmlKeepBlanksDefaultValue = xmlKeepBlanksDefaultValueThrDef;
     gs->gs_xmlLineNumbersDefaultValue = xmlLineNumbersDefaultValueThrDef;
     gs->gs_xmlLoadExtDtdDefaultValue = xmlLoadExtDtdDefaultValueThrDef;
-    gs->gs_xmlParserDebugEntities = xmlParserDebugEntitiesThrDef;
     gs->gs_xmlPedanticParserDefaultValue = xmlPedanticParserDefaultValueThrDef;
     gs->gs_xmlSubstituteEntitiesDefaultValue =
         xmlSubstituteEntitiesDefaultValueThrDef;
@@ -886,12 +907,20 @@ xmlGetThreadLocalStorage(int allowFailure) {
 #define XML_OP XML_DEFINE_GLOBAL_WRAPPER
 XML_GLOBALS_ALLOC
 XML_GLOBALS_ERROR
-XML_GLOBALS_HTML
 XML_GLOBALS_IO
 XML_GLOBALS_PARSER
-XML_GLOBALS_SAVE
 XML_GLOBALS_TREE
 #undef XML_OP
+
+#ifdef LIBXML_THREAD_ENABLED
+unsigned *
+xmlGetLocalRngState(void) {
+    if (IS_MAIN_THREAD)
+        return(xmlMainThreadRngState);
+    else
+        return(xmlGetThreadLocalStorage(0)->localRngState);
+}
+#endif
 
 /* For backward compatibility */
 
@@ -899,6 +928,35 @@ const char *const *
 __xmlParserVersion(void) {
     return &xmlParserVersion;
 }
+
+const int *
+__oldXMLWDcompatibility(void) {
+    return &oldXMLWDcompatibility;
+}
+
+const int *
+__xmlParserDebugEntities(void) {
+    return &xmlParserDebugEntities;
+}
+
+const xmlSAXLocator *
+__xmlDefaultSAXLocator(void) {
+    return &xmlDefaultSAXLocator;
+}
+
+#ifdef LIBXML_SAX1_ENABLED
+const xmlSAXHandlerV1 *
+__xmlDefaultSAXHandler(void) {
+    return &xmlDefaultSAXHandler;
+}
+
+#ifdef LIBXML_HTML_ENABLED
+const xmlSAXHandlerV1 *
+__htmlDefaultSAXHandler(void) {
+    return &htmlDefaultSAXHandler;
+}
+#endif /* LIBXML_HTML_ENABLED */
+#endif /* LIBXML_SAX1_ENABLED */
 
 #endif /* LIBXML_THREAD_ENABLED */
 
@@ -1098,13 +1156,8 @@ int xmlThrDefLoadExtDtdDefaultValue(int v) {
     return ret;
 }
 
-int xmlThrDefParserDebugEntities(int v) {
-    int ret;
-    xmlMutexLock(&xmlThrDefMutex);
-    ret = xmlParserDebugEntitiesThrDef;
-    xmlParserDebugEntitiesThrDef = v;
-    xmlMutexUnlock(&xmlThrDefMutex);
-    return ret;
+int xmlThrDefParserDebugEntities(int v ATTRIBUTE_UNUSED) {
+    return(xmlParserDebugEntities);
 }
 
 int xmlThrDefPedanticParserDefaultValue(int v) {

@@ -117,8 +117,8 @@ class PrivacyScreenToastLabelView : public views::View {
   }
 
  private:
-  raw_ptr<views::Label, ExperimentalAsh> label_;
-  raw_ptr<PrivacyScreenToastManagedView, ExperimentalAsh> managed_view_;
+  raw_ptr<views::Label> label_;
+  raw_ptr<PrivacyScreenToastManagedView> managed_view_;
 };
 
 BEGIN_METADATA(PrivacyScreenToastLabelView)
@@ -170,7 +170,7 @@ void PrivacyScreenToastView::SetPrivacyScreenEnabled(bool enabled,
       IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOAST_ACCESSIBILITY_TEXT,
       enabled_state, managed_state));
 
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 bool PrivacyScreenToastView::IsButtonFocused() const {

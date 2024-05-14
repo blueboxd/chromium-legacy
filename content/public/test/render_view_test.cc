@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <optional>
+#include <string_view>
 #include <tuple>
 
 #include "base/functional/bind.h"
@@ -43,7 +45,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/abseil-cpp/absl/strings/ascii.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -69,6 +70,9 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_source.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -142,6 +146,37 @@ class FailingURLLoaderFactory : public network::SharedURLLoaderFactory {
   mojo::ReceiverSet<network::mojom::URLLoaderFactory,
                     scoped_refptr<FailingURLLoaderFactory>>
       receivers_;
+};
+
+class MockColorProviderSource : public ui::ColorProviderSource {
+ public:
+  explicit MockColorProviderSource() { provider_.GenerateColorMap(); }
+  MockColorProviderSource(const MockColorProviderSource&) = delete;
+  MockColorProviderSource& operator=(const MockColorProviderSource&) = delete;
+  ~MockColorProviderSource() override = default;
+
+  // ui::ColorProviderSource:
+  const ui::ColorProvider* GetColorProvider() const override {
+    return &provider_;
+  }
+
+  const ui::RendererColorMap GetRendererColorMap(
+      ui::ColorProviderKey::ColorMode color_mode,
+      ui::ColorProviderKey::ForcedColors forced_colors) const override {
+    auto key = GetColorProviderKey();
+    key.color_mode = color_mode;
+    key.forced_colors = forced_colors;
+    ui::ColorProvider* color_provider =
+        ui::ColorProviderManager::Get().GetColorProviderFor(key);
+    CHECK(color_provider);
+    return ui::CreateRendererColorMap(*color_provider);
+  }
+
+  ui::ColorProviderKey GetColorProviderKey() const override { return key_; }
+
+ private:
+  ui::ColorProvider provider_;
+  ui::ColorProviderKey key_;
 };
 
 // Converts |ascii_character| into |key_code| and returns true on success.
@@ -266,7 +301,7 @@ v8::Isolate* RenderViewTest::Isolate() {
   return GetMainFrame()->GetAgentGroupScheduler()->Isolate();
 }
 
-void RenderViewTest::ExecuteJavaScriptForTests(const char* js) {
+void RenderViewTest::ExecuteJavaScriptForTests(std::string_view js) {
   GetMainFrame()->ExecuteScript(WebScriptSource(WebString::FromUTF8(js)));
 }
 
@@ -300,13 +335,13 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnNumberValue(
   return true;
 }
 
-void RenderViewTest::LoadHTML(const char* html) {
+void RenderViewTest::LoadHTML(std::string_view html) {
   FrameLoadWaiter waiter(GetMainRenderFrame());
   std::string url_string = "data:text/html;charset=utf-8,";
   url_string.append(base::EscapeQueryParamValue(html, false));
   RenderFrame::FromWebFrame(GetMainFrame())
       ->LoadHTMLStringForTesting(html, GURL(url_string), "UTF-8", GURL(),
-                                 false /* replace_current_item */);
+                                 /*replace_current_item=*/false);
   // The load may happen asynchronously, so we pump messages to process
   // the pending continuation.
   waiter.Wait();
@@ -314,12 +349,12 @@ void RenderViewTest::LoadHTML(const char* html) {
       blink::DocumentUpdateReason::kTest);
 }
 
-void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
-                                             const char* url_override) {
+void RenderViewTest::LoadHTMLWithUrlOverride(std::string_view html,
+                                             std::string_view url_override) {
   FrameLoadWaiter waiter(GetMainRenderFrame());
   RenderFrame::FromWebFrame(GetMainFrame())
       ->LoadHTMLStringForTesting(html, GURL(url_override), "UTF-8", GURL(),
-                                 false /* replace_current_item */);
+                                 /*replace_current_item=*/false);
   // The load may happen asynchronously, so we pump messages to process
   // the pending continuation.
   waiter.Wait();
@@ -434,11 +469,28 @@ void RenderViewTest::SetUp() {
 
   process_ = std::make_unique<RenderProcess>();
 
+  // This is used to get the renderer color maps for the purpose of creating the
+  // color providers in Blink::Page.
+  MockColorProviderSource mock_color_provider_source_ =
+      MockColorProviderSource();
+
+  blink::ColorProviderColorMaps color_maps = blink::ColorProviderColorMaps{
+      mock_color_provider_source_.GetRendererColorMap(
+          ui::ColorProviderKey::ColorMode::kLight,
+          ui::ColorProviderKey::ForcedColors::kNone),
+      mock_color_provider_source_.GetRendererColorMap(
+          ui::ColorProviderKey::ColorMode::kDark,
+          ui::ColorProviderKey::ForcedColors::kNone),
+      mock_color_provider_source_.GetRendererColorMap(
+          mock_color_provider_source_.GetColorMode(),
+          ui::ColorProviderKey::ForcedColors::kActive)};
+
   mojom::CreateViewParamsPtr view_params = mojom::CreateViewParams::New();
-  view_params->opener_frame_token = absl::nullopt;
+  view_params->opener_frame_token = std::nullopt;
   view_params->window_was_opened_by_another_window = false;
   view_params->renderer_preferences = blink::RendererPreferences();
   view_params->web_preferences = blink::web_pref::WebPreferences();
+  view_params->color_provider_colors = color_maps;
   view_params->replication_state = blink::mojom::FrameReplicationState::New();
   view_params->blink_page_broadcast =
       page_broadcast_.BindNewEndpointAndPassDedicatedReceiver();
@@ -695,8 +747,8 @@ void RenderViewTest::ChangeFocusToNull(const blink::WebDocument& document) {
 
 void RenderViewTest::Reload(const GURL& url) {
   auto common_params = blink::mojom::CommonNavigationParams::New(
-      url, /* initiator_origin= */ absl::nullopt,
-      /* initiator_base_url= */ absl::nullopt, blink::mojom::Referrer::New(),
+      url, /* initiator_origin= */ std::nullopt,
+      /* initiator_base_url= */ std::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, blink::mojom::NavigationType::RELOAD,
       blink::NavigationDownloadPolicy(), false, GURL(), base::TimeTicks::Now(),
       "GET", nullptr, network::mojom::SourceLocation::New(),
@@ -827,8 +879,8 @@ void RenderViewTest::GoToOffset(int offset,
   int pending_offset = offset + webview->HistoryBackListCount();
 
   auto common_params = blink::mojom::CommonNavigationParams::New(
-      url, /* initiator_origin= */ absl::nullopt,
-      /* initiator_base_url= */ absl::nullopt, blink::mojom::Referrer::New(),
+      url, /* initiator_origin= */ std::nullopt,
+      /* initiator_base_url= */ std::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_FORWARD_BACK,
       blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT,
       blink::NavigationDownloadPolicy(), false, GURL(), base::TimeTicks::Now(),

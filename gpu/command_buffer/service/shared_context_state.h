@@ -122,6 +122,10 @@ class GPU_GLES2_EXPORT SharedContextState
                     scoped_refptr<gles2::FeatureInfo> feature_info);
   bool IsGLInitialized() const { return !!feature_info_; }
 
+  // Returns true if context state is using GL, either for Skia to run on
+  // or if there is no skia context and context state exists for WebGL fallback
+  // only.
+  bool IsUsingGL() const;
   bool MakeCurrent(gl::GLSurface* surface, bool needs_gl = false);
   void ReleaseCurrent(gl::GLSurface* surface);
   void MarkContextLost(error::ContextLostReason reason = error::kUnknown);
@@ -174,7 +178,9 @@ class GPU_GLES2_EXPORT SharedContextState
   }
   GrContextType gr_context_type() const { return gr_context_type_; }
   // Handles Skia-reported shader compilation errors.
-  void compileError(const char* shader, const char* errors) override;
+  void compileError(const char* shader,
+                    const char* errors,
+                    bool shaderWasCached) override;
   gles2::FeatureInfo* feature_info() { return feature_info_.get(); }
   gles2::ContextState* context_state() const { return context_state_.get(); }
   bool context_lost() const { return !!context_lost_reason_; }

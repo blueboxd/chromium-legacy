@@ -7,11 +7,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
-#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -56,6 +55,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -144,7 +144,8 @@ constexpr int kDeskDefaultNameIds[] = {
 // Appends the given |windows| to the end of the currently active overview mode
 // session such that the most-recently used window is added first. If
 // The windows will animate to their positions in the overview grid.
-void AppendWindowsToOverview(const std::vector<aura::Window*>& windows) {
+void AppendWindowsToOverview(
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
   DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
   // TODO(dandersson): See if we can remove this code and just let
@@ -152,7 +153,7 @@ void AppendWindowsToOverview(const std::vector<aura::Window*>& windows) {
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
   overview_session->set_auto_add_windows_enabled(false);
-  for (auto* window :
+  for (aura::Window* window :
        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
     if (!base::Contains(windows, window) ||
         window_util::ShouldExcludeForOverview(window)) {
@@ -201,8 +202,10 @@ void RemoveAllWindowsFromOverview() {
 // given windows will be updated, while the rest will remain unchanged. Either
 // or both window lists can be empty.
 void MaybeUpdateShelfItems(
-    const std::vector<aura::Window*>& windows_on_inactive_desk,
-    const std::vector<aura::Window*>& windows_on_active_desk) {
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>&
+        windows_on_inactive_desk,
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>&
+        windows_on_active_desk) {
   if (!features::IsPerDeskShelfEnabled())
     return;
 
@@ -222,10 +225,12 @@ void MaybeUpdateShelfItems(
     shelf_items_updates.push_back({index, is_on_active_desk});
   };
 
-  for (auto* window : windows_on_inactive_desk)
+  for (aura::Window* window : windows_on_inactive_desk) {
     add_shelf_item_update(window, /*is_on_active_desk=*/false);
-  for (auto* window : windows_on_active_desk)
+  }
+  for (aura::Window* window : windows_on_active_desk) {
     add_shelf_item_update(window, /*is_on_active_desk=*/true);
+  }
 
   shelf_model->UpdateItemsForDeskChange(shelf_items_updates);
 }
@@ -301,7 +306,7 @@ class DesksController::RemovedDeskData {
                                  .enabled()),
         source_(source),
         desk_close_type_(type) {
-    full_restore::SaveRemovingDeskGuid(desk_->uuid());
+    ::full_restore::SaveRemovingDeskGuid(desk_->uuid());
     desk_->set_is_desk_being_removed(true);
   }
 
@@ -316,7 +321,7 @@ class DesksController::RemovedDeskData {
       toast_manager->Cancel(toast_id_);
       DesksController::Get()->FinalizeDeskRemoval(this);
     }
-    full_restore::ResetRemovingDeskGuid();
+    ::full_restore::ResetRemovingDeskGuid();
   }
 
   const std::string& toast_id() const { return toast_id_; }
@@ -402,7 +407,7 @@ class DesksController::DeskTraversalsMetricsHelper {
 
   // Pointer to the DesksController that owns this. Guaranteed to be not
   // nullptr for the lifetime of |this|.
-  const raw_ptr<DesksController, ExperimentalAsh> controller_;
+  const raw_ptr<DesksController> controller_;
 
   base::OneShotTimer timer_;
 
@@ -743,7 +748,7 @@ void DesksController::ReorderDesk(int old_index, int new_index) {
   // 4. For restoring windows to the right desks, update workspaces of all
   // windows in the affected desks for all simultaneously logged-in users.
   for (int i = starting_affected_index; i <= ending_affected_index; i++) {
-    for (auto* window : desks_[i]->windows()) {
+    for (aura::Window* window : desks_[i]->windows()) {
       if (desks_util::IsWindowVisibleOnAllWorkspaces(window))
         continue;
       window->SetProperty(aura::client::kWindowWorkspaceKey, i);
@@ -870,8 +875,9 @@ bool DesksController::ActivateAdjacentDesk(bool going_left,
           ui::HapticTouchpadEffect::kKnock,
           ui::HapticTouchpadEffectStrength::kMedium);
     }
-    for (auto* root : Shell::GetAllRootWindows())
+    for (aura::Window* root : Shell::GetAllRootWindows()) {
       desks_animations::PerformHitTheWallAnimation(root, going_left);
+    }
   }
 
   return true;
@@ -1165,7 +1171,6 @@ int DesksController::GetDeskIndex(const Desk* desk) const {
       return i;
   }
 
-  NOTREACHED();
   return -1;
 }
 
@@ -1355,9 +1360,10 @@ bool DesksController::OnSingleInstanceAppLaunchingFromSavedDesk(
           existing_app_instance_window)) {
     // The uuid of the target desk is found in `app_restore_data`. If it isn't
     // set, or is invalid, then we default to the rightmost desk.
-    Desk* target_desk = app_restore_data.desk_guid.is_valid()
-                            ? GetDeskByUuid(app_restore_data.desk_guid)
-                            : desks_.back().get();
+    Desk* target_desk = GetDeskByUuid(app_restore_data.window_info.desk_guid);
+    if (!target_desk) {
+      target_desk = desks_.back().get();
+    }
 
     DCHECK(src_desk);
     if (src_desk != target_desk) {
@@ -1382,14 +1388,14 @@ bool DesksController::OnSingleInstanceAppLaunchingFromSavedDesk(
   }
 
   // Now that the window is on the correct desk, we can apply window properties.
-  if (app_restore_data.current_bounds) {
-    existing_app_instance_window->SetBounds(*app_restore_data.current_bounds);
+  const app_restore::WindowInfo& window_info = app_restore_data.window_info;
+  if (window_info.current_bounds) {
+    existing_app_instance_window->SetBounds(*window_info.current_bounds);
   }
 
   // Handle window state and window bounds.
-  if (app_restore_data.window_state_type) {
-    chromeos::WindowStateType target_state =
-        *app_restore_data.window_state_type;
+  if (window_info.window_state_type) {
+    chromeos::WindowStateType target_state = *window_info.window_state_type;
 
     // Not all window states are supported.
     const bool restoreable_state =
@@ -1452,15 +1458,15 @@ bool DesksController::OnSingleInstanceAppLaunchingFromSavedDesk(
       // For states with restore bounds (maximized, snapped, minimized), the
       // restore bounds are stored in `current_bounds`.
       const gfx::Rect restore_bounds =
-          app_restore_data.current_bounds.value_or(gfx::Rect());
+          window_info.current_bounds.value_or(gfx::Rect());
       if (!restore_bounds.IsEmpty())
         window_state->SetRestoreBoundsInScreen(restore_bounds);
     }
   }
 
-  if (app_restore_data.activation_index) {
-    existing_app_instance_window->SetProperty(
-        app_restore::kActivationIndexKey, *app_restore_data.activation_index);
+  if (window_info.activation_index) {
+    existing_app_instance_window->SetProperty(app_restore::kActivationIndexKey,
+                                              *window_info.activation_index);
   }
 
   WindowRestoreController::Get()->StackWindow(existing_app_instance_window);
@@ -1502,7 +1508,8 @@ void DesksController::MaybeDismissPersistentDeskRemovalToast() {
 }
 
 bool DesksController::MaybeToggleA11yHighlightOnUndoDeskRemovalToast() {
-  if (!temporary_removed_desk_ ||
+  if (!Shell::Get()->accessibility_controller()->spoken_feedback().enabled() ||
+      !temporary_removed_desk_ ||
       !ToastManager::Get()->IsToastShown(temporary_removed_desk_->toast_id())) {
     return false;
   }
@@ -1632,6 +1639,27 @@ void DesksController::OnFirstSessionStarted() {
   current_account_id_ =
       Shell::Get()->session_controller()->GetActiveAccountId();
   desks_restore_util::RestorePrimaryUserDesks();
+
+  // The DeskProfilesDelegate will be available if lacros and desk profiles are
+  // both enabled.
+  desk_profiles_observer_.Reset();
+  if (auto* delegate = Shell::Get()->GetDeskProfilesDelegate()) {
+    desk_profiles_observer_.Observe(delegate);
+  }
+}
+
+void DesksController::OnProfileRemoved(uint64_t profile_id) {
+  auto* delegate = Shell::Get()->GetDeskProfilesDelegate();
+  CHECK(delegate);
+
+  uint64_t primary_profile_id = delegate->GetPrimaryProfileId();
+  for (auto& desk : desks_) {
+    // If this desk's profile has been removed, revert it to the primary user's
+    // profile (which cannot be deleted).
+    if (desk->lacros_profile_id() == profile_id) {
+      desk->SetLacrosProfileId(primary_profile_id, /*source=*/std::nullopt);
+    }
+  }
 }
 
 void DesksController::FireMetricsTimerForTesting() {
@@ -1695,27 +1723,27 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
   auto* shell = Shell::Get();
   auto* overview_controller = shell->overview_controller();
   const bool was_in_overview = overview_controller->InOverviewSession();
-  if (animation_) {
-    // The order here matters. Overview must end before ending tablet split view
-    // before switching desks. (If clamshell split view is active on one or more
-    // displays, then it simply will end when we end overview.) That's because
-    // we don't want `TabletModeWindowManager` maximizing all windows because we
-    // cleared the snapped ones in `SplitViewController` first. See
-    // `TabletModeWindowManager::OnOverviewModeEndingAnimationComplete`.
-    // See also test coverage for this case in
-    // `TabletModeDesksTest.SnappedStateRetainedOnSwitchingDesksFromOverview`.
-    if (was_in_overview) {
-      // Exit overview mode immediately without any animations before taking the
-      // ending desk screenshot. This makes sure that the ending desk screenshot
-      // will only show the windows in that desk, not overview stuff.
-      overview_controller->EndOverview(OverviewEndAction::kDeskActivation,
-                                       OverviewEnterExitType::kImmediateExit);
-    }
-    SplitViewController* split_view_controller =
-        SplitViewController::Get(Shell::GetPrimaryRootWindow());
-    split_view_controller->EndSplitView(
-        SplitViewController::EndReason::kDesksChange);
+  // The order here matters. Overview must end before ending tablet split view
+  // before switching desks. (If clamshell split view is active on one or more
+  // displays, then it simply will end when we end overview.) That's because
+  // we don't want `TabletModeWindowManager` maximizing all windows because we
+  // cleared the snapped ones in `SplitViewController` first. See
+  // `TabletModeWindowManager::OnOverviewModeEndingAnimationComplete`.
+  // See also test coverage for this case in
+  // `TabletModeDesksTest.SnappedStateRetainedOnSwitchingDesksFromOverview`.
+  if (animation_ && was_in_overview) {
+    // Exit overview mode immediately without any animations before taking the
+    // ending desk screenshot. This makes sure that the ending desk screenshot
+    // will only show the windows in that desk, not overview stuff.
+    overview_controller->EndOverview(OverviewEndAction::kDeskActivation,
+                                     OverviewEnterExitType::kImmediateExit);
   }
+  // We should always end split view during a desk change in order to update the
+  // divider widget.
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->EndSplitView(
+      SplitViewController::EndReason::kDesksChange);
 
   MoveVisibleOnAllDesksWindowsFromActiveDeskTo(const_cast<Desk*>(desk));
   active_desk_ = const_cast<Desk*>(desk);
@@ -1787,7 +1815,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   // removed desk since indices of those desks shift by one.
   for (int i = removed_desk_index + 1; i < static_cast<int>(desks_.size());
        i++) {
-    for (auto* window : desks_[i]->windows()) {
+    for (aura::Window* window : desks_[i]->windows()) {
       if (desks_util::IsWindowVisibleOnAllWorkspaces(window))
         continue;
       window->SetProperty(aura::client::kWindowWorkspaceKey, i - 1);
@@ -1984,7 +2012,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
 
   // We should only announce desks are being merged if we are combining desks.
   // Otherwise, we tell the user that the desk has closed with its windows.
-  AccessibilityControllerImpl* accessibility_controller =
+  AccessibilityController* accessibility_controller =
       shell->accessibility_controller();
   if (close_type == DeskCloseType::kCombineDesks) {
     accessibility_controller->TriggerAccessibilityAlertWithMessage(
@@ -2115,7 +2143,8 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
       Desk::ScopedContentUpdateNotificationDisabler(
           /*desks=*/{removed_desk}, /*notify_when_destroyed=*/false);
 
-  std::vector<aura::Window*> app_windows = removed_desk->GetAllAppWindows();
+  std::vector<raw_ptr<aura::Window, VectorExperimental>> app_windows =
+      removed_desk->GetAllAppWindows();
 
   // We use `closing_window_tracker` to track all app windows that should be
   // closed from the removed desk, `WindowTracker` will handle windows that may
@@ -2321,7 +2350,7 @@ void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
           visible_on_all_desks_window->GetProperty(aura::client::kAppType));
       SCOPED_CRASH_KEY_STRING32(
           "Restack", "adw_app_id",
-          full_restore::GetAppId(visible_on_all_desks_window));
+          ::full_restore::GetAppId(visible_on_all_desks_window));
       base::debug::DumpWithoutCrashing();
       continue;
     }

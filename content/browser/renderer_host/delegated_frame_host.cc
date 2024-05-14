@@ -31,6 +31,7 @@
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
@@ -505,13 +506,10 @@ void DelegatedFrameHost::ContinueDelegatedFrameEviction(
   if (!HasSavedFrame())
     return;
 
-  // This list could incorrectly be empty. This could occur when the
-  // RenderFrameHostImpl has been disconnected from the RenderViewHostImpl,
-  // preventing the FrameTree from being traversed. This could happen during
-  // navigation involving BFCache. This should not occur with
-  // features::kEvictSubtree.
-  DCHECK(!surface_ids.empty() ||
-         !base::FeatureList::IsEnabled(features::kEvictSubtree));
+  // Ensure the list is not empty, otherwise we are silently disconnecting our
+  // FrameTree. This prevents the eviction of viz::Surfaces, leading to GPU
+  // memory staying allocated.
+  DCHECK(!surface_ids.empty());
   if (!surface_ids.empty()) {
     DCHECK(host_frame_sink_manager_);
     host_frame_sink_manager_->EvictSurfaces(surface_ids);
@@ -665,6 +663,28 @@ void DelegatedFrameHost::SetIsFrameSinkIdOwner(bool is_owner) {
     host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                      "DelegatedFrameHost");
   }
+}
+
+// static
+bool DelegatedFrameHost::ShouldIncludeUiCompositorForEviction() {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!base::FeatureList::IsEnabled(
+          features::kApplyNativeOcclusionToCompositor)) {
+    return false;
+  }
+
+  const std::string type =
+      features::kApplyNativeOcclusionToCompositorType.Get();
+  return type == features::kApplyNativeOcclusionToCompositorTypeRelease ||
+         type ==
+             features::kApplyNativeOcclusionToCompositorTypeThrottleAndRelease;
+#else
+  // ChromeOS does not have native occlusion, and the UI compositor corresponds
+  // to the entire display, so we don't evict it. Linux does not have native
+  // occlusion support, so we don't know when we can evict it, as it may e.g.
+  // be shown in a preview while minimized.
+  return false;
+#endif
 }
 
 }  // namespace content

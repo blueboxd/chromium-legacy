@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -144,7 +145,7 @@ class ScrollAnchorTest : public SimTest {
     scrollbar_drag_point_.reset();
   }
 
-  absl::optional<gfx::PointF> scrollbar_drag_point_;
+  std::optional<gfx::PointF> scrollbar_drag_point_;
 };
 
 // TODO(skobes): Convert this to web-platform-tests when visual viewport API is
@@ -806,7 +807,7 @@ TEST_F(ScrollAnchorTest, SerializeAnchorFailsForShadowDOMElement) {
       <div></div>
       <div></div>)HTML");
   auto* host = GetDocument().getElementById(AtomicString("host"));
-  auto& shadow_root = host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  auto& shadow_root = host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML(R"HTML(
       <style>
         div { height: 100px; }
@@ -1123,6 +1124,7 @@ class ScrollAnchorFindInPageTest : public testing::Test {
   const int FAKE_FIND_ID = 1;
 
  private:
+  test::TaskEnvironment task_environment_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 

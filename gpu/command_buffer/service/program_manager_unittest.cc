@@ -314,6 +314,12 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
                                         service_id);
   }
 
+  void SetupExpectationsForClearingUniforms(
+      UniformInfo* uniforms, size_t num_uniforms) {
+    TestHelper::SetupExpectationsForClearingUniforms(
+        gl_.get(), uniforms, num_uniforms);
+  }
+
   // Return true if link status matches expected_link_status
   bool LinkAsExpected(Program* program,
                       bool expected_link_status) {
@@ -2109,7 +2115,11 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
   }
 
   void TearDown() override {
+    vertex_shader_ = nullptr;
+    fragment_shader_ = nullptr;
     shader_manager_.Destroy(false);
+
+    program_ = nullptr;
     ProgramManagerTestBase::TearDown();
   }
 
@@ -2267,9 +2277,11 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
 
   std::unique_ptr<MockProgramCache> cache_;
 
-  raw_ptr<Shader, DanglingUntriaged> vertex_shader_;
-  raw_ptr<Shader, DanglingUntriaged> fragment_shader_;
-  raw_ptr<Program, DanglingUntriaged> program_;
+  // These shaders are owned by |shader_manager_|.
+  raw_ptr<Shader> vertex_shader_;
+  raw_ptr<Shader> fragment_shader_;
+  // This program is owned by |manager_|.
+  raw_ptr<Program> program_;
   ShaderManager shader_manager_;
 };
 

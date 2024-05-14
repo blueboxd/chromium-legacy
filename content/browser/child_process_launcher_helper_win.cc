@@ -2,22 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/files/file_path.h"
+#include "content/browser/child_process_launcher_helper.h"
+
 #include "base/path_service.h"
 #include "base/process/process.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/win/scoped_handle.h"
-#include "base/win/win_util.h"
 #include "content/browser/child_process_launcher.h"
-#include "content/browser/child_process_launcher_helper.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_init_win.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
-#include "mojo/public/cpp/platform/platform_channel.h"
-#include "sandbox/policy/win/sandbox_win.h"
-#include "sandbox/win/src/sandbox_types.h"
 
 namespace content {
 namespace internal {
@@ -26,12 +20,12 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 }
 
-absl::optional<mojo::NamedPlatformChannel>
+std::optional<mojo::NamedPlatformChannel>
 ChildProcessLauncherHelper::CreateNamedPlatformChannelOnLauncherThread() {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
 
   if (!delegate_->ShouldLaunchElevated())
-    return absl::nullopt;
+    return std::nullopt;
 
   mojo::NamedPlatformChannel::Options options;
   mojo::NamedPlatformChannel named_channel(options);

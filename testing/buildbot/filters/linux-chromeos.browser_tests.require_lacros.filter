@@ -16,15 +16,16 @@ Dictation*
 *DictationTest*
 ExtensionKeeplistAllowPerfettoTest*
 ExtensionKeeplistTest*
-# Note: Some of FileTaskBrowserTest* runs only on branded ash and lacros builds.
-FileTaskBrowserTest*
+# Note: Some of FileTasksBrowserTest* runs only on branded ash and lacros builds.
+*FileTasksBrowserTest*
 NonKioskAcceleratorLacrosTest*
 SelectToSpeak*
+StickyKeysBrowserTest*
 SwitchAccess*
 VpnExtensionObserverBrowserTest*
 WebAppsCrosapiBrowserTest*
 *WebAppsPreventCloseCrosapiBrowserTest*
-WebAppPreloadInstallerLacrosBrowserTest*
+WebAppInstallerLacrosBrowserTest*
 WebAppProviderBridgeBrowserTest*
 WebKioskAcceleratorLacrosTest*
 WebKioskLacrosTest*
@@ -53,11 +54,14 @@ TestAsNormalAndGuestUser/SpokenFeedbackTest.*
 -AutoclickWithAccessibilityServiceTest.ScrollableBoundsPlumbing
 # TODO(b/277256412): Test is flaky
 -DictationUIE2ETest.HintsTimeoutWithChromeVox
+# TODO(b/316393493): Figure out how to set home button pref in Lacros.
+-StickyKeysBrowserTest.CtrlClickHomeButton
 # TODO(accessibility): these are native C++ tests that need investigation.
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.NavigateChromeVoxMenu*
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ShowFormControlsList*
 -SelectToSpeakTest.ContinuesReadingDuringResize
--StickyKeysBrowserTest*
+# TODO(b/318357300): Flaky.
+-AccessibilityHighlightsBrowserTest.CaretHighlightOmnibox
 # These tests do not run with the browser and do not need to run with Lacros.
 -AccessibilityCommonTest*
 -AccessibilityPrivateApiTest*
@@ -69,6 +73,9 @@ TestAsNormalAndGuestUser/SpokenFeedbackTest.*
 -AccessibilityHighlightsBrowserTest.CursorHighlightAddsFocusRing
 -SelectToSpeakTest.SelectToSpeakDoesNotDismissTrayBubble
 -SelectToSpeakTest.SpeakStatusTray
+-StickyKeysBrowserTest.OpenTrayMenu
+-StickyKeysBrowserTest.OverlayShown
+-LoggedInSpokenFeedbackTest.OpenLogPage*
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.TouchExploreStatusTray*
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ShelfBlockedAppIconBadgeAnnouncement*
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ShelfNotificationBadgeAnnouncement*
@@ -77,6 +84,7 @@ TestAsNormalAndGuestUser/SpokenFeedbackTest.*
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.FocusShelf*
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ShelfIconFocusForward*
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.TouchExploreSecondaryDisplay*
+-TouchExplorationTest
 # TODO(crbug/1484723): Flaky
 -BrowserAppShelfControllerBrowserTest.WindowedApps
 -BrowserAppShelfControllerBrowserTest.TabbedApps

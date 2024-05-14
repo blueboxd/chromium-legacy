@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/profile_token_quality.h"
 #include "components/autofill/core/browser/profile_token_quality_test_api.h"
-#include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/webdata/autofill_table_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "content/public/test/browser_test.h"
@@ -23,7 +23,6 @@
 namespace {
 
 using autofill::AutofillProfile;
-using autofill::AutofillTable;
 using autofill::AutofillType;
 using autofill::CreditCard;
 using autofill::PersonalDataManager;
@@ -359,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
   UpdateProfile(1, GetAllAutoFillProfiles(1)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST), u"Bart");
 
-  EXPECT_TRUE(AutofillProfileChecker(0, 1, absl::nullopt).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, std::nullopt).Wait());
   // The exact result is non-deterministic without a strong consistency model
   // server-side, but both clients should converge (either update or delete).
   EXPECT_EQ(GetAllAutoFillProfiles(0).size(), GetAllAutoFillProfiles(1).size());
@@ -395,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, MaxLength) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
-  std::u16string max_length_string(AutofillTable::kMaxDataLength, '.');
+  std::u16string max_length_string(autofill::kMaxDataLengthForDatabase, '.');
   UpdateProfile(0, GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FULL), max_length_string);
   UpdateProfile(0, GetAllAutoFillProfiles(0)[0]->guid(),
@@ -406,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, MaxLength) {
   EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
-// Tests that values exceeding `AutofillTable::kMaxDataLength` are truncated.
+// Tests that values exceeding `kMaxDataLengthForDatabase` are truncated.
 // TODO(crbug.com/1443393): As of the unified table layout, values are already
 // truncated in AutofillTable. No special logic on the Sync-side is necessary.
 // Clean this up.
@@ -416,8 +415,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
-  std::u16string exceeds_max_length_string(AutofillTable::kMaxDataLength + 1,
-                                           '.');
+  std::u16string exceeds_max_length_string(
+      autofill::kMaxDataLengthForDatabase + 1, '.');
   UpdateProfile(0, GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST), exceeds_max_length_string);
   UpdateProfile(0, GetAllAutoFillProfiles(0)[0]->guid(),
@@ -433,7 +432,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
   for (const auto type :
        {autofill::NAME_FIRST, autofill::NAME_LAST, autofill::EMAIL_ADDRESS,
         autofill::ADDRESS_HOME_LINE1}) {
-    EXPECT_EQ(profile->GetRawInfo(type).size(), AutofillTable::kMaxDataLength);
+    EXPECT_EQ(profile->GetRawInfo(type).size(),
+              autofill::kMaxDataLengthForDatabase);
   }
 
   ASSERT_TRUE(AwaitQuiescence());
@@ -469,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
   // All profiles should sync same autofill profiles.
   ASSERT_TRUE(
-      AutofillProfileChecker(0, 1, /*expected_count=*/absl::nullopt).Wait())
+      AutofillProfileChecker(0, 1, /*expected_count=*/std::nullopt).Wait())
       << "Initial autofill profiles did not match for all profiles.";
 
   // For clean profiles, the autofill profiles count should be zero. We are not

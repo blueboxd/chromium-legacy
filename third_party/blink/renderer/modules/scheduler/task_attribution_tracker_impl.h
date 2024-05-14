@@ -22,6 +22,10 @@ class DOMTaskSignal;
 class ScriptWrappableTaskState;
 }  // namespace blink
 
+namespace v8 {
+class Isolate;
+}  // namespace v8
+
 namespace blink::scheduler {
 
 // This class is used to keep track of tasks posted on the main thread and their
@@ -35,7 +39,7 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
  public:
   TaskAttributionTrackerImpl();
 
-  TaskAttributionInfo* RunningTask(ScriptState*) const override;
+  TaskAttributionInfo* RunningTask(v8::Isolate*) const override;
 
   bool IsAncestor(const TaskAttributionInfo& task,
                   TaskAttributionId ancestor_id) override;
@@ -54,8 +58,6 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
       TaskScopeType type,
       AbortSignal* abort_source,
       DOMTaskSignal* priority_source) override;
-
-  void TaskScopeCompleted(ScriptState*, TaskAttributionId);
 
   bool RegisterObserverIfNeeded(
       TaskAttributionTracker::Observer* observer) override {
@@ -79,30 +81,16 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
   void ResetSameDocumentNavigationTasks() override;
   TaskAttributionInfo* CommitSameDocumentNavigation(TaskAttributionId) override;
 
- protected:
-  // Saves the given `ScriptWrappableTaskState` as the current continuation
-  // preserved embedder data. Virtual for testing.
-  virtual void SetCurrentTaskContinuationData(ScriptState*,
-                                              ScriptWrappableTaskState*);
-
-  // Gets the current `ScriptWrappableTaskState` from the current continuation
-  // preserved embedder data. Virtual for testing.
-  virtual ScriptWrappableTaskState* GetCurrentTaskContinuationData(
-      ScriptState*) const;
-
-  Observer* GetObserverForTaskDisposal(TaskAttributionId) override;
-  void SetObserverForTaskDisposal(TaskAttributionId, Observer*) override;
-
  private:
   struct TaskAttributionIdPair {
     TaskAttributionIdPair() = default;
-    TaskAttributionIdPair(absl::optional<TaskAttributionId> parent_id,
-                          absl::optional<TaskAttributionId> current_id)
+    TaskAttributionIdPair(std::optional<TaskAttributionId> parent_id,
+                          std::optional<TaskAttributionId> current_id)
         : parent(parent_id), current(current_id) {}
 
     explicit operator bool() const { return parent.has_value(); }
-    absl::optional<TaskAttributionId> parent;
-    absl::optional<TaskAttributionId> current;
+    std::optional<TaskAttributionId> parent;
+    std::optional<TaskAttributionId> current;
   };
 
   // The TaskScope class maintains information about a task. The task's lifetime
@@ -119,7 +107,7 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
                   TaskAttributionInfo* running_task,
                   ScriptWrappableTaskState* continuation_task_state,
                   TaskScopeType,
-                  absl::optional<TaskAttributionId> parent_task_id);
+                  std::optional<TaskAttributionId> parent_task_id);
     ~TaskScopeImpl() override;
     TaskScopeImpl(const TaskScopeImpl&) = delete;
     TaskScopeImpl& operator=(const TaskScopeImpl&) = delete;
@@ -149,9 +137,6 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
   Persistent<TaskAttributionInfo> running_task_ = nullptr;
 
   WTF::HashSet<WeakPersistent<TaskAttributionTracker::Observer>> observers_;
-  WTF::HashMap<TaskAttributionIdType,
-               WeakPersistent<TaskAttributionTracker::Observer>>
-      task_id_observers_;
 
   // A queue of TaskAttributionInfo objects representing tasks that initiated a
   // same-document navigation that was sent to the browser side. They are kept

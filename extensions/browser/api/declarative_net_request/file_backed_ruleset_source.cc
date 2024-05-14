@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <set>
+#include <string_view>
 #include <utility>
 
 #include "base/check_op.h"
@@ -36,8 +37,7 @@
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "tools/json_schema_compiler/util.h"
 
-namespace extensions {
-namespace declarative_net_request {
+namespace extensions::declarative_net_request {
 
 namespace {
 
@@ -57,7 +57,7 @@ std::string GetFilename(const base::FilePath& file_path) {
 }
 
 std::string GetErrorWithFilename(const base::FilePath& json_path,
-                                 base::StringPiece error) {
+                                 std::string_view error) {
   return base::StrCat({GetFilename(json_path), ": ", error});
 }
 
@@ -450,9 +450,7 @@ LoadRulesetResult FileBackedRulesetSource::CreateVerifiedMatcher(
     return LoadRulesetResult::kErrorVersionMismatch;
 
   if (expected_ruleset_checksum !=
-      GetChecksum(
-          base::make_span(reinterpret_cast<const uint8_t*>(ruleset_data.data()),
-                          ruleset_data.size()))) {
+      GetChecksum(base::as_byte_span(ruleset_data))) {
     return LoadRulesetResult::kErrorChecksumMismatch;
   }
 
@@ -479,5 +477,4 @@ FileBackedRulesetSource::FileBackedRulesetSource(base::FilePath json_path,
       json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)) {}
 
-}  // namespace declarative_net_request
-}  // namespace extensions
+}  // namespace extensions::declarative_net_request

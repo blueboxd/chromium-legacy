@@ -39,6 +39,7 @@ KeyboardShortcutView::KeyboardShortcutView(
     if (const gfx::VectorIcon* vector_icon =
             GetVectorIconForKeyboardCode(key_code)) {
       icon_view->SetIcon(*vector_icon);
+      icon_view->SetTooltipTextForImageView(GetStringForKeyboardCode(key_code));
     } else {
       icon_view->SetText(GetStringForKeyboardCode(key_code));
     }
@@ -49,7 +50,7 @@ KeyboardShortcutView::KeyboardShortcutView(
 
 KeyboardShortcutView::~KeyboardShortcutView() = default;
 
-BEGIN_METADATA(KeyboardShortcutView, views::FlexLayoutView)
+BEGIN_METADATA(KeyboardShortcutView)
 END_METADATA
 
 }  // namespace ash

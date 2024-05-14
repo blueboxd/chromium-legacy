@@ -50,6 +50,7 @@
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
@@ -80,11 +81,7 @@ const char kProhibitedByPoliciesError[] =
 
 LazyContextId LazyContextIdFor(content::BrowserContext* browser_context,
                                const Extension* extension) {
-  if (BackgroundInfo::HasLazyBackgroundPage(extension))
-    return LazyContextId(browser_context, extension->id());
-
-  DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
-  return LazyContextId(browser_context, extension->id(), extension->url());
+  return LazyContextId::ForExtension(browser_context, extension);
 }
 
 const Extension* GetExtensionForNativeAppChannel(
@@ -613,7 +610,7 @@ void MessageService::OpenChannelToTabImpl(
     int tab_id,
     int frame_id,
     const std::string& document_id,
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     mojom::ChannelType channel_type,
     const std::string& channel_name,
     mojo::PendingAssociatedRemote<extensions::mojom::MessagePort> port,

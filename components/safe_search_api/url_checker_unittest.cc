@@ -6,13 +6,19 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <iterator>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/safe_search_api/fake_url_checker_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,6 +52,14 @@ ClientClassification ToAPIClassification(Classification classification,
     case Classification::UNSAFE:
       return ClientClassification::kRestricted;
   }
+}
+
+auto Recorded(const std::map<CacheAccessStatus, int>& expected) {
+  std::vector<base::Bucket> buckets_array;
+  base::ranges::transform(
+      expected, std::back_inserter(buckets_array),
+      [](auto& entry) { return base::Bucket(entry.first, entry.second); });
+  return base::BucketsInclude(buckets_array);
 }
 
 }  // namespace
@@ -86,10 +100,17 @@ class SafeSearchURLCheckerTest : public testing::Test {
     return result;
   }
 
+  std::vector<base::Bucket> CacheHitMetric() {
+    return histogram_tester_.GetAllSamples("Net.SafeSearch.CacheHit");
+  }
+
   size_t next_url_{0};
   raw_ptr<FakeURLCheckerClient, DanglingUntriaged> fake_client_;
   std::unique_ptr<URLChecker> checker_;
   base::test::SingleThreadTaskEnvironment task_environment_;
+
+ private:
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(SafeSearchURLCheckerTest, Simple) {
@@ -112,6 +133,9 @@ TEST_F(SafeSearchURLCheckerTest, Simple) {
                 OnCheckDone(url, Classification::SAFE, /*uncertain=*/true));
     ASSERT_FALSE(SendResponse(url, Classification::SAFE, /*uncertain=*/true));
   }
+
+  EXPECT_THAT(CacheHitMetric(), Recorded({{CacheAccessStatus::kHit, 0},
+                                          {CacheAccessStatus::kNotFound, 3}}));
 }
 
 TEST_F(SafeSearchURLCheckerTest, Cache) {
@@ -145,6 +169,9 @@ TEST_F(SafeSearchURLCheckerTest, Cache) {
   EXPECT_CALL(*this,
               OnCheckDone(url2, Classification::SAFE, /*uncertain=*/false));
   ASSERT_FALSE(SendResponse(url2, Classification::SAFE, /*uncertain=*/false));
+
+  EXPECT_THAT(CacheHitMetric(), Recorded({{CacheAccessStatus::kHit, 2},
+                                          {CacheAccessStatus::kNotFound, 4}}));
 }
 
 TEST_F(SafeSearchURLCheckerTest, CoalesceRequestsToSameURL) {
@@ -155,6 +182,9 @@ TEST_F(SafeSearchURLCheckerTest, CoalesceRequestsToSameURL) {
   // A single response should answer both of those checks
   EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false)).Times(2);
   fake_client_->RunCallback(ToAPIClassification(Classification::SAFE, false));
+
+  EXPECT_THAT(CacheHitMetric(), Recorded({{CacheAccessStatus::kHit, 0},
+                                          {CacheAccessStatus::kNotFound, 2}}));
 }
 
 TEST_F(SafeSearchURLCheckerTest, CacheTimeout) {
@@ -171,6 +201,10 @@ TEST_F(SafeSearchURLCheckerTest, CacheTimeout) {
   EXPECT_CALL(*this,
               OnCheckDone(url, Classification::UNSAFE, /*uncertain=*/false));
   ASSERT_FALSE(SendResponse(url, Classification::UNSAFE, /*uncertain=*/false));
+
+  EXPECT_THAT(CacheHitMetric(), Recorded({{CacheAccessStatus::kHit, 0},
+                                          {CacheAccessStatus::kNotFound, 1},
+                                          {CacheAccessStatus::kOutdated, 1}}));
 }
 
 TEST_F(SafeSearchURLCheckerTest, DoNotCacheUncertainClassifications) {
@@ -180,6 +214,9 @@ TEST_F(SafeSearchURLCheckerTest, DoNotCacheUncertainClassifications) {
       url, Classification::SAFE,
       /*uncertain=*/true));     // First check was asynchronous (uncached).
   EXPECT_FALSE(CheckURL(url));  // And so was the second one.
+
+  EXPECT_THAT(CacheHitMetric(), Recorded({{CacheAccessStatus::kHit, 0},
+                                          {CacheAccessStatus::kNotFound, 2}}));
 }
 
 TEST_F(SafeSearchURLCheckerTest, DestroyURLCheckerBeforeCallback) {
@@ -196,6 +233,9 @@ TEST_F(SafeSearchURLCheckerTest, DestroyURLCheckerBeforeCallback) {
 
   // The callback should now be invalid.
   task_environment_.RunUntilIdle();
+
+  EXPECT_THAT(CacheHitMetric(), Recorded({{CacheAccessStatus::kHit, 0},
+                                          {CacheAccessStatus::kNotFound, 1}}));
 }
 
 }  // namespace safe_search_api

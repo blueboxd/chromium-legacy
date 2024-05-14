@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/check.h"
@@ -50,7 +51,7 @@
 namespace autofill {
 namespace {
 
-void LogCardUploadDisabled(LogManager* log_manager, base::StringPiece context) {
+void LogCardUploadDisabled(LogManager* log_manager, std::string_view context) {
   LOG_AF(log_manager) << LoggingScope::kCreditCardUploadStatus
                       << LogMessage::kCreditCardUploadDisabled << context
                       << CTag{};
@@ -124,7 +125,7 @@ bool IsCreditCardUploadEnabled(
   // Before address sync is available in transport mode, server card save is
   // offered in transport mode regardless of the setting. (The sync API exposes
   // the kAutofill type as disabled in this case.)
-  // TODO(crbug.com/1462552): Simplify once IsSyncFeatureActive() is deleted
+  // TODO(crbug.com/40066949): Simplify once IsSyncFeatureActive() is deleted
   // from the codebase.
   bool syncing_or_addresses_in_transport_mode =
       sync_service->IsSyncFeatureActive() ||
@@ -260,6 +261,14 @@ bool IsDeviceAuthAvailable(
   return device_authenticator->CanAuthenticateWithBiometricOrScreenLock() &&
          base::FeatureList::IsEnabled(
              features::kAutofillEnablePaymentsMandatoryReauth);
+#else
+  return false;
+#endif
+}
+bool IsTouchToFillCreditCardSupported() {
+#if BUILDFLAG(IS_ANDROID)
+  // Touch To Fill is only supported on Android.
+  return true;
 #else
   return false;
 #endif

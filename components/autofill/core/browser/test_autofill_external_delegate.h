@@ -31,9 +31,9 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                const FormFieldData& field,
                const gfx::RectF& bounds,
                AutofillSuggestionTriggerSource trigger_source) override;
-  void OnSuggestionsReturned(FieldGlobalId field_id,
-                             const std::vector<Suggestion>& suggestions,
-                             bool is_all_server_suggestions) override;
+  void OnSuggestionsReturned(
+      FieldGlobalId field_id,
+      const std::vector<Suggestion>& suggestions) override;
   bool HasActiveScreenReader() const override;
   void OnAutofillAvailabilityEvent(
       mojom::AutofillSuggestionAvailability suggestion_availability) override;
@@ -43,8 +43,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   void WaitForPopupHidden();
 
   void CheckSuggestions(FieldGlobalId field_id,
-                        size_t expected_num_suggestions,
-                        const Suggestion expected_suggestions[]);
+                        const std::vector<Suggestion>& expected_sugestions);
 
   // Check that the autofill suggestions were not sent at all.
   void CheckSuggestionsNotReturned(FieldGlobalId field_id);
@@ -89,9 +88,6 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   // Records the trigger source of `OnSuggestionsReturned()`.
   AutofillSuggestionTriggerSource trigger_source_ =
       AutofillSuggestionTriggerSource::kUnspecified;
-
-  // Records whether the Autofill suggestions all come from Google Payments.
-  bool is_all_server_suggestions_ = false;
 
   // The field id of the most recent Autofill query.
   FieldGlobalId field_id_;

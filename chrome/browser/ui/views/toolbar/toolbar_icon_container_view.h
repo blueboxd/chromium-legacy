@@ -20,9 +20,9 @@
 // A general view container for any type of toolbar icons.
 class ToolbarIconContainerView : public views::View,
                                  public views::ViewObserver {
- public:
-  METADATA_HEADER(ToolbarIconContainerView);
+  METADATA_HEADER(ToolbarIconContainerView, views::View)
 
+ public:
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnHighlightChanged() = 0;
@@ -111,7 +111,7 @@ class ToolbarIconContainerView : public views::View,
   // Points to the child buttons that we know are currently highlighted.
   // TODO(pbos): Consider observing buttons leaving our hierarchy and removing
   // them from this set.
-  std::set<const views::Button*> highlighted_buttons_;
+  std::set<raw_ptr<const views::Button, SetExperimental>> highlighted_buttons_;
 
   RoundRectBorder border_{this};
 

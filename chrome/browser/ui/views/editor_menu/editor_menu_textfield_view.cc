@@ -32,11 +32,28 @@ namespace chromeos::editor_menu {
 
 namespace {
 
-constexpr char16_t kContainerTitle[] = u"Editor Menu Textfield";
-
 constexpr gfx::Size kArrowButtonSize(20, 20);
 constexpr gfx::Insets kArrowButtonInsets(4);
 constexpr int kPaddingBetweenArrowButtonAndTextfield = 10;
+constexpr int kMinWidthForFullPlaceHolderString = 400;
+
+std::u16string GetPlaceholderText(EditorMenuMode editor_menu_mode, int width) {
+  int placeholder_text_id;
+  if (editor_menu_mode == EditorMenuMode::kWrite &&
+      width >= kMinWidthForFullPlaceHolderString) {
+    placeholder_text_id = IDS_EDITOR_MENU_WRITE_CARD_FREEFORM_PLACEHOLDER;
+  } else if (editor_menu_mode == EditorMenuMode::kRewrite &&
+             width >= kMinWidthForFullPlaceHolderString) {
+    placeholder_text_id = IDS_EDITOR_MENU_REWRITE_CARD_FREEFORM_PLACEHOLDER;
+  } else if (editor_menu_mode == EditorMenuMode::kWrite &&
+             width < kMinWidthForFullPlaceHolderString) {
+    placeholder_text_id = IDS_EDITOR_MENU_WRITE_CARD_SHORT_FREEFORM_PLACEHOLDER;
+  } else {
+    placeholder_text_id =
+        IDS_EDITOR_MENU_REWRITE_CARD_SHORT_FREEFORM_PLACEHOLDER;
+  }
+  return l10n_util::GetStringUTF16(placeholder_text_id);
+}
 
 }  // namespace
 
@@ -54,8 +71,8 @@ void EditorMenuTextfieldView::AddedToWidget() {
   InitLayout();
 }
 
-void EditorMenuTextfieldView::Layout() {
-  View::Layout();
+void EditorMenuTextfieldView::Layout(PassKey) {
+  LayoutSuperclass<View>(this);
 
   // Vertically center the arrow button at the right end of the textfield.
   arrow_button_->SetBounds(
@@ -65,11 +82,10 @@ void EditorMenuTextfieldView::Layout() {
           (kArrowButtonSize.height() + kArrowButtonInsets.height()) / 2,
       kArrowButtonSize.width() + kArrowButtonInsets.width(),
       kArrowButtonSize.height() + kArrowButtonInsets.height());
-}
 
-void EditorMenuTextfieldView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kDialog;
-  node_data->SetName(kContainerTitle);
+  // Update the placeholder text based on the widget width.
+  textfield_->SetPlaceholderText(
+      GetPlaceholderText(editor_menu_mode_, width()));
 }
 
 void EditorMenuTextfieldView::ContentsChanged(
@@ -98,7 +114,6 @@ void EditorMenuTextfieldView::InitLayout() {
   // TODO:b:302404392 - Consider removing the line below after fixing the autocorrect crash
   // issue in native views
   textfield_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
-  textfield_->SetAccessibleName(kContainerTitle);
   textfield_->SetPlaceholderText(l10n_util::GetStringUTF16(
       editor_menu_mode_ == EditorMenuMode::kWrite
           ? IDS_EDITOR_MENU_WRITE_CARD_FREEFORM_PLACEHOLDER
@@ -127,7 +142,7 @@ void EditorMenuTextfieldView::OnTextfieldArrowButtonPressed() {
   delegate_->OnTextfieldArrowButtonPressed(textfield_->GetText());
 }
 
-BEGIN_METADATA(EditorMenuTextfieldView, views::View)
+BEGIN_METADATA(EditorMenuTextfieldView)
 END_METADATA
 
 }  // namespace chromeos::editor_menu

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
 namespace {
@@ -40,12 +41,12 @@ static ConstraintSpace ConstructConstraintSpace(
 class LengthUtilsTest : public testing::Test {
  protected:
   void SetUp() override {
-    initial_style_ = ComputedStyle::CreateInitialStyleSingleton();
+    initial_style_ = ComputedStyle::GetInitialStyleSingleton();
   }
 
   LayoutUnit ResolveMainInlineLength(
       const Length& length,
-      const absl::optional<MinMaxSizes>& sizes = absl::nullopt,
+      const std::optional<MinMaxSizes>& sizes = std::nullopt,
       ConstraintSpace constraint_space = ConstructConstraintSpace(200, 300)) {
     return ::blink::ResolveMainInlineLength(
         constraint_space, *initial_style_, /* border_padding */ BoxStrut(),
@@ -57,7 +58,7 @@ class LengthUtilsTest : public testing::Test {
 
   LayoutUnit ResolveMinInlineLength(
       const Length& length,
-      const absl::optional<MinMaxSizes>& sizes = absl::nullopt,
+      const std::optional<MinMaxSizes>& sizes = std::nullopt,
       ConstraintSpace constraint_space = ConstructConstraintSpace(200, 300)) {
     return ::blink::ResolveMinInlineLength(
         constraint_space, *initial_style_, /* border_padding */ BoxStrut(),
@@ -69,7 +70,7 @@ class LengthUtilsTest : public testing::Test {
 
   LayoutUnit ResolveMaxInlineLength(
       const Length& length,
-      const absl::optional<MinMaxSizes>& sizes = absl::nullopt,
+      const std::optional<MinMaxSizes>& sizes = std::nullopt,
       ConstraintSpace constraint_space = ConstructConstraintSpace(200, 300)) {
     return ::blink::ResolveMaxInlineLength(
         constraint_space, *initial_style_, /* border_padding */ BoxStrut(),
@@ -88,6 +89,7 @@ class LengthUtilsTest : public testing::Test {
   }
 
   Persistent<const ComputedStyle> initial_style_;
+  test::TaskEnvironment task_environment_;
 };
 
 class LengthUtilsTestWithNode : public RenderingTest {
@@ -106,7 +108,7 @@ class LengthUtilsTestWithNode : public RenderingTest {
       const BlockNode& node,
       ConstraintSpace constraint_space = ConstructConstraintSpace(200, 300),
       LayoutUnit content_size = LayoutUnit(),
-      absl::optional<LayoutUnit> inline_size = absl::nullopt) {
+      std::optional<LayoutUnit> inline_size = std::nullopt) {
     const auto& style = node.Style();
     BoxStrut border_padding = ComputeBorders(constraint_space, node) +
                               ComputePadding(constraint_space, style);
@@ -143,11 +145,11 @@ TEST_F(LengthUtilsTest, TestIndefiniteResolveInlineLength) {
   const ConstraintSpace space = ConstructConstraintSpace(-1, -1);
 
   EXPECT_EQ(LayoutUnit(0),
-            ResolveMinInlineLength(Length::Auto(), absl::nullopt, space));
+            ResolveMinInlineLength(Length::Auto(), std::nullopt, space));
   EXPECT_EQ(LayoutUnit::Max(),
-            ResolveMaxInlineLength(Length::Percent(30), absl::nullopt, space));
+            ResolveMaxInlineLength(Length::Percent(30), std::nullopt, space));
   EXPECT_EQ(LayoutUnit::Max(), ResolveMaxInlineLength(Length::FillAvailable(),
-                                                      absl::nullopt, space));
+                                                      std::nullopt, space));
 }
 
 TEST_F(LengthUtilsTest, TestResolveBlockLength) {

@@ -21,7 +21,7 @@
 #include "chrome/browser/performance_manager/decorators/page_live_state_decorator_delegate_impl.h"
 #include "chrome/browser/performance_manager/metrics/memory_pressure_metrics.h"
 #include "chrome/browser/performance_manager/metrics/metrics_provider_desktop.h"
-#include "chrome/browser/performance_manager/metrics/page_timeline_monitor.h"
+#include "chrome/browser/performance_manager/metrics/page_resource_monitor.h"
 #include "chrome/browser/performance_manager/observers/page_load_metrics_observer.h"
 #include "chrome/browser/performance_manager/policies/background_tab_loading_policy.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
@@ -69,10 +69,9 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/performance_manager/mechanisms/page_freezer.h"
-#include "chrome/browser/performance_manager/policies/high_efficiency_mode_policy.h"
+#include "chrome/browser/performance_manager/policies/memory_saver_mode_policy.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 #include "chrome/browser/performance_manager/policies/page_freezing_policy.h"
-#include "chrome/browser/performance_manager/policies/probabilistic_memory_saver_policy.h"
 #include "chrome/browser/performance_manager/policies/urgent_page_discarding_policy.h"
 #include "chrome/browser/performance_manager/public/user_tuning/battery_saver_mode_manager.h"
 #include "chrome/browser/performance_manager/public/user_tuning/performance_detection_manager.h"
@@ -199,26 +198,13 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
       std::make_unique<performance_manager::policies::PageFreezingPolicy>());
 
   graph->PassToGraph(
-      std::make_unique<
-          performance_manager::policies::HighEfficiencyModePolicy>());
-
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::kProbabilisticProactiveDiscarding) &&
-      performance_manager::features::kProactiveDiscardingSimulationMode.Get()) {
-    graph->PassToGraph(
-        std::make_unique<performance_manager::ProbabilisticMemorySaverPolicy>(
-            /*simulation_mode=*/true));
-  }
+      std::make_unique<performance_manager::policies::MemorySaverModePolicy>());
 #endif  // !BUILDFLAG(IS_ANDROID)
 
   graph->PassToGraph(
       std::make_unique<performance_manager::metrics::MemoryPressureMetrics>());
-
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::kPageTimelineMonitor)) {
-    graph->PassToGraph(
-        std::make_unique<performance_manager::metrics::PageTimelineMonitor>());
-  }
+  graph->PassToGraph(
+      std::make_unique<performance_manager::metrics::PageResourceMonitor>());
 
   if (base::FeatureList::IsEnabled(
           performance_manager::features::kBFCachePerformanceManagerPolicy)) {
@@ -239,13 +225,9 @@ ChromeBrowserMainExtraPartsPerformanceManager::GetFeatureObserverClient() {
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
-  auto graph_features = performance_manager::GraphFeatures::WithDefault();
-  if (performance_manager::features::kUseResourceAttributionCPUMonitor.Get()) {
-    graph_features.EnableResourceAttributionScheduler();
-  }
   performance_manager_lifetime_ =
       std::make_unique<performance_manager::PerformanceManagerLifetime>(
-          graph_features,
+          performance_manager::GraphFeatures::WithDefault(),
           base::BindOnce(&ChromeBrowserMainExtraPartsPerformanceManager::
                              CreatePoliciesAndDecorators));
 

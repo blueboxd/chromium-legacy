@@ -18,9 +18,9 @@ namespace {
 // Get the comparison between the predictions, without the prediction type being
 // encoded in the returned value.
 ShadowPredictionComparison GetBaseComparison(
-    ServerFieldType current,
-    ServerFieldType next,
-    const ServerFieldTypeSet& submitted_types) {
+    FieldType current,
+    FieldType next,
+    const FieldTypeSet& submitted_types) {
   if (current == NO_SERVER_DATA || next == NO_SERVER_DATA) {
     return ShadowPredictionComparison::kNoPrediction;
   } else if (current == next) {
@@ -40,30 +40,35 @@ ShadowPredictionComparison GetBaseComparison(
 }
 
 void LogRegexShadowPredictions(const AutofillField& field) {
+  // If a `PatternSource` is active, emit shadow predictions against the
+  // `PatternSource` of the prior rollout stage.
+  // `GetNonActiveHeuristicSources()` ensures that they were computed.
 #if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
-  const ServerFieldTypeSet& submitted_types = field.possible_types();
-  base::UmaHistogramSparse(
-      "Autofill.ShadowPredictions.DefaultHeuristicToDefaultServer",
-      GetShadowPrediction(field.heuristic_type(), field.server_type(),
-                          submitted_types));
-
-  base::UmaHistogramSparse(
-      "Autofill.ShadowPredictions.ExperimentalToDefault",
-      GetShadowPrediction(field.heuristic_type(HeuristicSource::kDefault),
-                          field.heuristic_type(HeuristicSource::kExperimental),
-                          submitted_types));
-
-  base::UmaHistogramSparse(
-      "Autofill.ShadowPredictions.NextGenToDefault",
-      GetShadowPrediction(field.heuristic_type(HeuristicSource::kDefault),
-                          field.heuristic_type(HeuristicSource::kNextGen),
-                          submitted_types));
-
-  base::UmaHistogramSparse(
-      "Autofill.ShadowPredictions.NextGenToExperimental",
-      GetShadowPrediction(field.heuristic_type(HeuristicSource::kExperimental),
-                          field.heuristic_type(HeuristicSource::kNextGen),
-                          submitted_types));
+  switch (GetActiveHeuristicSource()) {
+    case HeuristicSource::kDefault:
+      base::UmaHistogramSparse(
+          "Autofill.ShadowPredictions.DefaultHeuristicToDefaultServer",
+          GetShadowPrediction(field.heuristic_type(), field.server_type(),
+                              field.possible_types()));
+      base::UmaHistogramSparse(
+          "Autofill.ShadowPredictions.ExperimentalToDefault",
+          GetShadowPrediction(
+              field.heuristic_type(),
+              field.heuristic_type(HeuristicSource::kExperimental),
+              field.possible_types()));
+      break;
+    case HeuristicSource::kExperimental:
+      base::UmaHistogramSparse(
+          "Autofill.ShadowPredictions.NextGenToExperimental",
+          GetShadowPrediction(field.heuristic_type(),
+                              field.heuristic_type(HeuristicSource::kNextGen),
+                              field.possible_types()));
+      break;
+    case HeuristicSource::kLegacy:
+    case HeuristicSource::kNextGen:
+    case HeuristicSource::kMachineLearning:
+      break;
+  }
 #endif
 }
 
@@ -74,7 +79,7 @@ void LogMlShadowPredictions(const AutofillField& field) {
   if (!base::FeatureList::IsEnabled(features::kAutofillModelPredictions)) {
     return;
   }
-  const ServerFieldTypeSet& submitted_types = field.possible_types();
+  const FieldTypeSet& submitted_types = field.possible_types();
   base::UmaHistogramSparse(
       "Autofill.ShadowPredictions.DefaultServerToMLModel",
       GetShadowPrediction(
@@ -93,7 +98,7 @@ void LogMlShadowPredictions(const AutofillField& field) {
   }
 #endif
   // In builds without internal patterns or if pattern provider is disabled,
-  // compare the the legacy heuristic type instead.
+  // compare against the legacy heuristic type instead.
   base::UmaHistogramSparse(
       "Autofill.ShadowPredictions.LegacyPatternSourceToMLModel",
       GetShadowPrediction(
@@ -104,9 +109,9 @@ void LogMlShadowPredictions(const AutofillField& field) {
 
 }  // namespace
 
-int GetShadowPrediction(ServerFieldType current,
-                        ServerFieldType next,
-                        const ServerFieldTypeSet& submitted_types) {
+int GetShadowPrediction(FieldType current,
+                        FieldType next,
+                        const FieldTypeSet& submitted_types) {
   ShadowPredictionComparison comparison =
       GetBaseComparison(current, next, submitted_types);
   // Encode the `current` type and `comparison` into an int.

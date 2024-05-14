@@ -25,7 +25,7 @@
 #import "components/signin/public/identity_manager/identity_test_environment.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/test/test_sync_service.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
+#import "ios/chrome/browser/favicon/model/favicon_loader.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/constants.h"
@@ -153,6 +153,27 @@ class CredentialProviderServiceTest : public PlatformTest {
   FaviconLoader favicon_loader_ = FaviconLoader(&large_icon_service_);
   std::unique_ptr<CredentialProviderService> credential_provider_service_;
 };
+
+// Test that CredentialProviderService writes all the credentials the first time
+// it runs.
+TEST_F(CredentialProviderServiceTest, FirstSync) {
+  password_manager::PasswordForm form;
+  form.url = GURL("http://g.com");
+  form.username_value = u"user";
+  form.password_value = u"qwerty123";
+  password_store_->AddLogin(form);
+  base::RunLoop().RunUntilIdle();
+
+  CreateCredentialProviderService();
+  // The first write is delayed.
+  task_environment_.FastForwardBy(base::Seconds(30));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(credential_store_.credentials.count, 1u);
+  EXPECT_NSEQ(credential_store_.credentials[0].serviceName, @"g.com");
+  EXPECT_NSEQ(credential_store_.credentials[0].user, @"user");
+  EXPECT_NSEQ(credential_store_.credentials[0].password, @"qwerty123");
+}
 
 TEST_F(CredentialProviderServiceTest, TwoStores) {
   password_manager::PasswordForm local_form;

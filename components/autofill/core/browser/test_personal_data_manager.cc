@@ -8,13 +8,19 @@
 
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/strike_databases/autofill_profile_migration_strike_database.h"
+#include "components/autofill/core/browser/test_address_data_manager.h"
 
 namespace autofill {
 
 TestPersonalDataManager::TestPersonalDataManager()
-    : PersonalDataManager("en-US", "US") {}
+    : PersonalDataManager("en-US", "US") {
+  address_data_manager_ = std::make_unique<TestAddressDataManager>(
+      base::BindRepeating(&PersonalDataManager::NotifyPersonalDataObserver,
+                          base::Unretained(this)));
+}
 
 TestPersonalDataManager::~TestPersonalDataManager() = default;
 
@@ -34,14 +40,24 @@ void TestPersonalDataManager::RecordUseOf(
 
     if (credit_card)
       credit_card->RecordAndLogUse();
+  } else {
+    address_data_manager_->RecordUseOf(
+        *absl::get<const AutofillProfile*>(profile_or_credit_card));
   }
+}
 
-  if (absl::holds_alternative<const AutofillProfile*>(profile_or_credit_card)) {
-    AutofillProfile* profile = GetProfileByGUID(
-        absl::get<const AutofillProfile*>(profile_or_credit_card)->guid());
-
-    if (profile)
-      profile->RecordAndLogUse();
+void TestPersonalDataManager::RecordUseOfIban(Iban& iban) {
+  std::unique_ptr<Iban> updated_iban = std::make_unique<Iban>(iban);
+  std::vector<std::unique_ptr<Iban>>& container =
+      iban.record_type() == Iban::kLocalIban ? local_ibans_ : server_ibans_;
+  auto it =
+      base::ranges::find(container,
+                         iban.record_type() == Iban::kLocalIban
+                             ? GetIbanByGUID(iban.guid())
+                             : GetIbanByInstrumentId(iban.instrument_id()),
+                         &std::unique_ptr<Iban>::get);
+  if (it != container.end()) {
+    it->get()->RecordAndLogUse();
   }
 }
 
@@ -53,19 +69,10 @@ std::string TestPersonalDataManager::SaveImportedCreditCard(
 }
 
 void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
-  std::unique_ptr<AutofillProfile> profile_ptr =
-      std::make_unique<AutofillProfile>(profile);
-  profile_ptr->FinalizeAfterImport();
-  GetProfileStorage(profile.source()).push_back(std::move(profile_ptr));
-  NotifyPersonalDataObserver();
-}
-
-void TestPersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
-  AutofillProfile* existing_profile = GetProfileByGUID(profile.guid());
-  if (existing_profile) {
-    *existing_profile = profile;
-    NotifyPersonalDataObserver();
-  }
+  // TODO(b/322170538): The PDM implementation checks if Autofill is enabled,
+  // which doesn't work without a pref service. Once the pref service moves into
+  // the `AddressDataManager`, the override here can be removed.
+  address_data_manager_->AddProfile(profile);
 }
 
 void TestPersonalDataManager::RemoveByGUID(const std::string& guid) {
@@ -78,11 +85,8 @@ void TestPersonalDataManager::RemoveByGuidWithoutNotifications(
   if (CreditCard* credit_card = GetCreditCardByGUID(guid)) {
     local_credit_cards_.erase(base::ranges::find(
         local_credit_cards_, credit_card, &std::unique_ptr<CreditCard>::get));
-  } else if (AutofillProfile* profile = GetProfileByGUID(guid)) {
-    std::vector<std::unique_ptr<AutofillProfile>>& profiles =
-        GetProfileStorage(profile->source());
-    profiles.erase(base::ranges::find(profiles, profile,
-                                      &std::unique_ptr<AutofillProfile>::get));
+  } else if (GetProfileByGUID(guid)) {
+    address_data_manager_->RemoveProfile(guid);
   } else if (const Iban* iban = GetIbanByGUID(guid)) {
     local_ibans_.erase(
         base::ranges::find(local_ibans_, iban, &std::unique_ptr<Iban>::get));
@@ -148,31 +152,6 @@ const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
     return PersonalDataManager::GetDefaultCountryCodeForNewAddress();
 
   return default_country_code_;
-}
-
-void TestPersonalDataManager::LoadProfiles() {
-  // Overridden to avoid a trip to the database. This should be a no-op except
-  // for the side-effect of logging the profile count.
-  pending_synced_local_profiles_query_ = 123;
-  pending_account_profiles_query_ = 124;
-  {
-    std::vector<std::unique_ptr<AutofillProfile>> profiles;
-    synced_local_profiles_.swap(profiles);
-    auto result = std::make_unique<
-        WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
-        AUTOFILL_PROFILES_RESULT, std::move(profiles));
-    OnWebDataServiceRequestDone(pending_synced_local_profiles_query_,
-                                std::move(result));
-  }
-  {
-    std::vector<std::unique_ptr<AutofillProfile>> profiles;
-    account_profiles_.swap(profiles);
-    auto result = std::make_unique<
-        WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
-        AUTOFILL_PROFILES_RESULT, std::move(profiles));
-    OnWebDataServiceRequestDone(pending_account_profiles_query_,
-                                std::move(result));
-  }
 }
 
 void TestPersonalDataManager::LoadCreditCards() {
@@ -257,12 +236,8 @@ bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
   return PersonalDataManager::IsAutofillWalletImportEnabled();
 }
 
-bool TestPersonalDataManager::ShouldSuggestServerCards() const {
+bool TestPersonalDataManager::ShouldSuggestServerPaymentMethods() const {
   return IsAutofillPaymentMethodsEnabled() && IsAutofillWalletImportEnabled();
-}
-
-std::string TestPersonalDataManager::CountryCodeForCurrentTimezone() const {
-  return timezone_country_code_;
 }
 
 void TestPersonalDataManager::ClearAllLocalData() {
@@ -312,6 +287,13 @@ void TestPersonalDataManager::SetPaymentMethodsMandatoryReauthEnabled(
   PersonalDataManager::SetPaymentMethodsMandatoryReauthEnabled(enabled);
 }
 
+bool TestPersonalDataManager::IsPaymentCvcStorageEnabled() {
+  if (payments_cvc_storage_enabled_.has_value()) {
+    return payments_cvc_storage_enabled_.value();
+  }
+  return PersonalDataManager::IsPaymentCvcStorageEnabled();
+}
+
 void TestPersonalDataManager::AddServerCvc(int64_t instrument_id,
                                            const std::u16string& cvc) {
   auto card_iterator =
@@ -342,8 +324,8 @@ void TestPersonalDataManager::ClearLocalCvcs() {
 }
 
 void TestPersonalDataManager::ClearProfiles() {
-  synced_local_profiles_.clear();
-  account_profiles_.clear();
+  static_cast<TestAddressDataManager*>(address_data_manager_.get())
+      ->ClearProfiles();
 }
 
 void TestPersonalDataManager::ClearCreditCards() {

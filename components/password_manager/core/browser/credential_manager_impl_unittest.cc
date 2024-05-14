@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/gmock_move_support.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/to_vector.h"
 #include "build/build_config.h"
@@ -26,7 +25,6 @@
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 #include "components/password_manager/core/browser/credential_manager_utils.h"
-#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
@@ -100,13 +98,14 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                const url::Origin& origin,
                CredentialsCallback callback),
               ());
-  MOCK_METHOD(void,
-              PasswordWasAutofilled,
-              (const std::vector<const PasswordForm*>&,
-               const url::Origin&,
-               const std::vector<const PasswordForm*>*,
-               bool was_autofilled_on_pageload),
-              (override));
+  MOCK_METHOD(
+      void,
+      PasswordWasAutofilled,
+      (const std::vector<vector_experimental_raw_ptr<const PasswordForm>>&,
+       const url::Origin&,
+       const std::vector<vector_experimental_raw_ptr<const PasswordForm>>*,
+       bool was_autofilled_on_pageload),
+      (override));
 
   explicit MockPasswordManagerClient(PasswordStoreInterface* profile_store,
                                      PasswordStoreInterface* account_store)
@@ -230,15 +229,7 @@ GURL HttpURLFromHttps(const GURL& https_url) {
 class CredentialManagerImplTest : public testing::Test,
                                   public testing::WithParamInterface<bool> {
  public:
-  CredentialManagerImplTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          password_manager::features::kEnablePasswordsAccountStorage);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          password_manager::features::kEnablePasswordsAccountStorage);
-    }
-  }
+  CredentialManagerImplTest() = default;
 
   void SetUp() override {
     store_ = new TestPasswordStore;
@@ -250,8 +241,7 @@ class CredentialManagerImplTest : public testing::Test,
     mock_match_helper_ = owning_mock_match_helper.get();
     store_->Init(/*prefs=*/nullptr, std::move(owning_mock_match_helper));
 
-    if (base::FeatureList::IsEnabled(
-            features::kEnablePasswordsAccountStorage)) {
+    if (GetParam()) {
       account_store_ = new TestPasswordStore(IsAccountStore(true));
       account_store_->Init(/*prefs=*/nullptr,
                            /*affiliated_match_helper=*/nullptr);
@@ -414,7 +404,6 @@ class CredentialManagerImplTest : public testing::Test,
   void RunAllPendingTasks() { task_environment_.RunUntilIdle(); }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment task_environment_;
   PasswordForm form_;
   PasswordForm affiliated_form1_;

@@ -72,9 +72,9 @@ gfx::Size GetTextSize(const std::u16string& text,
 // can have an associated sub menu container which it opens when pressed.
 class PieMenuButton : public views::Button,
                       public views::MaskedTargeterDelegate {
- public:
-  METADATA_HEADER(PieMenuButton);
+  METADATA_HEADER(PieMenuButton, views::Button)
 
+ public:
   PieMenuButton(int button_id,
                 const std::u16string& button_label_text,
                 const gfx::VectorIcon* icon)
@@ -279,17 +279,16 @@ class PieMenuButton : public views::Button,
   float sweep_angle_ = 0.0f;
 
   // If not null, the icon that paints at the center of this button.
-  const raw_ptr<const gfx::VectorIcon, ExperimentalAsh> icon_ = nullptr;
+  const raw_ptr<const gfx::VectorIcon> icon_ = nullptr;
 
   // The cached image of the above `icon_` if any.
   gfx::ImageSkia icon_image_;
 
   // The sub menu container that this button opens when it gets pressed.
-  raw_ptr<PieSubMenuContainerView, ExperimentalAsh>
-      associated_sub_menu_container_ = nullptr;
+  raw_ptr<PieSubMenuContainerView> associated_sub_menu_container_ = nullptr;
 };
 
-BEGIN_METADATA(PieMenuButton, views::Button)
+BEGIN_METADATA(PieMenuButton)
 END_METADATA
 
 // -----------------------------------------------------------------------------
@@ -316,7 +315,7 @@ views::View* PieSubMenuContainerView::AddMenuButton(
 }
 
 void PieSubMenuContainerView::RemoveAllButtons() {
-  for (auto* button : buttons_) {
+  for (ash::PieMenuButton* button : buttons_) {
     owner_menu_view_->OnPieMenuButtonRemoved(button);
     RemoveChildViewT(button);
   }
@@ -328,7 +327,7 @@ PieSubMenuContainerView::PieSubMenuContainerView(PieMenuView* owner_menu_view)
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
-BEGIN_METADATA(PieSubMenuContainerView, views::View)
+BEGIN_METADATA(PieSubMenuContainerView)
 END_METADATA
 
 // -----------------------------------------------------------------------------
@@ -397,12 +396,12 @@ gfx::Point PieMenuView::GetButtonContentsCenterInScreen(int button_id) const {
   return gfx::Point();
 }
 
-void PieMenuView::Layout() {
+void PieMenuView::Layout(PassKey) {
   // All child views except the back button (i.e. all
   // `PieSubMenuContainerView`s) should fill the entire bounds of this view. The
   // back button however should be centered.
   auto local_bounds = GetLocalBounds();
-  for (auto* child : children()) {
+  for (views::View* child : children()) {
     if (child != back_button_)
       child->SetBoundsRect(local_bounds);
   }
@@ -491,7 +490,7 @@ PieMenuButton* PieMenuView::GetButtonById(int button_id) const {
   return iter == buttons_by_id_.end() ? nullptr : iter->second;
 }
 
-BEGIN_METADATA(PieMenuView, views::View)
+BEGIN_METADATA(PieMenuView)
 END_METADATA
 
 }  // namespace ash

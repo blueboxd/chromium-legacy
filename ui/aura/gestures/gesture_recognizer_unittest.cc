@@ -368,6 +368,13 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
     }
   }
 
+  void OnWindowDestroyed(Window* window) override {
+    if (window == window_) {
+      window_ = nullptr;
+    }
+    GestureEventConsumeDelegate::OnWindowDestroyed(window);
+  }
+
   void ReceivedAck() {
     ReceivedAckImpl(false);
   }
@@ -402,7 +409,7 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
         false /* is_source_touch_event_set_blocking */);
   }
 
-  raw_ptr<Window, DanglingUntriaged> window_;
+  raw_ptr<Window> window_;
   raw_ptr<WindowEventDispatcher> dispatcher_;
   AckState synchronous_ack_for_next_event_;
   std::list<uint32_t> sent_events_ids_;
@@ -2943,7 +2950,7 @@ TEST_F(GestureRecognizerTest, MultiFingerSwipe) {
   ui::test::EventGenerator generator(root_window(), window.get());
 
   // The unified gesture recognizer assumes a finger has stopped if it hasn't
-  // moved for too long. See ui/events/gesture_detection/velocity_tracker.cc's
+  // moved for too long. See ui/events/velocity_tracker/velocity_tracker.cc's
   // kAssumePointerStoppedTimeMs.
   for (int count = 2; count <= kTouchPoints; ++count) {
     generator.GestureMultiFingerScroll(
@@ -4336,7 +4343,7 @@ TEST_F(GestureRecognizerTest, GestureEventFlagsPassedFromTouchEvent) {
   ui::TouchEvent move1(
       ui::ET_TOUCH_MOVED, gfx::Point(397, 149), tes.LeapForward(50),
       ui::PointerDetails(ui::EventPointerType::kTouch, kTouchId));
-  move1.set_flags(992);
+  move1.SetFlags(992);
 
   DispatchEventUsingWindowDispatcher(&move1);
   EXPECT_NE(default_flags, delegate->flags());

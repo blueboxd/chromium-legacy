@@ -12,7 +12,7 @@
 namespace content {
 
 FakeIdentityRequestDialogController::FakeIdentityRequestDialogController(
-    absl::optional<std::string> selected_account,
+    std::optional<std::string> selected_account,
     WebContents* web_contents)
     : selected_account_(selected_account), web_contents_(web_contents) {}
 
@@ -21,13 +21,15 @@ FakeIdentityRequestDialogController::~FakeIdentityRequestDialogController() =
 
 void FakeIdentityRequestDialogController::ShowAccountsDialog(
     const std::string& top_frame_for_display,
-    const absl::optional<std::string>& iframe_for_display,
+    const std::optional<std::string>& iframe_for_display,
     const std::vector<content::IdentityProviderData>& identity_provider_data,
     IdentityRequestAccount::SignInMode sign_in_mode,
-    bool show_auto_reauthn_checkbox,
+    blink::mojom::RpMode rp_mode,
+    const std::optional<content::IdentityProviderData>& new_account_idp,
     AccountSelectionCallback on_selected,
     LoginToIdPCallback on_add_account,
-    DismissCallback dismiss_callback) {
+    DismissCallback dismiss_callback,
+    AccountsDisplayedCallback accounts_displayed_callback) {
   // TODO(crbug.com/1348262): Temporarily support only the first IDP, extend to
   // support multiple IDPs.
   std::vector<IdentityRequestAccount> accounts =
@@ -72,9 +74,10 @@ void FakeIdentityRequestDialogController::ShowAccountsDialog(
 
 void FakeIdentityRequestDialogController::ShowFailureDialog(
     const std::string& top_frame_for_display,
-    const absl::optional<std::string>& iframe_for_display,
+    const std::optional<std::string>& iframe_for_display,
     const std::string& idp_for_display,
-    const blink::mojom::RpContext& rp_context,
+    blink::mojom::RpContext rp_context,
+    blink::mojom::RpMode rp_mode,
     const IdentityProviderMetadata& idp_metadata,
     DismissCallback dismiss_callback,
     LoginToIdPCallback login_callback) {
@@ -83,11 +86,12 @@ void FakeIdentityRequestDialogController::ShowFailureDialog(
 
 void FakeIdentityRequestDialogController::ShowErrorDialog(
     const std::string& top_frame_for_display,
-    const absl::optional<std::string>& iframe_for_display,
+    const std::optional<std::string>& iframe_for_display,
     const std::string& idp_for_display,
-    const blink::mojom::RpContext& rp_context,
+    blink::mojom::RpContext rp_context,
+    blink::mojom::RpMode rp_mode,
     const IdentityProviderMetadata& idp_metadata,
-    const absl::optional<TokenError>& error,
+    const std::optional<TokenError>& error,
     DismissCallback dismiss_callback,
     MoreDetailsCallback more_details_callback) {
   DCHECK(dismiss_callback);
@@ -96,6 +100,18 @@ void FakeIdentityRequestDialogController::ShowErrorDialog(
 
 std::string FakeIdentityRequestDialogController::GetTitle() const {
   return title_;
+}
+
+void FakeIdentityRequestDialogController::ShowUrl(LinkType link_type,
+                                                  const GURL& url) {
+  if (!web_contents_) {
+    return;
+  }
+
+  content::OpenURLParams params(
+      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*is_renderer_initiated=*/false);
+  web_contents_->GetDelegate()->OpenURLFromTab(web_contents_, params);
 }
 
 content::WebContents* FakeIdentityRequestDialogController::ShowModalDialog(

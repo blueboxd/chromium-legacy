@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_browsertest.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -57,7 +58,6 @@
 #include "components/printing/common/print.mojom-test-utils.h"
 #include "components/printing/common/print.mojom.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
@@ -87,7 +87,6 @@
 #include "printing/units.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -530,6 +529,11 @@ void PrintBrowserTest::SetPrinterNameForSubsequentContexts(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   test_printing_context_factory_.SetPrinterNameForSubsequentContexts(
       printer_name);
+}
+
+void PrintBrowserTest::SetNewDocumentJobId(int job_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  test_printing_context_factory_.SetJobIdOnNewDocument(job_id);
 }
 
 void PrintBrowserTest::PrintAndWaitUntilPreviewIsReady() {
@@ -1244,10 +1248,11 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
   ASSERT_EQ(test_frame->GetGlobalId(), subframe_in_queue->rfh_id_);
 
   // Creates mojom::PrintCompositor.
-  client->DoCompositeDocumentToPdf(
+  client->CompositeDocument(
       kDefaultDocumentCookie, main_frame,
       *TestPrintRenderFrame::GetDefaultDidPrintContentParams(),
-      ui::AXTreeUpdate(), base::DoNothing());
+      ui::AXTreeUpdate(), PrintCompositeClient::GetDocumentType(),
+      base::DoNothing());
   ASSERT_TRUE(client->GetCompositeRequest(kDefaultDocumentCookie));
   // `requested_subframes_` should be empty.
   ASSERT_TRUE(client->requested_subframes_.empty());
@@ -1863,7 +1868,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
         base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
             .AppendASCII("printing")
             .AppendASCII("test1.png");
-    absl::optional<std::vector<uint8_t>> image_data =
+    std::optional<std::vector<uint8_t>> image_data =
         base::ReadFileToBytes(image_path);
     ASSERT_TRUE(image_data.has_value());
     GURL data_url(base::StringPrintf(

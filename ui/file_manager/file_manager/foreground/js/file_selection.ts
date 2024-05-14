@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
-
+import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {isEncrypted} from '../../common/js/file_type.js';
+import type {FilesAppEntry} from '../../common/js/files_app_entry_types.js';
+import {type CustomEventMap, FilesEventTarget} from '../../common/js/files_event_target.js';
 import {isDlpEnabled} from '../../common/js/flags.js';
 import {AllowedPaths} from '../../common/js/volume_manager_types.js';
-import type {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import type {Store} from '../../externs/ts/store.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
 import {updateSelection} from '../../state/ducks/current_directory.js';
 import {getStore} from '../../state/store.js';
 
-import {constants} from './constants.js';
+import {FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES} from './constants.js';
 import type {DirectoryModel} from './directory_model.js';
 import type {MetadataModel} from './metadata/metadata_model.js';
 import type {ListContainer} from './ui/list_container.js';
@@ -71,8 +68,7 @@ export class FileSelection {
       this.additionalPromise_ =
           metadataModel
               .get(
-                  this.entries,
-                  constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES)
+                  this.entries, FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES)
               .then(props => {
                 this.anyFilesNotInCache = props.some(p => {
                   // If no availableOffline property, then assume it's
@@ -95,13 +91,22 @@ export class FileSelection {
   }
 }
 
+export type FileSelectionChangeEvent = CustomEvent<{}>;
+export type FileSelectionChangeThrottledEvent = CustomEvent<{}>;
+
+interface FileSelectionHandlerEventMap extends CustomEventMap {
+  [EventType.CHANGE]: FileSelectionChangeEvent;
+  [EventType.CHANGE_THROTTLED]: FileSelectionChangeThrottledEvent;
+}
+
 /**
  * This object encapsulates everything related to current selection.
  */
-export class FileSelectionHandler extends EventTarget {
+export class FileSelectionHandler extends
+    FilesEventTarget<FileSelectionHandlerEventMap> {
   selection = new FileSelection([], [], this.volumeManager_);
   private selectionUpdateTimer_: number|null = 0;
-  private store_: Store = getStore();
+  private store_ = getStore();
   /**
    * The time, in ms since the epoch, when it is OK to post next throttled
    * selection event. Can be directly compared with Date.now().
@@ -164,7 +169,7 @@ export class FileSelectionHandler extends EventTarget {
       this.updateFileSelectionAsync_(selection);
     }, updateDelay);
 
-    dispatchSimpleEvent(this, EventType.CHANGE);
+    this.dispatchEvent(new CustomEvent(EventType.CHANGE));
   }
 
   /**
@@ -184,7 +189,7 @@ export class FileSelectionHandler extends EventTarget {
       }
 
       this.nextThrottledEventTime_ = Date.now() + UPDATE_DELAY;
-      dispatchSimpleEvent(this, EventType.CHANGE_THROTTLED);
+      this.dispatchEvent(new CustomEvent(EventType.CHANGE_THROTTLED));
     });
   }
 

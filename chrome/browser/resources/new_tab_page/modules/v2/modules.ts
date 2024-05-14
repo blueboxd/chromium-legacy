@@ -6,20 +6,22 @@ import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
-import {HelpBubbleMixin, HelpBubbleMixinInterface} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
-import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import type {HelpBubbleMixinInterface} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
+import {HelpBubbleMixin} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
+import type {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
-import {PolymerElement, TemplateInstanceBase, templatize} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import type {TemplateInstanceBase} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement, templatize} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {recordOccurence as recordOccurrence} from '../../metrics_utils.js';
 import {IphFeature} from '../../new_tab_page.mojom-webui.js';
 import {NewTabPageProxy} from '../../new_tab_page_proxy.js';
 import {WindowProxy} from '../../window_proxy.js';
-import {Module} from '../module_descriptor.js';
+import type {Module} from '../module_descriptor.js';
 import {ModuleRegistry} from '../module_registry.js';
-import {ModuleInstance, ModuleWrapperElement} from '../module_wrapper.js';
+import type {ModuleInstance, ModuleWrapperElement} from '../module_wrapper.js';
 
 import {getTemplate} from './modules.html.js';
 
@@ -200,13 +202,6 @@ export class ModulesV2Element extends AppElementBase {
         this.maxColumnCount_ * SUPPORTED_MODULE_WIDTHS[0].value +
         (this.maxColumnCount_ - 1) * CONTAINER_GAP_WIDTH;
     this.loadModules_();
-
-    const onModuleUse = (e: Event) => {
-      e.stopPropagation();
-      NewTabPageProxy.getInstance().handler.onModulesUsed();
-    };
-    this.addEventListener('usage', onModuleUse, {once: true});
-    this.addEventListener('menu-button-click', onModuleUse, {once: true});
   }
 
   private moduleDisabled_(
@@ -431,9 +426,8 @@ export class ModulesV2Element extends AppElementBase {
     // Notify the user.
     this.$.undoToast.show();
 
-    recordOccurrence('NewTabPage.Modules.Dismissed');
-    recordOccurrence(
-        `NewTabPage.Modules.Dismissed.${wrapper.module.descriptor.id}`);
+    NewTabPageProxy.getInstance().handler.onDismissModule(
+        wrapper.module.descriptor.id);
   }
 
   private onUndoButtonClick_() {

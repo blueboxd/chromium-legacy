@@ -8,7 +8,7 @@ import {loadTimeData} from '//resources/js/load_time_data.js';
 import {sanitizeInnerHtml} from '//resources/js/parse_html_subset.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Action} from './omnibox.mojom-webui.js';
+import type {Action} from './omnibox.mojom-webui.js';
 import {getTemplate} from './realbox_action.html.js';
 import {decodeString16} from './utils.js';
 
@@ -81,6 +81,15 @@ class RealboxActionElement extends PolymerElement {
   private hintHtml_: TrustedHTML;
   private tooltip_: string;
 
+  override ready() {
+    super.ready();
+
+    this.addEventListener('click', (event) => this.onActionClick_(event));
+    this.addEventListener('keydown', (event) => this.onActionKeyDown_(event));
+    this.addEventListener(
+        'mousedown', (event) => this.onActionMouseDown_(event));
+  }
+
   private onActionClick_(e: MouseEvent|KeyboardEvent) {
     this.dispatchEvent(new CustomEvent('execute-action', {
       bubbles: true,
@@ -98,6 +107,12 @@ class RealboxActionElement extends PolymerElement {
   private onActionKeyDown_(e: KeyboardEvent) {
     if (e.key && (e.key === 'Enter' || e.key === ' ')) {
       this.onActionClick_(e);
+    }
+  }
+
+  private onActionMouseDown_(e: Event) {
+    if (loadTimeData.getBoolean('realboxCr23ExpandedStateLayout')) {
+      e.preventDefault();  // Prevents default browser action (focus).
     }
   }
 

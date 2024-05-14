@@ -179,7 +179,7 @@ class UserDataAuthClientTest : public testing::Test {
   scoped_refptr<dbus::MockObjectProxy> proxy_;
 
   // Convenience pointer to the global instance.
-  raw_ptr<UserDataAuthClient, DanglingUntriaged | ExperimentalAsh> client_;
+  raw_ptr<UserDataAuthClient, DanglingUntriaged> client_;
 
   // The expected replies to the respective D-Bus calls.
   ::user_data_auth::IsMountedReply expected_is_mounted_reply_;
@@ -212,7 +212,7 @@ class UserDataAuthClientTest : public testing::Test {
       // a very large value so the parsing will fail.
       constexpr uint8_t invalid_protobuf[] = {0x02, 0xFF, 0xFF, 0xFF,
                                               0xFF, 0xFF, 0xFF};
-      writer.AppendArrayOfBytes(invalid_protobuf, sizeof(invalid_protobuf));
+      writer.AppendArrayOfBytes(invalid_protobuf);
     } else if (method_call->GetMember() == ::user_data_auth::kIsMounted) {
       writer.AppendProtoAsArrayOfBytes(expected_is_mounted_reply_);
     } else if (method_call->GetMember() == ::user_data_auth::kIsMounted) {

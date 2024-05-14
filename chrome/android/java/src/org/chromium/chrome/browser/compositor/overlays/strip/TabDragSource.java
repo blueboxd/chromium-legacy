@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import android.app.Activity;
-import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.view.DragEvent;
 import android.view.View;
@@ -27,25 +30,31 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.dragdrop.ChromeDragAndDropBrowserDelegate;
 import org.chromium.chrome.browser.dragdrop.ChromeDropDataAndroid;
-import org.chromium.chrome.browser.dragdrop.DragDropGlobalState;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.base.MimeTypeUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.dragdrop.DragAndDropDelegate;
-import org.chromium.ui.dragdrop.DropDataAndroid;
+import org.chromium.ui.dragdrop.DragDropGlobalState;
+import org.chromium.ui.dragdrop.DragDropGlobalState.TrackerToken;
+import org.chromium.ui.dragdrop.DragDropMetricUtils;
+import org.chromium.ui.dragdrop.DragDropMetricUtils.DragDropTabResult;
+import org.chromium.ui.dragdrop.DragDropMetricUtils.DragDropType;
+import org.chromium.ui.widget.Toast;
+
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Manages initiating tab drag and drop and handles the events that are received during drag and
@@ -54,29 +63,37 @@ import org.chromium.ui.dragdrop.DropDataAndroid;
  */
 public class TabDragSource implements View.OnDragListener {
     private static final String TAG = "TabDragSource";
+
     private final WindowAndroid mWindowAndroid;
     private MultiInstanceManager mMultiInstanceManager;
     private DragAndDropDelegate mDragAndDropDelegate;
     private Supplier<StripLayoutHelper> mStripLayoutHelperSupplier;
+    private Supplier<Boolean> mStripLayoutVisibilitySupplier;
     private Supplier<TabContentManager> mTabContentManagerSupplier;
     private Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
     private BrowserControlsStateProvider mBrowserControlStateProvider;
-    private View mDragSourceView;
-    private StripTabDragShadowView mShadowView;
-    private PointF mDragShadowDefaultOffset = new PointF(0, 0);
     private float mPxToDp;
-    private final float mTabStripHeightPx;
+    private final ObservableSupplier<Integer> mTabStripHeightSupplier;
+    @Nullable private TabModelSelector mTabModelSelector;
+
+    /** Drag shadow properties * */
+    @Nullable private StripTabDragShadowView mShadowView;
+
+    @Nullable private Drawable mAppIcon;
 
     /** Drag Event Listener trackers * */
+    private static TrackerToken sDragTrackerToken;
+
     // Drag start screen position.
     private PointF mStartScreenPos;
-
     // Last drag positions relative to the source view. Set when drag starts or is moved within
     // view.
     private float mLastXDp;
-    private float mLastYDp;
     private int mLastAction;
-    @Nullable private TabModelSelector mTabModelSelector;
+    private boolean mHoveringInStrip;
+    private Set<String> mManufacturerAllowlist;
+    // Local state used by Drag Drop metrics. Not-null when a tab dragging is in progress.
+    private @Nullable DragLocalUmaState mUmaState;
 
     /**
      * Prepares the toolbar view to listen to the drag events and data drop after the drag is
@@ -91,58 +108,117 @@ public class TabDragSource implements View.OnDragListener {
      * @param browserControlStateProvider @{@link BrowserControlsStateProvider} to compute
      *     drag-shadow dimens.
      * @param windowAndroid @{@link WindowAndroid} to access activity.
+     * @param tabStripHeightSupplier Supplier of the tab strip height.
      */
     public TabDragSource(
             @NonNull Context context,
             @NonNull Supplier<StripLayoutHelper> stripLayoutHelperSupplier,
+            @NonNull Supplier<Boolean> stripLayoutVisibilitySupplier,
             @NonNull Supplier<TabContentManager> tabContentManagerSupplier,
             @NonNull Supplier<LayerTitleCache> layerTitleCacheSupplier,
             @NonNull MultiInstanceManager multiInstanceManager,
             @NonNull DragAndDropDelegate dragAndDropDelegate,
             @NonNull BrowserControlsStateProvider browserControlStateProvider,
-            @NonNull WindowAndroid windowAndroid) {
+            @NonNull WindowAndroid windowAndroid,
+            @NonNull ObservableSupplier<Integer> tabStripHeightSupplier) {
         mPxToDp = 1.f / context.getResources().getDisplayMetrics().density;
-        // TODO(crbug.com/1498252): Use Toolbar#getTabStripHeight() instead.
-        mTabStripHeightPx = context.getResources().getDimension(R.dimen.tab_strip_height);
+        mTabStripHeightSupplier = tabStripHeightSupplier;
         mStripLayoutHelperSupplier = stripLayoutHelperSupplier;
+        mStripLayoutVisibilitySupplier = stripLayoutVisibilitySupplier;
         mTabContentManagerSupplier = tabContentManagerSupplier;
         mLayerTitleCacheSupplier = layerTitleCacheSupplier;
         mMultiInstanceManager = multiInstanceManager;
         mDragAndDropDelegate = dragAndDropDelegate;
         mBrowserControlStateProvider = browserControlStateProvider;
         mWindowAndroid = windowAndroid;
+        if (TabUiFeatureUtilities.isTabDragAsWindowEnabled()) {
+            mAppIcon = context.getPackageManager().getApplicationIcon(context.getApplicationInfo());
+        }
+        mManufacturerAllowlist = TabUiFeatureUtilities.getTabDragNonSplitModeAllowlist();
+    }
+
+    private boolean shouldAllowTabDrag() {
+        return mManufacturerAllowlist.contains(getCurrManufacturer());
     }
 
     /**
      * Starts the tab drag action by initiating the process by calling @{link
      * View.startDragAndDrop}.
      *
-     * @param toolbarContainerView @{link View} used to create the drag shadow.
+     * @param dragSourceView @{link View} used to create the drag shadow.
      * @param tabBeingDragged @{link Tab} is the selected tab being dragged.
      * @param startPoint Position of the drag start point in view coordinates.
+     * @param tabPositionX Horizontal position of the dragged tab in view coordinates. Used to
+     *     calculate the relative position of the touch point in the tab strip.
+     * @param tabWidthDp Width of the source strip tab container in dp.
+     * @return true if the drag action was initiated successfully.
      */
     public boolean startTabDragAction(
-            @NonNull View toolbarContainerView,
+            @NonNull View dragSourceView,
             @NonNull Tab tabBeingDragged,
-            @NonNull PointF startPoint) {
-        if (!TabUiFeatureUtilities.isTabDragEnabled()
-                || DragDropGlobalState.getInstance().dragSourceInstanceId
-                        != MultiWindowUtils.INVALID_INSTANCE_ID) {
+            @NonNull PointF startPoint,
+            float tabPositionX,
+            float tabWidthDp) {
+        // Return false when FF is disabled or another drag in progress.
+        if (!TabUiFeatureUtilities.isTabDragEnabled() || DragDropGlobalState.hasValue()) {
             return false;
         }
-        if (!MultiWindowUtils.getInstance()
-                .isMoveToOtherWindowSupported(getActivity(), mTabModelSelector)) {
+        // Do not allow move for last tab when homepage enabled and is set to a custom url.
+        if (MultiWindowUtils.getInstance().hasAtMostOneTabWithHomepageEnabled(mTabModelSelector)) {
             return false;
         }
 
-        setGlobalState(tabBeingDragged);
+        // Do not allow drag when we are in non-split screen mode on non-Samsung device since we
+        // don't support tab drag to open new instances of Chrome given OS/OEM limitations (the drag
+        // won't actually create a new instance on any OEM besides Samsung).
+        // @TODO(crbug.com/1520080): Make this configurable via Finch in case we find more OEMs
+        // where this works.
+        if (!MultiWindowUtils.getInstance().isInMultiWindowMode(getActivity())
+                && !shouldAllowTabDrag()) {
+            return false;
+        }
 
+        if (sDragTrackerToken != null) {
+            Log.w(TAG, "Attempting to start drag before clearing state from prior drag");
+        }
+
+        // Build shared state with all info.
+        ChromeDropDataAndroid dropData =
+                new ChromeDropDataAndroid.Builder().withTab(tabBeingDragged).build();
+        updateShadowView(tabBeingDragged, dragSourceView, (int) (tabWidthDp / mPxToDp));
+        DragShadowBuilder builder =
+                createDragShadowBuilder(dragSourceView, startPoint, tabPositionX);
+        sDragTrackerToken =
+                DragDropGlobalState.store(
+                        mMultiInstanceManager.getCurrentInstanceId(), dropData, builder);
+        boolean res = mDragAndDropDelegate.startDragAndDrop(dragSourceView, builder, dropData);
+        if (!res) {
+            DragDropGlobalState.clear(sDragTrackerToken);
+            sDragTrackerToken = null;
+        }
+        return res;
+    }
+
+    @VisibleForTesting
+    String getCurrManufacturer() {
+        return Build.MANUFACTURER.toLowerCase(Locale.US);
+    }
+
+    void setManufacturerAllowlistForTesting(Set<String> manufacturerList) {
+        mManufacturerAllowlist = manufacturerList;
+    }
+
+    @VisibleForTesting
+    void updateShadowView(
+            @NonNull Tab tabBeingDragged, @NonNull View dragSourceView, int tabWidthPx) {
+        // Shadow view is unused for drag as window.
+        if (TabUiFeatureUtilities.isTabDragAsWindowEnabled()) return;
         if (mShadowView == null) {
             View rootView =
                     View.inflate(
-                            toolbarContainerView.getContext(),
+                            dragSourceView.getContext(),
                             R.layout.strip_tab_drag_shadow_view,
-                            (ViewGroup) toolbarContainerView.getRootView());
+                            (ViewGroup) dragSourceView.getRootView());
             mShadowView = rootView.findViewById(R.id.strip_tab_drag_shadow_view);
 
             mShadowView.initialize(
@@ -150,24 +226,16 @@ public class TabDragSource implements View.OnDragListener {
                     mTabContentManagerSupplier,
                     mLayerTitleCacheSupplier,
                     () -> {
-                        if (DragDropGlobalState.getInstance().dragShadowShowing) {
-                            showDragShadow(true);
+                        TabDragShadowBuilder builder =
+                                (TabDragShadowBuilder) DragDropGlobalState.getDragShadowBuilder();
+                        // We register callbacks (e.g. to update the thumbnail) that may attempt to
+                        // update the shadow after the drop has already ended. No-op in that case.
+                        if (builder != null) {
+                            showDragShadow(builder.mShowDragShadow);
                         }
                     });
         }
-        mShadowView.setTab(tabBeingDragged);
-
-        mDragSourceView = toolbarContainerView;
-        mDragShadowDefaultOffset =
-                TabUiFeatureUtilities.isTabDragAsWindowEnabled()
-                        ? getPositionOnScreen(toolbarContainerView, startPoint)
-                        : new PointF(0f, 0f);
-
-        DropDataAndroid dropData =
-                new ChromeDropDataAndroid.Builder().withTabId(tabBeingDragged.getId()).build();
-        DragShadowBuilder builder =
-                createTabDragShadowBuilder(toolbarContainerView.getContext(), false);
-        return mDragAndDropDelegate.startDragAndDrop(toolbarContainerView, builder, dropData);
+        mShadowView.prepareForDrag(tabBeingDragged, tabWidthPx);
     }
 
     @Override
@@ -178,6 +246,7 @@ public class TabDragSource implements View.OnDragListener {
                 res =
                         onDragStart(
                                 dragEvent.getX(), dragEvent.getY(), dragEvent.getClipDescription());
+                if (res) mUmaState = new DragLocalUmaState();
                 break;
             case DragEvent.ACTION_DRAG_ENDED:
                 res =
@@ -187,6 +256,7 @@ public class TabDragSource implements View.OnDragListener {
                                 dragEvent.getY(),
                                 dragEvent.getResult(),
                                 mLastAction == DragEvent.ACTION_DRAG_EXITED);
+                mUmaState = null;
                 break;
             case DragEvent.ACTION_DRAG_ENTERED:
                 // We'll trigger #onDragEnter when handling the following ACTION_DRAG_LOCATION so we
@@ -194,31 +264,31 @@ public class TabDragSource implements View.OnDragListener {
                 res = false;
                 break;
             case DragEvent.ACTION_DRAG_EXITED:
-                res = onDragExit();
+                if (mHoveringInStrip) res = onDragExit();
                 break;
             case DragEvent.ACTION_DRAG_LOCATION:
-                boolean isLastYInTabStrip = didOccurInTabStrip(mLastYDp / mPxToDp);
                 boolean isCurrYInTabStrip = didOccurInTabStrip(dragEvent.getY());
                 if (isCurrYInTabStrip) {
-                    if (mLastAction == DragEvent.ACTION_DRAG_ENTERED || !isLastYInTabStrip) {
+                    if (!mHoveringInStrip) {
                         // dragged onto strip from outside controls OR from toolbar.
-                        res = onDragEnter();
+                        res = onDragEnter(dragEvent.getX());
                     } else {
                         // drag moved within strip.
                         res = onDragLocation(dragEvent.getX(), dragEvent.getY());
                     }
-                } else if (isLastYInTabStrip) {
+                    mLastXDp = dragEvent.getX() * mPxToDp;
+                } else if (mHoveringInStrip) {
                     // drag moved from within to outside strip.
                     res = onDragExit();
                 }
-                mLastXDp = dragEvent.getX() * mPxToDp;
-                mLastYDp = dragEvent.getY() * mPxToDp;
                 break;
             case DragEvent.ACTION_DROP:
-                res =
-                        didOccurInTabStrip(dragEvent.getY())
-                                ? onDrop(dragEvent.getX(), dragEvent.getClipData())
-                                : false;
+                if (didOccurInTabStrip(dragEvent.getY())) {
+                    res = onDrop(dragEvent.getX(), dragEvent);
+                } else {
+                    DragDropMetricUtils.recordTabDragDropResult(DragDropTabResult.IGNORED_TOOLBAR);
+                    res = false;
+                }
                 break;
         }
         mLastAction = dragEvent.getAction();
@@ -231,75 +301,129 @@ public class TabDragSource implements View.OnDragListener {
     }
 
     private boolean didOccurInTabStrip(float yPx) {
-        return yPx <= mTabStripHeightPx;
+        return yPx <= mTabStripHeightSupplier.get();
     }
 
     private boolean onDragStart(float xPx, float yPx, ClipDescription clipDescription) {
-        if (clipDescription.filterMimeTypes(ChromeDragAndDropBrowserDelegate.CHROME_MIMETYPE_TAB)
-                == null) {
+        if (clipDescription.filterMimeTypes(MimeTypeUtils.CHROME_MIMETYPE_TAB) == null) {
             return false;
         }
-        if (!isDragSource()) return true;
+
+        // Return true only when the tab strip is visible and dropping onto strip is not disabled.
+        // Otherwise, return false to not receive further events until dragEnd.
+        if (!isDragSource()) {
+            return Boolean.TRUE.equals(mStripLayoutVisibilitySupplier.get())
+                    && !TabUiFeatureUtilities.DISABLE_STRIP_TO_STRIP_DD.getValue();
+        }
+
         mStartScreenPos = new PointF(xPx, yPx);
         mLastXDp = xPx * mPxToDp;
-        mLastYDp = yPx * mPxToDp;
         return true;
     }
 
-    private boolean onDragEnter() {
-        if (!isDragSource()) return false;
+    private boolean onDragEnter(float xPx) {
+        mHoveringInStrip = true;
+        boolean isDragSource = isDragSource();
+        if (!isDragSource && mUmaState.mTabEnteringDestStripSystemElapsedTime < 0) {
+            mUmaState.mTabEnteringDestStripSystemElapsedTime = SystemClock.elapsedRealtime();
+        }
+        if (isDragSource || TabUiFeatureUtilities.isTabDragAsWindowEnabled()) {
+            showDragShadow(false);
+        }
         mStripLayoutHelperSupplier
                 .get()
-                .dragActiveClickedTabOntoStrip(LayoutManagerImpl.time(), mLastXDp);
-        showDragShadow(false);
+                .prepareForTabDrop(
+                        LayoutManagerImpl.time(),
+                        xPx * mPxToDp,
+                        mLastXDp,
+                        isDragSource,
+                        isDraggedTabIncognito());
         return true;
     }
 
     private boolean onDragLocation(float xPx, float yPx) {
-        if (!isDragSource()) return false;
         float xDp = xPx * mPxToDp;
         float yDp = yPx * mPxToDp;
-        mStripLayoutHelperSupplier.get().drag(LayoutManagerImpl.time(), xDp, yDp, xDp - mLastXDp);
+        mStripLayoutHelperSupplier
+                .get()
+                .dragForTabDrop(
+                        LayoutManagerImpl.time(),
+                        xDp,
+                        yDp,
+                        xDp - mLastXDp,
+                        isDraggedTabIncognito());
         return true;
     }
 
-    private boolean onDrop(float xPx, ClipData clipData) {
+    private boolean onDrop(float xPx, DragEvent dropEvent) {
+        StripLayoutHelper helper = mStripLayoutHelperSupplier.get();
+        int groupRootId = helper.getTabDropGroupId();
+        helper.onUpOrCancel(LayoutManagerImpl.time());
+
         if (isDragSource()) {
-            mStripLayoutHelperSupplier.get().onUpOrCancel(LayoutManagerImpl.time());
+            DragDropMetricUtils.recordTabReorderStripWithDragDrop(mUmaState.mDragEverLeftStrip);
             return true;
         }
 
-        // If the event is received by a non source chrome window then accept the drop
-        // in the destination chrome window.
-        for (int i = 0; i < clipData.getItemCount(); i++) {
-            int sourceTabId = getTabIdFromClipData(clipData.getItemAt(i));
-            // Ignore the drop if the dropped tab id does not match the id of tab being
-            // dragged. Return the original payload drop for next in line to receive the
-            // drop to handle.
-            Tab tabBeingDragged = DragDropGlobalState.getInstance().tabBeingDragged;
-            if (tabBeingDragged == null
-                    || sourceTabId != tabBeingDragged.getId()
-                    || mTabModelSelector == null) {
-                Log.w(TAG, "DnD: Received an invalid tab drop.");
-                return false;
-            }
-            int tabPositionIndex =
-                    getTabPositionIndex(xPx * mPxToDp, tabBeingDragged.isIncognito());
-            mMultiInstanceManager.moveTabToWindow(getActivity(), tabBeingDragged, tabPositionIndex);
+        if (dropEvent.getClipDescription() == null
+                || !dropEvent.getClipDescription().hasMimeType(MimeTypeUtils.CHROME_MIMETYPE_TAB)) {
+            return false;
         }
+
+        Tab tabBeingDragged = getTabFromGlobalState(dropEvent);
+        if (tabBeingDragged == null) {
+            return false;
+        }
+        boolean tabDraggedBelongToCurrentModel = doesBelongToCurrentModel(tabBeingDragged);
+        if (!tabDraggedBelongToCurrentModel
+                && TabUiFeatureUtilities.DISABLE_STRIP_TO_STRIP_DIFF_MODEL_DD.getValue()) {
+            // Disallow dropping into another model when param enabled.
+            DragDropMetricUtils.recordTabDragDropResult(
+                    DragDropTabResult.IGNORED_DIFF_MODEL_NOT_SUPPORTED);
+            return false;
+        }
+        if (!tabDraggedBelongToCurrentModel) {
+            mMultiInstanceManager.moveTabToWindow(
+                    getActivity(),
+                    tabBeingDragged,
+                    mTabModelSelector.getModel(tabBeingDragged.isIncognito()).getCount());
+            showDroppedDifferentModelToast(mWindowAndroid.getContext().get());
+        } else {
+            int tabIndex = helper.getTabIndexForTabDrop(dropEvent.getX() * mPxToDp);
+            mMultiInstanceManager.moveTabToWindow(getActivity(), tabBeingDragged, tabIndex);
+            helper.mergeToGroupForTabDropIfNeeded(groupRootId, tabBeingDragged.getId(), tabIndex);
+        }
+        DragDropMetricUtils.recordTabDragDropType(DragDropType.TAB_STRIP_TO_TAB_STRIP);
+        mUmaState.mTabLeavingDestStripSystemElapsedTime = SystemClock.elapsedRealtime();
         return true;
     }
 
     private boolean onDragEnd(
             View view, float xPx, float yPx, boolean dropHandled, boolean didExitToolbar) {
-        if (!isDragSource()) return false;
-        // If tab was dragged and dropped out of source toolbar but the drop was not handled, move
-        // to a new window.
-        Tab tabBeingDragged = DragDropGlobalState.getInstance().tabBeingDragged;
+        mHoveringInStrip = false;
+
+        // No-op for destination strip. Note: If we add updates for target strip, also check for
+        // !TabUiFeatureUtilities.DISABLE_STRIP_TO_STRIP_DD.getValue()
+        if (!isDragSource()) {
+            if (mUmaState.mTabEnteringDestStripSystemElapsedTime > 0
+                    && mUmaState.mTabLeavingDestStripSystemElapsedTime > 0) {
+                long duration =
+                        mUmaState.mTabLeavingDestStripSystemElapsedTime
+                                - mUmaState.mTabEnteringDestStripSystemElapsedTime;
+                assert duration >= 0
+                        : "Duration when the drag is within the destination strip is invalid";
+                DragDropMetricUtils.recordTabDurationWithinDestStrip(duration);
+            }
+            return false;
+        }
+
+        // If tab was dragged and dropped out of source toolbar but the drop was not handled,
+        // move to a new window.
+        Tab tabBeingDragged = getTabFromGlobalState(null);
         if (TabUiFeatureUtilities.isTabDragAsWindowEnabled()
                 && didExitToolbar
                 && !dropHandled
-                && DragDropGlobalState.getInstance().tabBeingDragged != null) {
+                && tabBeingDragged != null) {
             // Following call is device specific and is intended for specific platform
             // SysUI.
             sendPositionInfoToSysUI(view, mStartScreenPos.x, mStartScreenPos.y, xPx, yPx);
@@ -308,72 +432,97 @@ public class TabDragSource implements View.OnDragListener {
             mMultiInstanceManager.moveTabToNewWindow(tabBeingDragged);
         }
 
-        // Notify DragNDrop is completed.
-        DragDropGlobalState.getInstance().reset();
+        // Get the drag source Chrome instance id before it is cleared as it may be closed.
+        int sourceInstanceId =
+                DragDropGlobalState.getState(sDragTrackerToken).getDragSourceInstance();
+
         // TODO (crbug.com/1497784): Remove this method.
-        mStripLayoutHelperSupplier.get().clearActiveClickedTab();
-        mShadowView.clear();
+        mStripLayoutHelperSupplier.get().clearTabDragState();
+        if (mShadowView != null) {
+            mShadowView.clear();
+        }
+        if (sDragTrackerToken != null) {
+            DragDropGlobalState.clear(sDragTrackerToken);
+            sDragTrackerToken = null;
+        }
+        // Only record for source strip to avoid duplicate.
+        if (dropHandled) {
+            DragDropMetricUtils.recordTabDragDropResult(DragDropTabResult.SUCCESS);
+        }
+
+        // Close the source instance window if it has no tabs.
+        mMultiInstanceManager.closeChromeWindowIfEmpty(sourceInstanceId);
         return true;
     }
 
     private boolean onDragExit() {
-        if (!isDragSource()) return false;
-        // Show drag shadow when drag exits strip.
-        // TODO (crbug.com/1497784): Call this once on first drag exit. Reset on drag end.
-        showDragShadow(true);
-        mStripLayoutHelperSupplier.get().dragActiveClickedTabOutOfStrip(LayoutManagerImpl.time());
+        mHoveringInStrip = false;
+        mUmaState.mDragEverLeftStrip = true;
+        if (!isDragSource()) {
+            mUmaState.mTabLeavingDestStripSystemElapsedTime = SystemClock.elapsedRealtime();
+        }
+        if (TabUiFeatureUtilities.isTabDragAsWindowEnabled()) {
+            showDragShadow(true);
+        } else if (isDragSource()) {
+            TabDragShadowBuilder builder =
+                    (TabDragShadowBuilder) DragDropGlobalState.getDragShadowBuilder();
+            if (builder != null) {
+                builder.mShowDragShadow = true;
+                mShadowView.expand();
+            }
+        }
+        mStripLayoutHelperSupplier
+                .get()
+                .clearForTabDrop(LayoutManagerImpl.time(), isDragSource(), isDraggedTabIncognito());
         return true;
     }
 
-    private void showDragShadow(boolean show) {
-        assert mDragSourceView != null;
-        DragDropGlobalState.getInstance().dragShadowShowing = show;
-        DragShadowBuilder builder = createTabDragShadowBuilder(mDragSourceView.getContext(), show);
-        mDragSourceView.updateDragShadow(builder);
+    private static void showDragShadow(boolean show) {
+        if (!DragDropGlobalState.hasValue()) {
+            Log.w(TAG, "Global state is null when try to update drag shadow.");
+            return;
+        }
+
+        TabDragShadowBuilder builder =
+                (TabDragShadowBuilder) DragDropGlobalState.getDragShadowBuilder();
+        if (builder == null) return;
+        builder.update(show);
+    }
+
+    private Tab getTabFromGlobalState(@Nullable DragEvent dragEvent) {
+        DragDropGlobalState globalState =
+                dragEvent != null
+                        ? DragDropGlobalState.getState(dragEvent)
+                        : DragDropGlobalState.getState(sDragTrackerToken);
+        // We should only attempt to access this while we know there's an active drag.
+        assert globalState != null : "Attempting to access dragged tab with invalid drag state.";
+        assert globalState.getData() instanceof ChromeDropDataAndroid
+                : "Attempting to access dragged tab with wrong data type";
+        return ((ChromeDropDataAndroid) globalState.getData()).mTab;
     }
 
     private boolean isDragSource() {
-        return DragDropGlobalState.getInstance().dragSourceInstanceId
-                == mMultiInstanceManager.getCurrentInstanceId();
+        DragDropGlobalState globalState = DragDropGlobalState.getState(sDragTrackerToken);
+        // May attempt to check source on drag end.
+        if (globalState == null) return false;
+        return globalState.isDragSourceInstance(mMultiInstanceManager.getCurrentInstanceId());
     }
 
-    private int getTabIdFromClipData(ClipData.Item item) {
-        // TODO(b/285585036): Expand the ClipData definition to support dropping of the Tab info to
-        // be used by SysUI that can parse this format.
-        String[] itemTexts = item.getText().toString().split(";");
-        String numberText = itemTexts[0].replaceAll("[^0-9]", "");
-        return numberText.isEmpty() ? Tab.INVALID_TAB_ID : Integer.parseInt(numberText);
+    private boolean isDraggedTabIncognito() {
+        return getTabFromGlobalState(null).isIncognito();
     }
 
-    private int getTabPositionIndex(float dropXDp, boolean isDraggedTabIncognito) {
-        StripLayoutHelper activeStripHelper = mStripLayoutHelperSupplier.get();
-        // If dragged tab and drop target strip don't belong to same model,
-        // drop tab at corresponding model at end of strip.
-        if (mTabModelSelector.getCurrentModel().isIncognito() != isDraggedTabIncognito) {
-            TabModel model = mTabModelSelector.getModel(isDraggedTabIncognito);
-            return model.getCount();
-        }
-        // Based on the location of the drop determine the position index where the tab will be
-        // placed.
-        StripLayoutTab droppedOn = activeStripHelper.getTabAtPosition(dropXDp);
-        int tabPositionIndex = mTabModelSelector.getCurrentModel().getCount();
-        // If not dropped on any existing tabs then simply add it at the end.
-        if (droppedOn != null) {
-            tabPositionIndex = activeStripHelper.findIndexForTab(droppedOn.getId());
-            // Check if the tab being moved needs to be added before or after the tab it was
-            // dropped on based on the layout direction of tabs.
-            float droppedTabCenterX = droppedOn.getDrawX() + droppedOn.getWidth() / 2.f;
-            if (LocalizationUtils.isLayoutRtl()) {
-                if (dropXDp <= droppedTabCenterX) {
-                    tabPositionIndex++;
-                }
-            } else {
-                if (dropXDp > droppedTabCenterX) {
-                    tabPositionIndex++;
-                }
-            }
-        }
-        return tabPositionIndex;
+    /**
+     * Shows a toast indicating that a tab is dropped into strip in a different model.
+     *
+     * @param context The context where the toast will be shown.
+     */
+    private void showDroppedDifferentModelToast(Context context) {
+        Toast.makeText(context, R.string.tab_dropped_different_model, Toast.LENGTH_LONG).show();
+    }
+
+    private boolean doesBelongToCurrentModel(Tab tabBeingDragged) {
+        return mTabModelSelector.getCurrentModel().isIncognito() == tabBeingDragged.isIncognito();
     }
 
     private Activity getActivity() {
@@ -386,20 +535,57 @@ public class TabDragSource implements View.OnDragListener {
     }
 
     @VisibleForTesting
-    void setGlobalState(Tab tabBeingDragged) {
-        // TODO (crbug.com/1497784): Move to startDragAndDrop call.
-        DragDropGlobalState.getInstance().tabBeingDragged = tabBeingDragged;
-        DragDropGlobalState.getInstance().dragSourceInstanceId =
-                mMultiInstanceManager.getCurrentInstanceId();
-    }
-
-    private static class TabDragShadowBuilder extends View.DragShadowBuilder {
+    static class TabDragShadowBuilder extends View.DragShadowBuilder {
+        // Touch offset for drag shadow view.
         private PointF mDragShadowOffset;
+        // Source initiating drag - to call updateDragShadow().
+        private View mDragSourceView;
+        // Content to add to shadowView.
+        @Nullable private Drawable mViewContent;
+        // Whether drag shadow should be shown.
+        private boolean mShowDragShadow;
 
-        public TabDragShadowBuilder(View view, PointF dragShadowOffset) {
+        public TabDragShadowBuilder(
+                View dragSourceView,
+                View shadowView,
+                PointF dragShadowOffset,
+                Drawable viewContent) {
             // Store the View parameter.
-            super(view);
+            super(shadowView);
             mDragShadowOffset = dragShadowOffset;
+            mDragSourceView = dragSourceView;
+            mViewContent = viewContent;
+        }
+
+        public void update(boolean show) {
+            mShowDragShadow = show;
+            mDragSourceView.updateDragShadow(this);
+        }
+
+        @Override
+        public void onDrawShadow(@NonNull Canvas canvas) {
+            View shadowView = getView();
+            if (mShowDragShadow) {
+                if (TabUiFeatureUtilities.isTabDragAsWindowEnabled()) {
+                    assert mViewContent != null;
+                    ((ImageView) shadowView).setImageDrawable(mViewContent);
+                    shadowView.setBackgroundDrawable(new ColorDrawable(Color.LTGRAY));
+                    // Pad content to the center of the drag shadow.
+                    int paddingHorizontal =
+                            (shadowView.getWidth() - mViewContent.getIntrinsicWidth()) / 2;
+                    int paddingVertical =
+                            (shadowView.getHeight() - mViewContent.getIntrinsicHeight()) / 2;
+                    shadowView.setPadding(
+                            paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
+                    shadowView.layout(0, 0, shadowView.getWidth(), shadowView.getHeight());
+                }
+                shadowView.draw(canvas);
+            } else {
+                // When drag shadow should hide, replace with empty ImageView.
+                ImageView imageView = new ImageView(shadowView.getContext());
+                imageView.layout(0, 0, shadowView.getWidth(), shadowView.getHeight());
+                imageView.draw(canvas);
+            }
         }
 
         // Defines a callback that sends the drag shadow dimensions and touch point
@@ -417,61 +603,37 @@ public class TabDragSource implements View.OnDragListener {
             // Set the size parameter's width and height values. These get back
             // to the system through the size parameter.
             size.set(width, height);
-
-            // Set the touch point of the drag shadow to be user's hold/touch point within Chrome
-            // Window.
             touch.set(Math.round(mDragShadowOffset.x), Math.round(mDragShadowOffset.y));
             Log.d(TAG, "DnD onProvideShadowMetrics: " + mDragShadowOffset);
         }
+
+        boolean getShadowShownForTesting() {
+            return mShowDragShadow;
+        }
     }
 
-    @NonNull
-    @VisibleForTesting
-    DragShadowBuilder createTabDragShadowBuilder(Context context, boolean show) {
-        int shadowWidthPx;
-        int shadowHeightPx;
-        ImageView imageView = new ImageView(context);
-        if (TabUiFeatureUtilities.isTabDragAsWindowEnabled()) {
-            // View is empty and nothing is shown for now.
-            // Get Chrome window dimensions and set the view to that size.
-            View decorView = getDecorView();
-            shadowWidthPx = decorView.getWidth();
-            shadowHeightPx = decorView.getHeight();
-            if (show) {
-                addAppIconToShadow(imageView, context, shadowWidthPx, shadowHeightPx);
-            }
-        } else {
-            if (show) {
-                return new TabDragShadowBuilder(mShadowView, mDragShadowDefaultOffset);
-            }
-            shadowWidthPx = mShadowView.getWidth();
-            shadowHeightPx = mShadowView.getHeight();
+    DragShadowBuilder createDragShadowBuilder(
+            View dragSourceView, PointF startPoint, float tabPositionX) {
+        PointF dragShadowOffset;
+        if (!TabUiFeatureUtilities.isTabDragAsWindowEnabled()) {
+            // Set the touch point of the drag shadow:
+            // Horizontally matching user's touch point within the tab title;
+            // Vertically centered in the tab title.
+            Resources resources = dragSourceView.getContext().getResources();
+            float dragShadowOffsetY =
+                    resources.getDimension(R.dimen.tab_grid_card_header_height) / 2
+                            + resources.getDimension(R.dimen.tab_grid_card_margin);
+            dragShadowOffset =
+                    new PointF((startPoint.x - tabPositionX) / mPxToDp, dragShadowOffsetY);
+            return new TabDragShadowBuilder(dragSourceView, mShadowView, dragShadowOffset, null);
         }
-        if (show) {
-            imageView.setBackgroundDrawable(new ColorDrawable(Color.LTGRAY));
-        }
-        imageView.layout(0, 0, shadowWidthPx, shadowHeightPx);
-        return new TabDragShadowBuilder(imageView, mDragShadowDefaultOffset);
-    }
-
-    private void addAppIconToShadow(
-            ImageView imageView, Context context, int shadowWidth, int shadowHeight) {
-        try {
-            Drawable icon =
-                    context.getPackageManager().getApplicationIcon(context.getApplicationInfo());
-            imageView.setImageDrawable(icon);
-
-            // Add app icon in the center of the drag shadow.
-            int iconWidth = icon.getIntrinsicWidth();
-            int iconHeight = icon.getIntrinsicHeight();
-            int paddingHorizontal = (shadowWidth - iconWidth) / 2;
-            int paddingVertical = (shadowHeight - iconHeight) / 2;
-            imageView.setPadding(
-                    paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
-            imageView.layout(0, 0, shadowWidth, shadowHeight);
-        } catch (Exception e) {
-            Log.e(TAG, "DnD Failed to create drag shadow image view: " + e.getMessage());
-        }
+        ImageView imageView = new ImageView(dragSourceView.getContext());
+        View decorView = getDecorView();
+        imageView.layout(0, 0, decorView.getWidth(), decorView.getHeight());
+        // Set the touch point of the drag shadow to be user's hold/touch point within Chrome
+        // Window.
+        dragShadowOffset = getPositionOnScreen(dragSourceView, startPoint);
+        return new TabDragShadowBuilder(dragSourceView, imageView, dragShadowOffset, mAppIcon);
     }
 
     private void sendPositionInfoToSysUI(
@@ -554,5 +716,20 @@ public class TabDragSource implements View.OnDragListener {
 
     View getShadowViewForTesting() {
         return mShadowView;
+    }
+
+    static class DragLocalUmaState {
+        // Whether the tab drag has ever left the source strip.
+        boolean mDragEverLeftStrip;
+        // The SystemElapsedTime when the tab dragged first enters the destination strip.
+        long mTabEnteringDestStripSystemElapsedTime;
+        // The SystemElapsedTime when the tab dragged exits or drops into the destination strip.
+        long mTabLeavingDestStripSystemElapsedTime;
+
+        DragLocalUmaState() {
+            mDragEverLeftStrip = false;
+            mTabEnteringDestStripSystemElapsedTime = -1;
+            mTabLeavingDestStripSystemElapsedTime = -1;
+        }
     }
 }

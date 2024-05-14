@@ -4,6 +4,7 @@
 
 #include <memory>
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -13,7 +14,9 @@
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
@@ -43,6 +46,7 @@ namespace {
 
 using bluetooth_config::mojom::BluetoothSystemState;
 
+constexpr char kFakeEmail[] = "testemail@gmail.com";
 constexpr char kWifiNetworkName[] = "wifi-test-network";
 constexpr char kWelcomeScreen[] = "welcomeScreen";
 constexpr char kQuickStartEntryPoint[] = "quickStartWelcomeEntryPoint";
@@ -55,7 +59,7 @@ constexpr char kQuickStartBluetoothEnableButton[] =
 constexpr char kLoadingDialog[] = "loadingDialog";
 constexpr char kCancelButton[] = "cancelButton";
 constexpr char kPinCodeWrapper[] = "pinWrapper";
-constexpr char kGaiaTransferDialog[] = "gaiaTransferDialog";
+constexpr char kConfirmAccountDialog[] = "confirmAccountDialog";
 constexpr char kScreenOpenedHistogram[] = "QuickStart.ScreenOpened";
 constexpr test::UIPath kQuickStartEntryPointPath = {
     WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartEntryPoint};
@@ -63,14 +67,11 @@ constexpr test::UIPath kQuickStartButtonPath = {
     WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartEntryPoint,
     kQuickStartButton};
 constexpr test::UIPath kQuickStartBluetoothDialogPath = {
-    WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartEntryPoint,
-    kQuickStartBluetoothDialog};
+    QuickStartView::kScreenId.name, kQuickStartBluetoothDialog};
 constexpr test::UIPath kQuickStartBluetoothCancelButtonPath = {
-    WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartEntryPoint,
-    kQuickStartBluetoothCancelButton};
+    QuickStartView::kScreenId.name, kQuickStartBluetoothCancelButton};
 constexpr test::UIPath kQuickStartBluetoothEnableButtonPath = {
-    WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartEntryPoint,
-    kQuickStartBluetoothEnableButton};
+    QuickStartView::kScreenId.name, kQuickStartBluetoothEnableButton};
 constexpr test::UIPath kCancelButtonLoadingDialog = {
     QuickStartView::kScreenId.name, kLoadingDialog, kCancelButton};
 constexpr test::UIPath kCancelButtonVerificationDialog = {
@@ -79,10 +80,10 @@ constexpr test::UIPath kQuickStartPinCode = {QuickStartView::kScreenId.name,
                                              kPinCodeWrapper};
 constexpr test::UIPath kQuickStartQrCodeCanvas = {
     QuickStartView::kScreenId.name, "qrCodeCanvas"};
-constexpr test::UIPath kGaiaTransferDialogPath = {
-    QuickStartView::kScreenId.name, kGaiaTransferDialog};
+constexpr test::UIPath kConfirmAccountDialogPath = {
+    QuickStartView::kScreenId.name, kConfirmAccountDialog};
 constexpr test::UIPath kCancelButtonGaiaTransferDialog = {
-    QuickStartView::kScreenId.name, kGaiaTransferDialog, kCancelButton};
+    QuickStartView::kScreenId.name, kCancelButton};
 constexpr test::UIPath kQuickStartButtonGaia = {
     "gaia-signin", "signin-frame-dialog", "quick-start-signin-button"};
 
@@ -105,7 +106,16 @@ class QuickStartBrowserTest : public OobeBaseTest {
  public:
   QuickStartBrowserTest() {
     needs_network_screen_skip_check_ = true;
-    feature_list_.InitAndEnableFeature(features::kOobeQuickStart);
+
+    // Force enable Gaia Info screen flag, which is the default behaviour
+    // since adding field trial config entry for Gaia Info screen caused
+    // the flag to be disabled and the info screen is not shown.
+    // TODO: b/320870274 - Clean up GaiaInfoScreen flag upon
+    // completion of the Gaia Info screen experiment.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kOobeQuickStart,
+                              features::kOobeGaiaInfoScreen},
+        /*disabled_features=*/{});
   }
   ~QuickStartBrowserTest() override = default;
 
@@ -172,14 +182,6 @@ class QuickStartBrowserTest : public OobeBaseTest {
         .WillByDefault(testing::Return(is_powered));
   }
 
-  void EnsureBluetoothState(bool is_powered) {
-    EXPECT_EQ(WizardController::default_controller()
-                  ->quick_start_controller()
-                  ->get_bluetooth_system_state_for_testing(),
-              is_powered ? BluetoothSystemState::kEnabled
-                         : BluetoothSystemState::kDisabled);
-  }
-
   void SkipUpdateScreenOnBrandedBuilds() {
     if (!LoginDisplayHost::default_host()
              ->GetWizardContext()
@@ -221,6 +223,14 @@ class QuickStartBrowserTest : public OobeBaseTest {
         ->Wait();
   }
 
+  void WaitForUserCreationAndTriggerPersonalFlow() {
+    test::WaitForUserCreationScreen();
+    test::TapForPersonalUseCrRadioButton();
+    test::TapUserCreationNext();
+    test::WaitForConsumerUpdateScreen();
+    test::ExitConsumerUpdateScreenNoUpdate();
+  }
+
   // Advertise, Initiate Connection, Authenticate
   void SimulatePhoneConnection() {
     connection_broker()->on_start_advertising_callback().Run(true);
@@ -232,7 +242,7 @@ class QuickStartBrowserTest : public OobeBaseTest {
   void AbortFlowFromPhoneSide() {
     connection_broker()->CloseConnection(
         quick_start::TargetDeviceConnectionBroker::ConnectionClosedReason::
-            kUserAborted);
+            kConnectionLost);
   }
 
   void SimulateUserVerification(bool simulate_failure = false) {
@@ -254,6 +264,12 @@ class QuickStartBrowserTest : public OobeBaseTest {
       connection->SendWifiCredentials(ash::quick_start::mojom::WifiCredentials(
           "fake-wifi", security, /*is_hidden=*/false, "secret"));
     }
+  }
+
+  void SimulateAccountInfoTransfer(bool send_empty_account_info = false) {
+    auto* connection = connection_broker()->GetFakeConnection();
+    connection->SendAccountInfo(
+        send_empty_account_info ? "" : std::string{kFakeEmail});
   }
 
   void EnsureFlowActive() { EnsureFlowState(true); }
@@ -370,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(QuickStartNotDeterminedBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTestWithBluetoothDisabled,
-                       ClickingOnQuickStartWhenBluetoothDisabled) {
+                       BluetoothDialogIsShownAndCancellingWorks) {
   test::WaitForWelcomeScreen();
 
   test::OobeJS()
@@ -380,41 +396,25 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTestWithBluetoothDisabled,
   EXPECT_CALL(*mock_bluetooth_adapter_, IsPowered())
       .WillRepeatedly(testing::Return(false));
 
-  EnsureBluetoothState(/*is_powered=*/false);
-
+  // Clicking on the entry point when bluetooth is disabled should
+  // transition to the QuickStart screen and show the dialog.
   test::OobeJS().ClickOnPath(kQuickStartButtonPath);
-  WaitForBluetoothDialogToOpen();
-}
-
-IN_PROC_BROWSER_TEST_F(QuickStartBrowserTestWithBluetoothDisabled,
-                       CancellingBluetoothEnablingClosesDialog) {
-  test::WaitForWelcomeScreen();
-
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButtonPath)
-      ->Wait();
-
-  EXPECT_CALL(*mock_bluetooth_adapter_, IsPowered())
-      .WillRepeatedly(testing::Return(false));
-
-  EnsureBluetoothState(/*is_powered=*/false);
-
-  test::OobeJS().ClickOnPath(kQuickStartButtonPath);
-
+  OobeScreenWaiter(QuickStartView::kScreenId).Wait();
+  WaitForVerificationStep();
   WaitForBluetoothDialogToOpen();
 
+  // Cancelling the dialog should bring the user back.
   test::OobeJS()
       .CreateVisibilityWaiter(/*visibility=*/true,
                               kQuickStartBluetoothCancelButtonPath)
       ->Wait();
-
   test::OobeJS().ClickOnPath(kQuickStartBluetoothCancelButtonPath);
 
-  WaitForBluetoothDialogToClose();
+  test::WaitForWelcomeScreen();
 }
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTestWithBluetoothDisabled,
-                       TurningOnBlueoothFromBluetoothDialog) {
+                       TurningOnBluetoothFromBluetoothDialog) {
   test::WaitForWelcomeScreen();
 
   test::OobeJS()
@@ -424,20 +424,19 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTestWithBluetoothDisabled,
   EXPECT_CALL(*mock_bluetooth_adapter_, IsPowered())
       .WillRepeatedly(testing::Return(false));
 
-  EnsureBluetoothState(/*is_powered=*/false);
-
+  // Clicking on the entry point when bluetooth is disabled should
+  // transition to the QuickStart screen and show the dialog.
   test::OobeJS().ClickOnPath(kQuickStartButtonPath);
-
+  OobeScreenWaiter(QuickStartView::kScreenId).Wait();
+  WaitForVerificationStep();
   WaitForBluetoothDialogToOpen();
 
   test::OobeJS()
       .CreateVisibilityWaiter(/*visibility=*/true,
                               kQuickStartBluetoothEnableButtonPath)
       ->Wait();
-
   test::OobeJS().ClickOnPath(kQuickStartBluetoothEnableButtonPath);
-
-  OobeScreenWaiter(QuickStartView::kScreenId).Wait();
+  WaitForBluetoothDialogToClose();
 }
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, QRCode) {
@@ -541,6 +540,28 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, CancelOnQRCode) {
   EnsureFlowNotActive();
 }
 
+IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, CancelAndRestartWithNewSession) {
+  EnterQuickStartFlowFromWelcomeScreen();
+  uint64_t first_session_id = connection_broker()->session_id();
+
+  SimulatePhoneConnection();
+  SimulateUserVerification();
+
+  // Cancel flow.
+  test::OobeJS()
+      .CreateVisibilityWaiter(/*visibility=*/true,
+                              kCancelButtonVerificationDialog)
+      ->Wait();
+  test::OobeJS().ClickOnPath(kCancelButtonVerificationDialog);
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  EnsureFlowNotActive();
+
+  // Enter again and check that session info is different.
+  EnterQuickStartFlowFromWelcomeScreen();
+  uint64_t second_session_id = connection_broker()->session_id();
+  EXPECT_NE(first_session_id, second_session_id);
+}
+
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, EndToEndWithMetrics) {
   SetUpDisconnectedWifiNetwork();
   base::HistogramTester histogram_tester;
@@ -567,14 +588,16 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, EndToEndWithMetrics) {
 
   test::WaitForNetworkSelectionScreen();
   SkipUpdateScreenOnBrandedBuilds();
+  WaitForUserCreationAndTriggerPersonalFlow();
 
-  // The flow continues to QuickStart upon reaching the UserCreationScreen.
+  // The flow continues to QuickStart upon reaching the GaiaInfoScreen or
+  // GaiaScreen.
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
 }
 
 // Simulates the phone cancelling the flow after the WiFi credentials are sent
-// and while OOBE is performing its update and enrollment checks.
-IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, PhoneAbortsFlowDuringUpdate) {
+// and while OOBE continues in between Quick Start screens.
+IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, PhoneAbortsFlowOnUpdateScreen) {
   // Force branded so that the update screen is shown.
   LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
 
@@ -587,10 +610,64 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, PhoneAbortsFlowDuringUpdate) {
   // Simulate the phone aborting the flow during update and enrollment checks.
   test::WaitForUpdateScreen();
   AbortFlowFromPhoneSide();
+
   test::ExitUpdateScreenNoUpdate();
+  WaitForUserCreationAndTriggerPersonalFlow();
+  test::WaitForGaiaInfoScreen();
 
   // Abort should be handled gracefully and the standard OOBE flow is expected.
+  EnsureFlowNotActive();
+}
+
+IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
+                       PhoneAbortsFlowOnUserCreationScreen) {
+  // Force branded so that the update screen is shown.
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
+
+  EnterQuickStartFlowFromWelcomeScreen();
+
+  SimulatePhoneConnection();
+  SimulateUserVerification();
+  SimulateWiFiTransfer();
+
+  test::WaitForUpdateScreen();
+  test::ExitUpdateScreenNoUpdate();
   test::WaitForUserCreationScreen();
+  AbortFlowFromPhoneSide();
+
+  test::TapForPersonalUseCrRadioButton();
+  test::TapUserCreationNext();
+  test::WaitForConsumerUpdateScreen();
+  test::ExitConsumerUpdateScreenNoUpdate();
+  test::WaitForGaiaInfoScreen();
+
+  // Abort should be handled gracefully and the standard OOBE flow is expected.
+  EnsureFlowNotActive();
+}
+
+IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
+                       PhoneAbortsFlowOnConsumerUpdateScreen) {
+  // Force branded so that the update screen is shown.
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
+
+  EnterQuickStartFlowFromWelcomeScreen();
+
+  SimulatePhoneConnection();
+  SimulateUserVerification();
+  SimulateWiFiTransfer();
+
+  test::WaitForUpdateScreen();
+  test::ExitUpdateScreenNoUpdate();
+  test::WaitForUserCreationScreen();
+  test::TapForPersonalUseCrRadioButton();
+  test::TapUserCreationNext();
+  test::WaitForConsumerUpdateScreen();
+  AbortFlowFromPhoneSide();
+
+  test::ExitConsumerUpdateScreenNoUpdate();
+  test::WaitForGaiaInfoScreen();
+
+  // Abort should be handled gracefully and the standard OOBE flow is expected.
   EnsureFlowNotActive();
 }
 
@@ -619,8 +696,10 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, EndToEndWithEmptyWifiCreds) {
   ClickOnWifiNetwork(kWifiNetworkName);
 
   SkipUpdateScreenOnBrandedBuilds();
+  WaitForUserCreationAndTriggerPersonalFlow();
 
-  // The flow continues to QuickStart upon reaching the UserCreationScreen.
+  // The flow continues to QuickStart upon reaching the GaiaInfoScreen or
+  // GaiaScreen.
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   EnsureFlowActive();
 }
@@ -658,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, PhoneAbortOnManualNetworkNeeded) {
   SkipUpdateScreenOnBrandedBuilds();
 
   // Abort should be handled gracefully and the standard OOBE flow is expected.
-  test::WaitForUserCreationScreen();
+  WaitForUserCreationAndTriggerPersonalFlow();
   EnsureFlowNotActive();
 }
 
@@ -693,16 +772,16 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
   test::OobeJS()
       .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButtonGaia)
       ->Wait();
+
   test::OobeJS().ClickOnPath(kQuickStartButtonGaia);
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   EnsureFlowActive();
-
   SimulatePhoneConnection();
   SimulateUserVerification();
 
-  // Gaia credential transfer step should become visible
+  // "Confirm your account" step should become visible
   test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kGaiaTransferDialogPath)
+      .CreateVisibilityWaiter(/*visibility=*/true, kConfirmAccountDialogPath)
       ->Wait();
 
   // Cancel and return to the Gaia screen.
@@ -714,6 +793,53 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
 
   // Returns to the Gaia screen
   OobeScreenWaiter(GaiaScreenHandler::kScreenId).Wait();
+}
+
+// Test the correct behavior when there are no accounts on the phone.
+IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, HandleEmptyAccounts) {
+  SetupAndWaitForGaiaScreen();
+
+  test::OobeJS()
+      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButtonGaia)
+      ->Wait();
+
+  test::OobeJS().ClickOnPath(kQuickStartButtonGaia);
+  OobeScreenWaiter(QuickStartView::kScreenId).Wait();
+  EnsureFlowActive();
+  SimulatePhoneConnection();
+  SimulateUserVerification();
+
+  // Receiving an empty email from the phone will abort the flow.
+  SimulateAccountInfoTransfer(/*send_empty_account_info=*/true);
+
+  // Returns to the Gaia screen
+  OobeScreenWaiter(GaiaScreenHandler::kScreenId).Wait();
+}
+
+class QuickStartLoginScreenTest : public QuickStartBrowserTest {
+ public:
+  QuickStartLoginScreenTest() : QuickStartBrowserTest() {
+    login_manager_mixin_.AppendRegularUsers(1);
+  }
+
+ private:
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
+};
+
+IN_PROC_BROWSER_TEST_F(QuickStartLoginScreenTest, EntryPointNotVisible) {
+  SetupNetwork(/*connected=*/true);
+  EXPECT_TRUE(LoginScreenTestApi::ClickAddUserButton());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+
+  test::OobeJS().ClickOnPath({"user-creation", "selfButton"});
+  test::OobeJS().ClickOnPath({"user-creation", "nextButton"});
+
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  base::RunLoop().RunUntilIdle();
+  test::OobeJS().ExpectHiddenPath(kQuickStartButtonGaia);
 }
 
 }  // namespace ash

@@ -52,7 +52,7 @@ void SimNetwork::DidReceiveResponse(URLLoaderClient* client,
   if (it == requests_.end()) {
     client->DidReceiveResponse(response,
                                /*body=*/mojo::ScopedDataPipeConsumerHandle(),
-                               /*cached_metadata=*/absl::nullopt);
+                               /*cached_metadata=*/std::nullopt);
     return;
   }
   DCHECK(it->value);
@@ -88,7 +88,7 @@ void SimNetwork::DidFinishLoading(URLLoaderClient* client,
   if (!current_request_) {
     client->DidFinishLoading(finish_time, total_encoded_data_length,
                              total_encoded_body_length,
-                             total_decoded_body_length, false);
+                             total_decoded_body_length);
     return;
   }
   current_request_ = nullptr;

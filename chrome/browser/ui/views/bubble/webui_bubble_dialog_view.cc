@@ -24,8 +24,9 @@ constexpr gfx::Size kMinSize(25, 25);
 // WebUIBubbleView provides the functionality needed to embed a WebContents
 // within a Views hierarchy.
 class WebUIBubbleView : public views::WebView {
+  METADATA_HEADER(WebUIBubbleView, views::WebView)
+
  public:
-  METADATA_HEADER(WebUIBubbleView);
   explicit WebUIBubbleView(content::WebContents* web_contents) {
     SetWebContents(web_contents);
     // Allow the embedder to handle accelerators not handled by the WebContents.
@@ -42,14 +43,14 @@ class WebUIBubbleView : public views::WebView {
   }
 };
 
-BEGIN_METADATA(WebUIBubbleView, views::WebView)
+BEGIN_METADATA(WebUIBubbleView)
 END_METADATA
 
 }  // namespace
 
 WebUIBubbleDialogView::WebUIBubbleDialogView(
     views::View* anchor_view,
-    base::WeakPtr<BubbleContentsWrapper> contents_wrapper,
+    base::WeakPtr<WebUIContentsWrapper> contents_wrapper,
     const std::optional<gfx::Rect>& anchor_rect,
     views::BubbleBorder::Arrow arrow)
     : BubbleDialogDelegateView(anchor_view, arrow),
@@ -139,5 +140,5 @@ gfx::Rect WebUIBubbleDialogView::GetAnchorRect() const {
   return BubbleDialogDelegateView::GetAnchorRect();
 }
 
-BEGIN_METADATA(WebUIBubbleDialogView, views::BubbleDialogDelegateView)
+BEGIN_METADATA(WebUIBubbleDialogView)
 END_METADATA

@@ -14,6 +14,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -1104,7 +1105,7 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
 
 #if !BUILDFLAG(IS_ANDROID)
   if (resources_) {  // Initialize may not have been called yet.
-    for (PassthroughAbstractTextureImpl* iter : abstract_textures_) {
+    for (AbstractTexture* iter : abstract_textures_) {
       resources_->textures_pending_destruction.insert(
           iter->OnDecoderWillDestroy());
     }
@@ -1372,7 +1373,8 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.disable_one_component_textures =
       group_->shared_image_manager() &&
       group_->shared_image_manager()->display_context_on_another_thread() &&
-      features::IsUsingVulkan();
+      (feature_info_->workarounds().avoid_one_component_egl_images ||
+       features::IsUsingVulkan());
   caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
   caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
   caps.texture_norm16 = feature_info_->feature_flags().ext_texture_norm16;
@@ -1400,7 +1402,8 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.msaa_is_slow = MSAAIsSlow(feature_info_->workarounds());
   caps.avoid_stencil_buffers =
       feature_info_->workarounds().avoid_stencil_buffers;
-  caps.supports_yuv_rgb_conversion = true;
+  caps.supports_yuv_to_rgb_conversion = true;
+  caps.supports_rgb_to_yuv_conversion = true;
   // Technically, YUV readback is handled on the client side, but enable it here
   // so that clients can use this to detect support.
   caps.supports_yuv_readback = true;
@@ -1646,15 +1649,15 @@ GLES2DecoderPassthroughImpl::CreateAbstractTexture(GLenum target,
       new TexturePassthrough(service_id, target));
 
   // Unretained is safe, because of the destruction cb.
-  std::unique_ptr<PassthroughAbstractTextureImpl> abstract_texture =
-      std::make_unique<PassthroughAbstractTextureImpl>(texture, this);
+  std::unique_ptr<AbstractTexture> abstract_texture =
+      std::make_unique<AbstractTexture>(texture, this);
 
   abstract_textures_.insert(abstract_texture.get());
   return abstract_texture;
 }
 
 void GLES2DecoderPassthroughImpl::OnAbstractTextureDestroyed(
-    PassthroughAbstractTextureImpl* abstract_texture,
+    AbstractTexture* abstract_texture,
     scoped_refptr<TexturePassthrough> texture) {
   DCHECK(texture);
   abstract_textures_.erase(abstract_texture);

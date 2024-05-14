@@ -26,6 +26,7 @@
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_hid_delegate_observer.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_offline_capability_checker.h"
@@ -711,7 +712,7 @@ void ServiceWorkerContextCore::WaitForRegistrationsInitializedForTest() {
 void ServiceWorkerContextCore::AddWarmUpRequest(
     const GURL& document_url,
     const blink::StorageKey& key,
-    ServiceWorkerContextCore::WarmUpServiceWorkerCallback callback) {
+    ServiceWorkerContext::WarmUpServiceWorkerCallback callback) {
   const size_t kRequestQueueLength =
       blink::features::kSpeculativeServiceWorkerWarmUpRequestQueueLength.Get();
 
@@ -733,24 +734,24 @@ void ServiceWorkerContextCore::AddWarmUpRequest(
   }
 }
 
-absl::optional<ServiceWorkerContextCore::WarmUpRequest>
+std::optional<ServiceWorkerContextCore::WarmUpRequest>
 ServiceWorkerContextCore::PopNextWarmUpRequest() {
   DCHECK(!IsProcessingWarmingUp());
 
   if (warm_up_requests_.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   if (GetWarmedUpServiceWorkerCount(live_versions_) >=
       blink::features::kSpeculativeServiceWorkerWarmUpMaxCount.Get()) {
     warm_up_requests_.clear();
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Return the most recent queued request (LIFO order) to prioritize recently
   // added URLs. For example, the recent mouse-hoverd link will have a higher
   // chance to navigate than the previously mouse-hoverd link.
-  absl::optional<ServiceWorkerContextCore::WarmUpRequest> request(
+  std::optional<ServiceWorkerContextCore::WarmUpRequest> request(
       std::move(warm_up_requests_.back()));
   warm_up_requests_.pop_back();
   BeginProcessingWarmingUp();
@@ -915,6 +916,9 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnNewLiveVersion,
                          version_info);
+  for (auto& observer : test_version_observers_) {
+    observer.OnServiceWorkerVersionCreated(version);
+  }
 }
 
 void ServiceWorkerContextCore::RemoveLiveVersion(int64_t id) {
@@ -1187,7 +1191,7 @@ void ServiceWorkerContextCore::OnRunningStateChanged(
           FROM_HERE, &ServiceWorkerContextCoreObserver::OnStarted,
           version->version_id(), version->scope(),
           version->embedded_worker()->process_id(), version->script_url(),
-          version->embedded_worker()->token().value(), version->key());
+          version->worker_host()->token(), version->key());
       break;
     case blink::EmbeddedWorkerStatus::kStopping:
       observer_list_->Notify(FROM_HERE,

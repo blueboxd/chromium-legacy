@@ -32,6 +32,7 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.ResettersForTesting;
+import org.chromium.base.cached_flags.IntCachedFieldTrialParameter;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
@@ -40,7 +41,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.tab.Tab;
@@ -64,6 +65,12 @@ import java.util.Locale;
 public class MultiWindowUtils implements ActivityStateListener {
     public static final int INVALID_INSTANCE_ID = TabWindowManager.INVALID_WINDOW_INDEX;
     public static final int INVALID_TASK_ID = -1; // Defined in android.app.ActivityTaskManager.
+    public static final IntCachedFieldTrialParameter
+            BACK_TO_BACK_CTA_CREATION_TIMESTAMP_DIFF_THRESHOLD_MS =
+                    ChromeFeatureList.newIntCachedFieldTrialParameter(
+                            ChromeFeatureList.TAB_WINDOW_MANAGER_REPORT_INDICES_MISMATCH,
+                            "activity_creation_timestamp_diff_threshold_ms",
+                            1000);
 
     private static MultiWindowUtils sInstance = new MultiWindowUtils();
 
@@ -127,7 +134,7 @@ public class MultiWindowUtils implements ActivityStateListener {
         // Instance switcher is supported on S, and on some R platforms where the new
         // launch mode is backported.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return false;
-        return ChromeFeatureList.sInstanceSwitcher.isEnabled();
+        return true;
     }
 
     /**
@@ -208,17 +215,31 @@ public class MultiWindowUtils implements ActivityStateListener {
         // Not supported on automotive devices.
         if (BuildInfo.getInstance().isAutomotive) return false;
 
-        boolean hasAtMostOneTab = tabModelSelector.getTotalTabCount() <= 1;
-        boolean partnerHomepageEnabled =
-                PartnerBrowserCustomizations.getInstance().isHomepageProviderAvailableAndEnabled();
-        // Do not allow move for last tab when partner homepage enabled.
-        if (hasAtMostOneTab && partnerHomepageEnabled) return false;
+        // Do not allow move for last tab when homepage enabled and is set to a custom url.
+        if (hasAtMostOneTabWithHomepageEnabled(tabModelSelector)) {
+            return false;
+        }
         if (instanceSwitcherEnabled() && isMultiInstanceApi31Enabled()) {
             // Moving tabs should be possible to any other instance.
             return getInstanceCount() > 1;
         } else {
             return isOpenInOtherWindowSupported(activity);
         }
+    }
+
+    /**
+     * @param tabModelSelector Used to pull total tab count.
+     * @return whether it is last tab with homepage enabled and set to an custom url.
+     */
+    public boolean hasAtMostOneTabWithHomepageEnabled(TabModelSelector tabModelSelector) {
+        boolean hasAtMostOneTab = tabModelSelector.getTotalTabCount() <= 1;
+
+        // Chrome app is set to close with zero tabs when homepage is enabled and set to a custom
+        // url other than the NTP. We should not allow dragging the last tab or display 'Move to
+        // other window' in this scenario as the source window might be closed before drag n drop
+        // completes properly and thus cause other complications.
+        boolean shouldAppCloseWithZeroTabs = HomepageManager.shouldCloseAppWithZeroTabs();
+        return hasAtMostOneTab && shouldAppCloseWithZeroTabs;
     }
 
     /**

@@ -16,9 +16,6 @@ namespace features {
 // chrome/browser/preloadingprefetch/prefetch_proxy/.
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchUseContentRefactor);
 
-// IF enabled, then redirects will be followed when prefetching.
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchRedirects);
-
 // If enabled, PrefetchContainer can be used for more than one navigation.
 // https://crbug.com/1449360
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchReusable);
@@ -36,6 +33,33 @@ BASE_DECLARE_FEATURE(kPrefetchNIKScope);
 // If enabled, the early cookie copy in `PrefetchDocumentManager` is
 // skipped. See crbug.com/1503003 for details.
 BASE_DECLARE_FEATURE(kPrefetchDocumentManagerEarlyCookieCopySkipped);
+
+// If enabled, a will retrieve and store responses from/to the HTTP cache
+// whenever possible.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchUsesHTTPCache);
+
+// If enabled, prefetches may include client hints request headers.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrefetchClientHints);
+
+// This allows controlling the behavior of client hints with prefetches in case
+// an unexpected issue arises with the planned behavior, or one is suspected and
+// we want to debug more easily.
+// TODO(crbug.com/41497015): Remove this control once a behavior is shipped and
+// stabilized.
+enum class PrefetchClientHintsCrossSiteBehavior {
+  // Send no client hints cross-site.
+  kNone,
+  // Send only the "low-entropy" hints which are included by default.
+  kLowEntropy,
+  // Send all client hints that would normally be sent.
+  kAll,
+};
+CONTENT_EXPORT extern const base::FeatureParam<
+    PrefetchClientHintsCrossSiteBehavior>
+    kPrefetchClientHintsCrossSiteBehavior;
+
+// If explicitly disabled, prefetch proxy is not used.
+BASE_DECLARE_FEATURE(kPrefetchProxy);
 
 }  // namespace features
 

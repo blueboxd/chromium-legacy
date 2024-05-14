@@ -18,6 +18,7 @@
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
+#include "base/sequence_token.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/common/scoped_defer_task_posting.h"
 #include "base/task/default_delayed_task_handle_delegate.h"
@@ -28,12 +29,12 @@
 #include "base/task/sequence_manager/task_order.h"
 #include "base/task/sequence_manager/wake_up_queue.h"
 #include "base/task/sequence_manager/work_queue.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_features.h"
 #include "base/task/task_observer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
-#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/container/inlined_vector.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -42,6 +43,23 @@ namespace base {
 namespace sequence_manager {
 
 namespace internal {
+
+// This class outside the anonymous namespace exists to allow being a friend of
+// `SingleThreadTaskRunner::CurrentDefaultHandle` in order to access
+// `SingleThreadTaskRunner::CurrentDefaultHandle::MayAlreadyExist`.
+class CurrentDefaultHandleOverrideForRunOrPostTask {
+ public:
+  explicit CurrentDefaultHandleOverrideForRunOrPostTask(
+      scoped_refptr<SequencedTaskRunner> task_runner)
+      : sttr_override_(
+            nullptr,
+            SingleThreadTaskRunner::CurrentDefaultHandle::MayAlreadyExist{}),
+        str_override_(std::move(task_runner)) {}
+
+ private:
+  SingleThreadTaskRunner::CurrentDefaultHandle sttr_override_;
+  SequencedTaskRunner::CurrentDefaultHandle str_override_;
+};
 
 namespace {
 
@@ -53,6 +71,17 @@ std::atomic<base::TimeDelta> g_max_precise_delay{kDefaultMaxPreciseDelay};
 // tasks are posted cross-thread, which can race with its initialization.
 std::atomic_bool g_explicit_high_resolution_timer_win{true};
 #endif  // BUILDFLAG(IS_WIN)
+
+void RunTaskSynchronously(const AssociatedThreadId* associated_thread,
+                          scoped_refptr<SingleThreadTaskRunner> task_runner,
+                          OnceClosure closure) {
+  base::internal::TaskScope sequence_scope(
+      associated_thread->GetBoundSequenceToken(),
+      /* is_thread_bound=*/false);
+  CurrentDefaultHandleOverrideForRunOrPostTask task_runner_override(
+      std::move(task_runner));
+  std::move(closure).Run();
+}
 
 }  // namespace
 
@@ -91,6 +120,26 @@ DelayedTaskHandle TaskQueueImpl::GuardedTaskPoster::PostCancelableTask(
   outer_->PostTask(std::move(task));
   DCHECK(delayed_task_handle_delegate->IsValid());
   return DelayedTaskHandle(std::move(delayed_task_handle_delegate));
+}
+
+bool TaskQueueImpl::GuardedTaskPoster::RunOrPostTask(PostedTask task) {
+  auto token = operations_controller_.TryBeginOperation();
+  if (!token) {
+    return false;
+  }
+
+  auto sync_work_auth =
+      outer_->sequence_manager_->TryAcquireSyncWorkAuthorization();
+  // The queue may be disabled immediately after checking
+  // `IsQueueEnabledFromAnyThread()`. That won't prevent the task from running.
+  if (sync_work_auth.IsValid() && outer_->IsQueueEnabledFromAnyThread()) {
+    RunTaskSynchronously(outer_->associated_thread_.get(),
+                         outer_->sequence_manager_->GetTaskRunner(),
+                         std::move(task.callback));
+    return true;
+  }
+
+  return PostTask(std::move(task));
 }
 
 TaskQueueImpl::TaskRunner::TaskRunner(
@@ -152,8 +201,34 @@ bool TaskQueueImpl::TaskRunner::PostNonNestableDelayedTask(
                                            task_type_));
 }
 
-bool TaskQueueImpl::TaskRunner::RunsTasksInCurrentSequence() const {
+bool TaskQueueImpl::TaskRunner::RunOrPostTask(subtle::RunOrPostTaskPassKey,
+                                              const Location& location,
+                                              OnceClosure callback) {
+  return task_poster_->RunOrPostTask(
+      PostedTask(this, std::move(callback), location, TimeDelta(),
+                 Nestable::kNestable, task_type_));
+}
+
+bool TaskQueueImpl::TaskRunner::BelongsToCurrentThread() const {
   return associated_thread_->IsBoundToCurrentThread();
+}
+
+bool TaskQueueImpl::TaskRunner::RunsTasksInCurrentSequence() const {
+  // Return true on the bound thread. This works even after `thread_local`
+  // destruction.
+  if (BelongsToCurrentThread()) {
+    return true;
+  }
+
+  // Return true in a `RunOrPostTask` callback running synchronously on a
+  // different thread.
+  if (associated_thread_->IsBound() &&
+      associated_thread_->GetBoundSequenceToken() ==
+          base::internal::SequenceToken::GetForCurrentThread()) {
+    return true;
+  }
+
+  return false;
 }
 
 // static
@@ -399,6 +474,7 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     // addition it may need to schedule a DoWork if this queue isn't blocked.
     if (was_immediate_incoming_queue_empty &&
         any_thread_.immediate_work_queue_empty) {
+      sequence_manager_->WillRequestReloadImmediateWorkQueue();
       empty_queues_to_reload_handle_.SetActive(true);
       should_schedule_work =
           any_thread_.post_immediate_task_should_schedule_work;
@@ -1079,7 +1155,7 @@ void TaskQueueImpl::SetQueueEnabled(bool enabled) {
     UpdateCrossThreadQueueStateLocked();
 
     // Copy over the task-reporting related state.
-    any_thread_.tracing_only.is_enabled = enabled;
+    any_thread_.is_enabled = enabled;
     any_thread_.tracing_only.disabled_time = main_thread_only().disabled_time;
     any_thread_.tracing_only.should_report_posted_tasks_when_disabled =
         main_thread_only().should_report_posted_tasks_when_disabled;
@@ -1125,6 +1201,7 @@ void TaskQueueImpl::SetShouldReportPostedTasksWhenDisabled(bool should_report) {
 void TaskQueueImpl::UpdateCrossThreadQueueStateLocked() {
   any_thread_.immediate_work_queue_empty =
       main_thread_only().immediate_work_queue->Empty();
+  any_thread_.is_enabled = main_thread_only().is_enabled;
 
   if (main_thread_only().throttler) {
     // If there's a Throttler, always ScheduleWork() when immediate work is
@@ -1378,7 +1455,7 @@ bool TaskQueueImpl::ShouldReportIpcTaskQueuedFromAnyThreadLocked(
   if (!any_thread_.tracing_only.disabled_time)
     return false;
 
-  if (any_thread_.tracing_only.is_enabled ||
+  if (any_thread_.is_enabled ||
       any_thread_.tracing_only.should_report_posted_tasks_when_disabled) {
     return false;
   }
@@ -1510,11 +1587,17 @@ void TaskQueueImpl::OnQueueEnabledVoteChanged(bool enabled) {
 }
 
 void TaskQueueImpl::CompleteInitializationOnBoundThread() {
-  voter_weak_ptr_factory_.BindToCurrentSequence(PassKey<TaskQueueImpl>());
+  voter_weak_ptr_factory_.BindToCurrentSequence(
+      subtle::BindWeakPtrFactoryPassKey());
 }
 
 TaskQueue::QueuePriority TaskQueueImpl::DefaultPriority() const {
   return sequence_manager()->settings().priority_settings.default_priority();
+}
+
+bool TaskQueueImpl::IsQueueEnabledFromAnyThread() const {
+  base::internal::CheckedAutoLock lock(any_thread_lock_);
+  return any_thread_.is_enabled;
 }
 
 TaskQueueImpl::DelayedIncomingQueue::DelayedIncomingQueue() = default;

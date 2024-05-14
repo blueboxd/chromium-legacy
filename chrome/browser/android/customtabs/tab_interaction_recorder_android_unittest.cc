@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
-#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "content/public/browser/navigation_entry.h"
@@ -42,9 +41,8 @@ using ::testing::NiceMock;
 
 void OnTextFieldDidChangeForAutofillManager(AutofillManager& autofill_manager) {
   FormData form = CreateTestAddressFormData();
-  autofill_manager.OnTextFieldDidChange(
-      form, form.fields.front(), gfx::RectF(),
-      autofill::AutofillTickClock::NowTicks());
+  autofill_manager.OnTextFieldDidChange(form, form.fields.front(), gfx::RectF(),
+                                        base::TimeTicks::Now());
 }
 
 void OnFormsSeenForAutofillManager(AutofillManager& autofill_manager,
@@ -276,7 +274,8 @@ TEST_F(TabInteractionRecorderAndroidTest, ResetInteractions) {
   EXPECT_FALSE(helper->HadFormInteractionInActivePage(env));
 }
 
-TEST_F(TabInteractionRecorderAndroidTest, TestFormSeen) {
+// TODO(crbug.com/1523245): Re-enable this test.
+TEST_F(TabInteractionRecorderAndroidTest, DISABLED_TestFormSeen) {
   std::unique_ptr<content::WebContents> contents = CreateTestWebContents();
   OnFormsSeenForAutofillManager(autofill_manager(),
                                 contents->GetPrimaryMainFrame());

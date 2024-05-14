@@ -42,9 +42,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     kPrepareVaultForMigration,
     kAddAuthFactor,
     kUpdateAuthFactor,
+    kUpdateAuthFactorMetadata,
     kListAuthFactors,
     kStartMigrateToDircrypto,
     kRemove,
+    kGetRecoverableKeyStores,
   };
 
   // The method by which a user's home directory can be encrypted.
@@ -267,6 +269,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void UpdateAuthFactor(
       const ::user_data_auth::UpdateAuthFactorRequest& request,
       UpdateAuthFactorCallback callback) override;
+  void UpdateAuthFactorMetadata(
+      const ::user_data_auth::UpdateAuthFactorMetadataRequest& request,
+      UpdateAuthFactorMetadataCallback callback) override;
   void RemoveAuthFactor(
       const ::user_data_auth::RemoveAuthFactorRequest& request,
       RemoveAuthFactorCallback callback) override;
@@ -290,6 +295,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void GetArcDiskFeatures(
       const ::user_data_auth::GetArcDiskFeaturesRequest& request,
       GetArcDiskFeaturesCallback callback) override;
+  void GetRecoverableKeyStores(
+      const ::user_data_auth::GetRecoverableKeyStoresRequest& request,
+      GetRecoverableKeyStoresCallback) override;
 
   int get_prepare_guest_request_count() const {
     return prepare_guest_request_count_;
@@ -318,10 +326,14 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
                         PrepareVaultForMigrationRequest);
   FUDAC_OPERATION_TYPES(kAddAuthFactor, AddAuthFactorRequest);
   FUDAC_OPERATION_TYPES(kUpdateAuthFactor, UpdateAuthFactorRequest);
+  FUDAC_OPERATION_TYPES(kUpdateAuthFactorMetadata,
+                        UpdateAuthFactorMetadataRequest);
   FUDAC_OPERATION_TYPES(kListAuthFactors, ListAuthFactorsRequest);
   FUDAC_OPERATION_TYPES(kStartMigrateToDircrypto,
                         StartMigrateToDircryptoRequest);
   FUDAC_OPERATION_TYPES(kRemove, RemoveRequest);
+  FUDAC_OPERATION_TYPES(kGetRecoverableKeyStores,
+                        GetRecoverableKeyStoresRequest);
 
 #undef FUDAC_OPERATION_TYPES
 

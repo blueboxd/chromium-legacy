@@ -133,7 +133,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN = 10,
   ACCESS_POINT_USER_MANAGER = 11,
   ACCESS_POINT_DEVICES_PAGE = 12,
-  ACCESS_POINT_CLOUD_PRINT = 13,
+  // ACCESS_POINT_CLOUD_PRINT = 13, no longer used.
   // ACCESS_POINT_CONTENT_AREA = 14, no longer used.
   ACCESS_POINT_SIGNIN_PROMO = 15,
   ACCESS_POINT_RECENT_TABS = 16,
@@ -192,6 +192,12 @@ enum class AccessPoint : int {
   ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD = 55,
   // Access point for the tab organization UI within the tab search bubble.
   ACCESS_POINT_TAB_ORGANIZATION = 56,
+  // Access point for the Save to Drive feature on iOS.
+  ACCESS_POINT_SAVE_TO_DRIVE_IOS = 57,
+  // Access point for the Tips Notification on iOS.
+  ACCESS_POINT_TIPS_NOTIFICATION = 58,
+  // Access point for the Notifications Opt-In Screen.
+  ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE = 59,
 
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml
@@ -316,9 +322,6 @@ enum class AccountConsistencyPromoAction : int {
 // numeric values should never be reused.
 // Please keep in Sync with "SigninReason" in
 // src/tools/metrics/histograms/enums.xml.
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
-// GENERATED_JAVA_CLASS_NAME_OVERRIDE: SigninReason
 enum class Reason : int {
   kSigninPrimaryAccount = 0,
   kAddSecondaryAccount = 1,
@@ -437,8 +440,9 @@ enum class SourceForRefreshTokenOperation {
   // kAccountReconcilor_RevokeTokensNotInCookies = 18,
   kLogoutTabHelper_PrimaryPageChanged = 19,
   kForceSigninReauthWithDifferentAccount = 20,
+  kAccountReconcilor_RevokeTokensNotInCookies = 21,
 
-  kMaxValue = kForceSigninReauthWithDifferentAccount,
+  kMaxValue = kAccountReconcilor_RevokeTokensNotInCookies,
 };
 
 // Different types of reporting. This is used as a histogram suffix.
@@ -479,9 +483,6 @@ void LogSigninAccessPointStarted(AccessPoint access_point,
                                  PromoAction promo_action);
 void LogSigninAccessPointCompleted(AccessPoint access_point,
                                    PromoAction promo_action);
-
-// Tracks the reason of sign in.
-void LogSigninReason(Reason reason);
 
 // Logs sign in offered events and their associated access points.
 // Access points (or features) are responsible for recording this where relevant

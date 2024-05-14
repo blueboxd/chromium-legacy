@@ -867,7 +867,7 @@ TEST_F(ArcVmClientAdapterTest, DoesNotGetArcInstanceStoppedOnNestedInstance) {
     }
 
     base::RepeatingCallback<base::RunLoop*()> const run_loop_factory_;
-    const raw_ptr<Observer, ExperimentalAsh> child_observer_;
+    const raw_ptr<Observer> child_observer_;
     std::unique_ptr<ArcClientAdapter> nested_adapter_;
     FakeDemoModeDelegate demo_mode_delegate_;
     bool stopped_called_ = false;
@@ -1502,6 +1502,69 @@ TEST_F(ArcVmClientAdapterTest, SpecifyBlockSize) {
   EXPECT_EQ(
       4096u,
       GetTestConciergeClient()->start_arc_vm_request().rootfs_block_size());
+}
+
+TEST_F(ArcVmClientAdapterTest, VirtioBlkMultipleWorkers_Disabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(arc::kEnableVirtioBlkMultipleWorkers);
+
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  // All disks should have multiple workers disabled.
+  EXPECT_FALSE(GetTestConciergeClient()
+                   ->start_arc_vm_request()
+                   .rootfs_multiple_workers());
+  for (const auto& disk :
+       GetTestConciergeClient()->start_arc_vm_request().disks()) {
+    EXPECT_FALSE(disk.multiple_workers());
+  }
+}
+
+TEST_F(ArcVmClientAdapterTest, VirtioBlkMultipleWorkers_Enabled_NoBlkData) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(arc::kEnableVirtioBlkMultipleWorkers);
+
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.use_virtio_blk_data = false;
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  // rootfs should have multiple workers enabled.
+  EXPECT_TRUE(GetTestConciergeClient()
+                  ->start_arc_vm_request()
+                  .rootfs_multiple_workers());
+  // No other disks should have multiple workers enabled.
+  for (const auto& disk :
+       GetTestConciergeClient()->start_arc_vm_request().disks()) {
+    EXPECT_FALSE(disk.multiple_workers());
+  }
+}
+
+TEST_F(ArcVmClientAdapterTest, VirtioBlkMultipleWorkers_Enabled_BlkData) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(arc::kEnableVirtioBlkMultipleWorkers);
+
+  GetTestConciergeClient()->set_create_disk_image_response(
+      CreateDiskImageResponse(vm_tools::concierge::DISK_STATUS_CREATED));
+
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.use_virtio_blk_data = true;
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+
+  // rootfs should have multiple workers enabled.
+  EXPECT_TRUE(req.rootfs_multiple_workers());
+  EXPECT_TRUE(HasDiskImage(req, kCreatedDiskImagePath));
+  for (const auto& disk :
+       GetTestConciergeClient()->start_arc_vm_request().disks()) {
+    // The data disk should have multiple workers enabled.
+    if (disk.path() == kCreatedDiskImagePath) {
+      EXPECT_TRUE(disk.multiple_workers());
+    } else {
+      EXPECT_FALSE(disk.multiple_workers());
+    }
+  }
 }
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_Disabled) {
@@ -2415,7 +2478,6 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSwappinessValid) {
   EXPECT_FALSE(is_system_shutdown().has_value());
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_EQ(90, request.guest_swappiness());
-  EXPECT_EQ(0, request.guest_zram_size());
   EXPECT_EQ(256u, request.guest_zram_mib());
 }
 
@@ -2439,7 +2501,6 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_5GbSystem) {
   StartMiniArcWithParams(true, std::move(start_params));
 
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(0, request.guest_zram_size());
   // 5GB system should result in 4GB VM size => 2GB ZRAM.
   EXPECT_EQ(2048u, request.guest_zram_mib());
 }
@@ -2464,7 +2525,6 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_4GbSystem) {
   StartMiniArcWithParams(true, std::move(start_params));
 
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(0, request.guest_zram_size());
   // 4GB system should result in 3GB VM size => 1.5GB ZRAM.
   EXPECT_EQ(1536u, request.guest_zram_mib());
 }
@@ -2490,7 +2550,6 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_CustomMem) {
   StartMiniArcWithParams(true, std::move(start_params));
 
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(0, request.guest_zram_size());
   // 6GB system with -2GB shift results in 4GB VM size => 2GB ZRAM.
   EXPECT_EQ(2048u, request.guest_zram_mib());
 }

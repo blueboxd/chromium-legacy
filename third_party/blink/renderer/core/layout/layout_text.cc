@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_offset_map.h"
 #include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
@@ -89,7 +90,7 @@ struct SameSizeAsLayoutText : public LayoutObject {
 ASSERT_SIZE(LayoutText, SameSizeAsLayoutText);
 
 class SecureTextTimer;
-typedef HeapHashMap<WeakMember<LayoutText>, Member<SecureTextTimer>>
+typedef HeapHashMap<WeakMember<const LayoutText>, Member<SecureTextTimer>>
     SecureTextTimerMap;
 static SecureTextTimerMap& GetSecureTextTimers() {
   DEFINE_STATIC_LOCAL(const Persistent<SecureTextTimerMap>, map,
@@ -105,6 +106,17 @@ class SecureTextTimer final : public GarbageCollected<SecureTextTimer>,
             TaskType::kUserInteraction)),
         layout_text_(layout_text),
         last_typed_character_offset_(-1) {}
+
+  static SecureTextTimer* ActiveInstanceFor(const LayoutText* layout_text) {
+    auto it = GetSecureTextTimers().find(layout_text);
+    if (it != GetSecureTextTimers().end()) {
+      SecureTextTimer* secure_text_timer = it->value;
+      if (secure_text_timer && secure_text_timer->IsActive()) {
+        return secure_text_timer;
+      }
+    }
+    return nullptr;
+  }
 
   void RestartWithNewText(unsigned last_typed_character_offset) {
     last_typed_character_offset_ = last_typed_character_offset;
@@ -122,7 +134,7 @@ class SecureTextTimer final : public GarbageCollected<SecureTextTimer>,
   void Fired() override {
     DCHECK(GetSecureTextTimers().Contains(layout_text_));
     // Forcing setting text as it may be masked later
-    layout_text_->ForceSetText(layout_text_->GetText());
+    layout_text_->ForceSetText(layout_text_->TransformedText());
   }
 
   Member<LayoutText> layout_text_;
@@ -159,8 +171,6 @@ LayoutText::LayoutText(Node* node, String str)
       text_(std::move(str)) {
   DCHECK(text_);
   DCHECK(!node || !node->IsDocumentNode());
-
-  SetIsText();
 
   if (node)
     GetFrameView()->IncrementVisuallyNonEmptyCharacterCount(text_.length());
@@ -236,12 +246,19 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   ETextSecurity old_security =
       old_style ? old_style->TextSecurity() : ETextSecurity::kNone;
   if (old_transform != new_style.TextTransform() ||
-      old_security != new_style.TextSecurity())
-    TransformText();
+      old_security != new_style.TextSecurity()) {
+    TransformAndSecureOriginalText();
+  } else if (RuntimeEnabledFeatures::OffsetMappingUnitVariableEnabled() &&
+             old_transform == new_style.TextTransform() &&
+             new_style.TextTransform() != ETextTransform::kNone &&
+             old_style->Locale() != new_style.Locale()) {
+    TransformAndSecureOriginalText();
+  }
 
   // This is an optimization that kicks off font load before layout.
-  if (!GetText().ContainsOnlyWhitespaceOrEmpty())
-    new_style.GetFont().WillUseFontData(GetText());
+  if (!TransformedText().ContainsOnlyWhitespaceOrEmpty()) {
+    new_style.GetFont().WillUseFontData(TransformedText());
+  }
 
   TextAutosizer* text_autosizer = GetDocument().GetTextAutosizer();
   if (!old_style && text_autosizer)
@@ -406,7 +423,7 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
         // Compute start of the legacy text box.
         if (unit.AssociatedNode()) {
           // In case of |text_| comes from DOM node.
-          if (const absl::optional<unsigned> box_start = CaretOffsetForPosition(
+          if (const std::optional<unsigned> box_start = CaretOffsetForPosition(
                   mapping->GetLastPosition(clamped_start))) {
             results.push_back(TextBoxInfo{rect, *box_start, box_length});
             continue;
@@ -440,6 +457,15 @@ String LayoutText::OriginalText() const {
   NOT_DESTROYED();
   auto* text_node = DynamicTo<Text>(GetNode());
   return text_node ? text_node->data() : String();
+}
+
+unsigned LayoutText::OriginalTextLength() const {
+  NOT_DESTROYED();
+  if (!RuntimeEnabledFeatures::OffsetMappingUnitVariableEnabled()) {
+    return TransformedTextLength();
+  }
+  DCHECK(!IsBR());
+  return OriginalText().length();
 }
 
 String LayoutText::PlainText() const {
@@ -518,7 +544,7 @@ bool LayoutText::MapDOMOffsetToTextContentOffset(const OffsetMapping& mapping,
 
   // Adjust |start| to the next non-collapsed offset if |start| is collapsed.
   Position start_position =
-      PositionForCaretOffset(std::min(*start, TextLength()));
+      PositionForCaretOffset(std::min(*start, OriginalTextLength()));
   Position non_collapsed_start_position =
       mapping.StartOfNextNonCollapsedContent(start_position);
 
@@ -536,7 +562,8 @@ bool LayoutText::MapDOMOffsetToTextContentOffset(const OffsetMapping& mapping,
   *start = mapping.GetTextContentOffset(non_collapsed_start_position).value();
 
   // Adjust |end| to the last non-collapsed offset if |end| is collapsed.
-  Position end_position = PositionForCaretOffset(std::min(*end, TextLength()));
+  Position end_position =
+      PositionForCaretOffset(std::min(*end, OriginalTextLength()));
   Position non_collpased_end_position =
       mapping.EndOfLastNonCollapsedContent(end_position);
 
@@ -619,9 +646,9 @@ void LayoutText::AbsoluteQuadsForRange(Vector<gfx::QuadF>& quads,
       if (UNLIKELY(text_combine))
         rect = text_combine->AdjustRectForBoundingBox(rect);
       gfx::QuadF quad;
-      if (item.Type() == FragmentItem::kSvgText) {
+      if (const SvgFragmentData* svg_data = item.GetSvgFragmentData()) {
         gfx::RectF float_rect(rect);
-        float_rect.Offset(item.GetSvgFragmentData()->rect.OffsetFromOrigin());
+        float_rect.Offset(svg_data->rect.OffsetFromOrigin());
         quad = item.BuildSvgTransformForBoundingBox().MapQuad(
             gfx::QuadF(float_rect));
         const float scaling_factor = item.SvgScalingFactor();
@@ -716,17 +743,19 @@ PhysicalRect LayoutText::LocalCaretRect(
 
 bool LayoutText::IsAllCollapsibleWhitespace() const {
   NOT_DESTROYED();
-  unsigned length = TextLength();
-  if (Is8Bit()) {
+  unsigned length = text_.length();
+  if (text_.Is8Bit()) {
     for (unsigned i = 0; i < length; ++i) {
-      if (!StyleRef().IsCollapsibleWhiteSpace(Characters8()[i]))
+      if (!StyleRef().IsCollapsibleWhiteSpace(text_.Characters8()[i])) {
         return false;
+      }
     }
     return true;
   }
   for (unsigned i = 0; i < length; ++i) {
-    if (!StyleRef().IsCollapsibleWhiteSpace(Characters16()[i]))
+    if (!StyleRef().IsCollapsibleWhiteSpace(text_.Characters16()[i])) {
       return false;
+    }
   }
   return true;
 }
@@ -835,7 +864,7 @@ void LayoutText::SetTextWithOffset(String text, unsigned offset, unsigned len) {
   valid_ng_items_ = false;
 }
 
-void LayoutText::TransformText() {
+void LayoutText::TransformAndSecureOriginalText() {
   NOT_DESTROYED();
   if (String text_to_transform = OriginalText()) {
     ForceSetText(std::move(text_to_transform));
@@ -847,7 +876,7 @@ static inline bool IsInlineFlowOrEmptyText(const LayoutObject* o) {
     return true;
   if (!o->IsText())
     return false;
-  return To<LayoutText>(o)->GetText().empty();
+  return To<LayoutText>(o)->HasEmptyText();
 }
 
 UChar LayoutText::PreviousCharacter() const {
@@ -861,7 +890,7 @@ UChar LayoutText::PreviousCharacter() const {
   UChar prev = kSpaceCharacter;
   if (previous_text && previous_text->IsText()) {
     if (const String& previous_string =
-            To<LayoutText>(previous_text)->GetText()) {
+            To<LayoutText>(previous_text)->TransformedText()) {
       prev = previous_string[previous_string.length() - 1];
     }
   }
@@ -873,56 +902,90 @@ void LayoutText::SetTextInternal(String text) {
   DCHECK(text);
   text_ = String(std::move(text));
   DCHECK(text_);
-  DCHECK(!IsBR() || (TextLength() == 1 && text_[0] == kNewlineCharacter));
+  DCHECK(!IsBR() ||
+         (TransformedTextLength() == 1 && text_[0] == kNewlineCharacter));
 }
 
-void LayoutText::ApplyTextTransform() {
+String LayoutText::TransformAndSecureText(const String& original,
+                                          TextOffsetMap& offset_map) const {
   NOT_DESTROYED();
   if (const ComputedStyle* style = Style()) {
-    style->ApplyTextTransform(&text_, PreviousCharacter());
+    String transformed =
+        style->ApplyTextTransform(original, PreviousCharacter(), &offset_map);
 
+    UChar mask = 0;
     // We use the same characters here as for list markers.
     // See CollectUACounterStyleRules() in ua_counter_style_map.cc.
     switch (style->TextSecurity()) {
       case ETextSecurity::kNone:
-        break;
+        return transformed;
       case ETextSecurity::kCircle:
-        SecureText(kWhiteBulletCharacter);
+        mask = kWhiteBulletCharacter;
         break;
       case ETextSecurity::kDisc:
-        SecureText(kBulletCharacter);
+        mask = kBulletCharacter;
         break;
       case ETextSecurity::kSquare:
-        SecureText(kBlackSquareCharacter);
+        mask = kBlackSquareCharacter;
+        break;
     }
+    auto [masked, secure_map] = SecureText(transformed, mask);
+    if (!secure_map.IsEmpty()) {
+      offset_map = TextOffsetMap(offset_map, secure_map);
+    }
+    return masked;
   }
+  return original;
 }
 
-void LayoutText::SecureText(UChar mask) {
+std::pair<String, TextOffsetMap> LayoutText::SecureText(const String& plain,
+                                                        UChar mask) const {
   NOT_DESTROYED();
-  if (!text_.length())
-    return;
+  if (!plain.length()) {
+    return std::make_pair(plain, TextOffsetMap());
+  }
 
   int last_typed_character_offset_to_reveal = -1;
   UChar revealed_text;
-  auto it = GetSecureTextTimers().find(this);
-  SecureTextTimer* secure_text_timer =
-      it != GetSecureTextTimers().end() ? it->value : nullptr;
-  if (secure_text_timer && secure_text_timer->IsActive()) {
+  if (auto* secure_text_timer = SecureTextTimer::ActiveInstanceFor(this)) {
     last_typed_character_offset_to_reveal =
         secure_text_timer->LastTypedCharacterOffset();
     if (last_typed_character_offset_to_reveal >= 0)
-      revealed_text = text_[last_typed_character_offset_to_reveal];
+      revealed_text = plain[last_typed_character_offset_to_reveal];
   }
 
-  text_.Fill(mask);
-  if (last_typed_character_offset_to_reveal >= 0) {
-    text_.replace(last_typed_character_offset_to_reveal, 1,
-                  String(&revealed_text, 1u));
-    // text_ may be updated later before timer fires. We invalidate the
-    // last_typed_character_offset_ to avoid inconsistency.
-    secure_text_timer->Invalidate();
+  if (RuntimeEnabledFeatures::MaskingGraphemeClustersEnabled()) {
+    StringBuilder builder;
+    // `mask` always needs a 16bit buffer.
+    builder.Reserve16BitCapacity(plain.length());
+    TextOffsetMap offset_map;
+    for (unsigned offset = 0; offset < plain.length();) {
+      unsigned cluster_size = LengthOfGraphemeCluster(plain, offset);
+      unsigned next_offset = offset + cluster_size;
+      if (last_typed_character_offset_to_reveal >= 0) {
+        unsigned last_typed_offset =
+            base::checked_cast<unsigned>(last_typed_character_offset_to_reveal);
+        if (offset <= last_typed_offset && last_typed_offset < next_offset) {
+          builder.Append(StringView(plain, offset, cluster_size));
+          offset = next_offset;
+          continue;
+        }
+      }
+      builder.Append(mask);
+      offset = next_offset;
+      if (cluster_size != 1) {
+        offset_map.Append(offset, builder.length());
+      }
+    }
+    return std::make_pair(builder.ToString(), offset_map);
   }
+  String masked = plain;
+  masked.Fill(mask);
+  if (last_typed_character_offset_to_reveal >= 0) {
+    masked.replace(last_typed_character_offset_to_reveal, 1,
+                   String(&revealed_text, 1u));
+  }
+  return std::make_pair(masked, TextOffsetMap());
 }
 
 void LayoutText::SetTextIfNeeded(String text) {
@@ -972,7 +1035,14 @@ void LayoutText::TextDidChange() {
 
 void LayoutText::TextDidChangeWithoutInvalidation() {
   NOT_DESTROYED();
-  ApplyTextTransform();
+  TextOffsetMap offset_map;
+  text_ = TransformAndSecureText(text_, offset_map);
+  has_variable_length_transform_ = !offset_map.IsEmpty();
+  if (auto* secure_text_timer = SecureTextTimer::ActiveInstanceFor(this)) {
+    // text_ may be updated later before timer fires. We invalidate the
+    // last_typed_character_offset_ to avoid inconsistency.
+    secure_text_timer->Invalidate();
+  }
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->TextChanged(this);
@@ -1091,7 +1161,7 @@ Position LayoutText::PositionForCaretOffset(unsigned offset) const {
   DCHECK(!IsBR());
   // WBR handling should be done by LayoutWordBreak override.
   DCHECK(!IsWordBreak());
-  DCHECK_LE(offset, TextLength());
+  DCHECK_LE(offset, OriginalTextLength());
   const Node* node = GetNode();
   if (!node)
     return Position();
@@ -1106,7 +1176,7 @@ Position LayoutText::PositionForCaretOffset(unsigned offset) const {
   return Position(node, clamped_offset);
 }
 
-absl::optional<unsigned> LayoutText::CaretOffsetForPosition(
+std::optional<unsigned> LayoutText::CaretOffsetForPosition(
     const Position& position) const {
   NOT_DESTROYED();
   // ::first-letter handling should be done by LayoutTextFragment override.
@@ -1116,15 +1186,15 @@ absl::optional<unsigned> LayoutText::CaretOffsetForPosition(
   // WBR handling should be done by LayoutWordBreak override.
   DCHECK(!IsWordBreak());
   if (position.IsNull() || position.AnchorNode() != GetNode())
-    return absl::nullopt;
+    return std::nullopt;
   DCHECK(GetNode()->IsTextNode());
   if (position.IsBeforeAnchor())
     return 0;
-  // TODO(layout-dev): Support offset change due to text-transform.
   if (position.IsAfterAnchor())
-    return TextLength();
+    return OriginalTextLength();
   DCHECK(position.IsOffsetInAnchor()) << position;
-  DCHECK_LE(position.OffsetInContainerNode(), static_cast<int>(TextLength()))
+  DCHECK_LE(position.OffsetInContainerNode(),
+            static_cast<int>(OriginalTextLength()))
       << position;
   return position.OffsetInContainerNode();
 }
@@ -1137,11 +1207,12 @@ int LayoutText::CaretMinOffset() const {
     const Position first_position = PositionForCaretOffset(0);
     if (first_position.IsNull())
       return 0;
-    absl::optional<unsigned> candidate = CaretOffsetForPosition(
+    std::optional<unsigned> candidate = CaretOffsetForPosition(
         mapping->StartOfNextNonCollapsedContent(first_position));
     // Align with the legacy behavior that 0 is returned if the entire node
     // contains only collapsed whitespaces.
-    const bool fully_collapsed = !candidate || *candidate == TextLength();
+    const bool fully_collapsed =
+        !candidate || *candidate == TransformedTextLength();
     return fully_collapsed ? 0 : *candidate;
   }
 
@@ -1152,34 +1223,41 @@ int LayoutText::CaretMaxOffset() const {
   NOT_DESTROYED();
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
+  const unsigned text_length = OriginalTextLength();
   if (auto* mapping = GetOffsetMapping()) {
-    const Position last_position = PositionForCaretOffset(TextLength());
+    const Position last_position = PositionForCaretOffset(text_length);
     if (last_position.IsNull())
-      return TextLength();
-    absl::optional<unsigned> candidate = CaretOffsetForPosition(
+      return text_length;
+    std::optional<unsigned> candidate = CaretOffsetForPosition(
         mapping->EndOfLastNonCollapsedContent(last_position));
     // Align with the legacy behavior that |TextLenght()| is returned if the
     // entire node contains only collapsed whitespaces.
     const bool fully_collapsed = !candidate || *candidate == 0u;
-    return fully_collapsed ? TextLength() : *candidate;
+    return fully_collapsed ? text_length : *candidate;
   }
 
-  return TextLength();
+  return text_length;
+}
+
+unsigned LayoutText::NonCollapsedCaretMaxOffset() const {
+  NOT_DESTROYED();
+  return OriginalTextLength();
 }
 
 unsigned LayoutText::ResolvedTextLength() const {
   NOT_DESTROYED();
   if (auto* mapping = GetOffsetMapping()) {
     const Position start_position = PositionForCaretOffset(0);
-    const Position end_position = PositionForCaretOffset(TextLength());
+    const Position end_position =
+        PositionForCaretOffset(NonCollapsedCaretMaxOffset());
     if (start_position.IsNull()) {
       DCHECK(end_position.IsNull()) << end_position;
       return 0;
     }
     DCHECK(end_position.IsNotNull()) << start_position;
-    absl::optional<unsigned> start =
+    std::optional<unsigned> start =
         mapping->GetTextContentOffset(start_position);
-    absl::optional<unsigned> end = mapping->GetTextContentOffset(end_position);
+    std::optional<unsigned> end = mapping->GetTextContentOffset(end_position);
     if (!start.has_value() || !end.has_value()) {
       DCHECK(!start.has_value()) << this;
       DCHECK(!end.has_value()) << this;
@@ -1204,14 +1282,17 @@ bool LayoutText::ContainsCaretOffset(int text_offset) const {
   NOT_DESTROYED();
   DCHECK_GE(text_offset, 0);
   if (auto* mapping = GetOffsetMapping()) {
-    if (text_offset > static_cast<int>(TextLength()))
+    const int text_length = static_cast<int>(NonCollapsedCaretMaxOffset());
+    if (text_offset > text_length) {
       return false;
+    }
     const Position position = PositionForCaretOffset(text_offset);
     if (position.IsNull())
       return false;
-    if (text_offset < static_cast<int>(TextLength()) &&
-        mapping->IsBeforeNonCollapsedContent(position))
+    if (text_offset < text_length &&
+        mapping->IsBeforeNonCollapsedContent(position)) {
       return true;
+    }
     if (!text_offset || !mapping->IsAfterNonCollapsedContent(position))
       return false;
     return *mapping->GetCharacterBefore(position) != kNewlineCharacter;
@@ -1223,8 +1304,9 @@ bool LayoutText::ContainsCaretOffset(int text_offset) const {
 bool LayoutText::IsBeforeNonCollapsedCharacter(unsigned text_offset) const {
   NOT_DESTROYED();
   if (auto* mapping = GetOffsetMapping()) {
-    if (text_offset >= TextLength())
+    if (text_offset >= NonCollapsedCaretMaxOffset()) {
       return false;
+    }
     const Position position = PositionForCaretOffset(text_offset);
     if (position.IsNull())
       return false;
@@ -1279,20 +1361,21 @@ void LayoutText::InvalidatePaint(const PaintInvalidatorContext& context) const {
 void LayoutText::InvalidateDisplayItemClients(
     PaintInvalidationReason reason) const {
   NOT_DESTROYED();
-  ObjectPaintInvalidator invalidator(*this);
-  invalidator.InvalidateDisplayItemClient(*this, reason);
+  LayoutObject::InvalidateDisplayItemClients(reason);
 
-  if (const auto* selection_client = GetSelectionDisplayItemClient())
-    invalidator.InvalidateDisplayItemClient(*selection_client, reason);
-
-  if (IsInLayoutNGInlineFormattingContext()) {
-#if DCHECK_IS_ON()
-    InlineCursor cursor;
-    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
-      DCHECK_EQ(cursor.Current().GetDisplayItemClient(), this);
-#endif
-    return;
+  if (const auto* selection_client = GetSelectionDisplayItemClient()) {
+    ObjectPaintInvalidator(*this).InvalidateDisplayItemClient(*selection_client,
+                                                              reason);
   }
+
+#if DCHECK_IS_ON()
+  if (IsInLayoutNGInlineFormattingContext()) {
+    InlineCursor cursor;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
+      DCHECK_EQ(cursor.Current().GetDisplayItemClient(), this);
+    }
+  }
+#endif
 }
 
 const DisplayItemClient* LayoutText::GetSelectionDisplayItemClient() const {

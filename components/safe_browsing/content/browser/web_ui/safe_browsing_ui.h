@@ -44,13 +44,13 @@ struct DeepScanDebugData {
   ~DeepScanDebugData();
 
   base::Time request_time;
-  absl::optional<enterprise_connectors::ContentAnalysisRequest> request;
+  std::optional<enterprise_connectors::ContentAnalysisRequest> request;
   bool per_profile_request;
   std::string access_token_truncated;
 
   base::Time response_time;
   std::string response_status;
-  absl::optional<enterprise_connectors::ContentAnalysisResponse> response;
+  std::optional<enterprise_connectors::ContentAnalysisResponse> response;
 };
 #endif
 
@@ -329,7 +329,7 @@ class SafeBrowsingUI : public content::WebUIController {
   ~SafeBrowsingUI() override;
 };
 
-class WebUIInfoSingleton : public UrlRealTimeMechanism::WebUIDelegate,
+class WebUIInfoSingleton : public RealTimeUrlLookupServiceBase::WebUIDelegate,
                            public PingManager::WebUIDelegate,
                            public HashRealTimeService::WebUIDelegate {
  public:
@@ -440,7 +440,7 @@ class WebUIInfoSingleton : public UrlRealTimeMechanism::WebUIDelegate,
   void ClearURTLookupPings();
 
   // HashRealTimeService::WebUIDelegate:
-  absl::optional<int> AddToHPRTLookupPings(
+  std::optional<int> AddToHPRTLookupPings(
       V5::SearchHashesRequest* inner_request,
       std::string relay_url_spec,
       std::string ohttp_key) override;
@@ -545,7 +545,8 @@ class WebUIInfoSingleton : public UrlRealTimeMechanism::WebUIDelegate,
   }
 
   // Get the list of WebUI listener objects.
-  const std::vector<SafeBrowsingUIHandler*>& webui_instances() const {
+  const std::vector<raw_ptr<SafeBrowsingUIHandler, VectorExperimental>>&
+  webui_instances() const {
     return webui_instances_;
   }
 
@@ -722,7 +723,8 @@ class WebUIInfoSingleton : public UrlRealTimeMechanism::WebUIDelegate,
   // List of WebUI listener objects. "SafeBrowsingUIHandler*" cannot be const,
   // due to being used by functions that call AllowJavascript(), which is not
   // marked const.
-  std::vector<SafeBrowsingUIHandler*> webui_instances_;
+  std::vector<raw_ptr<SafeBrowsingUIHandler, VectorExperimental>>
+      webui_instances_;
 
   // List of messages logged since the oldest currently open
   // chrome://safe-browsing tab was opened.

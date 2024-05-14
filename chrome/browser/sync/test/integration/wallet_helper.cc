@@ -18,19 +18,22 @@
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/webdata/autofill_sync_metadata_table.h"
+#include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/protocol/autofill_wallet_credential_specifics.pb.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
 using autofill::AutofillMetadata;
-using autofill::AutofillTable;
 using autofill::AutofillWebDataService;
 using autofill::CreditCard;
 using autofill::CreditCardCloudTokenData;
+using autofill::PaymentsAutofillTable;
 using autofill::PaymentsCustomerData;
 using autofill::PersonalDataManager;
+using autofill::ServerCvc;
 using autofill::data_util::TruncateUTF8;
 using sync_datatype_helper::test;
 
@@ -39,6 +42,8 @@ namespace {
 // Constants for the credit card.
 const int kDefaultCardExpMonth = 8;
 const int kDefaultCardExpYear = 2087;
+const std::u16string kDefaultCardCvc = u"098";
+const int kDefaultCardInstrumentId = 1;
 const char kDefaultCardLastFour[] = "1234";
 const char16_t kDefaultCardLastFour16[] = u"1234";
 const char kDefaultCardName[] = "Patrick Valenzuela";
@@ -103,6 +108,63 @@ void LogLists(const std::vector<Item*>& list_a,
   }
 }
 
+template <class Item, base::RawPtrTraits Traits = base::RawPtrTraits::kEmpty>
+void LogLists(const std::vector<raw_ptr<Item, Traits>>& list_a,
+              const std::vector<raw_ptr<Item, Traits>>& list_b) {
+  int x = 0;
+  for (Item* item : list_a) {
+    DVLOG(1) << "A#" << x++ << " " << *item;
+  }
+  x = 0;
+  for (Item* item : list_b) {
+    DVLOG(1) << "B#" << x++ << " " << *item;
+  }
+}
+
+template <class Item, base::RawPtrTraits Traits = base::RawPtrTraits::kEmpty>
+bool ListsMatch(int profile_a,
+                const std::vector<raw_ptr<Item, Traits>>& list_a,
+                int profile_b,
+                const std::vector<raw_ptr<Item, Traits>>& list_b) {
+  std::map<std::string, Item> list_a_map;
+  for (Item* item : list_a) {
+    list_a_map[item->server_id()] = *item;
+  }
+
+  // This seems to be a transient state that will eventually be rectified by
+  // model type logic. We don't need to check b for duplicates directly because
+  // after the first is erased from |autofill_profiles_a_map| the second will
+  // not be found.
+  if (list_a.size() != list_a_map.size()) {
+    DVLOG(1) << "Profile " << profile_a << " contains duplicate server_ids.";
+    return false;
+  }
+
+  for (Item* item : list_b) {
+    if (!list_a_map.count(item->server_id())) {
+      DVLOG(1) << "GUID " << item->server_id() << " not found in profile "
+               << profile_b << ".";
+      return false;
+    }
+    Item* expected_item = &list_a_map[item->server_id()];
+    if (expected_item->Compare(*item) != 0 ||
+        expected_item->use_count() != item->use_count() ||
+        expected_item->use_date() != item->use_date()) {
+      DVLOG(1) << "Mismatch in profile with server_id " << item->server_id()
+               << ".";
+      return false;
+    }
+    list_a_map.erase(item->server_id());
+  }
+
+  if (!list_a_map.empty()) {
+    DVLOG(1) << "Entries present in profile " << profile_a
+             << " but not in profile" << profile_b << ".";
+    return false;
+  }
+  return true;
+}
+
 bool WalletDataAndMetadataMatch(
     int profile_a,
     const std::vector<CreditCard*>& server_cards_a,
@@ -140,7 +202,7 @@ void WaitForPDMToRefresh(int profile) {
 void SetServerCardsOnDBSequence(AutofillWebDataService* wds,
                                 const std::vector<CreditCard>& credit_cards) {
   DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
-  AutofillTable::FromWebDatabase(wds->GetDatabase())
+  PaymentsAutofillTable::FromWebDatabase(wds->GetDatabase())
       ->SetServerCreditCards(credit_cards);
 }
 
@@ -148,7 +210,7 @@ void SetPaymentsCustomerDataOnDBSequence(
     AutofillWebDataService* wds,
     const PaymentsCustomerData& customer_data) {
   DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
-  AutofillTable::FromWebDatabase(wds->GetDatabase())
+  PaymentsAutofillTable::FromWebDatabase(wds->GetDatabase())
       ->SetPaymentsCustomerData(&customer_data);
 }
 
@@ -156,7 +218,7 @@ void SetCreditCardCloudTokenDataOnDBSequence(
     AutofillWebDataService* wds,
     const std::vector<CreditCardCloudTokenData>& cloud_token_data) {
   DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
-  AutofillTable::FromWebDatabase(wds->GetDatabase())
+  PaymentsAutofillTable::FromWebDatabase(wds->GetDatabase())
       ->SetCreditCardCloudTokenData(cloud_token_data);
 }
 
@@ -164,7 +226,7 @@ void GetServerCardsMetadataOnDBSequence(
     AutofillWebDataService* wds,
     std::vector<AutofillMetadata>* cards_metadata) {
   DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
-  AutofillTable::FromWebDatabase(wds->GetDatabase())
+  PaymentsAutofillTable::FromWebDatabase(wds->GetDatabase())
       ->GetServerCardsMetadata(*cards_metadata);
 }
 
@@ -173,7 +235,7 @@ void GetModelTypeStateOnDBSequence(syncer::ModelType model_type,
                                    sync_pb::ModelTypeState* model_type_state) {
   DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
   syncer::MetadataBatch metadata_batch;
-  AutofillTable::FromWebDatabase(wds->GetDatabase())
+  autofill::AutofillSyncMetadataTable::FromWebDatabase(wds->GetDatabase())
       ->GetAllSyncMetadata(model_type, &metadata_batch);
   *model_type_state = metadata_batch.GetModelTypeState();
 }
@@ -224,6 +286,26 @@ void SetCreditCardCloudTokenData(
   wds->GetDBTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SetCreditCardCloudTokenDataOnDBSequence,
                                 base::Unretained(wds.get()), cloud_token_data));
+}
+
+void SetServerCardCredentialData(int profile, const CreditCard& credit_card) {
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
+  wds->AddServerCvc(credit_card.instrument_id(), credit_card.cvc());
+  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
+}
+
+void RemoveServerCardCredentialData(int profile,
+                                    const CreditCard& credit_card) {
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
+  wds->RemoveServerCvc(credit_card.instrument_id());
+  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
+}
+
+void UpdateServerCardCredentialData(int profile,
+                                    const CreditCard& credit_card) {
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
+  wds->UpdateServerCvc(credit_card.instrument_id(), credit_card.cvc());
+  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
 }
 
 void UpdateServerCardMetadata(int profile, const CreditCard& credit_card) {
@@ -357,6 +439,34 @@ sync_pb::SyncEntity CreateDefaultSyncCreditCardCloudTokenData() {
   return CreateSyncCreditCardCloudTokenData(kDefaultCreditCardCloudTokenDataID);
 }
 
+sync_pb::SyncEntity CreateDefaultSyncWalletCredential() {
+  return CreateSyncWalletCredential(
+      ServerCvc{kDefaultCardInstrumentId, kDefaultCardCvc,
+                /*last_updated_timestamp=*/base::Time::UnixEpoch() +
+                    base::Milliseconds(25000)});
+}
+
+sync_pb::SyncEntity CreateSyncWalletCredential(const ServerCvc& server_cvc) {
+  sync_pb::SyncEntity entity;
+  entity.set_name(base::NumberToString(server_cvc.instrument_id));
+  entity.set_id_string(base::NumberToString(server_cvc.instrument_id));
+  entity.set_version(0);  // Will be overridden by the fake server.
+  entity.set_ctime(12345);
+  entity.set_mtime(12345);
+
+  sync_pb::AutofillWalletCredentialSpecifics* wallet_credential_specifics =
+      entity.mutable_specifics()->mutable_autofill_wallet_credential();
+
+  wallet_credential_specifics->set_instrument_id(
+      base::NumberToString(server_cvc.instrument_id));
+  wallet_credential_specifics->set_cvc(base::UTF16ToUTF8(server_cvc.cvc));
+  wallet_credential_specifics->set_last_updated_time_unix_epoch_millis(
+      (server_cvc.last_updated_timestamp - base::Time::UnixEpoch())
+          .InMilliseconds());
+
+  return entity;
+}
+
 void ExpectDefaultCreditCardValues(const CreditCard& card) {
   EXPECT_EQ(CreditCard::RecordType::kMaskedServerCard, card.record_type());
   EXPECT_EQ(kDefaultCardID, card.server_id());
@@ -365,8 +475,13 @@ void ExpectDefaultCreditCardValues(const CreditCard& card) {
   EXPECT_EQ(kDefaultCardExpMonth, card.expiration_month());
   EXPECT_EQ(kDefaultCardExpYear, card.expiration_year());
   EXPECT_EQ(kDefaultCardName16,
-            card.GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL));
+            card.GetRawInfo(autofill::FieldType::CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(kDefaultBillingAddressID, card.billing_address_id());
+}
+
+void ExpectDefaultWalletCredentialValues(const CreditCard& card) {
+  EXPECT_EQ(kDefaultCardInstrumentId, card.instrument_id());
+  EXPECT_EQ(kDefaultCardCvc, card.cvc());
 }
 
 std::vector<CreditCard*> GetServerCreditCards(int profile) {

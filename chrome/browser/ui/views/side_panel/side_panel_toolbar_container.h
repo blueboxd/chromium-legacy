@@ -22,8 +22,9 @@ class SidePanelCoordinator;
 // Container for side panel button and pinned side panel entries shown in the
 // toolbar.
 class SidePanelToolbarContainer : public ToolbarIconContainerView {
+  METADATA_HEADER(SidePanelToolbarContainer, ToolbarIconContainerView)
+
  public:
-  METADATA_HEADER(SidePanelToolbarContainer);
   explicit SidePanelToolbarContainer(BrowserView* browser_view);
   SidePanelToolbarContainer(const SidePanelToolbarContainer&) = delete;
   SidePanelToolbarContainer& operator=(const SidePanelToolbarContainer&) =
@@ -60,8 +61,9 @@ class SidePanelToolbarContainer : public ToolbarIconContainerView {
 
  private:
   class PinnedSidePanelToolbarButton : public ToolbarButton {
+    METADATA_HEADER(PinnedSidePanelToolbarButton, ToolbarButton)
+
    public:
-    METADATA_HEADER(PinnedSidePanelToolbarButton);
     PinnedSidePanelToolbarButton(BrowserView* browser_view,
                                  SidePanelEntry::Id id,
                                  std::u16string accessible_name,
@@ -99,7 +101,8 @@ class SidePanelToolbarContainer : public ToolbarIconContainerView {
 
   const raw_ptr<SidePanelToolbarButton> side_panel_button_;
 
-  std::vector<PinnedSidePanelToolbarButton*> pinned_entry_buttons_;
+  std::vector<raw_ptr<PinnedSidePanelToolbarButton, VectorExperimental>>
+      pinned_entry_buttons_;
   base::CallbackListSubscription side_panel_visibility_change_subscription_;
   base::CallbackListSubscription pinned_button_visibility_change_subscription_;
   PrefChangeRegistrar pref_change_registrar_;

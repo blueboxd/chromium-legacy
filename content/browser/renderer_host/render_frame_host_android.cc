@@ -30,6 +30,7 @@
 #include "url/origin.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
@@ -41,7 +42,7 @@ namespace content {
 namespace {
 void OnGetCanonicalUrlForSharing(
     const base::android::JavaRef<jobject>& jcallback,
-    const absl::optional<GURL>& url) {
+    const std::optional<GURL>& url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!url) {
     base::android::RunObjectCallbackAndroid(jcallback,

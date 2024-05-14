@@ -20,6 +20,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace message_center {
 
@@ -53,8 +54,8 @@ void NotificationControlButtonsView::ShowCloseButton(bool show) {
     if (GetWidget()) {
       close_button_->SetImageModel(
           views::Button::STATE_NORMAL,
-          ui::ImageModel::FromVectorIcon(GetCloseButtonIcon(),
-                                         DetermineButtonIconColor()));
+          ui::ImageModel::FromVectorIcon(
+              GetCloseButtonIcon(), DetermineButtonIconColor(), icon_size_));
     }
     close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
@@ -62,7 +63,7 @@ void NotificationControlButtonsView::ShowCloseButton(bool show) {
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
     close_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
-    Layout();
+    DeprecatedLayoutImmediately();
   } else if (!show && close_button_) {
     DCHECK(Contains(close_button_));
     RemoveChildViewT(close_button_.get());
@@ -82,8 +83,8 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
     if (GetWidget()) {
       settings_button_->SetImageModel(
           views::Button::STATE_NORMAL,
-          ui::ImageModel::FromVectorIcon(GetSettingsButtonIcon(),
-                                         DetermineButtonIconColor()));
+          ui::ImageModel::FromVectorIcon(
+              GetSettingsButtonIcon(), DetermineButtonIconColor(), icon_size_));
     }
     settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
@@ -91,7 +92,7 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
     settings_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
-    Layout();
+    DeprecatedLayoutImmediately();
   } else if (!show && settings_button_) {
     DCHECK(Contains(settings_button_));
     RemoveChildViewT(settings_button_.get());
@@ -110,8 +111,8 @@ void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
     if (GetWidget()) {
       snooze_button_->SetImageModel(
           views::Button::STATE_NORMAL,
-          ui::ImageModel::FromVectorIcon(GetSnoozeButtonIcon(),
-                                         DetermineButtonIconColor()));
+          ui::ImageModel::FromVectorIcon(
+              GetSnoozeButtonIcon(), DetermineButtonIconColor(), icon_size_));
     }
     snooze_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP));
@@ -119,7 +120,7 @@ void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
         IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP));
     snooze_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
-    Layout();
+    DeprecatedLayoutImmediately();
   } else if (!show && snooze_button_) {
     DCHECK(Contains(snooze_button_));
     RemoveChildViewT(snooze_button_.get());
@@ -154,6 +155,10 @@ void NotificationControlButtonsView::SetSettingsButtonIcon(
 void NotificationControlButtonsView::SetSnoozeButtonIcon(
     const gfx::VectorIcon& icon) {
   snooze_button_icon_ = &icon;
+}
+
+void NotificationControlButtonsView::SetButtonIconSize(int size) {
+  icon_size_ = size;
 }
 
 void NotificationControlButtonsView::SetButtonIconColors(SkColor color) {
@@ -203,17 +208,20 @@ void NotificationControlButtonsView::UpdateButtonIconColors() {
   if (close_button_) {
     close_button_->SetImageModel(
         views::Button::STATE_NORMAL,
-        ui::ImageModel::FromVectorIcon(GetCloseButtonIcon(), icon_color));
+        ui::ImageModel::FromVectorIcon(GetCloseButtonIcon(), icon_color,
+                                       icon_size_));
   }
   if (settings_button_) {
     settings_button_->SetImageModel(
         views::Button::STATE_NORMAL,
-        ui::ImageModel::FromVectorIcon(GetSettingsButtonIcon(), icon_color));
+        ui::ImageModel::FromVectorIcon(GetSettingsButtonIcon(), icon_color,
+                                       icon_size_));
   }
   if (snooze_button_) {
     snooze_button_->SetImageModel(
         views::Button::STATE_NORMAL,
-        ui::ImageModel::FromVectorIcon(GetSnoozeButtonIcon(), icon_color));
+        ui::ImageModel::FromVectorIcon(GetSnoozeButtonIcon(), icon_color,
+                                       icon_size_));
   }
 }
 
@@ -241,7 +249,7 @@ const gfx::VectorIcon& NotificationControlButtonsView::GetSnoozeButtonIcon()
   return snooze_button_icon_ ? *snooze_button_icon_ : kDefaultSnoozeIcon;
 }
 
-BEGIN_METADATA(NotificationControlButtonsView, views::View)
+BEGIN_METADATA(NotificationControlButtonsView)
 END_METADATA
 
 }  // namespace message_center

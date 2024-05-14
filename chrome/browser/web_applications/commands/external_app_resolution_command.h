@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMMANDS_EXTERNAL_APP_RESOLUTION_COMMAND_H_
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
@@ -23,13 +24,13 @@
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_logging.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -51,27 +52,28 @@ struct WebAppInstallInfo;
 // install_url cannot be installed between the scheduling and running of this
 // command.
 class ExternalAppResolutionCommand
-    : public WebAppCommandTemplate<SharedWebContentsLock> {
+    : public WebAppCommand<SharedWebContentsLock,
+                           ExternallyManagedAppManager::InstallResult> {
  public:
-  using InstalledCallback =
-      base::OnceCallback<void(ExternallyManagedAppManager::InstallResult)>;
+  using InstallResult = ExternallyManagedAppManager::InstallResult;
+  using InstalledCallback = base::OnceCallback<void(InstallResult)>;
 
-  ExternalAppResolutionCommand(
-      Profile& profile,
-      const ExternalInstallOptions& install_options,
-      absl::optional<webapps::AppId> placeholder_app_id,
-      InstalledCallback installed_callback);
+  ExternalAppResolutionCommand(Profile& profile,
+                               const ExternalInstallOptions& install_options,
+                               std::optional<webapps::AppId> placeholder_app_id,
+                               InstalledCallback installed_callback);
   ~ExternalAppResolutionCommand() override;
-
-  // WebAppCommandTemplate<SharedWebContentsLock>:
-  const LockDescription& lock_description() const override;
-  base::Value ToDebugValue() const override;
-  void OnShutdown() override;
-  void StartWithLock(std::unique_ptr<SharedWebContentsLock> lock) override;
 
   void SetDataRetrieverForTesting(
       std::unique_ptr<WebAppDataRetriever> data_retriever);
   void SetOnLockUpgradedCallbackForTesting(base::OnceClosure callback);
+
+  // WebAppCommand:
+  void OnShutdown(base::PassKey<WebAppCommandManager>) const override;
+
+ protected:
+  // WebAppCommand:
+  void StartWithLock(std::unique_ptr<SharedWebContentsLock> lock) override;
 
  private:
   WebAppProvider& provider() const;
@@ -94,7 +96,7 @@ class ExternalAppResolutionCommand
                                     const GURL& manifest_url,
                                     bool valid_manifest_for_web_app,
                                     webapps::InstallableStatusCode error_code);
-  void OnPreparedForIconRetrieving(base::flat_set<GURL> icon_urls,
+  void OnPreparedForIconRetrieving(IconUrlSizeSet icon_urls,
                                    bool skip_page_favicons,
                                    WebAppUrlLoaderResult result);
   void OnIconsRetrievedUpgradeLockDescription(
@@ -128,7 +130,7 @@ class ExternalAppResolutionCommand
   void InstallFromInfo();
   void OnInstallFromInfoAppLockAcquired(
       std::unique_ptr<SharedWebContentsWithAppLock> apps_lock);
-  void OnInstallFromInfoCompleted(const webapps::AppId& app_id,
+  void OnInstallFromInfoCompleted(webapps::AppId app_id,
                                   webapps::InstallResultCode code,
                                   OsHooksErrors os_hook_errors);
   void OnUninstallAndReplaceCompleted(bool is_offline_install,
@@ -143,16 +145,12 @@ class ExternalAppResolutionCommand
 
   // SharedWebContentsLock is held while loading the app contents (and manifest,
   // if possible).
-  std::unique_ptr<SharedWebContentsLockDescription>
-      web_contents_lock_description_;
   std::unique_ptr<SharedWebContentsLock> web_contents_lock_;
 
   // SharedWebContentsWithAppLock is held when the affected app ids are known
   // (i.e. after deciding whether a placeholder install is needed or when the
   // manifest is loaded).
   std::unique_ptr<SharedWebContentsWithAppLock> apps_lock_;
-  std::unique_ptr<SharedWebContentsWithAppLockDescription>
-      apps_lock_description_;
 
   std::unique_ptr<AllAppsLock> all_apps_lock_;
   std::unique_ptr<AllAppsLockDescription> all_apps_lock_description_;
@@ -166,8 +164,6 @@ class ExternalAppResolutionCommand
   // `this` must be owned by `profile_`.
   raw_ref<Profile> profile_;
 
-  InstalledCallback installed_callback_;
-
   raw_ptr<content::WebContents> web_contents_ = nullptr;
   std::unique_ptr<WebAppUrlLoader> url_loader_;
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
@@ -175,18 +171,16 @@ class ExternalAppResolutionCommand
 
   ExternalInstallOptions install_options_;
 
-  absl::optional<webapps::AppId> installed_placeholder_app_id_;
+  std::optional<webapps::AppId> installed_placeholder_app_id_;
 
   webapps::WebappInstallSource install_surface_;
-  absl::optional<WebAppInstallParams> install_params_;
+  std::optional<WebAppInstallParams> install_params_;
 
-  absl::optional<WebAppUninstallAndReplaceJob> uninstall_and_replace_job_;
-  absl::optional<InstallPlaceholderJob> install_placeholder_job_;
-  absl::optional<InstallFromInfoJob> install_from_info_job_;
-  absl::optional<RemoveInstallSourceJob> remove_placeholder_job_;
+  std::optional<WebAppUninstallAndReplaceJob> uninstall_and_replace_job_;
+  std::optional<InstallPlaceholderJob> install_placeholder_job_;
+  std::optional<InstallFromInfoJob> install_from_info_job_;
+  std::optional<RemoveInstallSourceJob> remove_placeholder_job_;
 
-  base::Value::List error_log_;
-  base::Value::Dict debug_value_;
   InstallErrorLogEntry install_error_log_entry_;
 
   base::OnceClosure on_lock_upgraded_callback_for_testing_;

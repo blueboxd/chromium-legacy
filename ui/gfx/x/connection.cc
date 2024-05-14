@@ -34,6 +34,7 @@
 #include "ui/gfx/x/sync.h"
 #include "ui/gfx/x/visual_manager.h"
 #include "ui/gfx/x/window_event_manager.h"
+#include "ui/gfx/x/wm_sync.h"
 #include "ui/gfx/x/xfixes.h"
 #include "ui/gfx/x/xinput.h"
 #include "ui/gfx/x/xkb.h"
@@ -111,7 +112,7 @@ Connection* Connection::Get() {
 void Connection::Set(std::unique_ptr<Connection> connection) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(connection->sequence_checker_);
   auto& tls = GetConnectionTLS();
-  DUMP_WILL_BE_CHECK(!tls.Get());
+  CHECK(!tls.Get());
   tls.Set(std::move(connection));
 }
 
@@ -128,7 +129,7 @@ Connection::Connection(const std::string& address)
                   xcb_disconnect),
       io_error_handler_(base::BindOnce(DefaultIOErrorHandler)),
       window_event_manager_(this) {
-  DUMP_WILL_BE_CHECK(connection_);
+  CHECK(connection_);
   if (Ready()) {
     auto buf = ReadBuffer(base::MakeRefCounted<UnretainedRefCountedMemory>(
                               xcb_get_setup(XcbConnection())),
@@ -183,6 +184,7 @@ Connection::Connection(const std::string& address)
 Connection::~Connection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  window_event_manager_.Reset();
   platform_event_source.reset();
 }
 
@@ -334,9 +336,7 @@ bool Connection::WmSupportsHint(Atom atom) const {
 }
 
 Connection::Request::Request(ResponseCallback callback)
-    : callback(std::move(callback)) {
-  DUMP_WILL_BE_CHECK(this->callback);
-}
+    : callback(std::move(callback)) {}
 
 Connection::Request::Request(Request&& other) = default;
 
@@ -590,7 +590,8 @@ void Connection::InitializeExtensions() {
       ScreenSaver::major_version, ScreenSaver::minor_version);
   shape().QueryVersion();
   auto shm_future = shm().QueryVersion();
-  sync().Initialize(Sync::major_version, Sync::minor_version);
+  auto sync_future =
+      sync().Initialize(Sync::major_version, Sync::minor_version);
   xfixes().QueryVersion(XFixes::major_version, XFixes::minor_version);
   auto xinput_future =
       xinput().XIQueryVersion(Input::major_version, Input::minor_version);
@@ -615,6 +616,15 @@ void Connection::InitializeExtensions() {
   if (auto response = shm_future.Sync()) {
     shm_version_ = {response->major_version, response->minor_version};
   }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Chrome for ChromeOS can be run with X11 on a Linux desktop. In this case,
+  // NotifySwapAfterResize is never called as the compositor does not notify
+  // about swaps after resize. Thus, simply disable usage of XSyncCounter on
+  // ChromeOS builds.
+  if (auto response = sync_future.Sync()) {
+    sync_version_ = {response->major_version, response->minor_version};
+  }
+#endif
   if (auto response = xinput_future.Sync()) {
     xinput_version_ = {response->major_version, response->minor_version};
   }
@@ -622,7 +632,7 @@ void Connection::InitializeExtensions() {
 
 void Connection::ProcessNextEvent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DUMP_WILL_BE_CHECK(HasNextEvent());
+  CHECK(HasNextEvent());
 
   Event event = std::move(events_.front());
   events_.pop_front();
@@ -632,14 +642,14 @@ void Connection::ProcessNextEvent() {
 
 void Connection::ProcessNextResponse() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DUMP_WILL_BE_CHECK(!requests_.empty());
-  DUMP_WILL_BE_CHECK(requests_.front().have_response);
+  CHECK(!requests_.empty());
+  CHECK(requests_.front().have_response);
 
   Request request = std::move(requests_.front());
   requests_.pop_front();
   if (last_non_void_request_id_.has_value() &&
       last_non_void_request_id_.value() == first_request_id_) {
-    last_non_void_request_id_ = absl::nullopt;
+    last_non_void_request_id_ = std::nullopt;
   }
   first_request_id_++;
   if (request.callback) {
@@ -673,14 +683,14 @@ std::unique_ptr<FutureImpl> Connection::SendRequestImpl(
   static_assert(sizeof(ExtendedRequestHeader) == 8, "");
 
   auto& first_buffer = buf->GetBuffers()[0];
-  DUMP_WILL_BE_CHECK_GE(first_buffer->size(), sizeof(RequestHeader));
+  CHECK_GE(first_buffer->size(), sizeof(RequestHeader));
   auto* old_header = reinterpret_cast<RequestHeader*>(
       const_cast<uint8_t*>(first_buffer->data()));
   ExtendedRequestHeader new_header{*old_header, 0};
 
   // Requests are always a multiple of 4 bytes on the wire.  Because of this,
   // the length field represents the size in chunks of 4 bytes.
-  DUMP_WILL_BE_CHECK_EQ(buf->offset() % 4, 0UL);
+  CHECK_EQ(buf->offset() % 4, 0UL);
   size_t size32 = buf->offset() / 4;
 
   // XCB requires 2 iovecs for its own internal usage.
@@ -690,7 +700,7 @@ std::unique_ptr<FutureImpl> Connection::SendRequestImpl(
     old_header->length = size32;
   } else if (size32 < extended_max_request_length_) {
     // BigRequests extension request
-    DUMP_WILL_BE_CHECK_EQ(new_header.header.length, 0U);
+    CHECK_EQ(new_header.header.length, 0U);
     new_header.long_length = size32 + 1;
 
     io.push_back({&new_header, sizeof(ExtendedRequestHeader)});
@@ -723,12 +733,20 @@ std::unique_ptr<FutureImpl> Connection::SendRequestImpl(
   }
 
   SequenceType next_request_id = first_request_id_ + requests_.size();
-  DUMP_WILL_BE_CHECK_EQ(CompareSequenceIds(next_request_id, sequence), 0);
-
-  // If we ever reach 2^32 outstanding requests, then bail because sequence IDs
-  // would no longer be unique.
+  // XCB inserts requests every 2^32 requests (or every 2^16 requests if
+  // all outstanding requests don't generate a reply).  Because it's difficult
+  // to track these, increment the sequence counter until ours matches XCB's.
+  CHECK_LT(CompareSequenceIds(sequence, next_request_id), 10);
+  while (CompareSequenceIds(sequence, next_request_id) > 0) {
+    requests_.emplace_back(ResponseCallback());
+    requests_.back().have_response = true;
+    next_request_id++;
+    // If we ever reach 2^32 outstanding requests, then bail because sequence
+    // IDs would no longer be unique.
+    CHECK_NE(next_request_id, first_request_id_);
+  }
   next_request_id++;
-  DUMP_WILL_BE_CHECK_NE(next_request_id, first_request_id_);
+  CHECK_NE(next_request_id, first_request_id_);
 
   // Install a default response-handler that throws away the reply and prints
   // the error if there is one.  This handler may be overridden by clients.
@@ -756,7 +774,7 @@ void Connection::WaitForResponse(FutureImpl* future) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto* request = GetRequestForFuture(future);
-  DUMP_WILL_BE_CHECK(request->callback);
+  CHECK(request->callback);
   if (request->have_response) {
     return;
   }
@@ -815,7 +833,7 @@ Connection::Request* Connection::GetRequestForFuture(FutureImpl* future) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SequenceType offset = future->sequence() - first_request_id_;
-  DUMP_WILL_BE_CHECK_LT(offset, requests_.size());
+  CHECK_LT(offset, requests_.size());
   return &requests_[offset];
 }
 
@@ -844,7 +862,7 @@ void Connection::PreDispatchEvent(const Event& event) {
     }
   } else if (auto* screen = event.As<RandR::ScreenChangeNotifyEvent>()) {
     int index = ScreenIndexFromRootWindow(screen->root);
-    DUMP_WILL_BE_CHECK_GE(index, 0);
+    CHECK_GE(index, 0);
     bool portrait =
         static_cast<bool>(screen->rotation & (RandR::Rotation::Rotate_90 |
                                               RandR::Rotation::Rotate_270));
@@ -895,6 +913,10 @@ void Connection::OnRootPropertyChanged(Atom property,
                                        const GetPropertyResponse& value) {
   Atom check_atom = GetAtom("_NET_SUPPORTING_WM_CHECK");
   if (property == check_atom) {
+    // We've detected a new window manager, which may have different behavior
+    // when attempting to use WmSync.  Attempt to sync with the window manager
+    // so we know which behavior WmSync should use.
+    AttemptSyncWithWm();
     wm_props_.reset();
     Window wm_window = GetWindowPropertyAsWindow(value);
     if (wm_window != Window::None) {
@@ -916,6 +938,17 @@ bool Connection::WmSupportsEwmh() const {
     return *wm_check == wm_window;
   }
   return false;
+}
+
+void Connection::AttemptSyncWithWm() {
+  synced_with_wm_ = false;
+  wm_sync_ = std::make_unique<WmSync>(
+      this, base::BindOnce(&Connection::OnWmSynced, base::Unretained(this)),
+      true);
+}
+
+void Connection::OnWmSynced() {
+  synced_with_wm_ = true;
 }
 
 }  // namespace x11

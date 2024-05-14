@@ -48,7 +48,7 @@ bool IsChild(Profile* profile) {
   if (!user)
     return false;
 
-  return user->GetType() == user_manager::UserType::USER_TYPE_CHILD;
+  return user->GetType() == user_manager::UserType::kChild;
 }
 
 bool IsOwnerProfile(Profile* profile) {
@@ -127,7 +127,7 @@ base::Value::List GetUsersList(content::BrowserContext* browser_context) {
   });
 
   const user_manager::UserList& users = user_manager->GetUsers();
-  for (const auto* user : users) {
+  for (const user_manager::User* user : users) {
     base::Value email_value(user->GetAccountId().GetUserEmail());
     if (!base::Contains(email_list, email_value))
       email_list.Append(std::move(email_value));

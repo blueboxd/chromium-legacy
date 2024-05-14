@@ -309,7 +309,7 @@ class FetchEventServiceWorker : public FakeServiceWorker {
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kFallbackResponse:
-        response_callback->OnFallback(/*request_body=*/absl::nullopt,
+        response_callback->OnFallback(/*request_body=*/std::nullopt,
                                       std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
@@ -471,7 +471,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
 
     // Make the registration findable via storage functions.
     registration_->set_last_update_check(base::Time::Now());
-    absl::optional<blink::ServiceWorkerStatusCode> status;
+    std::optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
     registry()->StoreRegistration(
         registration_.get(), version_.get(),
@@ -546,7 +546,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
   // The |fallback_callback| passed to the ServiceWorkerMainResourceLoader in
   // StartRequest().
   void Fallback(bool reset_subresource_loader_params,
-                const ResponseHeadUpdateParams& head_update_params) {
+                ResponseHeadUpdateParams) {
     did_call_fallback_callback_ = true;
     reset_subresource_loader_params_ = reset_subresource_loader_params;
     if (quit_closure_for_fallback_callback_)

@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPING_LINE_BREAKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPING_LINE_BREAKER_H_
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <optional>
+
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_options.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/text_spacing_trim.h"
@@ -36,7 +37,7 @@ class PLATFORM_EXPORT ShapingLineBreaker {
 
  public:
   // Construct a ShapingLineBreaker.
-  ShapingLineBreaker(scoped_refptr<const ShapeResult> result,
+  ShapingLineBreaker(const ShapeResult* result,
                      const LazyLineBreakIterator* break_iterator,
                      const Hyphenation* hyphenation);
 
@@ -46,7 +47,7 @@ class PLATFORM_EXPORT ShapingLineBreaker {
 
    public:
     // Indicates the limits of the space run.
-    absl::optional<unsigned> non_hangable_run_end;
+    std::optional<unsigned> non_hangable_run_end;
 
     // Indicates the resulting break offset.
     unsigned break_offset;
@@ -77,21 +78,21 @@ class PLATFORM_EXPORT ShapingLineBreaker {
   // suppress if ShapeResult is not needed when this line overflows.
   bool NoResultIfOverflow() const { return no_result_if_overflow_; }
   void SetNoResultIfOverflow() { no_result_if_overflow_ = true; }
+  void SetIsAfterForcedBreak(bool value) { is_after_forced_break_ = value; }
   void SetTextSpacingTrim(TextSpacingTrim value) { text_spacing_trim_ = value; }
 
-  scoped_refptr<const ShapeResultView> ShapeLine(unsigned start_offset,
-                                                 LayoutUnit available_space,
-                                                 Result* result_out);
+  const ShapeResultView* ShapeLine(unsigned start_offset,
+                                   LayoutUnit available_space,
+                                   Result* result_out);
 
-  scoped_refptr<const ShapeResultView> ShapeLineAt(unsigned start,
-                                                   unsigned end);
+  const ShapeResultView* ShapeLineAt(unsigned start, unsigned end);
 
  protected:
   const ShapeResult& GetShapeResult() const { return *result_; }
 
-  virtual scoped_refptr<ShapeResult> Shape(unsigned start,
-                                           unsigned end,
-                                           ShapeOptions = ShapeOptions()) = 0;
+  virtual const ShapeResult* Shape(unsigned start,
+                                   unsigned end,
+                                   ShapeOptions = ShapeOptions()) = 0;
 
  private:
   struct EdgeOffset {
@@ -103,7 +104,7 @@ class PLATFORM_EXPORT ShapingLineBreaker {
 
   // True if the `offset` is start of a line, except the first line.
   bool IsStartOfWrappedLine(unsigned offset) const {
-    return offset && offset == line_start_;
+    return offset && offset == line_start_ && !is_after_forced_break_;
   }
   EdgeOffset FirstSafeOffset(unsigned start) const;
 
@@ -122,7 +123,7 @@ class PLATFORM_EXPORT ShapingLineBreaker {
           is_hyphenated(hyphenated) {}
 
     unsigned offset = 0;
-    absl::optional<unsigned> non_hangable_run_end;
+    std::optional<unsigned> non_hangable_run_end;
     bool is_hyphenated = false;
   };
   BreakOpportunity PreviousBreakOpportunity(unsigned offset,
@@ -138,28 +139,30 @@ class PLATFORM_EXPORT ShapingLineBreaker {
                      unsigned word_end,
                      bool backwards) const;
 
-  scoped_refptr<const ShapeResultView> ShapeToEnd(unsigned start,
-                                                  const EdgeOffset& first_safe,
-                                                  unsigned range_start,
-                                                  unsigned range_end);
-  scoped_refptr<const ShapeResultView> ConcatShapeResults(
+  const ShapeResultView* ShapeToEnd(unsigned start,
+                                    const ShapeResult* line_start_result,
+                                    unsigned first_safe,
+                                    unsigned range_start,
+                                    unsigned range_end);
+  const ShapeResultView* ConcatShapeResults(
       unsigned start,
       unsigned end,
       unsigned first_safe,
       unsigned last_safe,
-      scoped_refptr<const ShapeResult> line_start_result,
-      scoped_refptr<const ShapeResult> line_end_result);
+      const ShapeResult* line_start_result,
+      const ShapeResult* line_end_result);
 
   void SetBreakOffset(unsigned break_offset, const String&, Result*);
   void SetBreakOffset(const BreakOpportunity&, const String&, Result*);
 
-  scoped_refptr<const ShapeResult> result_;
+  const ShapeResult* result_;
   const LazyLineBreakIterator* break_iterator_;
   const Hyphenation* hyphenation_;
   unsigned line_start_ = 0;
   bool dont_reshape_end_if_at_space_ = false;
   bool no_result_if_overflow_ = false;
-  TextSpacingTrim text_spacing_trim_ = TextSpacingTrim::kSpaceFirst;
+  bool is_after_forced_break_ = false;
+  TextSpacingTrim text_spacing_trim_ = TextSpacingTrim::kInitial;
 
   friend class ShapingLineBreakerTest;
 };

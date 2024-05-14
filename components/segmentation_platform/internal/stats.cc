@@ -44,7 +44,6 @@ GetOptimizationTargetOutputDescription(SegmentId segment_id) {
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_DUMMY:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID:
-    case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_QUERY_TILES:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER:
     case SegmentId::OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING:
@@ -53,6 +52,7 @@ GetOptimizationTargetOutputDescription(SegmentId segment_id) {
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_TABLET_PRODUCTIVITY_USER:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_IOS_MODULE_RANKER:
+    case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_ANDROID_HOME_MODULE_RANKER:
       return proto::SegmentationModelMetadata::RETURN_TYPE_MULTISEGMENT;
     default:
       return proto::SegmentationModelMetadata::UNKNOWN_RETURN_TYPE;
@@ -152,7 +152,7 @@ AdaptiveToolbarSegmentSwitch GetAdaptiveToolbarSegmentSwitch(
 
 // Should map to ModelExecutionStatus variant string in
 // //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
-absl::optional<base::StringPiece> ModelExecutionStatusToHistogramVariant(
+std::optional<base::StringPiece> ModelExecutionStatusToHistogramVariant(
     ModelExecutionStatus status) {
   switch (status) {
     case ModelExecutionStatus::kSuccess:
@@ -168,7 +168,7 @@ absl::optional<base::StringPiece> ModelExecutionStatusToHistogramVariant(
     case ModelExecutionStatus::kSkippedNotEnoughSignals:
     case ModelExecutionStatus::kSkippedResultNotExpired:
     case ModelExecutionStatus::kFailedToSaveResultAfterSuccess:
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 
@@ -224,7 +224,7 @@ void RecordModelUpdateTimeDifference(SegmentId segment_id,
 void RecordSegmentSelectionComputed(
     const Config& config,
     SegmentId new_selection,
-    absl::optional<SegmentId> previous_selection) {
+    std::optional<SegmentId> previous_selection) {
   // Special case adaptive toolbar since it already has histograms being
   // recorded and updating names will affect current work.
   if (config.segmentation_key == kAdaptiveToolbarSegmentationKey) {
@@ -411,7 +411,7 @@ void RecordModelExecutionDurationModel(SegmentId segment_id,
                                        base::TimeDelta duration) {
   ModelExecutionStatus status = success ? ModelExecutionStatus::kSuccess
                                         : ModelExecutionStatus::kExecutionError;
-  absl::optional<base::StringPiece> status_variant =
+  std::optional<base::StringPiece> status_variant =
       ModelExecutionStatusToHistogramVariant(status);
   if (!status_variant)
     return;
@@ -425,7 +425,7 @@ void RecordModelExecutionDurationModel(SegmentId segment_id,
 void RecordModelExecutionDurationTotal(SegmentId segment_id,
                                        ModelExecutionStatus status,
                                        base::TimeDelta duration) {
-  absl::optional<base::StringPiece> status_variant =
+  std::optional<base::StringPiece> status_variant =
       ModelExecutionStatusToHistogramVariant(status);
   if (!status_variant)
     return;

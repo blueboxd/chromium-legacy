@@ -5,16 +5,16 @@
 /**
  * @fileoverview 'os-search-result-row' is the container for one search result.
  */
-import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/ash/common/cr_elements/icons.html.js';
 // <if expr="_google_chrome">
 import '/nearby/nearby-share-internal-icons.m.js';
 // </if>
 import '../os_settings_icons.html.js';
 import '../settings_shared.css.js';
 
-import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
-import {FocusRowMixin} from 'chrome://resources/cr_elements/focus_row_mixin.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/ash/common/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import {FocusRowMixin} from 'chrome://resources/ash/common/cr_elements/focus_row_mixin.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
@@ -775,6 +775,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
         return 'os-settings:nearby-share';
       case SearchResultIcon.kNotifications:
         return 'os-settings:apps-notifications';
+      case SearchResultIcon.kOneDrive:
+        return 'settings20:onedrive';
       case SearchResultIcon.kOnScreenKeyboard:
         return 'os-settings:on-screen-keyboard';
       case SearchResultIcon.kPaintbrush:
@@ -812,6 +814,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
         return 'os-settings:select-to-speak';
       case SearchResultIcon.kShield:
         return 'cr:security';
+      case SearchResultIcon.kSnapWindowSuggestions:
+        return 'os-settings:snap-window-suggestions';
       case SearchResultIcon.kStorage:
         return isRevampEnabled ? 'os-settings:storage' :
                                  'os-settings:hard-drive';

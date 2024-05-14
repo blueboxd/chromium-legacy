@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/autoclick/autoclick_controller.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
@@ -3586,7 +3586,7 @@ TEST_P(CaptureModeCameraPreviewTest, MultiDisplayResize) {
   StartCaptureSessionWithParam();
   auto* controller = CaptureModeController::Get();
   auto* session = controller->capture_mode_session();
-  auto* display_2_root = Shell::GetAllRootWindows()[1];
+  auto* display_2_root = Shell::GetAllRootWindows()[1].get();
 
   // When capturing a window, set its bounds such that it is placed on the
   // secondary display.
@@ -4024,7 +4024,7 @@ TEST_P(CaptureModeCameraPreviewTest,
   auto* event_generator = GetEventGenerator();
 
   for (const bool switch_access_enabled : {false, true}) {
-    AccessibilityControllerImpl* a11y_controller =
+    AccessibilityController* a11y_controller =
         Shell::Get()->accessibility_controller();
     a11y_controller->switch_access().SetEnabled(switch_access_enabled);
     EXPECT_EQ(switch_access_enabled, a11y_controller->IsSwitchAccessRunning());
@@ -4088,7 +4088,7 @@ TEST_P(CaptureModeCameraPreviewTest,
   auto* event_generator = GetEventGenerator();
 
   for (const bool switch_access_enabled : {false, true}) {
-    AccessibilityControllerImpl* a11y_controller =
+    AccessibilityController* a11y_controller =
         Shell::Get()->accessibility_controller();
     a11y_controller->switch_access().SetEnabled(switch_access_enabled);
     EXPECT_EQ(switch_access_enabled, a11y_controller->IsSwitchAccessRunning());
@@ -4644,7 +4644,8 @@ TEST_P(CaptureModeCameraFramesTest, SelectAnotherCameraWhileRendering) {
 }
 
 // Regression test for https://crbug.com/1316230.
-TEST_P(CaptureModeCameraFramesTest, CameraFatalErrors) {
+// Flaky (b/323909190)
+TEST_P(CaptureModeCameraFramesTest, DISABLED_CameraFatalErrors) {
   CaptureModeTestApi().StartForFullscreen(/*for_video=*/true);
   auto* camera_controller = GetCameraController();
   EXPECT_TRUE(camera_controller->selected_camera().is_valid());
@@ -4687,7 +4688,7 @@ TEST_F(NoSessionCaptureModeCameraTest, RequestCameraInfoAfterUserLogsIn) {
   {
     base::RunLoop loop;
     camera_controller->SetOnCameraListReceivedForTesting(loop.QuitClosure());
-    SimulateUserLogin("example@gmail.com", user_manager::USER_TYPE_REGULAR);
+    SimulateUserLogin("example@gmail.com", user_manager::UserType::kRegular);
     loop.Run();
   }
 

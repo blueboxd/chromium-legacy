@@ -38,7 +38,6 @@ extern const char kDlpReportingEnabled[];
 extern const char kDlpRulesList[];
 #if BUILDFLAG(IS_MAC)
 extern const char kEnterpriseMDMManagementMac[];
-extern const char kScreenTimeEnabled[];
 #endif
 extern const char kFeedbackSurveysEnabled[];
 extern const char kLastPolicyStatisticsUpdate[];
@@ -71,8 +70,9 @@ extern const char kPolicyTestPageEnabled[];
 extern const char kAllowBackForwardCacheForCacheControlNoStorePageEnabled[];
 extern const char kLocalTestPoliciesForNextStartup[];
 extern const char kForcePermissionPolicyUnloadDefaultEnabled[];
-extern const char kPPAPISharedImagesForVideoDecoderAllowed[];
-
+#if BUILDFLAG(IS_CHROMEOS)
+extern const char kAlwaysOnVpnPreConnectUrlAllowlist[];
+#endif
 }  // namespace policy_prefs
 }  // namespace policy
 

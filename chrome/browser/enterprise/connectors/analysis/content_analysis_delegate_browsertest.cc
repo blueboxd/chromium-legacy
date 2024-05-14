@@ -615,7 +615,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Texts) {
       safe_browsing::EventResultToString(safe_browsing::EventResult::BLOCKED),
       /*username*/ kUserName,
       /*profile_identifier*/ GetProfileIdentifier(),
-      /*scan_id*/ kScanId1);
+      /*scan_id*/ kScanId1,
+      /*content_transfer_method*/ absl::nullopt);
 
   bool called = false;
   base::RunLoop run_loop;
@@ -624,6 +625,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Texts) {
   ContentAnalysisDelegate::Data data;
   data.text.emplace_back(text());
   data.text.emplace_back(text());
+  data.reason = ContentAnalysisRequest::CLIPBOARD_PASTE;
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data, BULK_DATA_ENTRY));
 
@@ -697,6 +699,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, AllowTextAndImage) {
   ContentAnalysisDelegate::Data data;
   data.image = image();
   data.text.emplace_back(text());
+  data.reason = ContentAnalysisRequest::CLIPBOARD_PASTE;
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data, BULK_DATA_ENTRY));
 
@@ -778,6 +781,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest,
   ContentAnalysisDelegate::Data data;
   data.image = image();
   data.text.emplace_back(text());
+  data.reason = ContentAnalysisRequest::CLIPBOARD_PASTE;
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data, BULK_DATA_ENTRY));
 
@@ -910,6 +914,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Throttled) {
 
   // Create the files to be opened and scanned.
   ContentAnalysisDelegate::Data data;
+  data.reason = ContentAnalysisRequest::FILE_PICKER_DIALOG;
   CreateFilesForTest({"a.exe", "b.exe", "c.exe"},
                      {"a content", "b content", "c content"}, &data);
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
@@ -942,7 +947,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Throttled) {
       /*result*/
       safe_browsing::EventResultToString(safe_browsing::EventResult::ALLOWED),
       /*username*/ kUserName,
-      /*profile_identifier*/ GetProfileIdentifier());
+      /*profile_identifier*/ GetProfileIdentifier(),
+      /*content_transfer_reason*/ "CONTENT_TRANSFER_METHOD_FILE_PICKER");
 
   // While only one file should reach the upload part and get a
   // TOO_MANY_REQUEST result, it can be any of them depending on how quickly
@@ -1057,6 +1063,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
 
   ContentAnalysisDelegate::Data data;
   data.paths.emplace_back(test_zip);
+  data.reason = ContentAnalysisRequest::DRAG_AND_DROP;
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data, FILE_ATTACHED));
 
@@ -1083,7 +1090,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
                         : safe_browsing::EventResultToString(
                               safe_browsing::EventResult::BLOCKED),
       /*username*/ kUserName,
-      /*profile_identifier*/ GetProfileIdentifier());
+      /*profile_identifier*/ GetProfileIdentifier(),
+      /*content_transfer_reason*/ "CONTENT_TRANSFER_METHOD_DRAG_AND_DROP");
 
   // Start test.
   ContentAnalysisDelegate::CreateForWebContents(
@@ -1096,7 +1104,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
             ASSERT_EQ(result.paths_results[0], expected_result());
             called = true;
           }),
-      safe_browsing::DeepScanAccessPoint::UPLOAD);
+      safe_browsing::DeepScanAccessPoint::DRAG_AND_DROP);
 
   run_loop.Run();
   EXPECT_TRUE(called);
@@ -1139,6 +1147,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
 
   // Create the large file.
   ContentAnalysisDelegate::Data data;
+  data.reason = ContentAnalysisRequest::FILE_PICKER_DIALOG;
 
   CreateFilesForTest({"large.doc"}, {std::string()}, &data);
 
@@ -1174,7 +1183,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
                         : safe_browsing::EventResultToString(
                               safe_browsing::EventResult::BLOCKED),
       /*username*/ kUserName,
-      /*profile_identifier*/ GetProfileIdentifier());
+      /*profile_identifier*/ GetProfileIdentifier(),
+      /*content_transfer_method*/ "CONTENT_TRANSFER_METHOD_FILE_PICKER");
 
   bool called = false;
   base::RunLoop run_loop;
@@ -1299,6 +1309,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
 
   // Create a file.
   ContentAnalysisDelegate::Data data;
+  data.reason = ContentAnalysisRequest::DRAG_AND_DROP;
 
   CreateFilesForTest({"foo.doc"}, {"foo content"}, &data);
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
@@ -1353,7 +1364,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
                             : safe_browsing::EventResult::BLOCKED),
       /*username*/ kUserName,
       /*profile_identifier*/ GetProfileIdentifier(),
-      /*scan_id*/ kScanId1);
+      /*scan_id*/ kScanId1,
+      /*content_transfer_method*/ "CONTENT_TRANSFER_METHOD_DRAG_AND_DROP");
 
   bool called = false;
   base::RunLoop run_loop;
@@ -1378,7 +1390,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
 
             called = true;
           }),
-      safe_browsing::DeepScanAccessPoint::UPLOAD);
+      safe_browsing::DeepScanAccessPoint::DRAG_AND_DROP);
 
   run_loop.Run();
   EXPECT_TRUE(called);
@@ -1539,29 +1551,26 @@ class ContentAnalysisDelegateUnauthorizedBrowserTest
     file_scan_ = file_scan;
   }
 
-  // The dialog should only appear on file scans since they need to be opened
-  // asynchronously. This means that the dialog appears when scanning files and
-  // that all the following overrides should be called. Text scans don't have an
-  // asynchronous operation needed before being sent for scanning, so in the
-  // unauthorized case the dialog doesn't need to appear and the assertions will
-  // fail the test if they are reached.
+  // The dialog should appear on blocking scans for both paste and files upload,
+  // because CBUS retries authorizarion check first and then update the scan
+  // result.
   void ConstructorCalled(ContentAnalysisDialog* dialog,
                          base::TimeTicks timestamp) override {
-    ASSERT_TRUE(file_scan_ && blocking_scan());
+    ASSERT_TRUE(blocking_scan());
   }
 
   void ViewsFirstShown(ContentAnalysisDialog* dialog,
                        base::TimeTicks timestamp) override {
-    ASSERT_TRUE(file_scan_ && blocking_scan());
+    ASSERT_TRUE(blocking_scan());
   }
 
   void DialogUpdated(ContentAnalysisDialog* dialog,
                      FinalContentAnalysisResult result) override {
-    ASSERT_TRUE(file_scan_ && blocking_scan());
+    ASSERT_TRUE(blocking_scan());
   }
 
   void DestructorCalled(ContentAnalysisDialog* dialog) override {
-    ASSERT_TRUE(file_scan_ && blocking_scan());
+    ASSERT_TRUE(blocking_scan());
     CallQuitClosure();
   }
 
@@ -1586,6 +1595,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Paste) {
                           content_analysis_run_loop.QuitClosure()));
 
   FakeBinaryUploadServiceStorage()->SetAuthForTesting(dm_token(), false);
+  FakeBinaryUploadServiceStorage()->SetAuthorized(false);
 
   bool called = false;
   base::RunLoop run_loop;
@@ -1593,6 +1603,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Paste) {
 
   ContentAnalysisDelegate::Data data;
   data.text.emplace_back(text());
+  data.reason = ContentAnalysisRequest::CLIPBOARD_PASTE;
   ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data, BULK_DATA_ENTRY));
 
@@ -1609,11 +1620,14 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Paste) {
           }),
       safe_browsing::DeepScanAccessPoint::PASTE);
 
+  // Make sure auth retry fails.
+  FakeBinaryUploadServiceStorage()->ReturnAuthorizedResponse();
+
   run_loop.Run();
   EXPECT_TRUE(called);
 
-  // No requests should be made since the DM token is unauthorized.
-  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 0);
+  // 1 request to retry authentication.
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 1);
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
 
   // Ensure the ContentAnalysisDelegate is destroyed before the end of the test.
@@ -1631,10 +1645,13 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Files) {
                           content_analysis_run_loop.QuitClosure()));
 
   FakeBinaryUploadServiceStorage()->SetAuthForTesting(dm_token(), false);
+  // Make sure all auth retries fail.
+  FakeBinaryUploadServiceStorage()->SetAuthorized(false);
+  FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
 
   bool called = false;
   base::RunLoop run_loop;
-  absl::optional<base::RepeatingClosure> quit_closure = absl::nullopt;
+  std::optional<base::RepeatingClosure> quit_closure = std::nullopt;
 
   // If the scan is blocking, we can call the quit closure when the dialog
   // closes. If it's not, call it at the end of the result callback.
@@ -1669,12 +1686,13 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Files) {
   run_loop.Run();
   EXPECT_TRUE(called);
 
-  // No requests should be made since the DM token is unauthorized.
-  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 0);
-  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
-
   // Ensure the ContentAnalysisDelegate is destroyed before the end of the test.
   content_analysis_run_loop.Run();
+
+  // Check result after both blocking and non-blocking scan finishes.
+  // 2 request to retry authentication for each file.
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 2);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
 }
 
 }  // namespace enterprise_connectors

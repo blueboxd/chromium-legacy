@@ -137,7 +137,7 @@ class LoginExpandedPublicAccountEventHandler : public ui::EventHandler {
   }
   void OnKeyEvent(ui::KeyEvent* event) override { view_->OnKeyEvent(event); }
 
-  raw_ptr<LoginExpandedPublicAccountView, ExperimentalAsh> view_;
+  raw_ptr<LoginExpandedPublicAccountView> view_;
 };
 
 }  // namespace
@@ -225,7 +225,7 @@ class SelectionButtonView : public LoginButton {
         gfx::Size(left_margin_, kNonEmptyHeight));
     right_margin_view_->SetPreferredSize(
         gfx::Size(right_margin_, kNonEmptyHeight));
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 
   void SetTextColorId(ui::ColorId color_id) {
@@ -234,7 +234,7 @@ class SelectionButtonView : public LoginButton {
   void SetText(const std::u16string& text) {
     SetAccessibleName(text);
     label_->SetText(text);
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 
   void SetIcon(const gfx::VectorIcon& icon, ui::ColorId color_id) {
@@ -244,10 +244,10 @@ class SelectionButtonView : public LoginButton {
  private:
   int left_margin_ = 0;
   int right_margin_ = 0;
-  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> left_margin_view_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> right_margin_view_ = nullptr;
+  raw_ptr<views::Label> label_ = nullptr;
+  raw_ptr<views::ImageView> icon_ = nullptr;
+  raw_ptr<views::View> left_margin_view_ = nullptr;
+  raw_ptr<views::View> right_margin_view_ = nullptr;
 };
 
 BEGIN_METADATA(SelectionButtonView)
@@ -311,7 +311,7 @@ class MonitoringWarningView : public NonAccessibleView {
            label_->GetHeightForWidth(w);
   }
 
-  void Layout() override {
+  void Layout(PassKey) override {
     int y = 0;
 
     image_->SizeToPreferredSize();
@@ -348,15 +348,15 @@ class MonitoringWarningView : public NonAccessibleView {
     }
     label_->SetText(label_text);
     InvalidateLayout();
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 
   friend class LoginExpandedPublicAccountView::TestApi;
 
   WarningType warning_type_;
   std::optional<std::string> device_manager_;
-  raw_ptr<views::ImageView, ExperimentalAsh> image_;
-  raw_ptr<views::Label, ExperimentalAsh> label_;
+  raw_ptr<views::ImageView> image_;
+  raw_ptr<views::Label> label_;
 };
 
 BEGIN_METADATA(MonitoringWarningView)
@@ -466,7 +466,7 @@ class RightPaneView : public NonAccessibleView {
 
   void UpdateForUser(const LoginUserInfo& user) {
     DCHECK_EQ(user.basic_user_info.type,
-              user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+              user_manager::UserType::kPublicAccount);
     current_user_ = user;
     if (!language_changed_by_user_) {
       selected_language_item_value_ = user.public_account_info->default_locale;
@@ -608,16 +608,16 @@ class RightPaneView : public NonAccessibleView {
 
   LoginUserInfo current_user_;
 
-  raw_ptr<SelectionButtonView, ExperimentalAsh> advanced_view_button_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> advanced_view_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> language_title_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> keyboard_title_ = nullptr;
-  raw_ptr<views::StyledLabel, ExperimentalAsh> learn_more_label_ = nullptr;
+  raw_ptr<SelectionButtonView> advanced_view_button_ = nullptr;
+  raw_ptr<views::View> advanced_view_ = nullptr;
+  raw_ptr<views::View> language_title_ = nullptr;
+  raw_ptr<views::View> keyboard_title_ = nullptr;
+  raw_ptr<views::StyledLabel> learn_more_label_ = nullptr;
 
-  raw_ptr<PublicAccountMenuView, DanglingUntriaged | ExperimentalAsh>
-      language_menu_view_ = nullptr;
-  raw_ptr<PublicAccountMenuView, DanglingUntriaged | ExperimentalAsh>
-      keyboard_menu_view_ = nullptr;
+  raw_ptr<PublicAccountMenuView, DanglingUntriaged> language_menu_view_ =
+      nullptr;
+  raw_ptr<PublicAccountMenuView, DanglingUntriaged> keyboard_menu_view_ =
+      nullptr;
 
   std::string selected_language_item_value_;
   std::string selected_keyboard_item_value_;
@@ -932,8 +932,8 @@ int LoginExpandedPublicAccountView::GetHeightForWidth(int width) const {
   return GetPreferredSizePortrait().height();
 }
 
-void LoginExpandedPublicAccountView::Layout() {
-  View::Layout();
+void LoginExpandedPublicAccountView::Layout(PassKey) {
+  LayoutSuperclass<View>(this);
 
   submit_button_->SizeToPreferredSize();
   const int submit_button_x =

@@ -49,9 +49,9 @@ class UnifiedSliderListener : public views::SliderListener {
 // Base view class of a slider row in `UnifiedSystemTray`. The slider has an
 // `ImageView` icon on top of the slider.
 class UnifiedSliderView : public views::View {
- public:
-  METADATA_HEADER(UnifiedSliderView);
+  METADATA_HEADER(UnifiedSliderView, views::View)
 
+ public:
   // `is_togglable` determines whether `slider_button_` is togglable or not.
   // If `read_only` is set, the slider will not accept any user events.
   // `slider_style` is `kDefaultSliderStyle` by default. `kRadioSliderStyle`
@@ -82,14 +82,14 @@ class UnifiedSliderView : public views::View {
   void OnEvent(ui::Event* event) override;
 
  private:
-  raw_ptr<const gfx::VectorIcon, ExperimentalAsh> icon_;
+  raw_ptr<const gfx::VectorIcon> icon_;
   const bool is_togglable_;
 
   // Unowned. Owned by views hierarchy.
-  raw_ptr<IconButton, ExperimentalAsh> button_ = nullptr;
-  raw_ptr<views::Slider, ExperimentalAsh> slider_ = nullptr;
-  raw_ptr<IconButton, ExperimentalAsh> slider_button_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> container_ = nullptr;
+  raw_ptr<IconButton> button_ = nullptr;
+  raw_ptr<views::Slider> slider_ = nullptr;
+  raw_ptr<IconButton> slider_button_ = nullptr;
+  raw_ptr<views::View> container_ = nullptr;
 };
 
 }  // namespace ash

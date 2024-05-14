@@ -1000,8 +1000,8 @@ ScriptPromise PaymentRequest::abort(ScriptState* script_state,
 ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state,
                                              ExceptionState& exception_state) {
   if (!not_supported_for_invalid_origin_or_ssl_error_.empty()) {
-    return ScriptPromise::Cast(script_state,
-                               ScriptValue::From(script_state, false));
+    return ScriptPromise::Cast(
+        script_state, v8::Boolean::New(script_state->GetIsolate(), false));
   }
 
   if (!payment_provider_.is_bound() || GetPendingAcceptPromiseResolver() ||
@@ -1025,8 +1025,8 @@ ScriptPromise PaymentRequest::hasEnrolledInstrument(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!not_supported_for_invalid_origin_or_ssl_error_.empty()) {
-    return ScriptPromise::Cast(script_state,
-                               ScriptValue::From(script_state, false));
+    return ScriptPromise::Cast(
+        script_state, v8::Boolean::New(script_state->GetIsolate(), false));
   }
 
   if (!payment_provider_.is_bound() || GetPendingAcceptPromiseResolver() ||
@@ -1232,7 +1232,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
   }
 
   if (!options_->requestShipping()) {
-    validated_details->shipping_options = absl::nullopt;
+    validated_details->shipping_options = std::nullopt;
   }
 
   if (is_waiting_for_show_promise_to_resolve_) {
@@ -1391,7 +1391,7 @@ PaymentRequest::PaymentRequest(
   if (options_->requestShipping()) {
     shipping_type_ = options_->shippingType();
   } else {
-    validated_details->shipping_options = absl::nullopt;
+    validated_details->shipping_options = std::nullopt;
   }
 
   DCHECK(shipping_type_.IsNull() || shipping_type_ == "shipping" ||

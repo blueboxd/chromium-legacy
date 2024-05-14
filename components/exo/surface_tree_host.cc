@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/shell.h"
 #include "base/check.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
@@ -55,6 +56,10 @@
 
 namespace exo {
 
+BASE_FEATURE(kExoDisableBeginFrameAcks,
+             "ExoDisableBeginFrameAcks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 namespace {
 
 class CustomWindowTargeter : public aura::WindowTargeter {
@@ -96,7 +101,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   }
 
  private:
-  const raw_ptr<SurfaceTreeHost, ExperimentalAsh> surface_tree_host_;
+  const raw_ptr<SurfaceTreeHost> surface_tree_host_;
 };
 
 }  // namespace
@@ -122,6 +127,7 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
                           ->SharedMainThreadRasterContextProvider();
   DCHECK(context_provider_);
   context_provider_->AddObserver(this);
+  display_manager_observation_.Observe(ash::Shell::Get()->display_manager());
 }
 
 SurfaceTreeHost::~SurfaceTreeHost() {
@@ -264,12 +270,20 @@ SecurityDelegate* SurfaceTreeHost::GetSecurityDelegate() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// display::DisplayObserver:
-void SurfaceTreeHost::OnDisplayMetricsChanged(const display::Display& display,
-                                              uint32_t changed_metrics) {
+// display::DisplayManagerObserver:
+
+void SurfaceTreeHost::OnDidProcessDisplayChanges(
+    const DisplayConfigurationChange& configuration_change) {
   // The output of the surface may change when the primary display changes.
-  if (changed_metrics & DisplayObserver::DISPLAY_METRIC_PRIMARY)
+  const bool primary_changed = base::ranges::any_of(
+      configuration_change.display_metrics_changes,
+      [](const DisplayManagerObserver::DisplayMetricsChange& change) {
+        return change.changed_metrics &
+               display::DisplayObserver::DISPLAY_METRIC_PRIMARY;
+      });
+  if (primary_changed) {
     UpdateDisplayOnTree();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -325,6 +339,21 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
         << ", StartupId=" << (startup_id ? *startup_id : "''");
   }
 
+  const int64_t frame_trace_id = root_surface_->GetFrameTraceId();
+  if (frame_trace_id != -1) {
+    frame.metadata.begin_frame_ack.trace_id = frame_trace_id;
+    TRACE_EVENT_INSTANT(
+        "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
+        perfetto::Flow::Global(frame_trace_id),
+        [frame_trace_id](perfetto::EventContext ctx) {
+          auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+          auto* data = event->set_chrome_graphics_pipeline();
+          data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                             StepName::STEP_EXO_CONSTRUCT_COMPOSITOR_FRAME);
+          data->set_display_trace_id(frame_trace_id);
+        });
+  }
+
   std::list<Surface::FrameCallback> current_frame_callbacks;
   PresentationCallbacks presentation_callbacks;
   root_surface_->AppendSurfaceHierarchyCallbacks(&current_frame_callbacks,
@@ -343,8 +372,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       layer_tree_frame_sink_holder_->NeedsFullDamageForNextFrame(),
       layer_tree_frame_sink_holder_->resource_manager(),
       client_submits_surfaces_in_pixel_coordinates()
-          ? absl::nullopt
-          : absl::make_optional(GetScaleFactor()),
+          ? std::nullopt
+          : std::make_optional(GetScaleFactor()),
       &frame);
 
   // Update after resource is updated.
@@ -355,7 +384,13 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   // the considerable overhead of flush verification in
   // 'VerifySyncTokensCHROMIUM'.
   for (auto& resource : frame.resource_list) {
-    if (prev_frame_verified_tokens_.find(resource.mailbox_holder.sync_token) !=
+    // Copy the token and set it as flush verified as the tokens, which
+    // |prev_frame_verified_tokens| has, have that flag set. If that is not done
+    // locally here, the comparison of the tokens fails as all fields of each
+    // tokens are compared during ::find().
+    auto tmp_sync_token = resource.mailbox_holder.sync_token;
+    tmp_sync_token.SetVerifyFlush();
+    if (prev_frame_verified_tokens_.find(tmp_sync_token) !=
         prev_frame_verified_tokens_.end()) {
       resource.mailbox_holder.sync_token.SetVerifyFlush();
     }
@@ -365,14 +400,11 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   rii->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
 
   prev_frame_verified_tokens_.clear();
+  frame.metadata.content_color_usage = gfx::ContentColorUsage::kSRGB;
   for (auto& resource : frame.resource_list) {
     if (resource.mailbox_holder.sync_token.verified_flush()) {
       prev_frame_verified_tokens_.insert(resource.mailbox_holder.sync_token);
     }
-  }
-
-  frame.metadata.content_color_usage = gfx::ContentColorUsage::kSRGB;
-  for (auto& resource : frame.resource_list) {
     frame.metadata.content_color_usage =
         std::max(frame.metadata.content_color_usage,
                  resource.color_space.GetContentColorUsage());
@@ -394,7 +426,7 @@ void SurfaceTreeHost::SubmitEmptyCompositorFrame() {
   quad_state->SetAll(gfx::Transform(), /*layer_rect=*/quad_rect,
                      /*visible_layer_rect=*/quad_rect,
                      /*filter_info=*/gfx::MaskFilterInfo(),
-                     /*clip=*/absl::nullopt,
+                     /*clip=*/std::nullopt,
                      /*contents_opaque=*/true, /*opacity_f=*/1.f,
                      /*blend=*/SkBlendMode::kSrcOver, /*sorting_context=*/0,
                      /*layer_id=*/0u, /*fast_rounded_corner=*/false);
@@ -526,6 +558,12 @@ SurfaceTreeHost::CreateLayerTreeFrameSink() {
         << "Feature ExoAutoNeedsBeginFrame is ignored because "
            "ExoReactiveFrameSubmission is not enabled.";
     logged_once = true;
+  }
+
+  // Disable merge of frame acks with begin frame so that clients of exo can
+  // get frame callbacks and resources reclaimed as soon as possible.
+  if (base::FeatureList::IsEnabled(kExoDisableBeginFrameAcks)) {
+    params.wants_begin_frame_acks = false;
   }
 
   params.auto_needs_begin_frame =
@@ -711,7 +749,7 @@ SurfaceTreeHost::CreateLayerTreeFrameSinkHolder() {
 }
 
 float SurfaceTreeHost::CalculateScaleFactor(
-    const absl::optional<float>& scale_factor) const {
+    const std::optional<float>& scale_factor) const {
   if (scale_factor) {
     // TODO(crbug.com/1412420): Remove this once the scale factor precision
     // issue is fixed for ARC.
@@ -742,6 +780,14 @@ void SurfaceTreeHost::ApplyRoundedCornersToSurfaceTree(
   gfx::RRectF rounded_corners_bounds(bounds, radii);
   ApplyAndPropagateRoundedCornersToSurfaceTree(root_surface(),
                                                rounded_corners_bounds);
+}
+
+scoped_refptr<viz::RasterContextProvider>
+SurfaceTreeHost::SetRasterContextProviderForTesting(
+    scoped_refptr<viz::RasterContextProvider> context_provider_test) {
+  auto old_provider = context_provider_;
+  context_provider_ = context_provider_test;
+  return old_provider;
 }
 
 void SurfaceTreeHost::ApplyAndPropagateRoundedCornersToSurfaceTree(

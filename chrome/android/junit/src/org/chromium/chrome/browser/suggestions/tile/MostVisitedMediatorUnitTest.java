@@ -39,6 +39,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -48,8 +51,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -329,7 +330,8 @@ public class MostVisitedMediatorUnitTest {
     }
 
     @Test
-    public void testUpdateTilesViewForCarouselLayout() {
+    @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    public void testUpdateTilesViewForCarouselLayout_Tablet_WithSurfacePolishDisabled() {
         mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
         createMediator(
                 /* isScrollableMVTEnabled= */ true,
@@ -359,6 +361,44 @@ public class MostVisitedMediatorUnitTest {
                 "The value of property UPDATE_INTERVAL_PADDINGS_TABLET passed "
                         + "to the model is wrong",
                 mModel.get(UPDATE_INTERVAL_PADDINGS_TABLET));
+    }
+
+    @Test
+    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    public void testUpdateTilesViewForCarouselLayout_Tablet() {
+        int expectedTileViewEdgePadding =
+                mResources.getDimensionPixelSize(R.dimen.tile_view_padding_edge_tablet_polish);
+        int expectedTileViewIntervalPadding =
+                mResources.getDimensionPixelSize(R.dimen.tile_view_padding_interval_tablet_polish);
+        mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
+        createMediator(
+                /* isScrollableMVTEnabled= */ true,
+                /* isNtpAsHomeSurfaceEnabled= */ true,
+                /* isTablet= */ true);
+        mMediator.onTileDataChanged();
+        Assert.assertEquals(
+                "The horizontal edge padding passed to the model is wrong",
+                expectedTileViewEdgePadding,
+                (int) mModel.get(HORIZONTAL_EDGE_PADDINGS));
+        Assert.assertEquals(
+                "The horizontal interval padding passed to the model is wrong",
+                expectedTileViewIntervalPadding,
+                (int) mModel.get(HORIZONTAL_INTERVAL_PADDINGS));
+
+        mConfiguration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+        createMediator(
+                /* isScrollableMVTEnabled= */ true,
+                /* isNtpAsHomeSurfaceEnabled= */ true,
+                /* isTablet= */ true);
+        mMediator.onTileDataChanged();
+        Assert.assertEquals(
+                "The horizontal edge padding passed to the model is wrong",
+                expectedTileViewEdgePadding,
+                (int) mModel.get(HORIZONTAL_EDGE_PADDINGS));
+        Assert.assertEquals(
+                "The horizontal interval padding passed to the model is wrong",
+                expectedTileViewIntervalPadding,
+                (int) mModel.get(HORIZONTAL_INTERVAL_PADDINGS));
     }
 
     @Test

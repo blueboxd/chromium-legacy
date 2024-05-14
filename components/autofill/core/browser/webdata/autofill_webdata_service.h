@@ -123,6 +123,9 @@ class AutofillWebDataService : public WebDataServiceBase {
   // `guid` is the identifier of the IBAN to remove.
   void RemoveLocalIban(const std::string& guid);
 
+  // Updates the metadata for a server IBAN.
+  void UpdateServerIbanMetadata(const Iban& iban);
+
   // Schedules a task to add credit card to the web database.
   void AddCreditCard(const CreditCard& credit_card);
 
@@ -185,10 +188,17 @@ class AutofillWebDataService : public WebDataServiceBase {
       WebDataServiceConsumer* consumer);
 
   // Initiates the request for virtual card usage data. The method
-  // OnWebDataServiceRequestDone of |consumer| gets called when the request is
-  // finished, with the offer data included in the argument |result|. The
-  // consumer owns the data.
+  // OnWebDataServiceRequestDone() of `consumer` gets called when the request is
+  // finished, with the virtual card usage data included in the argument
+  // `result`. The consumer owns the data.
   WebDataServiceBase::Handle GetVirtualCardUsageData(
+      WebDataServiceConsumer* consumer);
+
+  // Initiates the request for credit card benefits. The method
+  // OnWebDataServiceRequestDone() of `consumer` gets called when the request is
+  // finished, with the credit card benefits included in the argument `result`.
+  // The consumer owns the data.
+  WebDataServiceBase::Handle GetCreditCardBenefits(
       WebDataServiceConsumer* consumer);
 
   void ClearAllServerData();

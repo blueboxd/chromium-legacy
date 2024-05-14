@@ -47,9 +47,9 @@ constexpr int kActionButtonBetweenSpacing = 8;
 
 // SearchResultActionButton renders the button defined by SearchResult::Action.
 class SearchResultActionButton : public IconButton {
- public:
-  METADATA_HEADER(SearchResultActionButton);
+  METADATA_HEADER(SearchResultActionButton, IconButton)
 
+ public:
   SearchResultActionButton(SearchResultActionsView* parent,
                            const SearchResult::Action& action,
                            PressedCallback callback,
@@ -72,7 +72,7 @@ class SearchResultActionButton : public IconButton {
  private:
   int GetButtonRadius() const;
 
-  raw_ptr<SearchResultActionsView, ExperimentalAsh> parent_;
+  raw_ptr<SearchResultActionsView> parent_;
   bool to_be_activate_by_long_press_ = false;
 };
 
@@ -134,7 +134,7 @@ int SearchResultActionButton::GetButtonRadius() const {
   return width() / 2;
 }
 
-BEGIN_METADATA(SearchResultActionButton, IconButton)
+BEGIN_METADATA(SearchResultActionButton)
 END_METADATA
 
 SearchResultActionsView::SearchResultActionsView(
@@ -272,7 +272,7 @@ void SearchResultActionsView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-BEGIN_METADATA(SearchResultActionsView, views::View)
+BEGIN_METADATA(SearchResultActionsView)
 END_METADATA
 
 }  // namespace ash

@@ -19,7 +19,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/automation_internal/automation_event_router_interface.h"
-#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
@@ -444,9 +443,10 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_TableView) {
   // WARNING: This holds a raw pointer to `model`. To ensure the table doesn't
   // outlive its model, it must be manually deleted at the bottom of this
   // function.
-  views::TableView* const table = widget->GetRootView()->AddChildView(
-      std::make_unique<views::TableView>(model.get(), columns, views::TEXT_ONLY,
-                                         /* single_selection = */ true));
+  views::TableView* const table =
+      widget->GetRootView()->AddChildView(std::make_unique<views::TableView>(
+          model.get(), columns, views::TableType::kTextOnly,
+          /* single_selection = */ true));
   table->SetBounds(0, 0, 200, 200);
 
   // Show the widget.
@@ -660,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
 
   // Call some methods while disabled, before the first enable.
-  manager->HandleEvent(ax::mojom::Event::kFocus);
+  manager->HandleEvent(ax::mojom::Event::kFocus, /*from_user=*/true);
   manager->HandleAlert("hello");
   manager->PerformAction(ui::AXActionData());
   manager->OnChildWindowRemoved(nullptr);
@@ -670,7 +670,12 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   manager->Disable();
 
   // Make the same calls again. We should never crash.
-  manager->HandleEvent(ax::mojom::Event::kFocus);
+  manager->HandleEvent(ax::mojom::Event::kFocus, /*from_user=*/true);
+  manager->HandleAlert("hello");
+  manager->PerformAction(ui::AXActionData());
+  manager->OnChildWindowRemoved(nullptr);
+
+  manager->HandleEvent(ax::mojom::Event::kMouseMoved, /*from_user=*/false);
   manager->HandleAlert("hello");
   manager->PerformAction(ui::AXActionData());
   manager->OnChildWindowRemoved(nullptr);

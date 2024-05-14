@@ -33,9 +33,9 @@ pub fn readme_files_from_packages<'a>(
     deps: impl IntoIterator<Item = &'a cargo_metadata::Package>,
     paths: &paths::ChromiumPaths,
     extra_config: &BuildConfig,
-    mut find_group: impl FnMut(&'a cargo_metadata::PackageId) -> Result<Group>,
-    mut find_security_critical: impl FnMut(&'a cargo_metadata::PackageId) -> Result<Option<bool>>,
-    mut find_shipped: impl FnMut(&'a cargo_metadata::PackageId) -> Result<Option<bool>>,
+    mut find_group: impl FnMut(&'a cargo_metadata::PackageId) -> Group,
+    mut find_security_critical: impl FnMut(&'a cargo_metadata::PackageId) -> Option<bool>,
+    mut find_shipped: impl FnMut(&'a cargo_metadata::PackageId) -> Option<bool>,
 ) -> Result<HashMap<PathBuf, ReadmeFile>> {
     let mut map = HashMap::new();
 
@@ -58,9 +58,9 @@ pub fn readme_file_from_package<'a>(
     package: &'a cargo_metadata::Package,
     paths: &paths::ChromiumPaths,
     extra_config: &BuildConfig,
-    find_group: &mut dyn FnMut(&'a cargo_metadata::PackageId) -> Result<Group>,
-    find_security_critical: &mut dyn FnMut(&'a cargo_metadata::PackageId) -> Result<Option<bool>>,
-    find_shipped: &mut dyn FnMut(&'a cargo_metadata::PackageId) -> Result<Option<bool>>,
+    find_group: &mut dyn FnMut(&'a cargo_metadata::PackageId) -> Group,
+    find_security_critical: &mut dyn FnMut(&'a cargo_metadata::PackageId) -> Option<bool>,
+    find_shipped: &mut dyn FnMut(&'a cargo_metadata::PackageId) -> Option<bool>,
 ) -> Result<(PathBuf, ReadmeFile)> {
     let epoch = crates::Epoch::from_version(&package.version);
     let dir = paths
@@ -73,14 +73,14 @@ pub fn readme_file_from_package<'a>(
         .third_party_cargo_root
         .join("vendor")
         .join(format!("{}-{}", package.name, package.version));
-    let group = find_group(&package.id)?;
+    let group = find_group(&package.id);
 
-    let security_critical = find_security_critical(&package.id)?.unwrap_or_else(|| match group {
+    let security_critical = find_security_critical(&package.id).unwrap_or(match group {
         Group::Safe | Group::Sandbox => true,
         Group::Test => false,
     });
 
-    let shipped = find_shipped(&package.id)?.unwrap_or_else(|| match group {
+    let shipped = find_shipped(&package.id).unwrap_or(match group {
         Group::Safe | Group::Sandbox => true,
         Group::Test => false,
     });
@@ -114,8 +114,9 @@ pub fn readme_file_from_package<'a>(
     let path_if_exists = |path: &'a Path| -> Result<Option<&'a Path>> {
         if crate_dir.join(path).try_exists()? { Ok(Some(path)) } else { Ok(None) }
     };
-    let to_crate_dir_string =
-        |path: &Path| -> String { format!("//{}", crate_dir.join(path).to_string_lossy()) };
+    let to_crate_dir_string = |path: &Path| -> String {
+        format!("//{}", paths::normalize_unix_path_separator(&crate_dir.join(path)))
+    };
 
     let license_files: Vec<String> = {
         if let Some(config_license_files) = crate_config.and_then(|config| {
@@ -126,21 +127,19 @@ pub fn readme_file_from_package<'a>(
             }
         }) {
             config_license_files.map(to_crate_dir_string).collect()
+        } else if let Some(file) = &package.license_file {
+            path_if_exists(file.as_std_path())?.into_iter().map(to_crate_dir_string).collect()
         } else {
-            if let Some(file) = &package.license_file {
-                path_if_exists(file.as_std_path())?.into_iter().map(to_crate_dir_string).collect()
-            } else {
-                EXPECTED_LICENSE_FILE
-                    .iter()
-                    .filter_map(|(l, path)| {
-                        if license == **l {
-                            path_if_exists(Path::new(path)).unwrap_or(None).map(to_crate_dir_string)
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            }
+            EXPECTED_LICENSE_FILE
+                .iter()
+                .filter_map(|(l, path)| {
+                    if license == **l {
+                        path_if_exists(Path::new(path)).unwrap_or(None).map(to_crate_dir_string)
+                    } else {
+                        None
+                    }
+                })
+                .collect()
         }
     };
     if license_files.is_empty() && shipped {
@@ -221,15 +220,19 @@ static ALLOWED_LICENSES: [(&str, &str); 20] = [
     ("Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT", "Apache 2.0"),
 ];
 
-static EXPECTED_LICENSE_FILE: [(&str, &str); 11] = [
+static EXPECTED_LICENSE_FILE: [(&str, &str); 15] = [
     ("Apache 2.0", "LICENSE-APACHE"),
     ("Apache 2.0", "LICENSE-APACHE.txt"),
+    ("Apache 2.0", "LICENSE-APACHE.md"),
     ("Apache 2.0", "LICENSE"),
     ("MIT", "LICENSE"),
     ("MIT", "LICENSE-MIT"),
     ("MIT", "LICENSE-MIT.txt"),
+    ("MIT", "LICENSE-MIT.md"),
     ("BSD 3-Clause", "LICENSE"),
     ("BSD 3-Clause", "LICENSE-BSD"),
+    ("BSD 3-Clause", "LICENSE-BSD.txt"),
+    ("BSD 3-Clause", "LICENSE-BSD.md"),
     ("ISC", "LICENSE"),
     ("ISC", "LICENSE-ISC"),
     ("Apache 2.0 | BSD 3-Clause", "LICENSE"),

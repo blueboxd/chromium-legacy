@@ -36,14 +36,16 @@ MockAutofillClient::MockAutofillClient() = default;
 MockAutofillClient::~MockAutofillClient() = default;
 
 AutofillMetricsBaseTest::AutofillMetricsBaseTest(bool is_in_any_main_frame)
-    : is_in_any_main_frame_(is_in_any_main_frame) {
-  scoped_feature_list_async_parse_form_.InitAndEnableFeature(
-      features::kAutofillParseAsync);
-}
+    : is_in_any_main_frame_(is_in_any_main_frame) {}
 
 AutofillMetricsBaseTest::~AutofillMetricsBaseTest() = default;
 
 void AutofillMetricsBaseTest::SetUpHelper() {
+  // Advance the mock clock to a fixed, arbitrary, somewhat recent date.
+  base::Time year2020;
+  ASSERT_TRUE(base::Time::FromString("01/01/20", &year2020));
+  task_environment_.FastForwardBy(year2020 - base::Time::Now());
+
   autofill_client_ = std::make_unique<MockAutofillClient>();
   autofill_client_->SetPrefs(test::PrefServiceForTesting());
 
@@ -62,12 +64,10 @@ void AutofillMetricsBaseTest::SetUpHelper() {
       std::unique_ptr<payments::TestPaymentsNetworkInterface>(
           payments_network_interface));
   auto credit_card_save_manager = std::make_unique<TestCreditCardSaveManager>(
-      autofill_driver_.get(), autofill_client_.get(),
-      payments_network_interface, &personal_data());
+      autofill_driver_.get(), autofill_client_.get(), &personal_data());
   autofill_client_->set_test_form_data_importer(
       std::make_unique<TestFormDataImporter>(
-          autofill_client_.get(), payments_network_interface,
-          std::move(credit_card_save_manager),
+          autofill_client_.get(), std::move(credit_card_save_manager),
           /*iban_save_manager=*/nullptr, &personal_data(), "en-US"));
   autofill_client_->set_autofill_offer_manager(
       std::make_unique<AutofillOfferManager>(
@@ -93,12 +93,10 @@ void AutofillMetricsBaseTest::SetUpHelper() {
   // Initialize the TestPersonalDataManager with some default data.
   CreateTestAutofillProfiles();
 
-#if BUILDFLAG(IS_ANDROID)
   // Mandatory re-auth is required for credit card autofill on automotive, so
   // the authenticator response needs to be properly mocked.
-  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
-    autofill_client_->SetUpDeviceBiometricAuthenticatorSuccessResponseMock();
-  }
+#if BUILDFLAG(IS_ANDROID)
+  autofill_client_->SetUpDeviceBiometricAuthenticatorSuccessOnAutomotive();
 #endif
 }
 
@@ -148,7 +146,7 @@ void AutofillMetricsBaseTest::SetFidoEligibility(bool is_verifiable) {
       ->AllowFidoRegistration(true);
   access_manager.is_authentication_in_progress_ = false;
   access_manager.can_fetch_unmask_details_ = true;
-  access_manager.is_user_verifiable_ = absl::nullopt;
+  access_manager.is_user_verifiable_ = std::nullopt;
 }
 
 void AutofillMetricsBaseTest::OnDidGetRealPan(
@@ -322,7 +320,7 @@ void AutofillMetricsBaseTest::CreateTestAutofillProfiles() {
   test::SetProfileInfo(&profile2, "Charles", "Hardin", "Holley",
                        "buddy@gmail.com", "Decca", "123 Apple St.", "unit 6",
                        "Lubbock", "Texas", "79401", "US", "2345678901");
-  profile2.set_guid("00000000-0000-0000-0000-000000000002");
+  profile2.set_guid(kTestProfile2Id);
   personal_data().AddProfile(profile2);
 }
 

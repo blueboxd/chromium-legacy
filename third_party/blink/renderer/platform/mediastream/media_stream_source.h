@@ -33,11 +33,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_SOURCE_H_
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
@@ -70,6 +70,10 @@ class PLATFORM_EXPORT MediaStreamSource final
     virtual void SourceChangedState() = 0;
     virtual void SourceChangedCaptureConfiguration() = 0;
     virtual void SourceChangedCaptureHandle() = 0;
+    // No listener needs zoom-level updates on Android or iOS.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+    virtual void SourceChangedZoomLevel(int) = 0;
+#endif
   };
 
   enum StreamType { kTypeAudio, kTypeVideo };
@@ -121,7 +125,8 @@ class PLATFORM_EXPORT MediaStreamSource final
 
   void SetAudioProcessingProperties(EchoCancellationMode echo_cancellation_mode,
                                     bool auto_gain_control,
-                                    bool noise_supression);
+                                    bool noise_supression,
+                                    bool voice_isolation);
 
   void GetSettings(MediaStreamTrackPlatform::Settings&);
 
@@ -136,6 +141,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     Vector<String> echo_cancellation_type;
     Vector<bool> auto_gain_control;
     Vector<bool> noise_suppression;
+    Vector<bool> voice_isolation;
     Vector<int32_t> sample_size;
     Vector<int32_t> channel_count;
     Vector<int32_t> sample_rate;
@@ -168,6 +174,7 @@ class PLATFORM_EXPORT MediaStreamSource final
 
   void OnDeviceCaptureConfigurationChange(const MediaStreamDevice& device);
   void OnDeviceCaptureHandleChange(const MediaStreamDevice& device);
+  void OnZoomLevelChange(const MediaStreamDevice& device, int zoom_level);
 
   void Trace(Visitor*) const;
 
@@ -209,9 +216,10 @@ class PLATFORM_EXPORT MediaStreamSource final
       GUARDED_BY(audio_consumer_lock_);
   std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
   Capabilities capabilities_;
-  absl::optional<EchoCancellationMode> echo_cancellation_mode_;
-  absl::optional<bool> auto_gain_control_;
-  absl::optional<bool> noise_supression_;
+  std::optional<EchoCancellationMode> echo_cancellation_mode_;
+  std::optional<bool> auto_gain_control_;
+  std::optional<bool> noise_supression_;
+  std::optional<bool> voice_isolation_;
 };
 
 typedef HeapVector<Member<MediaStreamSource>> MediaStreamSourceVector;

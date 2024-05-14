@@ -27,7 +27,6 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "components/update_client/action_runner.h"
-#include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_cache.h"
 #include "components/update_client/crx_downloader_factory.h"
@@ -37,9 +36,9 @@
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/protocol_definition.h"
 #include "components/update_client/protocol_serializer.h"
-#include "components/update_client/puffin_component_unpacker.h"
 #include "components/update_client/puffin_patcher.h"
 #include "components/update_client/task_traits.h"
+#include "components/update_client/unpacker.h"
 #include "components/update_client/unzipper.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
@@ -101,7 +100,7 @@ using InstallOnBlockingTaskRunnerCompleteCallback = base::OnceCallback<void(
     ErrorCategory error_category,
     int error_code,
     int extra_code1,
-    absl::optional<CrxInstaller::Result> installer_result)>;
+    std::optional<CrxInstaller::Result> installer_result)>;
 
 void InstallComplete(scoped_refptr<base::SequencedTaskRunner> main_task_runner,
                      InstallOnBlockingTaskRunnerCompleteCallback callback,
@@ -154,7 +153,7 @@ void InstallOnBlockingTaskRunner(
         FROM_HERE,
         base::BindOnce(std::move(callback), ErrorCategory::kInstall,
                        static_cast<int>(installer_result.error),
-                       installer_result.extended_error, absl::nullopt));
+                       installer_result.extended_error, std::nullopt));
     return;
   }
 
@@ -247,17 +246,17 @@ void PuffinUnpackCompleteOnBlockingTaskRunner(
     const std::string& fingerprint,
     std::unique_ptr<CrxInstaller::InstallParams> install_params,
     scoped_refptr<CrxInstaller> installer,
-    absl::optional<scoped_refptr<update_client::CrxCache>> optional_crx_cache,
+    std::optional<scoped_refptr<update_client::CrxCache>> optional_crx_cache,
     CrxInstaller::ProgressCallback progress_callback,
     InstallOnBlockingTaskRunnerCompleteCallback callback,
-    const PuffinComponentUnpacker::Result& result) {
+    const Unpacker::Result& result) {
   if (result.error != UnpackerError::kNone) {
     update_client::DeleteFileAndEmptyParentDirectory(crx_path);
     DVLOG(2) << "Unpack failed: " << static_cast<int>(result.error);
     main_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), ErrorCategory::kUnpack,
                                   static_cast<int>(result.error),
-                                  result.extended_error, absl::nullopt));
+                                  result.extended_error, std::nullopt));
   } else if (!base::FeatureList::IsEnabled(features::kPuffinPatches) ||
              !optional_crx_cache.has_value()) {
     // If we were unable to create the crx_cache, skip the CrxCache::Put call.
@@ -268,7 +267,7 @@ void PuffinUnpackCompleteOnBlockingTaskRunner(
       DVLOG(2)
           << "Puffin Patches are disabled, proceeding without crx retention.";
     }
-    update_client::DeleteEmptyDirectory(crx_path.DirName());
+    update_client::DeleteFileAndEmptyParentDirectory(crx_path);
     base::ThreadPool::PostTask(
         FROM_HERE, kTaskTraits,
         base::BindOnce(&InstallOnBlockingTaskRunner, main_task_runner,
@@ -300,11 +299,11 @@ void StartPuffinInstallOnBlockingTaskRunner(
     std::unique_ptr<CrxInstaller::InstallParams> install_params,
     scoped_refptr<CrxInstaller> installer,
     std::unique_ptr<Unzipper> unzipper_,
-    absl::optional<scoped_refptr<update_client::CrxCache>> optional_crx_cache,
+    std::optional<scoped_refptr<update_client::CrxCache>> optional_crx_cache,
     crx_file::VerifierFormat crx_format,
     CrxInstaller::ProgressCallback progress_callback,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
-  PuffinComponentUnpacker::Unpack(
+  Unpacker::Unpack(
       pk_hash, crx_path, std::move(unzipper_), crx_format,
       base::BindOnce(&PuffinUnpackCompleteOnBlockingTaskRunner,
                      main_task_runner, crx_path, id, fingerprint,
@@ -315,7 +314,7 @@ void StartPuffinInstallOnBlockingTaskRunner(
 void OnPuffPatchCompleteOnBlockingTaskRunner(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
     const std::vector<uint8_t>& pk_hash,
-    const base::FilePath& src_crx_path,
+    const base::FilePath& patch_path,
     const base::FilePath& dest_crx_path,
     const std::string& id,
     const std::string& fingerprint,
@@ -328,13 +327,13 @@ void OnPuffPatchCompleteOnBlockingTaskRunner(
     InstallOnBlockingTaskRunnerCompleteCallback callback,
     UnpackerError error,
     int extra_code) {
+  update_client::DeleteFileAndEmptyParentDirectory(patch_path);
   if (error != UnpackerError::kNone) {
-    update_client::DeleteFileAndEmptyParentDirectory(src_crx_path);
     update_client::DeleteFileAndEmptyParentDirectory(dest_crx_path);
     main_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), ErrorCategory::kUnpack,
-                       static_cast<int>(error), extra_code, absl::nullopt));
+                       static_cast<int>(error), extra_code, std::nullopt));
     DVLOG(2) << "PuffPatch failed: " << static_cast<int>(error);
     return;
   }
@@ -346,7 +345,7 @@ void OnPuffPatchCompleteOnBlockingTaskRunner(
               &update_client::StartPuffinInstallOnBlockingTaskRunner,
               main_task_runner, pk_hash, dest_crx_path, id, fingerprint,
               std::move(install_params), installer, std::move(unzipper_),
-              absl::optional<scoped_refptr<update_client::CrxCache>>(crx_cache),
+              std::optional<scoped_refptr<update_client::CrxCache>>(crx_cache),
               crx_format, progress_callback, std::move(callback)));
 }
 
@@ -369,7 +368,7 @@ void StartPuffPatchOnBlockingTaskRunner(
     main_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), ErrorCategory::kUnpack,
-                       static_cast<int>(result.error), 0, absl::nullopt));
+                       static_cast<int>(result.error), 0, std::nullopt));
     DVLOG(2) << "crx_cache->Get failed: " << static_cast<int>(result.error);
     return;
   }
@@ -386,7 +385,7 @@ void StartPuffPatchOnBlockingTaskRunner(
       std::move(crx_file), std::move(puff_patch_file), std::move(dest_file),
       patcher_,
       base::BindOnce(&OnPuffPatchCompleteOnBlockingTaskRunner, main_task_runner,
-                     pk_hash, crx_path, dest_path, id, fingerprint,
+                     pk_hash, puff_patch_path, dest_path, id, fingerprint,
                      std::move(install_params), installer, std::move(unzipper_),
                      crx_cache, crx_format, progress_callback,
                      std::move(callback)));
@@ -436,20 +435,17 @@ const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
 }
 
 base::Value::Dict MakeEvent(
-    int event_type,
-    int result,
-    int error_code,
-    int extra_code1,
-    const absl::optional<base::Version>& previous_version,
-    const absl::optional<base::Version>& next_version) {
+    UpdateClient::PingParams ping_params,
+    const std::optional<base::Version>& previous_version,
+    const std::optional<base::Version>& next_version) {
   base::Value::Dict event;
-  event.Set("eventtype", event_type);
-  event.Set("eventresult", result);
-  if (error_code) {
-    event.Set("errorcode", error_code);
+  event.Set("eventtype", ping_params.event_type);
+  event.Set("eventresult", ping_params.result);
+  if (ping_params.error_code) {
+    event.Set("errorcode", ping_params.error_code);
   }
-  if (extra_code1) {
-    event.Set("extracode1", extra_code1);
+  if (ping_params.extra_code1) {
+    event.Set("extracode1", ping_params.extra_code1);
   }
   if (previous_version) {
     event.Set("previousversion", previous_version->GetString());
@@ -564,7 +560,7 @@ void Component::SetParseResult(const ProtocolParser::Result& result) {
   hashdiff_sha256_ = package.hashdiff_sha256;
 
   if (!result.manifest.run.empty()) {
-    install_params_ = absl::make_optional(CrxInstaller::InstallParams(
+    install_params_ = std::make_optional(CrxInstaller::InstallParams(
         result.manifest.run, result.manifest.arguments,
         [&result](const std::string& expected) -> std::string {
           if (expected.empty() || result.data.empty()) {
@@ -585,24 +581,20 @@ void Component::SetParseResult(const ProtocolParser::Result& result) {
 }
 
 void Component::PingOnly(const CrxComponent& crx_component,
-                         int event_type,
-                         int result,
-                         int error_code,
-                         int extra_code1) {
+                         UpdateClient::PingParams ping_params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(ComponentState::kNew, state());
   crx_component_ = crx_component;
   previous_version_ = crx_component_->version;
   next_version_ = base::Version("0");
-  error_code_ = error_code;
-  extra_code1_ = extra_code1;
+  error_code_ = ping_params.error_code;
+  extra_code1_ = ping_params.extra_code1;
   state_ = std::make_unique<StatePingOnly>(this);
-  AppendEvent(MakeEvent(event_type, result, error_code, extra_code1,
-                        previous_version_, absl::nullopt));
+  AppendEvent(MakeEvent(ping_params, previous_version_, std::nullopt));
 }
 
 void Component::SetUpdateCheckResult(
-    const absl::optional<ProtocolParser::Result>& result,
+    const std::optional<ProtocolParser::Result>& result,
     ErrorCategory error_category,
     int error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -922,7 +914,9 @@ void Component::StateCanUpdate::DoHandle() {
   component.is_update_available_ = true;
   component.NotifyObservers(Events::COMPONENT_UPDATE_FOUND);
 
-  if (!component.crx_component()->updates_enabled) {
+  if (!component.crx_component()->updates_enabled ||
+      (!component.crx_component()->allow_updates_on_metered_connection &&
+       component.config()->IsConnectionMetered())) {
     component.error_category_ = ErrorCategory::kService;
     component.error_code_ = static_cast<int>(ServiceError::UPDATE_DISABLED);
     component.extra_code1_ = 0;
@@ -1216,7 +1210,7 @@ void Component::StateUpdatingDiff::DoHandle() {
         base::BindOnce(&Component::StateUpdatingDiff::InstallComplete,
                        base::Unretained(this), ErrorCategory::kUnpack,
                        static_cast<int>(UnpackerError::kCrxCacheNotProvided), 0,
-                       absl::nullopt));
+                       std::nullopt));
   }
 }
 
@@ -1234,7 +1228,7 @@ void Component::StateUpdatingDiff::InstallComplete(
     ErrorCategory error_category,
     int error_code,
     int extra_code1,
-    absl::optional<CrxInstaller::Result>) {
+    std::optional<CrxInstaller::Result>) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto& component = Component::State::component();
@@ -1295,7 +1289,7 @@ void Component::StateUpdating::DoHandle() {
               update_context.config->GetUnzipperFactory()->Create(),
               component.crx_component()->allow_cached_copies
                   ? update_context.crx_cache_
-                  : absl::nullopt,
+                  : std::nullopt,
               component.crx_component()->crx_format_requirement,
               base::BindRepeating(&Component::StateUpdating::InstallProgress,
                                   base::Unretained(this)),
@@ -1317,7 +1311,7 @@ void Component::StateUpdating::InstallComplete(
     ErrorCategory error_category,
     int error_code,
     int extra_code1,
-    absl::optional<CrxInstaller::Result> installer_result) {
+    std::optional<CrxInstaller::Result> installer_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto& component = Component::State::component();
@@ -1372,6 +1366,8 @@ void Component::StateUpdated::DoHandle() {
 
   component.update_context_->persisted_data->SetProductVersion(
       component.id(), component.crx_component_->version);
+  component.update_context_->persisted_data->SetMaxPreviousProductVersion(
+      component.id(), component.previous_version_);
   component.update_context_->persisted_data->SetFingerprint(
       component.id(), component.crx_component_->fingerprint);
 

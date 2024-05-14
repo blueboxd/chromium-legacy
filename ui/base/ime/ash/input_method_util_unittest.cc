@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/fake_input_method_delegate.h"
 #include "ui/base/ime/ash/input_method_descriptor.h"
@@ -47,8 +47,6 @@ class InputMethodUtilTest : public testing::Test {
   InputMethodUtilTest() : util_(&delegate_) {
     delegate_.set_get_localized_string_callback(
         base::BindRepeating(&l10n_util::GetStringUTF16));
-    delegate_.set_get_display_language_name_callback(
-        base::BindRepeating(&InputMethodUtilTest::GetDisplayLanguageName));
 
     xkb_input_method_descriptors_ = {
         GetDesc(Id("xkb:us::eng"), "", "us", {"en", "en-US", "en-AU", "en-NZ"},
@@ -87,12 +85,7 @@ class InputMethodUtilTest : public testing::Test {
                                  layout, language_codes, is_login_keyboard,
                                  GURL(),  // options page url
                                  GURL(),  // input view page url
-                                 /*handwriting_language=*/absl::nullopt);
-  }
-
-  static std::u16string GetDisplayLanguageName(
-      const std::string& language_code) {
-    return l10n_util::GetDisplayNameForLocale(language_code, "en", true);
+                                 /*handwriting_language=*/std::nullopt);
   }
 
   FakeInputMethodDelegate delegate_;
@@ -213,7 +206,7 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodIdsForLanguageCode) {
 
 InputMethodDescriptor DescWithIdAndHandwritingLanguage(
     const std::string& id,
-    absl::optional<std::string> handwriting_language) {
+    std::optional<std::string> handwriting_language) {
   const std::string input_method_id =
       extension_ime_util::GetInputMethodIDByEngineID(id);
   return InputMethodDescriptor(
@@ -390,7 +383,7 @@ TEST_F(InputMethodUtilTest, TestInputMethodIDMigration) {
   // Duplicated hangul_2set.
   input_method_ids.emplace_back("ime:ko:hangul_2set");
 
-  util_.MigrateInputMethods(&input_method_ids);
+  util_.GetMigratedInputMethodIDs(&input_method_ids);
 
   EXPECT_EQ(std::size(migration_cases), input_method_ids.size());
   for (size_t i = 0; i < std::size(migration_cases); ++i) {

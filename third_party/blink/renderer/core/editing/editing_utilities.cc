@@ -505,11 +505,20 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
       !editable_position.AnchorNode()->IsDescendantOf(&highest_root))
     return PositionTemplate<Strategy>();
 
-  // If |editablePosition| has the non-editable child skipped, get the next
-  // sibling position. If not, we can't get the next paragraph in
-  // InsertListCommand::doApply's while loop. See http://crbug.com/571420
-  if (non_editable_node &&
-      non_editable_node->IsDescendantOf(editable_position.AnchorNode())) {
+  // If `non_editable_node` is the last child of
+  // `editable_position.AnchorNode()`, obtain the next sibling position.
+  // - If we do not obtain the next sibling position, we will be unable to
+  //   access the next paragraph within the `InsertListCommand::DoApply` while
+  //   loop. See http://crbug.com/571420 for more details.
+  // - If `non_editable_node` is not the last child, we will bypass the next
+  //   editable sibling position. See http://crbug.com/1334557 for more details.
+  bool need_obtain_next =
+      RuntimeEnabledFeatures::GetNextSiblingPositionWhenLastChildEnabled()
+          ? non_editable_node && editable_position.AnchorNode() &&
+                non_editable_node == editable_position.AnchorNode()->lastChild()
+          : non_editable_node && non_editable_node->IsDescendantOf(
+                                     editable_position.AnchorNode());
+  if (need_obtain_next) {
     // Make sure not to move out of |highest_root|
     const PositionTemplate<Strategy> boundary =
         PositionTemplate<Strategy>::LastPositionInNode(highest_root);
@@ -1524,17 +1533,6 @@ gfx::QuadF LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
   return caret_rect.layout_object->LocalRectToAbsoluteQuad(caret_rect.rect);
 }
 
-InputEvent::EventCancelable InputTypeIsCancelable(
-    InputEvent::InputType input_type) {
-  using InputType = InputEvent::InputType;
-  switch (input_type) {
-    case InputType::kInsertCompositionText:
-      return InputEvent::EventCancelable::kNotCancelable;
-    default:
-      return InputEvent::EventCancelable::kIsCancelable;
-  }
-}
-
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
@@ -1561,8 +1559,7 @@ DispatchEventResult DispatchBeforeInputInsertText(
   // TODO(editing-dev): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
-      input_type, data, InputTypeIsCancelable(input_type),
-      InputEvent::EventIsComposing::kNotComposing,
+      input_type, data, InputEvent::EventIsComposing::kNotComposing,
       ranges ? ranges : TargetRangesForInputEvent(*target));
   return target->DispatchEvent(*before_input_event);
 }
@@ -1574,8 +1571,8 @@ DispatchEventResult DispatchBeforeInputEditorCommand(
   if (!target)
     return DispatchEventResult::kNotCanceled;
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
-      input_type, g_null_atom, InputTypeIsCancelable(input_type),
-      InputEvent::EventIsComposing::kNotComposing, ranges);
+      input_type, g_null_atom, InputEvent::EventIsComposing::kNotComposing,
+      ranges);
   return target->DispatchEvent(*before_input_event);
 }
 
@@ -1596,16 +1593,14 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
 
   if (IsRichlyEditable(*target) || !data_transfer) {
     before_input_event = InputEvent::CreateBeforeInput(
-        input_type, data_transfer, InputTypeIsCancelable(input_type),
-        InputEvent::EventIsComposing::kNotComposing,
+        input_type, data_transfer, InputEvent::EventIsComposing::kNotComposing,
         TargetRangesForInputEvent(*target));
   } else {
     const String& data = data_transfer->getData(kMimeTypeTextPlain);
     // TODO(editing-dev): Pass appropriate |ranges| after it's defined on spec.
     // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
     before_input_event = InputEvent::CreateBeforeInput(
-        input_type, data, InputTypeIsCancelable(input_type),
-        InputEvent::EventIsComposing::kNotComposing,
+        input_type, data, InputEvent::EventIsComposing::kNotComposing,
         TargetRangesForInputEvent(*target));
   }
   return target->DispatchEvent(*before_input_event);

@@ -42,7 +42,8 @@ bool StyleRecalcChange::RecalcContainerQueryDependent(const Node& node) const {
   // subtree roots.
   return !old_style ||
          (RecalcSizeContainerQueryDependent() &&
-          old_style->DependsOnSizeContainerQueries()) ||
+          (old_style->DependsOnSizeContainerQueries() ||
+           old_style->HighlightPseudoElementStylesDependOnContainerUnits())) ||
          (RecalcStyleContainerQueryDependent() &&
           old_style->DependsOnStyleContainerQueries()) ||
          (RecalcStateContainerQueryDependent() &&
@@ -68,6 +69,9 @@ bool StyleRecalcChange::ShouldUpdatePseudoElement(
     return true;
   }
   if (pseudo_element.NeedsStyleRecalc()) {
+    return true;
+  }
+  if (pseudo_element.ChildNeedsStyleRecalc()) {
     return true;
   }
   if (pseudo_element.NeedsLayoutSubtreeUpdate()) {

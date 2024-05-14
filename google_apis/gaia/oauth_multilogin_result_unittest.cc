@@ -60,7 +60,6 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
               "isHttpOnly":false,
               "priority":"HIGH",
               "maxAge":63070000,
-              "sameParty": "0"
             },
             {
               "name":"HSID",
@@ -80,7 +79,6 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
               "isHttpOnly": true,
               "maxAge": 63072000,
               "priority": "HIGH",
-              "sameParty": "1"
             }
           ]
         }
@@ -141,11 +139,12 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
                           Property(&CanonicalCookie::IsHttpOnly, Eq(true)),
                           Property(&CanonicalCookie::IsHttpOnly, Eq(true)),
                           Property(&CanonicalCookie::IsHttpOnly, Eq(true))));
-  EXPECT_THAT(result.cookies(),
-              ElementsAre(Property(&CanonicalCookie::IsSecure, Eq(true)),
-                          Property(&CanonicalCookie::IsSecure, Eq(false)),
-                          Property(&CanonicalCookie::IsSecure, Eq(true)),
-                          Property(&CanonicalCookie::IsSecure, Eq(true))));
+  EXPECT_THAT(
+      result.cookies(),
+      ElementsAre(Property(&CanonicalCookie::SecureAttribute, Eq(true)),
+                  Property(&CanonicalCookie::SecureAttribute, Eq(false)),
+                  Property(&CanonicalCookie::SecureAttribute, Eq(true)),
+                  Property(&CanonicalCookie::SecureAttribute, Eq(true))));
   EXPECT_THAT(result.cookies(),
               ElementsAre(Property(&CanonicalCookie::SameSite,
                                    Eq(net::CookieSameSite::UNSPECIFIED)),
@@ -407,7 +406,6 @@ TEST(OAuthMultiloginResultTest, ParseRealResponseFromGaia_2021_10) {
       "isHttpOnly": true,
       "maxAge": 63072000,
       "priority": "HIGH",
-      "sameParty": "1"
     },
     {
       "name": "__Secure-3PSID",
@@ -469,7 +467,6 @@ TEST(OAuthMultiloginResultTest, ParseRealResponseFromGaia_2021_10) {
       "isHttpOnly": false,
       "maxAge": 63072000,
       "priority": "HIGH",
-      "sameParty": "1"
     },
     {
       "name": "__Secure-3PAPISID",
@@ -501,7 +498,6 @@ TEST(OAuthMultiloginResultTest, ParseRealResponseFromGaia_2021_10) {
       "isHttpOnly": true,
       "maxAge": 63072000,
       "priority": "HIGH",
-      "sameParty": "1"
     },
     {
       "name": "__Secure-3PSID",
@@ -563,7 +559,6 @@ TEST(OAuthMultiloginResultTest, ParseRealResponseFromGaia_2021_10) {
       "isHttpOnly": false,
       "maxAge": 63072000,
       "priority": "HIGH",
-      "sameParty": "1"
     },
     {
       "name": "__Secure-3PAPISID",
@@ -595,7 +590,6 @@ TEST(OAuthMultiloginResultTest, ParseRealResponseFromGaia_2021_10) {
       "isHttpOnly": true,
       "maxAge": 63072000,
       "priority": "HIGH",
-      "sameParty": "1"
     },
     {
       "name": "__Secure-3PSID",
@@ -627,7 +621,6 @@ TEST(OAuthMultiloginResultTest, ParseRealResponseFromGaia_2021_10) {
       "isHttpOnly": true,
       "maxAge": 63072000,
       "priority": "HIGH",
-      "sameParty": "1"
     },
     {
       "name": "__Host-3PLSID",
@@ -689,7 +682,6 @@ TEST(OAuthMultiloginResultTest, ParseRealResponseFromGaia_2021_10) {
       "isHttpOnly": false,
       "maxAge": 63072000,
       "priority": "HIGH",
-      "sameParty": "1"
     },
     {
       "name": "__Secure-3PAPISID",

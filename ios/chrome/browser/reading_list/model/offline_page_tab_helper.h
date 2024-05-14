@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#import "base/memory/raw_ptr.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -70,7 +71,7 @@ class OfflinePageTabHelper : public web::WebStateUserData<OfflinePageTabHelper>,
   void LoadOfflineData(web::WebState* web_state,
                        const GURL& url,
                        bool is_pdf,
-                       const std::string& data) API_AVAILABLE(ios(15.0));
+                       const std::string& data);
   void PageLoaded(
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
@@ -113,8 +114,8 @@ class OfflinePageTabHelper : public web::WebStateUserData<OfflinePageTabHelper>,
   // Injects some JS to replace the current page with `url` and reload the page.
   void ReplaceLocationUrlAndReload(const GURL& url);
 
-  web::WebState* web_state_ = nullptr;
-  ReadingListModel* reading_list_model_ = nullptr;
+  raw_ptr<web::WebState> web_state_ = nullptr;
+  raw_ptr<ReadingListModel> reading_list_model_ = nullptr;
 
   // The initial URL of the navigation. This URL will not follow the
   // redirections so it may be different from GetLastCommittedURL.

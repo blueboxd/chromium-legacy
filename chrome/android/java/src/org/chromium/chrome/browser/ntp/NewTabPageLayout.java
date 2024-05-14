@@ -15,12 +15,11 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.text.Editable;
 import android.util.AttributeSet;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
@@ -32,9 +31,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
-import org.chromium.chrome.browser.cryptids.ProbabilisticCryptidRenderer;
 import org.chromium.chrome.browser.feed.FeedSurfaceScrollDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
@@ -47,8 +46,6 @@ import org.chromium.chrome.browser.logo.LogoView;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.query_tiles.QueryTileSection;
-import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
 import org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesCoordinator;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup.Delegate;
@@ -69,6 +66,7 @@ import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.Highl
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.MimeTypeUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.EmptyTextWatcher;
 
@@ -93,8 +91,6 @@ public class NewTabPageLayout extends LinearLayout {
 
     private LogoCoordinator mLogoCoordinator;
     private SearchBoxCoordinator mSearchBoxCoordinator;
-    private QueryTileSection mQueryTileSection;
-    private ImageView mCryptidHolder;
     private ViewGroup mMvTilesContainerLayout;
     private MostVisitedTilesCoordinator mMostVisitedTilesCoordinator;
 
@@ -161,6 +157,7 @@ public class NewTabPageLayout extends LinearLayout {
     // order to make sure the animation is completed.
     private float mTransitionLengthOffset;
     private boolean mIsTablet;
+    private ObservableSupplier<Integer> mTabStripHeightSupplier;
 
     /** Constructor for inflating from XML. */
     public NewTabPageLayout(Context context, AttributeSet attrs) {
@@ -201,23 +198,25 @@ public class NewTabPageLayout extends LinearLayout {
     /**
      * Initializes the NewTabPageLayout. This must be called immediately after inflation, before
      * this object is used in any other way.
-     * @param manager NewTabPageManager used to perform various actions when the user interacts
-     *                with the page.
+     *
+     * @param manager NewTabPageManager used to perform various actions when the user interacts with
+     *     the page.
      * @param activity The activity that currently owns the new tab page
      * @param tileGroupDelegate Delegate for {@link TileGroup}.
      * @param searchProviderHasLogo Whether the search provider has a logo.
      * @param searchProviderIsGoogle Whether the search provider is Google.
      * @param scrollDelegate The delegate used to obtain information about scroll state.
      * @param touchEnabledDelegate The {@link TouchEnabledDelegate} for handling whether touch
-     *         events are allowed.
+     *     events are allowed.
      * @param uiConfig UiConfig that provides display information about this view.
      * @param lifecycleDispatcher Activity lifecycle dispatcher.
      * @param uma {@link NewTabPageUma} object recording user metrics.
      * @param isIncognito Whether the new tab page is in incognito mode.
      * @param windowAndroid An instance of a {@link WindowAndroid}
      * @param isNtpAsHomeSurfaceOnTablet {@code true} if the NTP is showing as the home surface on
-     *         tablets.
+     *     tablets.
      * @param isSurfacePolishEnabled {@code true} if the NTP surface is polished.
+     * @param tabStripHeightSupplier Supplier of the tab strip height.
      */
     public void initialize(
             NewTabPageManager manager,
@@ -235,7 +234,8 @@ public class NewTabPageLayout extends LinearLayout {
             boolean isNtpAsHomeSurfaceOnTablet,
             boolean isSurfacePolishEnabled,
             boolean isSurfacePolishOmniboxColorEnabled,
-            boolean isTablet) {
+            boolean isTablet,
+            ObservableSupplier<Integer> tabStripHeightSupplier) {
         TraceEvent.begin(TAG + ".initialize()");
         mScrollDelegate = scrollDelegate;
         mManager = manager;
@@ -249,6 +249,7 @@ public class NewTabPageLayout extends LinearLayout {
         mIsSurfacePolishOmniboxColorEnabled = isSurfacePolishOmniboxColorEnabled;
         Profile profile = Profile.getLastUsedRegularProfile();
         mIsTablet = isTablet;
+        mTabStripHeightSupplier = tabStripHeightSupplier;
 
         if (mIsTablet) {
             mDisplayStyleObserver = this::onDisplayStyleChanged;
@@ -312,12 +313,6 @@ public class NewTabPageLayout extends LinearLayout {
         initializeLensButton();
         initializeLayoutChangeListener();
 
-        if (searchProviderIsGoogle && QueryTileUtils.isQueryTilesEnabledOnNtp()) {
-            mQueryTileSection =
-                    new QueryTileSection(
-                            findViewById(R.id.query_tiles), profile, mManager::performSearchQuery);
-        }
-
         manager.addDestructionObserver(NewTabPageLayout.this::onDestroy);
         mInitialized = true;
 
@@ -327,6 +322,10 @@ public class NewTabPageLayout extends LinearLayout {
             setBackground(
                     AppCompatResources.getDrawable(mContext, R.drawable.home_surface_background));
         }
+    }
+
+    public void reload() {
+        // TODO(1515325): Add handler in Magic Stack and dispatcher.
     }
 
     /**
@@ -356,11 +355,8 @@ public class NewTabPageLayout extends LinearLayout {
             return;
         }
 
-        final int elevationDimenId =
-                ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
-                        ? R.dimen.default_elevation_4
-                        : R.dimen.toolbar_text_box_elevation;
-        final int searchBoxColor = ChromeColors.getSurfaceColor(getContext(), elevationDimenId);
+        final int searchBoxColor =
+                ChromeColors.getSurfaceColor(getContext(), R.dimen.default_elevation_4);
         final ColorStateList colorStateList = ColorStateList.valueOf(searchBoxColor);
         findViewById(R.id.search_box).setBackgroundTintList(colorStateList);
     }
@@ -370,6 +366,29 @@ public class NewTabPageLayout extends LinearLayout {
         TraceEvent.begin(TAG + ".initializeSearchBoxTextView()");
 
         mSearchBoxCoordinator.setSearchBoxClickListener(v -> mManager.focusSearchBox(false, null));
+
+        // @TODO(crbug.com/1519592): Add test case for search box OnDragListener.
+        mSearchBoxCoordinator.setSearchBoxDragListener(
+                new OnDragListener() {
+                    @Override
+                    public boolean onDrag(View view, DragEvent dragEvent) {
+                        // Disable search box EditText when tab is dropped.
+                        if (dragEvent.getClipDescription() == null
+                                || !dragEvent
+                                        .getClipDescription()
+                                        .hasMimeType(MimeTypeUtils.CHROME_MIMETYPE_TAB)) {
+                            return false;
+                        } else {
+                            if (dragEvent.getAction() == DragEvent.ACTION_DRAG_STARTED) {
+                                view.setEnabled(false);
+                            } else if (dragEvent.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+                                view.setEnabled(true);
+                            }
+                        }
+                        return false;
+                    }
+                });
+
         mSearchBoxCoordinator.setSearchBoxTextWatcher(
                 new EmptyTextWatcher() {
                     @Override
@@ -439,10 +458,7 @@ public class NewTabPageLayout extends LinearLayout {
                         (logo) -> {
                             mSnapshotTileGridChanged = true;
                             mShowingNonStandardLogo = logo != null;
-                            maybeKickOffCryptidRendering();
                         });
-        Runnable onCachedLogoRevalidatedRunnable =
-                mCallbackController.makeCancelable(this::maybeKickOffCryptidRendering);
 
         // If pull up Feed position is enabled, doodle is not supported since there is not enough
         // room, we don't need to fetch logo image.
@@ -466,7 +482,6 @@ public class NewTabPageLayout extends LinearLayout {
                         logoView,
                         shouldFetchDoodle,
                         onLogoAvailableCallback,
-                        onCachedLogoRevalidatedRunnable,
                         /* isParentSurfaceShown= */ true,
                         /* visibilityObserver= */ null);
         mLogoCoordinator.initWithNative();
@@ -483,9 +498,6 @@ public class NewTabPageLayout extends LinearLayout {
         assert mMvTilesContainerLayout != null;
 
         int maxRows = 2;
-        if (searchProviderIsGoogle && QueryTileUtils.isQueryTilesEnabledOnNtp()) {
-            maxRows = QueryTileSection.getMaxRowsForMostVisitedTiles(getContext());
-        }
 
         mMostVisitedTilesCoordinator =
                 new MostVisitedTilesCoordinator(
@@ -553,8 +565,8 @@ public class NewTabPageLayout extends LinearLayout {
         final float transitionLength =
                 getResources().getDimensionPixelSize(R.dimen.ntp_search_box_transition_length)
                         + mTransitionLengthOffset;
-        // Tab strip height is zero on phones, nonzero on tablets.
-        int tabStripHeight = getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
+        // Tab strip height is zero on phones, and may vary on tablets.
+        int tabStripHeight = mTabStripHeightSupplier.get();
 
         // |scrollY - searchBoxTop + tabStripHeight| gives the distance the search bar is from the
         // top of the tab.
@@ -844,11 +856,6 @@ public class NewTabPageLayout extends LinearLayout {
                                 - mSearchBoxBoundsVerticalInset);
 
         setTranslationY(percent * (basePosition - target));
-        if (mQueryTileSection != null) mQueryTileSection.onUrlFocusAnimationChanged(percent);
-    }
-
-    void onLoadUrl(boolean isNtpUrl) {
-        if (isNtpUrl && mQueryTileSection != null) mQueryTileSection.reloadTiles();
     }
 
     /**
@@ -1009,30 +1016,6 @@ public class NewTabPageLayout extends LinearLayout {
 
     private boolean hasLoadCompleted() {
         return mHasShownView && mTilesLoaded;
-    }
-
-    private void maybeKickOffCryptidRendering() {
-        if (!mSearchProviderIsGoogle || mShowingNonStandardLogo) {
-            // Cryptid rendering is disabled when the logo is not the standard Google logo.
-            return;
-        }
-
-        ProbabilisticCryptidRenderer renderer = ProbabilisticCryptidRenderer.getInstance();
-        renderer.getCryptidForLogo(
-                Profile.getLastUsedRegularProfile(),
-                mCallbackController.makeCancelable(
-                        (drawable) -> {
-                            if (drawable == null || mCryptidHolder != null) {
-                                return;
-                            }
-                            ViewStub stub =
-                                    findViewById(R.id.logo_holder)
-                                            .findViewById(R.id.cryptid_holder);
-                            ImageView view = (ImageView) stub.inflate();
-                            view.setImageDrawable(drawable);
-                            mCryptidHolder = view;
-                            renderer.recordRenderEvent();
-                        }));
     }
 
     private void onDestroy() {

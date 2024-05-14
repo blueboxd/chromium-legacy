@@ -39,9 +39,10 @@ void AutocompleteClassifier::Shutdown() {
 }
 
 // static
-int AutocompleteClassifier::DefaultOmniboxProviders() {
+int AutocompleteClassifier::DefaultOmniboxProviders(bool is_low_memory_device) {
   int optional_query_tiles =
-      base::FeatureList::IsEnabled(omnibox::kQueryTilesInZPSOnNTP)
+      (base::FeatureList::IsEnabled(omnibox::kQueryTilesInZPSOnNTP) &&
+       !is_low_memory_device)
           ? AutocompleteProvider::TYPE_QUERY_TILE
           : 0;
   return optional_query_tiles |
@@ -49,6 +50,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
          // Custom search engines cannot be used on mobile.
          AutocompleteProvider::TYPE_KEYWORD |
          AutocompleteProvider::TYPE_OPEN_TAB |
+         AutocompleteProvider::TYPE_FEATURED_SEARCH |
 #else
          AutocompleteProvider::TYPE_CLIPBOARD |
          AutocompleteProvider::TYPE_MOST_VISITED_SITES |

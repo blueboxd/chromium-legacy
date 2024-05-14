@@ -185,8 +185,12 @@ class MockUDPSocket : public net::DatagramClientSocket {
     ADD_FAILURE() << "Called SetDoNotFragment()";
     return net::ERR_UNEXPECTED;
   }
-  int SetRecvEcn() override {
-    ADD_FAILURE() << "Called SetRecvEcn()";
+  int SetRecvTos() override {
+    ADD_FAILURE() << "Called SetRecvTos()";
+    return net::ERR_UNEXPECTED;
+  }
+  int SetTos(net::DiffServCodePoint dscp, net::EcnCodePoint ecn) override {
+    ADD_FAILURE() << "Called SetTos()";
     return net::ERR_UNEXPECTED;
   }
   void SetMsgConfirm(bool confirm) override {
@@ -260,6 +264,11 @@ class MockUDPSocket : public net::DatagramClientSocket {
     connect_callback_ = connect_callback;
   }
 
+  net::DscpAndEcn GetLastTos() const override {
+    ADD_FAILURE() << "Called GetLastTos()";
+    return {net::DSCP_DEFAULT, net::ECN_DEFAULT};
+  }
+
  private:
   net::NetLogWithSource net_log_;
   net::handles::NetworkHandle network_;
@@ -268,7 +277,7 @@ class MockUDPSocket : public net::DatagramClientSocket {
   net::IPAddress local_ip_;
   net::Error connect_error_;
   bool connect_async_ = false;
-  raw_ptr<base::OnceClosure, DanglingUntriaged> connect_callback_;
+  raw_ptr<base::OnceClosure> connect_callback_;
 };
 
 class MockSocketFactory : public net::ClientSocketFactory {
@@ -373,10 +382,10 @@ class MockSocketFactory : public net::ClientSocketFactory {
     udp_sockets_.push_back(std::move(socket));
   }
 
-  std::vector<std::unique_ptr<MockUDPSocket>> udp_sockets_;
   // Connection callbacks for the sockets, in order of async connection
-  // completion.
+  // completion. Entries in `udp_sockets_` may point to these.
   std::deque<base::OnceClosure> connect_callbacks_;
+  std::vector<std::unique_ptr<MockUDPSocket>> udp_sockets_;
   // Unit tests should always consume all of the mock UDP sockets unless this is
   // set to false.
   bool must_use_all_sockets_ = true;

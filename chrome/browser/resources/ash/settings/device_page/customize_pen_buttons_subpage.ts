@@ -12,7 +12,7 @@ import '../icons.html.js';
 import '../settings_shared.css.js';
 import './input_device_settings_shared.css.js';
 
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -46,6 +46,13 @@ export class SettingsCustomizePenButtonsSubpageElement extends
       graphicsTablets: {
         type: Array,
       },
+
+      /**
+       * Use hasLauncherButton to decide which meta key icon to display.
+       */
+      hasLauncherButton_: {
+        type: Boolean,
+      },
     };
   }
 
@@ -62,11 +69,15 @@ export class SettingsCustomizePenButtonsSubpageElement extends
       getInputDeviceSettingsProvider();
   private previousRoute_: Route|null = null;
   private isInitialized_: boolean = false;
+  private hasLauncherButton_: boolean;
 
-  override connectedCallback(): void {
+  override async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
     this.addEventListener('button-remapping-changed', this.onSettingsChanged);
+    this.hasLauncherButton_ =
+        (await this.inputDeviceSettingsProvider_.hasLauncherButton())
+            ?.hasLauncherButton;
   }
 
   override disconnectedCallback(): void {
@@ -161,7 +172,7 @@ export class SettingsCustomizePenButtonsSubpageElement extends
       return '';
     }
     return this.i18n(
-        'customizeButtonSubpageDescription', this.selectedTablet!.name);
+        'customizeTabletButtonSubpageDescription', this.selectedTablet!.name);
   }
 }
 

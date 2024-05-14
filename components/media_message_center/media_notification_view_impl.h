@@ -5,13 +5,14 @@
 #ifndef COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_VIEW_IMPL_H_
 #define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_VIEW_IMPL_H_
 
+#include <optional>
+
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/media_message_center/media_notification_view.h"
 #include "components/media_message_center/notification_theme.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -55,7 +56,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
       const std::u16string& default_app_name,
       int notification_width,
       bool should_show_icon,
-      absl::optional<NotificationTheme> theme = absl::nullopt);
+      std::optional<NotificationTheme> theme = std::nullopt);
   MediaNotificationViewImpl(const MediaNotificationViewImpl&) = delete;
   MediaNotificationViewImpl& operator=(const MediaNotificationViewImpl&) =
       delete;
@@ -99,7 +100,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
     return playback_button_container_;
   }
 
-  std::vector<views::View*> get_buttons_for_testing() { return GetButtons(); }
+  std::vector<raw_ptr<views::View, VectorExperimental>>
+  get_buttons_for_testing() {
+    return GetButtons();
+  }
 
   views::Button* GetHeaderRowForTesting() const;
   std::u16string GetSourceTitleForTesting() const;
@@ -135,7 +139,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
 
   // Returns the buttons contained in the button row and playback button
   // container.
-  std::vector<views::View*> GetButtons();
+  std::vector<raw_ptr<views::View, VectorExperimental>> GetButtons();
 
   // Container that receives OnExpanded events.
   const raw_ptr<MediaNotificationContainer> container_;
@@ -160,7 +164,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   bool expanded_ = false;
 
   // Used to force the notification to remain in a specific expanded state.
-  absl::optional<bool> forced_expanded_state_;
+  std::optional<bool> forced_expanded_state_;
 
   // Set of enabled actions.
   base::flat_set<media_session::mojom::MediaSessionAction> enabled_actions_;
@@ -182,7 +186,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   raw_ptr<views::BoxLayout> title_artist_row_layout_ = nullptr;
   raw_ptr<const gfx::VectorIcon> vector_header_icon_ = nullptr;
 
-  absl::optional<NotificationTheme> theme_;
+  std::optional<NotificationTheme> theme_;
 
   const bool is_cros_;
 };

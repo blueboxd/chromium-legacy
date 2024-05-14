@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
+#include "third_party/webrtc/api/metronome/metronome.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace base {
@@ -79,7 +80,7 @@ class MockWebRtcVideoTrackSource
                        const rtc::VideoSinkWants& wants) override;
   void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override;
   bool is_screencast() const override;
-  absl::optional<bool> needs_denoising() const override;
+  std::optional<bool> needs_denoising() const override;
   bool GetStats(Stats* stats) override;
   bool SupportsEncodedOutput() const override;
   void GenerateKeyFrame() override;
@@ -196,6 +197,8 @@ class MockPeerConnectionDependencyFactory
       override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()
       override;
+
+  std::unique_ptr<webrtc::Metronome> CreateDecodeMetronome() override;
 
   // If |fail| is true, subsequent calls to CreateSessionDescription will
   // return nullptr. This can be used to fake a blob of SDP that fails to be

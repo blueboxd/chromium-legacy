@@ -4,10 +4,11 @@
 
 #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
 
+#include <optional>
+
 #include "base/types/optional_util.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
@@ -30,7 +31,6 @@
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
-#include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
@@ -81,7 +81,7 @@ void RecordAddressSpaceFeature(LocalFrame* client_frame,
     UseCounter::Count(window, WebFeature::kPrivateNetworkAccessNullIpAddress);
   }
 
-  absl::optional<WebFeature> feature = AddressSpaceFeature(
+  std::optional<WebFeature> feature = AddressSpaceFeature(
       FetchType::kSubresource, response.ClientAddressSpace(),
       window->IsSecureContext(), response.AddressSpace());
   if (!feature.has_value()) {
@@ -164,7 +164,7 @@ void ResourceLoadObserverForFrame::WillSendRequest(
   if (auto* idleness_detector = frame->GetIdlenessDetector())
     idleness_detector->OnWillSendRequest(document_->Fetcher());
   if (auto* interactive_detector = InteractiveDetector::From(*document_))
-    interactive_detector->OnResourceLoadBegin(absl::nullopt);
+    interactive_detector->OnResourceLoadBegin(std::nullopt);
 }
 
 void ResourceLoadObserverForFrame::DidChangePriority(
@@ -187,10 +187,6 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
   LocalFrameClient* frame_client = frame->Client();
-  SubresourceFilter* subresource_filter =
-      document_loader_->GetSubresourceFilter();
-  if (subresource_filter && resource->GetResourceRequest().IsAdResource())
-    subresource_filter->ReportAdRequestId(response.RequestId());
 
   DCHECK(frame_client);
   if (response_source == ResponseSource::kFromMemoryCache) {
@@ -337,7 +333,7 @@ void ResourceLoadObserverForFrame::DidFailLoading(
   if (auto* interactive_detector = InteractiveDetector::From(*document_)) {
     // We have not yet recorded load_finish_time. Pass nullopt here; we will
     // call base::TimeTicks::Now() lazily when we need it.
-    interactive_detector->OnResourceLoadEnd(absl::nullopt);
+    interactive_detector->OnResourceLoadEnd(std::nullopt);
   }
   if (IdlenessDetector* idleness_detector = frame->GetIdlenessDetector()) {
     idleness_detector->OnDidLoadResource();

@@ -72,6 +72,7 @@ BASE_EXPORT int GetPartitionAllocLargeThreadCacheSizeValueForLowRAMAndroid();
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocSchedulerLoopQuarantine);
+// Scheduler Loop Quarantine's capacity in bytes.
 extern const BASE_EXPORT base::FeatureParam<int>
     kPartitionAllocSchedulerLoopQuarantineCapacity;
 
@@ -96,32 +97,12 @@ enum class BackupRefPtrMode {
 
   // BRP is enabled in the main partition, as well as certain Renderer-only
   // partitions (if enabled in Renderer at all).
-  // This entails splitting the main partition.
   kEnabled,
 
-  // BRP is disabled, but the main partition is split out, as if BRP was enabled
-  // in the "previous slot" mode.
-  kDisabledButSplitPartitions2Way,
-
-  // BRP is disabled, but the main partition *and* aligned partition are split
-  // out, as if BRP was enabled in the "before allocation" mode.
-  kDisabledButSplitPartitions3Way,
-};
-
-// Decides the amount of memory uses for BRP ref-count. The actual ref-count may
-// be smaller, in which case extra padding is added.
-enum class BackupRefPtrRefCountSize {
-  // Whatever sizeof(PartitionRefCount) happens to be, which is influence by
-  // buildflags.
-  // The remaining options require sizeof(PartitionRefCount) not to exceed the
-  // desired size, which will be asserted.
-  kNatural,
-  // 4 bytes.
-  k4B,
-  // 8 bytes
-  k8B,
-  // 16 bytes.
-  k16B,
+  // As above, but "same slot" mode is used, as opposed to "previous slot".
+  // This means that ref-count is placed at the end of the same slot as the
+  // object it protects, as opposed to the end of the previous slot.
+  kEnabledInSameSlotMode,
 };
 
 enum class MemtagMode {
@@ -145,13 +126,28 @@ enum class BucketDistributionMode : uint8_t {
   kDenser,
 };
 
+// Parameter for 'kPartitionAllocMakeFreeNoOpOnShutdown' feature which
+// controls when free() becomes a no-op during Shutdown()
+enum class WhenFreeBecomesNoOp {
+  // Allocator is inserted either before, in, or after shutdown threads
+  kBeforeShutDownThreads,
+  kInShutDownThreads,
+  kAfterShutDownThreads,
+};
+
+// Inserts a no-op on 'free()' allocator shim at the front of the
+// dispatch chain if called from the appropriate callsite.
+BASE_EXPORT void MakeFreeNoOp(WhenFreeBecomesNoOp callsite);
+
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocMakeFreeNoOpOnShutdown);
+extern const BASE_EXPORT base::FeatureParam<WhenFreeBecomesNoOp>
+    kPartitionAllocMakeFreeNoOpOnShutdownParam;
+
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocBackupRefPtr);
 extern const BASE_EXPORT base::FeatureParam<BackupRefPtrEnabledProcesses>
     kBackupRefPtrEnabledProcessesParam;
 extern const BASE_EXPORT base::FeatureParam<BackupRefPtrMode>
     kBackupRefPtrModeParam;
-extern const BASE_EXPORT base::FeatureParam<BackupRefPtrRefCountSize>
-    kBackupRefPtrRefCountSizeParam;
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocMemoryTagging);
 extern const BASE_EXPORT base::FeatureParam<MemtagMode> kMemtagModeParam;
 extern const BASE_EXPORT base::FeatureParam<MemoryTaggingEnabledProcesses>
@@ -168,8 +164,6 @@ extern const BASE_EXPORT base::FeatureParam<bool>
     kBackupRefPtrAsanEnableInstantiationCheckParam;
 extern const BASE_EXPORT base::FeatureParam<BucketDistributionMode>
     kPartitionAllocBucketDistributionParam;
-
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocBackupRefPtrForAsh);
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kLowerPAMemoryLimitForNonMainRenderers);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanMUAwareScheduler);

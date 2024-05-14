@@ -615,7 +615,8 @@ class TemplateURLRef {
 // is made a friend so that it can be the exception to this pattern.
 class TemplateURL {
  public:
-  using TemplateURLVector = std::vector<TemplateURL*>;
+  using TemplateURLVector =
+      std::vector<raw_ptr<TemplateURL, VectorExperimental>>;
   using OwnedTemplateURLVector = std::vector<std::unique_ptr<TemplateURL>>;
 
   // These values are not persisted and can be freely changed.
@@ -671,8 +672,8 @@ class TemplateURL {
 
   ~TemplateURL();
 
-  // For two engines with the same keyword, |this| and |other|,
-  // returns true if |this| is strictly better than |other|.
+  // For two engines, |this| and |other|, returns true if |this| is strictly
+  // better than |other|.
   //
   // While normal engines must all have distinct keywords, policy-created,
   // extension-controlled and omnibox API engines may have the same keywords as
@@ -688,7 +689,7 @@ class TemplateURL {
   // today, because the sync GUIDs are not actually globally unique, so there
   // can be a genuine tie, which is not good, because then two different clients
   // could choose to resolve the conflict in two different ways.
-  bool IsBetterThanEngineWithConflictingKeyword(const TemplateURL* other) const;
+  bool IsBetterThanConflictingEngine(const TemplateURL* other) const;
 
   // Generates a suitable keyword for the specified url, which must be valid.
   // This is guaranteed not to return an empty string, since TemplateURLs should

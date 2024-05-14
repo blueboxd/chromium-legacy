@@ -11,6 +11,7 @@
 #include <sys/types.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,7 @@
 #include "net/third_party/quiche/src/quiche/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_stream_frame_data_producer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quiche/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quiche/quic/test_tools/qpack/qpack_test_utils.h"
@@ -131,13 +133,6 @@ class QuicTestPacketMaker {
       quic::QuicRstStreamErrorCode rst_error_code,
       quic::QuicStreamId data_stream_id,
       std::string_view data,
-      uint64_t retransmit_frame_count = 0);
-
-  std::unique_ptr<quic::QuicReceivedPacket> MakeRetransmissionAndRstPacket(
-      uint64_t original_packet_number,
-      uint64_t num,
-      quic::QuicStreamId rst_stream_id,
-      quic::QuicRstStreamErrorCode rst_error_code,
       uint64_t retransmit_frame_count = 0);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataAndRstPacket(
@@ -251,16 +246,6 @@ class QuicTestPacketMaker {
       const std::string& quic_error_details,
       uint64_t frame_type);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeDataAckAndConnectionClosePacket(
-      uint64_t num,
-      quic::QuicStreamId data_stream_id,
-      std::string_view data,
-      uint64_t largest_received,
-      uint64_t smallest_received,
-      quic::QuicErrorCode quic_error,
-      const std::string& quic_error_details,
-      uint64_t frame_type);
-
   std::unique_ptr<quic::QuicReceivedPacket> MakeStopSendingPacket(
       uint64_t num,
       quic::QuicStreamId stream_id,
@@ -293,7 +278,8 @@ class QuicTestPacketMaker {
       uint64_t packet_number,
       uint64_t first_received,
       uint64_t largest_received,
-      uint64_t smallest_received);
+      uint64_t smallest_received,
+      std::optional<quic::QuicEcnCounts> ecn = std::nullopt);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataPacket(
       uint64_t packet_number,
@@ -439,6 +425,8 @@ class QuicTestPacketMaker {
                                  spdy::Http2HeaderBlock headers,
                                  size_t* encoded_data_length);
 
+  void set_ecn_codepoint(quic::QuicEcnCodepoint ecn) { ecn_codepoint_ = ecn; }
+
  private:
   // Initialize header of next packet to build.
   void InitializeHeader(uint64_t packet_number);
@@ -469,7 +457,8 @@ class QuicTestPacketMaker {
   void AddQuicAckFrame(uint64_t largest_received, uint64_t smallest_received);
   void AddQuicAckFrame(uint64_t first_received,
                        uint64_t largest_received,
-                       uint64_t smallest_received);
+                       uint64_t smallest_received,
+                       std::optional<quic::QuicEcnCounts> ecn = std::nullopt);
   void AddQuicRstStreamFrame(quic::QuicStreamId stream_id,
                              quic::QuicRstStreamErrorCode error_code);
   void AddQuicConnectionCloseFrame(quic::QuicErrorCode quic_error,
@@ -500,16 +489,10 @@ class QuicTestPacketMaker {
 
   bool ShouldIncludeVersion() const;
 
-  quic::QuicPacketNumberLength GetPacketNumberLength() const;
-
   quic::QuicConnectionId DestinationConnectionId() const;
   quic::QuicConnectionId SourceConnectionId() const;
 
-  quic::QuicConnectionIdIncluded HasDestinationConnectionId() const;
-  quic::QuicConnectionIdIncluded HasSourceConnectionId() const;
-
   quic::QuicStreamId GetFirstBidirectionalStreamId() const;
-  quic::QuicStreamId GetHeadersStreamId() const;
 
   std::string GenerateHttp3SettingsData();
   std::string GenerateHttp3PriorityData(spdy::SpdyPriority spdy_priority,
@@ -550,6 +533,10 @@ class QuicTestPacketMaker {
   quic::QuicPacketHeader header_;
   quic::QuicFrames frames_;
   std::unique_ptr<quic::test::SimpleDataProducer> data_producer_;
+
+  // Explicit Congestion Notification (ECN) codepoint to use when making
+  // packets.
+  quic::QuicEcnCodepoint ecn_codepoint_ = quic::ECN_NOT_ECT;
 };
 
 }  // namespace net::test

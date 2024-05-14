@@ -39,6 +39,8 @@ struct TabOrganizationResponse {
       LogResultsCallback log_results_callback_ = base::DoNothing());
   ~TabOrganizationResponse();
 
+  int GetTabCount();
+
   std::vector<Organization> organizations;
   const std::u16string feedback_id;
   LogResultsCallback log_results_callback;
@@ -77,6 +79,8 @@ class TabOrganizationRequest {
     return response_ ? response_.get() : nullptr;
   }
 
+  void SetBaseTabID(TabData::TabID base_tab_id) { base_tab_id_ = base_tab_id; }
+
   void SetResponseCallback(OnResponseCallback callback);
   TabData* AddTabData(std::unique_ptr<TabData> tab_data);
 
@@ -95,6 +99,11 @@ class TabOrganizationRequest {
   State state_ = State::NOT_STARTED;
   TabDatas tab_datas_;
   std::optional<TabData::TabID> base_tab_id_ = std::nullopt;
+
+  // Time measurements for the request, used to log latency metrics.
+  std::optional<base::Time> request_start_time_ = std::nullopt;
+  std::optional<base::Time> request_end_time_ = std::nullopt;
+
   std::unique_ptr<TabOrganizationResponse> response_;
   OnResponseCallback response_callback_;
 

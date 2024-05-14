@@ -11,6 +11,7 @@
 #include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
 #include "base/threading/thread_checker.h"
+#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 #include "components/optimization_guide/core/model_execution/settings_enabled_observer.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
@@ -27,6 +28,26 @@ namespace optimization_guide {
 class ModelExecutionFeaturesController
     : public signin::IdentityManager::Observer {
  public:
+  enum class SettingsVisibilityResult {
+    kUnknown = 0,
+    // Not visible because user is not signed-in.
+    kNotVisibleUnsignedUser = 1,
+    // Visible because feature is already enabled.
+    kVisibleFeatureAlreadyEnabled = 2,
+    // Not visible because field trial is disabled.
+    kNotVisibleFieldTrialDisabled = 3,
+    // Visible because field trial is enabled.
+    kVisibleFieldTrialEnabled = 4,
+    // Not visible because feature was disabled by enterprise policy.
+    kNotVisibleEnterprisePolicy = 5,
+    // Not visible because model execution capability was disabled for the user
+    // account.
+    kNotVisibleModelExecutionCapability = 6,
+    // Updates should match with FeaturesSettingsVisibilityResult enum in
+    // enums.xml.
+    kMaxValue = kNotVisibleModelExecutionCapability
+  };
+
   // Must be created only for non-incognito browser contexts.
   ModelExecutionFeaturesController(PrefService* browser_context_profile_service,
                                    signin::IdentityManager* identity_manager);
@@ -59,14 +80,13 @@ class ModelExecutionFeaturesController
   // Removes `observer`.
   void RemoveObserver(SettingsEnabledObserver* observer);
 
-  void SimulateBrowserRestartForTesting();
-
  private:
   // Enumerates the reasons an user is invalid.
   enum class UserValidityResult {
     kValid,
     kInvalidUnsignedUser,
     kInvalidEnterprisePolicy,
+    kInvalidModelExecutionCapability,
   };
 
   // Called when the main setting toggle pref is changed.
@@ -75,11 +95,16 @@ class ModelExecutionFeaturesController
   // Called when the feature-specific toggle pref is changed.
   void OnFeatureSettingPrefChanged(proto::ModelExecutionFeature feature);
 
+  // Called when the feature-specific enterprise policy pref is changed.
+  void OnFeatureEnterprisePolicyPrefChanged(
+      proto::ModelExecutionFeature feature);
+
   void StartObservingAccountChanges();
 
+  // signin::IdentityManager::Observer implementation:
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event_details) override;
-
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnIdentityManagerShutdown(
       signin::IdentityManager* identity_manager) override;
 
@@ -91,8 +116,9 @@ class ModelExecutionFeaturesController
   UserValidityResult GetCurrentUserValidityResult(
       proto::ModelExecutionFeature feature) const;
 
-  // Returns whether the `feature` is allowed by enterprise policy.
-  bool IsAllowedByEnterprisePolicy(proto::ModelExecutionFeature feature) const;
+  // Returns the enterprise policy value for the `feature`.
+  model_execution::prefs::ModelExecutionEnterprisePolicyValue
+  GetEnterprisePolicyValue(proto::ModelExecutionFeature feature) const;
 
   // Initializes the state of the different features at startup.
   void InitializeFeatureSettings();
@@ -101,9 +127,9 @@ class ModelExecutionFeaturesController
   // callbacks.
   void InitializePrefListener();
 
-  // Computed at the time `this` is constructed. Stores the set of features
-  // that were enabled at the time when browser started.
-  std::unordered_set<int> features_enabled_at_startup_;
+  // Resets the prefs for features that were enabled back to invalid state, when
+  // the conditions disallow the features.
+  void ResetInvalidFeaturePrefs();
 
   base::ScopedObservation<signin::IdentityManager,
                           ModelExecutionFeaturesController>
@@ -116,6 +142,10 @@ class ModelExecutionFeaturesController
   PrefChangeRegistrar pref_change_registrar_;
 
   bool is_signed_in_ = false;
+
+  // Obtained from the user account capability. Updated whenever sign-in changes
+  // or account capability changes.
+  bool can_use_model_execution_features_ = false;
 
   base::ObserverList<SettingsEnabledObserver> observers_;
 

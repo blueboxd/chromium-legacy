@@ -57,7 +57,10 @@ import org.chromium.ui.test.util.DisableAnimationsTestRule;
 /** Unit tests for the PageZoom view and view binder. */
 @RunWith(BaseJUnit4ClassRunner.class)
 @EnableFeatures({ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM})
-@DisableFeatures({ContentFeatureList.SMART_ZOOM})
+@DisableFeatures({
+    ContentFeatureList.SMART_ZOOM,
+    ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM_ENHANCEMENTS
+})
 @Batch(Batch.PER_CLASS)
 public class PageZoomViewTest {
     @ClassRule
@@ -108,7 +111,6 @@ public class PageZoomViewTest {
         mJniMocker.mock(HostZoomMapImplJni.TEST_HOOKS, mHostZoomMapJniMock);
         mJniMocker.mock(PageZoomMetricsJni.TEST_HOOKS, mPageZoomMetricsJniMock);
         when(mHostZoomMapJniMock.getDefaultZoomLevel(any())).thenReturn(0.0);
-        when(mHostZoomMapJniMock.getDesktopSiteZoomScale(any())).thenReturn(1.0);
         when(mHostZoomMapJniMock.getZoomLevel(any())).thenReturn(0.0);
 
         mDelegate =
@@ -251,7 +253,7 @@ public class PageZoomViewTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ContentFeatureList.SMART_ZOOM})
+    @EnableFeatures({ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM_ENHANCEMENTS})
     public void testResetButton() {
         assertEquals(
                 50, ((SeekBar) mPageZoomView.findViewById(R.id.page_zoom_slider)).getProgress());

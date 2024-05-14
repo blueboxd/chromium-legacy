@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
       ClipboardBuffer buffer = ClipboardBuffer::kCopyPaste);
 
   // Clipboard overrides:
-  absl::optional<DataTransferEndpoint> GetSource(
+  std::optional<DataTransferEndpoint> GetSource(
       ClipboardBuffer buffer) const override;
   const ClipboardSequenceNumberToken& GetSequenceNumber(
       ClipboardBuffer buffer) const override;
@@ -64,6 +64,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   friend class Clipboard;
   friend class ClipboardNonBackedTestBase;
   friend class headless::HeadlessClipboard;
+  FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, PlainText);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, BookmarkURL);
   FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, TextURIList);
   FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, ImageEncoding);
   FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, EncodeImageOnce);

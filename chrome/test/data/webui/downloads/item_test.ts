@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy, CrToastManagerElement, DangerType, DownloadsItemElement, IconLoaderImpl, loadTimeData, SafeBrowsingState, State} from 'chrome://downloads/downloads.js';
+import type {CrToastManagerElement, DownloadsItemElement} from 'chrome://downloads/downloads.js';
+import {BrowserProxy, DangerType, IconLoaderImpl, loadTimeData, SafeBrowsingState, State} from 'chrome://downloads/downloads.js';
 import {stringToMojoString16, stringToMojoUrl} from 'chrome://resources/js/mojo_type_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -115,6 +116,10 @@ suite('item tests', function() {
   });
 
   test('icon overridden by danger type', async () => {
+    loadTimeData.overrideValues({improvedDownloadWarningsUX: false});
+    const item = document.createElement('downloads-item');
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(item);
     testIconLoader.setShouldIconsLoad(true);
     item.set('data', createDownload({
                filePath: 'unique1',
@@ -448,7 +453,7 @@ suite('item tests', function() {
     flush();
     // The mojo handler is called directly, no event for the dialog is fired.
     const id = await testDownloadsProxy.handler.whenCalled(
-        'saveDangerousRequiringGesture');
+        'saveSuspiciousRequiringGesture');
     assertEquals('itemId', id);
   });
 
@@ -540,7 +545,8 @@ suite('item tests', function() {
     toastManager.show('', /* hideSlotted= */ false);
     assertFalse(toastManager.slottedHidden);
     item.getMoreActionsButton().click();
-    const removeButton = item.shadowRoot!.querySelector<HTMLElement>('#remove');
+    const removeButton =
+        item.shadowRoot!.querySelector<HTMLElement>('#discard-dangerous');
     assertTrue(!!removeButton);
     removeButton.click();
     assertTrue(toastManager.slottedHidden);
@@ -559,7 +565,8 @@ suite('item tests', function() {
     toastManager.show('', /* hideSlotted= */ false);
     assertFalse(toastManager.slottedHidden);
     item.getMoreActionsButton().click();
-    const removeButton = item.shadowRoot!.querySelector<HTMLElement>('#remove');
+    const removeButton =
+        item.shadowRoot!.querySelector<HTMLElement>('#discard-dangerous');
     assertTrue(!!removeButton);
     removeButton.click();
     assertTrue(toastManager.slottedHidden);

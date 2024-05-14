@@ -32,10 +32,6 @@ extern NSString* const kDefaultBrowserUtilsKey;
 
 namespace {
 
-// Key in storage containing an NSDate corresponding to the last time
-// an HTTP(S) link was sent and opened by the app.
-NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
-
 // Key in storage containing an array of dates. Each date correspond to
 // a general event of interest for Default Browser Promo modals.
 NSString* const kLastSignificantUserEventGeneral = @"lastSignificantUserEvent";
@@ -88,18 +84,6 @@ NSString* const kGenericPromoInteractionCount = @"genericPromoInteractionCount";
 NSString* const kTailoredPromoInteractionCount =
     @"tailoredPromoInteractionCount";
 
-// TODO(crbug.com/1445218): Remove in M116+.
-// Key in storage containing an NSDate indicating the last time a user
-// interacted with the "remind me later" panel.
-NSString* const kRemindMeLaterPromoActionInteraction =
-    @"remindMeLaterPromoActionInteraction";
-
-// TODO(crbug.com/1445240): Remove in M116+.
-// Key in storage containing a bool indicating if the user tapped on
-// button to open settings.
-NSString* const kOpenSettingsActionInteraction =
-    @"openSettingsActionInteraction";
-
 // Key in storage containing the timestamp of the last time the user opened the
 // app via first-party intent.
 NSString* const kTimestampAppLastOpenedViaFirstPartyIntent =
@@ -108,11 +92,6 @@ NSString* const kTimestampAppLastOpenedViaFirstPartyIntent =
 // Key in storage containing the timestamp of the last time the user pasted a
 // valid URL into the omnibox.
 NSString* const kTimestampLastValidURLPasted = @"TimestampLastValidURLPasted";
-
-// Key in storage containing the timestamp of the last time the user opened the
-// app via first-party intent.
-NSString* const kTimestampAppLaunchOnColdStart =
-    @"TimestampAppLaunchedOnColdStart";
 
 const char kDefaultBrowserPromoForceShowPromo[] =
     "default-browser-promo-force-show-promo";
@@ -142,10 +121,6 @@ constexpr base::TimeDelta kPromosShortCoolDown = base::Days(3);
 
 // Maximum time range between first-party app launches to notify the FET.
 constexpr base::TimeDelta kMaximumTimeBetweenFirstPartyAppLaunches =
-    base::Days(7);
-
-// Maximum time range between app launches on cold start to notify the FET.
-constexpr base::TimeDelta kMaximumTimeBetweenAppColdStartLaunches =
     base::Days(7);
 
 // Maximum time range between valid user URL pastes to notify the FET.
@@ -484,12 +459,20 @@ void StoreCurrentTimestampForKey(NSString* key) {
 }
 
 std::string GetVideoPromoVariant() {
-  return base::GetFieldTrialParamValueByFeature(
-      kDefaultBrowserVideoPromo, "default_browser_video_promo_variant");
+  if (!IsDefaultBrowserVideoPromoEnabled()) {
+    return "";
+  }
+  std::string variant = base::GetFieldTrialParamValueByFeature(
+      kDefaultBrowserVideoPromo, kDefaultBrowserVideoPromoVariant);
+  if (variant != "") {
+    return variant;
+  }
+  return kVideoFullscreenPromo;
 }
 
 }  // namespace
 
+NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
 NSString* const kLastTimeUserInteractedWithNonModalPromo =
     @"lastTimeUserInteractedWithNonModalPromo";
 NSString* const kLastTimeUserInteractedWithFullscreenPromo =
@@ -507,14 +490,8 @@ NSString* const kBookmarkUseCount = @"BookmarkUseCount";
 NSString* const kAutofillUseCount = @"AutofillUseCount";
 NSString* const kSpecialTabsUseCount = @"SpecialTabUseCount";
 
-const char kVideoConditionsFullscreenPromo[] =
-    "video_conditions_fullscreen_promo";
-const char kVideoConditionsHalfscreenPromo[] =
-    "video_conditions_halfscreen_promo";
-const char kGenericConditionsFullscreenPromo[] =
-    "generic_conditions_fullscreen_promo";
-const char kGenericConditionsHalfscreenPromo[] =
-    "generic_conditions_halfscreen_promo";
+const char kVideoFullscreenPromo[] = "generic_conditions_fullscreen_promo";
+const char kVideoHalfscreenPromo[] = "generic_conditions_halfscreen_promo";
 const char kDefaultBrowserVideoPromoVariant[] =
     "default_browser_video_promo_variant";
 
@@ -552,11 +529,6 @@ void LogToFETUserPastedURLIntoOmnibox(feature_engagement::Tracker* tracker) {
 
   if (HasRecentValidURLPastesAndRecordsCurrentPaste()) {
     tracker->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
-
-    if (IsDefaultBrowserVideoPromoEnabled()) {
-      tracker->NotifyEvent(
-          feature_engagement::events::kDefaultBrowserVideoPromoConditionsMet);
-    }
   }
 }
 
@@ -623,33 +595,16 @@ bool IsDefaultBrowserTriggerCriteraExperimentEnabled() {
   return base::FeatureList::IsEnabled(kDefaultBrowserTriggerCriteriaExperiment);
 }
 
-bool IsDefaultBrowserPromoGenericTailoredTrainEnabled() {
-  return base::FeatureList::IsEnabled(kDefaultBrowserGenericTailoredPromoTrain);
-}
-
-bool IsDefaultBrowserPromoOnlyGenericArmTrain() {
-  return kDefaultBrowserPromoGenericTailoredParam.Get() ==
-         DefaultBrowserPromoGenericTailoredArm::kOnlyGeneric;
-}
-
 bool IsFullScreenPromoOnOmniboxCopyPasteEnabled() {
   return base::FeatureList::IsEnabled(kFullScreenPromoOnOmniboxCopyPaste);
 }
 
-bool IsDBVideoPromoHalfscreenEnabled() {
-  return GetVideoPromoVariant().compare(kVideoConditionsHalfscreenPromo) == 0;
-}
-
 bool IsDBVideoPromoFullscreenEnabled() {
-  return GetVideoPromoVariant().compare(kVideoConditionsFullscreenPromo) == 0;
+  return GetVideoPromoVariant().compare(kVideoFullscreenPromo) == 0;
 }
 
-bool IsDBVideoPromoWithGenericFullscreenEnabled() {
-  return GetVideoPromoVariant().compare(kGenericConditionsFullscreenPromo) == 0;
-}
-
-bool IsDBVideoPromoWithGenericHalfscreenEnabled() {
-  return GetVideoPromoVariant().compare(kGenericConditionsHalfscreenPromo) == 0;
+bool IsDBVideoPromoHalfscreenEnabled() {
+  return GetVideoPromoVariant().compare(kVideoHalfscreenPromo) == 0;
 }
 
 bool IsNonModalDefaultBrowserPromoCooldownRefactorEnabled() {
@@ -746,6 +701,15 @@ void LogUserInteractionWithFirstRunPromo(BOOL openedSettings) {
   });
 }
 
+void CleanupStorageForTriggerExperiment() {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+
+  [defaults removeObjectForKey:kAllTimestampsAppLaunchColdStart];
+  [defaults removeObjectForKey:kAllTimestampsAppLaunchWarmStart];
+  [defaults removeObjectForKey:kAllTimestampsAppLaunchIndirectStart];
+  [defaults removeObjectForKey:kAutofillUseCount];
+}
+
 void LogCopyPasteInOmniboxForDefaultBrowserPromo() {
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
   StoreCurrentTimestampForKey(kOmniboxUseCount);
@@ -756,7 +720,11 @@ void LogBookmarkUseForDefaultBrowserPromo() {
   StoreCurrentTimestampForKey(kBookmarkUseCount);
 }
 
-void LogAutofillUseForDefaultBrowserPromo() {
+void LogAutofillUseForCriteriaExperiment() {
+  if (!IsDefaultBrowserTriggerCriteraExperimentEnabled()) {
+    CleanupStorageForTriggerExperiment();
+    return;
+  }
   StoreCurrentTimestampForKey(kAutofillUseCount);
 }
 
@@ -770,8 +738,7 @@ void LogPinnedTabsUsedForDefaultBrowserPromo() {
 }
 
 bool HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch() {
-  const base::TimeDelta max_session_time =
-      base::Seconds(GetFeedUnseenRefreshThresholdInSeconds());
+  const base::TimeDelta max_session_time = base::Hours(6);
 
   if (HasRecordedEventForKeyLessThanDelay(
           kTimestampAppLastOpenedViaFirstPartyIntent,
@@ -803,8 +770,7 @@ bool HasRecentValidURLPastesAndRecordsCurrentPaste() {
 }
 
 bool HasRecentTimestampForKey(NSString* eventKey) {
-  const base::TimeDelta max_session_time =
-      base::Seconds(GetFeedUnseenRefreshThresholdInSeconds());
+  const base::TimeDelta max_session_time = base::Hours(6);
 
   if (HasRecordedEventForKeyLessThanDelay(eventKey, max_session_time)) {
     return YES;
@@ -814,14 +780,40 @@ bool HasRecentTimestampForKey(NSString* eventKey) {
   return NO;
 }
 
-bool IsChromeLikelyDefaultBrowser7Days() {
+bool IsChromeLikelyDefaultBrowserXDays(int days) {
   return HasRecordedEventForKeyLessThanDelay(kLastHTTPURLOpenTime,
-                                             base::Days(7));
+                                             base::Days(days));
 }
 
 bool IsChromeLikelyDefaultBrowser() {
   return HasRecordedEventForKeyLessThanDelay(kLastHTTPURLOpenTime,
                                              kLatestURLOpenForDefaultBrowser);
+}
+
+bool IsChromeLikelyDefaultBrowser7Days() {
+  return HasRecordedEventForKeyLessThanDelay(kLastHTTPURLOpenTime,
+                                             base::Days(7));
+}
+
+bool IsChromePotentiallyNoLongerDefaultBrowser(int likelyDefaultInterval,
+                                               int likelyNotDefaultInterval) {
+  bool wasLikelyDefaultBrowser =
+      IsChromeLikelyDefaultBrowserXDays(likelyDefaultInterval);
+  bool isStillLikelyDefaultBrowser =
+      IsChromeLikelyDefaultBrowserXDays(likelyNotDefaultInterval);
+  return wasLikelyDefaultBrowser && !isStillLikelyDefaultBrowser;
+}
+
+bool IsChromePotentiallyNoLongerDefaultBrowser21To7() {
+  return IsChromePotentiallyNoLongerDefaultBrowser(21, 7);
+}
+
+bool IsChromePotentiallyNoLongerDefaultBrowser28To14() {
+  return IsChromePotentiallyNoLongerDefaultBrowser(28, 14);
+}
+
+bool IsChromePotentiallyNoLongerDefaultBrowser35To14() {
+  return IsChromePotentiallyNoLongerDefaultBrowser(35, 14);
 }
 
 bool IsLikelyInterestedDefaultBrowserUser(DefaultPromoType promo_type) {
@@ -908,7 +900,6 @@ const NSArray<NSString*>* DefaultBrowserUtilsLegacyKeysForTesting() {
     kDisplayedFullscreenPromoCount,
     kTailoredPromoInteractionCount,
     kGenericPromoInteractionCount,
-    kRemindMeLaterPromoActionInteraction,
     // clang-format on
   ];
 
@@ -926,31 +917,15 @@ int GetNonModalDefaultBrowserPromoImpressionLimit() {
   return limit;
 }
 
-bool HasAppLaunchedOnColdStartAndRecordsLaunch() {
-  if (HasRecordedEventForKeyLessThanDelay(
-          kTimestampAppLaunchOnColdStart,
-          kMaximumTimeBetweenAppColdStartLaunches)) {
-    SetObjectIntoStorageForKey(kTimestampAppLaunchOnColdStart, [NSDate date]);
-    return YES;
-  }
-
-  // Add a new timestamp if the timestamp was never recorded or if it was
-  // recorded more than the maximum time between app cold starts.
-  SetObjectIntoStorageForKey(kTimestampAppLaunchOnColdStart, [NSDate date]);
-  return NO;
-}
-
 bool ShouldRegisterPromoWithPromoManager(bool is_signed_in,
-                                         bool is_omnibox_copy_paste,
-                                         feature_engagement::Tracker* tracker) {
+                                         bool is_omnibox_copy_paste) {
   if (ShouldForceDefaultPromoType()) {
     return YES;
   }
 
-  // Consider showing the default browser promo if (1) launch is not after a
-  // crash, (2) chrome is not likely set as default browser.
-  if (!GetApplicationContext()->WasLastShutdownClean() ||
-      IsChromeLikelyDefaultBrowser()) {
+  // Consider showing the default browser promo if chrome is not likely set as
+  // default browser.
+  if (IsChromeLikelyDefaultBrowser()) {
     return NO;
   }
 
@@ -971,8 +946,7 @@ bool ShouldRegisterPromoWithPromoManager(bool is_signed_in,
   // tailored or generic default browser promo.
   return !UserInFullscreenPromoCooldown() &&
          (IsTailoredPromoEligibleUser(is_signed_in) ||
-          IsGeneralPromoEligibleUser(is_signed_in) ||
-          IsVideoPromoEligibleUser(tracker));
+          IsGeneralPromoEligibleUser(is_signed_in));
 }
 
 bool IsTailoredPromoEligibleUser(bool is_signed_in) {
@@ -988,57 +962,18 @@ bool IsTailoredPromoEligibleUser(bool is_signed_in) {
     return false;
   }
 
-  // When the default browser promo generic and tailored train experiment is
-  // enabled, allow the generic and tailored promos to be shown at least twice.
-  if (IsDefaultBrowserPromoGenericTailoredTrainEnabled()) {
-    return TailoredPromoInteractionCount() < 2 &&
-           GenericPromoInteractionCount() < 2;
-  }
-
   return !HasUserInteractedWithTailoredFullscreenPromoBefore();
 }
 
 bool IsGeneralPromoEligibleUser(bool is_signed_in) {
-  // When the default browser promo generic and tailored train experiment is
-  // enabled, the generic default browser promo will only be shown when the user
-  // is eligible for a tailored promo.
-  if (IsDefaultBrowserPromoGenericTailoredTrainEnabled()) {
-    return false;
-  }
-
   return !HasUserInteractedWithFullscreenPromoBefore() &&
          (IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeGeneral) ||
           is_signed_in);
 }
 
-bool IsVideoPromoEligibleUser(feature_engagement::Tracker* tracker) {
-  BOOL is_db_video_promo_enabled =
-      IsDBVideoPromoHalfscreenEnabled() || IsDBVideoPromoFullscreenEnabled();
-  if (!is_db_video_promo_enabled) {
-    return false;
-  }
-
-  if (!tracker ||
-      !tracker->WouldTriggerHelpUI(
-          feature_engagement::kIPHiOSDefaultBrowserVideoPromoTriggerFeature)) {
-    return false;
-  }
-
-  return true;
-}
-
 bool IsPostRestoreDefaultBrowserEligibleUser() {
   return IsFirstSessionAfterDeviceRestore() == signin::Tribool::kTrue &&
          IsChromeLikelyDefaultBrowser();
-}
-
-void CleanupUnusedStorage() {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-
-  // TODO(crbug.com/1445240): Remove in M116+.
-  [defaults removeObjectForKey:kOpenSettingsActionInteraction];
-  // TODO(crbug.com/1445218): Remove in M116+.
-  [defaults removeObjectForKey:kRemindMeLaterPromoActionInteraction];
 }
 
 DefaultPromoTypeForUMA GetDefaultPromoTypeForUMA(DefaultPromoType type) {
@@ -1094,14 +1029,6 @@ const std::string IOSDefaultBrowserPromoActionToString(
     default:
       NOTREACHED_NORETURN();
   }
-}
-
-void CleanupStorageForTriggerExperiment() {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-
-  [defaults removeObjectForKey:kAllTimestampsAppLaunchColdStart];
-  [defaults removeObjectForKey:kAllTimestampsAppLaunchWarmStart];
-  [defaults removeObjectForKey:kAllTimestampsAppLaunchIndirectStart];
 }
 
 void RecordPromoStatsToUMAForActionString(PromoStatistics* promo_stats,

@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
 
   // Clipboard overrides:
   void OnPreShutdown() override;
-  absl::optional<DataTransferEndpoint> GetSource(
+  std::optional<DataTransferEndpoint> GetSource(
       ClipboardBuffer buffer) const override;
   const ClipboardSequenceNumberToken& GetSequenceNumber(
       ClipboardBuffer buffer) const override;
@@ -116,7 +116,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
   void ReadPngInternal(ClipboardBuffer buffer,
                        NSPasteboard* pasteboard,
                        ReadPngCallback callback) const;
-  absl::optional<DataTransferEndpoint> GetSourceInternal(
+  std::optional<DataTransferEndpoint> GetSourceInternal(
       ClipboardBuffer buffer,
       NSPasteboard* pasteboard) const;
   void ClearInternal(ClipboardBuffer buffer, NSPasteboard* pasteboard);

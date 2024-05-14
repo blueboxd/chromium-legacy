@@ -492,10 +492,6 @@ bool CrasAudioHandler::IsOutputMutedForDevice(uint64_t device_id) {
   return audio_pref_handler_->GetMuteValue(*device);
 }
 
-bool CrasAudioHandler::IsOutputForceMuted() {
-  return IsOutputMutedByPolicy() || IsOutputMutedBySecurityCurtain();
-}
-
 bool CrasAudioHandler::IsOutputMutedByPolicy() {
   return output_mute_forced_by_policy_;
 }
@@ -1791,7 +1787,10 @@ void CrasAudioHandler::SetOutputNodeVolumePercent(uint64_t node_id,
 }
 
 bool CrasAudioHandler::SetOutputMuteInternal(bool mute_on) {
-  if (IsOutputForceMuted() && !mute_on) {
+  bool is_output_mute_forced = (output_mute_forced_by_policy_ ||
+                                output_mute_forced_by_security_curtain_);
+
+  if (is_output_mute_forced && !mute_on) {
     // Do not allow unmuting if the policy forces the device to remain muted.
     return false;
   }
@@ -2470,11 +2469,6 @@ void CrasAudioHandler::UpdateAudioAfterHDMIRediscoverGracePeriod() {
     // Unmute the audio output after the HDMI transition period.
     VLOG(1) << "Unmute output after HDMI rediscovering grace period.";
     SetOutputMuteInternal(false);
-
-    // Notify UI about the mute state change.
-    for (auto& observer : observers_) {
-      observer.OnOutputMuteChanged(output_mute_on_);
-    }
   }
 }
 

@@ -121,8 +121,9 @@ END_METADATA
 // Container view for laying out and rendering the title/origin of the current
 // page.
 class CustomTabBarTitleOriginView : public views::View {
+  METADATA_HEADER(CustomTabBarTitleOriginView, views::View)
+
  public:
-  METADATA_HEADER(CustomTabBarTitleOriginView);
   CustomTabBarTitleOriginView(SkColor background_color,
                               bool should_show_title) {
     auto location_label = std::make_unique<views::Label>(
@@ -218,7 +219,7 @@ class CustomTabBarTitleOriginView : public views::View {
   raw_ptr<views::Label> location_label_ = nullptr;
 };
 
-BEGIN_METADATA(CustomTabBarTitleOriginView, views::View)
+BEGIN_METADATA(CustomTabBarTitleOriginView)
 ADD_READONLY_PROPERTY_METADATA(int, MinimumWidth)
 ADD_READONLY_PROPERTY_METADATA(SkColor,
                                LocationColor,
@@ -337,7 +338,7 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -409,7 +410,7 @@ void CustomTabBarView::UpdateContents() {
       !IsUrlInAppScope(app_controller, contents->GetLastCommittedURL());
   close_button_->SetVisible(set_visible);
 
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 SkColor CustomTabBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
@@ -549,6 +550,6 @@ bool CustomTabBarView::GetShowTitle() const {
   return app_controller() != nullptr;
 }
 
-BEGIN_METADATA(CustomTabBarView, views::AccessiblePaneView)
+BEGIN_METADATA(CustomTabBarView)
 ADD_READONLY_PROPERTY_METADATA(bool, ShowTitle)
 END_METADATA

@@ -7,7 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "build/branding_buildflags.h"
 #import "components/search_engines/search_engines_switches.h"
-#import "ios/chrome/browser/promos_manager/features.h"
+#import "ios/chrome/browser/promos_manager/model/features.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
@@ -103,11 +103,6 @@ void SkipScreensBeforeOmniboxPositionChoice() {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  // Disable the search engine choice at the end of FRE.
-  // TODO(b/289998773): Re-enable it. Update EG test so that they
-  // close this view if they need to interact more after the FRE.
-  config.additional_args.push_back(std::string("--") +
-                                   switches::kDisableSearchEngineChoiceScreen);
   config.additional_args.push_back(std::string("-") +
                                    test_switches::kSignInAtStartup);
   config.additional_args.push_back("-FirstRunForceEnabled");
@@ -127,7 +122,9 @@ void SkipScreensBeforeOmniboxPositionChoice() {
         kBottomOmniboxPromoFRE.name);
   } else if ([self
                  isRunningTest:@selector(testSelectBottomWithBottomDefault)] ||
-             [self isRunningTest:@selector(testSelectTopWithBottomDefault)]) {
+             [self isRunningTest:@selector(testSelectTopWithBottomDefault)] ||
+             [self
+                 isRunningTest:@selector(testSkipSelectionWithBottomDefault)]) {
     std::string bottom_option_by_default =
         std::string(kBottomOmniboxPromoDefaultPosition.name) + ":" +
         kBottomOmniboxPromoDefaultPositionParam + "/" +
@@ -242,6 +239,33 @@ void SkipScreensBeforeOmniboxPositionChoice() {
                   @"Failed to set preferred omnibox position to top");
 }
 
+// Tests skipping the screen in FRE when bottom is selected by default.
+- (void)testSkipSelectionWithBottomDefault {
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Skipped for iPad (no choice for omnibox position on tablet)");
+  }
+
+  SkipScreensBeforeOmniboxPositionChoice();
+
+  // The bottom address bar option should be selected.
+  [[EarlGrey selectElementWithMatcher:BottomAddressBarOptionSelected()]
+      assertWithMatcher:grey_notNil()];
+
+  // Skip promo screen.
+  TapPromoStyleButton(kPromoStyleSecondaryActionAccessibilityIdentifier);
+
+  // Verify that the omnibox is at the bottom by default.
+  GREYAssertTrue(
+      [ChromeEarlGrey prefWithNameIsDefaultValue:prefs::kBottomOmnibox],
+      @"The omnibox position pref should not have a user value");
+  GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kBottomOmnibox],
+                 @"Failed to set the omnibox position to bottom");
+  GREYAssertTrue(
+      [ChromeEarlGrey userBooleanPref:prefs::kBottomOmniboxByDefault],
+      @"Failed to set preferred default omnibox position to bottom");
+}
+
 @end
 
 #pragma mark - App-launch promo
@@ -265,10 +289,6 @@ void SkipScreensBeforeOmniboxPositionChoice() {
   config.additional_args.push_back("-NextPromoForDisplayOverride");
   config.additional_args.push_back("promos_manager::Promo::OmniboxPosition");
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
-
-  // Disable FET in promo manager as the initialization takes too much time and
-  // causes the test to fail (crbug.com/1505431).
-  config.features_disabled.push_back(kPromosManagerUsesFET);
 
   std::string bottomOptionByDefault =
       std::string(kBottomOmniboxPromoDefaultPosition.name) + ":" +

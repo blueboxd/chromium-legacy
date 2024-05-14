@@ -24,7 +24,7 @@ namespace content {
 class DevToolsAgentHostImpl;
 class DevToolsSession;
 class RenderFrameHostImpl;
-class WorkerDevToolsAgentHost;
+class WorkerOrWorkletDevToolsAgentHost;
 
 // This class encapsulates a connection to blink::mojom::DevToolsAgent
 // in the renderer (either RenderFrame or some kind of worker).
@@ -58,7 +58,6 @@ class DevToolsRendererChannel : public blink::mojom::DevToolsAgentHost {
   void AttachSession(DevToolsSession* session);
   void InspectElement(const gfx::Point& point);
   using GetUniqueFormCallback = base::OnceCallback<void(uint64_t)>;
-  void GetUniqueFormControlId(int node_id, GetUniqueFormCallback callback);
   void ForceDetachWorkerSessions();
 
   using ChildTargetCreatedCallback =
@@ -97,7 +96,7 @@ class DevToolsRendererChannel : public blink::mojom::DevToolsAgentHost {
   mojo::AssociatedRemote<blink::mojom::DevToolsAgent> associated_agent_remote_;
   int process_id_;
   RenderFrameHostImpl* frame_host_ = nullptr;
-  base::flat_set<WorkerDevToolsAgentHost*> child_targets_;
+  base::flat_set<WorkerOrWorkletDevToolsAgentHost*> child_targets_;
   ChildTargetCreatedCallback child_target_created_callback_;
   bool wait_for_debugger_ = false;
   base::OnceClosure set_report_completion_callback_;

@@ -11,7 +11,9 @@
 #include "base/auto_reset.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -145,8 +147,9 @@ bool DeserializeGUIDFromStringPieces(StringPiece first,
                                      UnguessableToken* guid) {
   uint64_t high = 0;
   uint64_t low = 0;
-  if (!StringToUint64(first, &high) || !StringToUint64(second, &low))
+  if (!StringToUint64(first, &high) || !StringToUint64(second, &low)) {
     return false;
+  }
 
   absl::optional<UnguessableToken> token =
       UnguessableToken::Deserialize(high, low);
@@ -353,6 +356,7 @@ FieldTrial* FieldTrial::CreateSimulatedFieldTrial(
 
 // static
 bool FieldTrial::ParseFieldTrialsString(const base::StringPiece trials_string,
+                                        bool override_trials,
                                         std::vector<State>& entries) {
   const StringPiece trials_string_piece(trials_string);
 
@@ -393,6 +397,7 @@ bool FieldTrial::ParseFieldTrialsString(const base::StringPiece trials_string,
         trials_string_piece.substr(next_item, trial_name_end - next_item);
     entry.group_name = trials_string_piece.substr(
         trial_name_end + 1, group_name_end - trial_name_end - 1);
+    entry.is_overridden = override_trials;
     // The next item starts after the delimiter, if it exists.
     next_item = group_name_end + 1;
 
@@ -682,13 +687,15 @@ std::set<std::string> FieldTrialList::GetActiveTrialsOfParentProcess() {
 }
 
 // static
-bool FieldTrialList::CreateTrialsFromString(const std::string& trials_string) {
+bool FieldTrialList::CreateTrialsFromString(const std::string& trials_string,
+                                            bool override_trials) {
   DCHECK(global_);
   if (trials_string.empty() || !global_)
     return true;
 
   std::vector<FieldTrial::State> entries;
-  if (!FieldTrial::ParseFieldTrialsString(trials_string, entries)) {
+  if (!FieldTrial::ParseFieldTrialsString(trials_string, override_trials,
+                                          entries)) {
     return false;
   }
 
@@ -705,6 +712,7 @@ bool FieldTrialList::CreateTrialsFromFieldTrialStates(
 // static
 void FieldTrialList::CreateTrialsInChildProcess(const CommandLine& cmd_line,
                                                 uint32_t fd_key) {
+  CHECK(!global_->create_trials_in_child_process_called_);
   global_->create_trials_in_child_process_called_ = true;
 
 #if BUILDFLAG(USE_BLINK)
@@ -712,8 +720,10 @@ void FieldTrialList::CreateTrialsInChildProcess(const CommandLine& cmd_line,
   if (cmd_line.HasSwitch(switches::kFieldTrialHandle)) {
     std::string switch_value =
         cmd_line.GetSwitchValueASCII(switches::kFieldTrialHandle);
-    bool result = CreateTrialsFromSwitchValue(switch_value, fd_key);
-    CHECK(result);
+    SharedMemError result = CreateTrialsFromSwitchValue(switch_value, fd_key);
+    SCOPED_CRASH_KEY_NUMBER("FieldTrialList", "SharedMemError",
+                            static_cast<int>(result));
+    CHECK_EQ(result, SharedMemError::kNoError);
   }
 #endif  // BUILDFLAG(USE_BLINK)
 }
@@ -837,8 +847,9 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
   if (!global_)
     return;
 
-  std::vector<Observer*> local_observers;
-  std::vector<Observer*> local_observers_including_low_anonymity;
+  std::vector<raw_ptr<Observer, VectorExperimental>> local_observers;
+  std::vector<raw_ptr<Observer, VectorExperimental>>
+      local_observers_including_low_anonymity;
 
   {
     AutoLock auto_lock(global_->lock_);
@@ -1109,24 +1120,26 @@ std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
 }
 
 // static
-ReadOnlySharedMemoryRegion
+expected<ReadOnlySharedMemoryRegion, FieldTrialList::SharedMemError>
 FieldTrialList::DeserializeSharedMemoryRegionMetadata(
     const std::string& switch_value,
-    int fd) {
+    uint32_t fd_key) {
   // Format: "handle,[irp],guid-high,guid-low,size".
   std::vector<StringPiece> tokens =
       SplitStringPiece(switch_value, ",", KEEP_WHITESPACE, SPLIT_WANT_ALL);
 
-  if (tokens.size() != 5)
-    return ReadOnlySharedMemoryRegion();
+  if (tokens.size() != 5) {
+    return base::unexpected(SharedMemError::kUnexpectedTokensCount);
+  }
 
   int field_trial_handle = 0;
-  if (!StringToInt(tokens[0], &field_trial_handle))
-    return ReadOnlySharedMemoryRegion();
+  if (!StringToInt(tokens[0], &field_trial_handle)) {
+    return base::unexpected(SharedMemError::kParseInt0Failed);
+  }
 
-    // token[1] has a fixed value but is ignored on all platforms except
-    // Windows, where it can be 'i' or 'p' to indicate that the handle is
-    // inherited or must be obtained from the parent.
+  // token[1] has a fixed value but is ignored on all platforms except
+  // Windows, where it can be 'i' or 'p' to indicate that the handle is
+  // inherited or must be obtained from the parent.
 #if BUILDFLAG(IS_WIN)
   HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
   if (tokens[1] == "p") {
@@ -1142,66 +1155,76 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
                     FALSE, DUPLICATE_SAME_ACCESS);
     CloseHandle(parent_handle);
   } else if (tokens[1] != "i") {
-    return ReadOnlySharedMemoryRegion();
+    return base::unexpected(SharedMemError::kUnexpectedHandleType);
   }
   win::ScopedHandle scoped_handle(handle);
 #elif BUILDFLAG(IS_APPLE) && BUILDFLAG(USE_BLINK)
   auto* rendezvous = MachPortRendezvousClient::GetInstance();
   if (!rendezvous) {
     LOG(ERROR) << "Mach rendezvous failed, terminating process (parent died?)";
+    // Note: This matches mojo behavior in content/child/child_thread_impl.cc.
     base::Process::TerminateCurrentProcessImmediately(0);
   }
   apple::ScopedMachSendRight scoped_handle = rendezvous->TakeSendRight(
       static_cast<MachPortsForRendezvous::key_type>(field_trial_handle));
-  if (!scoped_handle.is_valid())
-    return ReadOnlySharedMemoryRegion();
+  if (!scoped_handle.is_valid()) {
+    LOG(ERROR) << "Mach rendezvous failed, terminating process (parent died?)";
+    // Note: This matches mojo behavior in content/child/child_thread_impl.cc.
+    base::Process::TerminateCurrentProcessImmediately(0);
+  }
 #elif BUILDFLAG(IS_FUCHSIA)
   static bool startup_handle_taken = false;
   DCHECK(!startup_handle_taken) << "Shared memory region initialized twice";
   zx::vmo scoped_handle(
       zx_take_startup_handle(checked_cast<uint32_t>(field_trial_handle)));
   startup_handle_taken = true;
-  if (!scoped_handle.is_valid())
-    return ReadOnlySharedMemoryRegion();
+  if (!scoped_handle.is_valid()) {
+    return base::unexpected(SharedMemError::kInvalidHandle);
+  }
 #elif BUILDFLAG(IS_POSIX)
-  if (fd == -1)
-    return ReadOnlySharedMemoryRegion();
+  int fd = GlobalDescriptors::GetInstance()->MaybeGet(fd_key);
+  if (fd == -1) {
+    return base::unexpected(SharedMemError::kGetFDFailed);
+  }
   ScopedFD scoped_handle(fd);
 #else
 #error Unsupported OS
 #endif
 
   UnguessableToken guid;
-  if (!DeserializeGUIDFromStringPieces(tokens[2], tokens[3], &guid))
-    return ReadOnlySharedMemoryRegion();
+  if (!DeserializeGUIDFromStringPieces(tokens[2], tokens[3], &guid)) {
+    return base::unexpected(SharedMemError::kDeserializeGUIDFailed);
+  }
 
   int size;
-  if (!StringToInt(tokens[4], &size))
-    return ReadOnlySharedMemoryRegion();
+  if (!StringToInt(tokens[4], &size)) {
+    return base::unexpected(SharedMemError::kParseInt4Failed);
+  }
 
   auto platform_handle = subtle::PlatformSharedMemoryRegion::Take(
       std::move(scoped_handle),
       subtle::PlatformSharedMemoryRegion::Mode::kReadOnly,
       static_cast<size_t>(size), guid);
-  return ReadOnlySharedMemoryRegion::Deserialize(std::move(platform_handle));
+  ReadOnlySharedMemoryRegion shm =
+      ReadOnlySharedMemoryRegion::Deserialize(std::move(platform_handle));
+  if (!shm.IsValid()) {
+    return base::unexpected(SharedMemError::kDeserializeFailed);
+  }
+  return base::ok(std::move(shm));
 }
 
 // static
-bool FieldTrialList::CreateTrialsFromSwitchValue(
+FieldTrialList::SharedMemError FieldTrialList::CreateTrialsFromSwitchValue(
     const std::string& switch_value,
     uint32_t fd_key) {
-  int fd = -1;
-#if BUILDFLAG(IS_POSIX)
-  fd = GlobalDescriptors::GetInstance()->MaybeGet(fd_key);
-  if (fd == -1)
-    return false;
-#endif  // BUILDFLAG(IS_POSIX)
-  ReadOnlySharedMemoryRegion shm =
-      DeserializeSharedMemoryRegionMetadata(switch_value, fd);
-  if (!shm.IsValid()) {
-    return false;
+  auto shm = DeserializeSharedMemoryRegionMetadata(switch_value, fd_key);
+  if (!shm.has_value()) {
+    return shm.error();
   }
-  return FieldTrialList::CreateTrialsFromSharedMemoryRegion(shm);
+  if (!FieldTrialList::CreateTrialsFromSharedMemoryRegion(shm.value())) {
+    return SharedMemError::kCreateTrialsFailed;
+  }
+  return SharedMemError::kNoError;
 }
 
 #endif  // BUILDFLAG(USE_BLINK)

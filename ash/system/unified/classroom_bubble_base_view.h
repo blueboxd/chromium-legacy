@@ -14,7 +14,6 @@
 class GURL;
 
 namespace views {
-class FlexLayout;
 class FlexLayoutView;
 class Label;
 }
@@ -32,9 +31,9 @@ struct GlanceablesClassroomAssignment;
 
 class ASH_EXPORT ClassroomBubbleBaseView : public GlanceableTrayChildBubble,
                                            public views::ViewObserver {
- public:
-  METADATA_HEADER(ClassroomBubbleBaseView);
+  METADATA_HEADER(ClassroomBubbleBaseView, GlanceableTrayChildBubble)
 
+ public:
   // TODO(b:283370907): Add classroom glanceable contents.
   explicit ClassroomBubbleBaseView(
       std::unique_ptr<ui::ComboboxModel> combobox_model);
@@ -83,14 +82,12 @@ class ASH_EXPORT ClassroomBubbleBaseView : public GlanceableTrayChildBubble,
   size_t total_assignments_ = 0u;
 
   // Owned by views hierarchy.
-  raw_ptr<views::FlexLayoutView, ExperimentalAsh> header_view_ = nullptr;
-  raw_ptr<Combobox, ExperimentalAsh> combo_box_view_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> list_container_view_ = nullptr;
-  raw_ptr<GlanceablesListFooterView, ExperimentalAsh> list_footer_view_ =
-      nullptr;
-  raw_ptr<GlanceablesProgressBarView, ExperimentalAsh> progress_bar_ = nullptr;
-  raw_ptr<views::Label, ExperimentalAsh> empty_list_label_ = nullptr;
-  raw_ptr<views::FlexLayout, ExperimentalAsh> layout_manager_ = nullptr;
+  raw_ptr<views::FlexLayoutView> header_view_ = nullptr;
+  raw_ptr<Combobox> combo_box_view_ = nullptr;
+  raw_ptr<views::View> list_container_view_ = nullptr;
+  raw_ptr<GlanceablesListFooterView> list_footer_view_ = nullptr;
+  raw_ptr<GlanceablesProgressBarView> progress_bar_ = nullptr;
+  raw_ptr<views::Label> empty_list_label_ = nullptr;
 
   base::ScopedObservation<views::View, views::ViewObserver>
       combobox_view_observation_{this};

@@ -35,6 +35,8 @@ class AddressTest : public testing::Test {
             features::kAutofillEnableSupportForAddressOverflow,
             features::kAutofillEnableSupportForBetweenStreetsOrLandmark,
             features::kAutofillEnableSupportForAddressOverflowAndLandmark,
+            features::kAutofillUseDEAddressModel,
+            features::kAutofillUseINAddressModel,
             features::kAutofillUseI18nAddressModel,
         },
         {});
@@ -211,7 +213,7 @@ TEST_F(AddressTest, IsCountry) {
                                        "United states", "us"};
   for (const char* valid_match : kValidMatches) {
     SCOPED_TRACE(valid_match);
-    ServerFieldTypeSet matching_types;
+    FieldTypeSet matching_types;
     address.GetMatchingTypes(ASCIIToUTF16(valid_match), "US", &matching_types);
     ASSERT_EQ(1U, matching_types.size());
     EXPECT_EQ(ADDRESS_HOME_COUNTRY, *matching_types.begin());
@@ -219,7 +221,7 @@ TEST_F(AddressTest, IsCountry) {
 
   const char* const kInvalidMatches[] = {"United", "Garbage"};
   for (const char* invalid_match : kInvalidMatches) {
-    ServerFieldTypeSet matching_types;
+    FieldTypeSet matching_types;
     address.GetMatchingTypes(ASCIIToUTF16(invalid_match), "US",
                              &matching_types);
     EXPECT_EQ(0U, matching_types.size());
@@ -228,7 +230,7 @@ TEST_F(AddressTest, IsCountry) {
   // Make sure that garbage values don't match when the country code is empty.
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, std::u16string());
   EXPECT_EQ(std::u16string(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
-  ServerFieldTypeSet matching_types;
+  FieldTypeSet matching_types;
   address.GetMatchingTypes(u"Garbage", "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
 }
@@ -474,13 +476,13 @@ TEST_F(AddressTest, TestMergeStructuredAddresses) {
   // The merging should maintain the value because address2 is not more
   // recently used.
   address1.MergeStructuredAddress(address2,
-                                  /*newer_use_more_recently_used=*/false);
+                                  /*newer_was_more_recently_used=*/false);
   EXPECT_EQ(address1.GetRawInfo(ADDRESS_HOME_ZIP), u"12345");
 
   // Once it is more recently used, the value from address2 should be copied
   // into address1.
   address1.MergeStructuredAddress(address2,
-                                  /*newer_use_more_recently_used=*/true);
+                                  /*newer_was_more_recently_used=*/true);
   EXPECT_EQ(address1.GetRawInfo(ADDRESS_HOME_ZIP), u"1234");
 
   // With a second incompatible ZIP code the addresses are not mergeable
@@ -522,7 +524,7 @@ TEST_F(AddressTest, TestGettingTheStructuredAddress) {
   address1.SetRawInfo(ADDRESS_HOME_ZIP, u"12345");
 
   // Get the structured address and verify that it has the same test value set.
-  const AddressComponent& structured_address = address1.GetStructuredAddress();
+  const AddressComponent& structured_address = address1.GetRoot();
   EXPECT_EQ(structured_address.GetValueForType(ADDRESS_HOME_ZIP), u"12345");
 }
 
@@ -610,7 +612,7 @@ TEST_F(AddressTest, IsLegacyAddressUpdateCountry) {
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"BR");
   EXPECT_FALSE(address.IsLegacyAddress());
 
-  address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"AZ");
   EXPECT_TRUE(address.IsLegacyAddress());
 
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"MX");
@@ -622,7 +624,6 @@ TEST_F(AddressTest, IsLegacyAddressUpdateCountry) {
 
 TEST_F(AddressTest, TestUpdateLegacyToCustomHierarchy) {
   Address address(kLegacyHierarchyCountryCode);
-  address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
   address.SetRawInfoWithVerificationStatus(ADDRESS_HOME_CITY, u"Munich",
                                            VerificationStatus::kObserved);
   address.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STATE, u"Bayern",
@@ -723,10 +724,10 @@ TEST_F(AddressTest, TestUpdateCustomHierarchyToLegacy) {
                                            VerificationStatus::kParsed);
 
   // Updates the internal hierarchy and copies the data into the legacy model.
-  address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, u"AZ");
   address.FinalizeAfterImport();
 
-  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_COUNTRY), u"DE");
+  EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_COUNTRY), u"AZ");
   EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_CITY), u"Munich");
   EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_STATE), u"Bayern");
   EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_ZIP), u"111");
@@ -741,6 +742,41 @@ TEST_F(AddressTest, TestUpdateCustomHierarchyToLegacy) {
   EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_SUBPREMISE), u"Floor 15 Apt 13");
   EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_FLOOR), u"15");
   EXPECT_EQ(address.GetRawInfo(ADDRESS_HOME_APT_NUM), u"13");
+}
+
+TEST_F(AddressTest, TestSynthesizedNodesGeneration) {
+  Address address1(AddressCountryCode("IN"));
+  address1.SetRawInfoWithVerificationStatus(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                            u"Kondapur",
+                                            VerificationStatus::kObserved);
+  address1.FinalizeAfterImport();
+  EXPECT_EQ(address1.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY_AND_LANDMARK),
+            u"Kondapur");
+
+  Address address2(AddressCountryCode("IN"));
+  address2.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_LOCATION, u"12/110, Flat no. 504, Raja Apartments",
+      VerificationStatus::kObserved);
+  address2.SetRawInfoWithVerificationStatus(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                            u"Kondapur",
+                                            VerificationStatus::kObserved);
+  address2.SetRawInfoWithVerificationStatus(ADDRESS_HOME_LANDMARK,
+                                            u"Opp to Ayyappa Swamy temple",
+                                            VerificationStatus::kObserved);
+  // Finalize after import generates values for synthesized nodes.
+  address2.FinalizeAfterImport();
+  // Check values for synthesized nodes.
+  EXPECT_EQ(address2.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY_AND_LANDMARK),
+            u"Kondapur, Opp to Ayyappa Swamy temple");
+  EXPECT_EQ(
+      address2.GetRawInfo(ADDRESS_HOME_STREET_LOCATION_AND_LANDMARK),
+      u"12/110, Flat no. 504, Raja Apartments, Opp to Ayyappa Swamy temple");
+  // Check values for internal nodes.
+  EXPECT_EQ(address2.GetRawInfo(ADDRESS_HOME_STREET_LOCATION_AND_LOCALITY),
+            u"12/110, Flat no. 504, Raja Apartments, Kondapur");
+  EXPECT_EQ(address2.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            u"12/110, Flat no. 504, Raja Apartments, Kondapur, Opp to Ayyappa "
+            u"Swamy temple");
 }
 
 }  // namespace autofill

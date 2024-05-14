@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -549,7 +550,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
         << "Connect to " << interface << " " << signal << " failed.";
   }
 
-  raw_ptr<dbus::ObjectProxy, ExperimentalAsh> proxy_ = nullptr;
+  raw_ptr<dbus::ObjectProxy> proxy_ = nullptr;
 
   base::ObserverList<Observer> observer_list_;
 
@@ -610,8 +611,8 @@ MountPoint::MountPoint(MountPoint&&) = default;
 MountPoint& MountPoint::operator=(MountPoint&&) = default;
 
 MountPoint::MountPoint() = default;
-MountPoint::MountPoint(const base::StringPiece source_path,
-                       const base::StringPiece mount_path,
+MountPoint::MountPoint(const std::string_view source_path,
+                       const std::string_view mount_path,
                        const MountType mount_type,
                        const MountError mount_error,
                        const int progress_percent,

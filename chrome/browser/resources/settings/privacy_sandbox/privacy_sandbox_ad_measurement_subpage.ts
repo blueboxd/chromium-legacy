@@ -3,16 +3,20 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_components/settings_prefs/prefs.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/settings_toggle_button.js';
 import '../settings_columned_section.css.js';
 import '../settings_shared.css.js';
 
-import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
-import {MetricsBrowserProxy, MetricsBrowserProxyImpl} from '../metrics_browser_proxy.js';
+import type {MetricsBrowserProxy} from '../metrics_browser_proxy.js';
+import {MetricsBrowserProxyImpl} from '../metrics_browser_proxy.js';
+import {routes} from '../route.js';
+import type {Route} from '../router.js';
+import {RouteObserverMixin} from '../router.js';
 
 import {getTemplate} from './privacy_sandbox_ad_measurement_subpage.html.js';
 
@@ -23,7 +27,7 @@ export interface SettingsPrivacySandboxAdMeasurementSubpageElement {
 }
 
 const SettingsPrivacySandboxAdMeasurementSubpageElementBase =
-    PrefsMixin(PolymerElement);
+    RouteObserverMixin(PrefsMixin(PolymerElement));
 
 export class SettingsPrivacySandboxAdMeasurementSubpageElement extends
     SettingsPrivacySandboxAdMeasurementSubpageElementBase {
@@ -50,11 +54,11 @@ export class SettingsPrivacySandboxAdMeasurementSubpageElement extends
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
 
-  override ready() {
-    super.ready();
-
-    HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
-        TrustSafetyInteraction.OPENED_AD_MEASUREMENT_SUBPAGE);
+  override currentRouteChanged(newRoute: Route) {
+    if (newRoute === routes.PRIVACY_SANDBOX_AD_MEASUREMENT) {
+      HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
+          TrustSafetyInteraction.OPENED_AD_MEASUREMENT_SUBPAGE);
+    }
   }
 
   private onToggleChange_(e: Event) {

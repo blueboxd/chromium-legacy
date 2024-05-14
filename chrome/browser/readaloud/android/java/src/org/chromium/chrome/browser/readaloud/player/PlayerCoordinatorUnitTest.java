@@ -5,7 +5,6 @@ package org.chromium.chrome.browser.readaloud.player;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
@@ -13,15 +12,11 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.res.Resources;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewStub;
-import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
@@ -40,8 +36,6 @@ import org.chromium.chrome.browser.readaloud.ReadAloudMiniPlayerSceneLayer;
 import org.chromium.chrome.browser.readaloud.ReadAloudMiniPlayerSceneLayerJni;
 import org.chromium.chrome.browser.readaloud.ReadAloudPrefs;
 import org.chromium.chrome.browser.readaloud.player.expanded.ExpandedPlayerCoordinator;
-import org.chromium.chrome.browser.readaloud.player.expanded.Menu;
-import org.chromium.chrome.browser.readaloud.player.expanded.MenuItem;
 import org.chromium.chrome.browser.readaloud.player.mini.MiniPlayerCoordinator;
 import org.chromium.chrome.browser.readaloud.player.mini.MiniPlayerLayout;
 import org.chromium.chrome.browser.readaloud.testing.MockPrefServiceHelper;
@@ -55,35 +49,25 @@ import org.chromium.components.prefs.PrefService;
 import java.util.List;
 
 /** Unit tests for {@link PlayerCoordinator}. */
-@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@RunWith(BaseRobolectricTestRunner.class)
 public class PlayerCoordinatorUnitTest {
     @Rule public JniMocker mJniMocker = new JniMocker();
     @Mock ReadAloudMiniPlayerSceneLayer.Natives mSceneLayerNativeMock;
 
-    @Mock private Activity mActivity;
-    @Mock private LayoutInflater mLayoutInflater;
-    @Mock private ViewStub mMiniPlayerViewStub;
     @Mock private BottomSheetController mBottomSheetController;
-    @Mock private MiniPlayerLayout mMiniPlayerLayout;
-    @Mock private MiniPlayerCoordinator mMiniPlayerCoordinator;
     @Mock private Playback mPlayback;
     @Mock private PlayerCoordinator.Observer mObserver;
     @Mock private PlayerMediator mMediator;
     @Mock private MiniPlayerCoordinator mMiniPlayer;
-    @Mock private View mExpandedPlayerContentView;
-    @Mock private TextView mSpeedButton;
-    @Mock private View mForwardButton;
-    @Mock private View mBackButton;
-    @Mock private Resources mResources;
-    @Mock private SeekBar mSeekBar;
     private MockPrefServiceHelper mMockPrefServiceHelper;
 
     private PlayerCoordinator mPlayerCoordinator;
 
     @Mock private Player.Delegate mDelegate;
     @Mock private ExpandedPlayerCoordinator mExpandedPlayer;
-    @Mock private Menu mMenu;
+
+    private Activity mActivity;
 
     @Before
     public void setUp() {
@@ -94,42 +78,26 @@ public class PlayerCoordinatorUnitTest {
                 new PlayerCoordinator(mMiniPlayer, mMediator, mDelegate, mExpandedPlayer);
     }
 
+    @After
+    public void tearDown() {
+        MiniPlayerCoordinator.setViewStubForTesting(null);
+    }
+
     @Test
     public void testConstructor() {
-        doReturn(mActivity).when(mDelegate).getActivity();
-        doReturn(mMiniPlayerViewStub)
-                .when(mActivity)
-                .findViewById(eq(R.id.readaloud_mini_player_stub));
-        doReturn(mLayoutInflater)
-                .when(mActivity)
-                .getSystemService(eq(Context.LAYOUT_INFLATER_SERVICE));
+        mActivity = Robolectric.buildActivity(AppCompatActivity.class).setup().get();
+        // Need to set theme before inflating layout.
+        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
 
-        doReturn(mExpandedPlayerContentView)
-                .when(mLayoutInflater)
-                .inflate(eq(R.layout.readaloud_expanded_player_layout), any());
-        doReturn(Mockito.mock(TextView.class))
-                .when(mExpandedPlayerContentView)
-                .findViewById(anyInt());
-        doReturn(Mockito.mock(LinearLayout.class))
-                .when(mExpandedPlayerContentView)
-                .findViewById(R.id.normal_layout);
-        doReturn(Mockito.mock(LinearLayout.class))
-                .when(mExpandedPlayerContentView)
-                .findViewById(R.id.error_layout);
-        doReturn(Mockito.mock(SeekBar.class))
-                .when(mExpandedPlayerContentView)
-                .findViewById(R.id.readaloud_expanded_player_seek_bar);
+        ViewStub mockMiniPlayerStub = Mockito.mock(ViewStub.class);
+        MiniPlayerCoordinator.setViewStubForTesting(mockMiniPlayerStub);
+        var miniPlayerLayout =
+                (MiniPlayerLayout)
+                        mActivity
+                                .getLayoutInflater()
+                                .inflate(R.layout.readaloud_mini_player_layout, null);
+        doReturn(miniPlayerLayout).when(mockMiniPlayerStub).inflate();
 
-        doReturn(mMenu).when(mLayoutInflater).inflate(eq(R.layout.readaloud_menu), any());
-        doReturn(Mockito.mock(MenuItem.class))
-                .when(mMenu)
-                .addItem(anyInt(), anyInt(), any(), anyInt(), any());
-        doReturn(Mockito.mock(MenuItem.class)).when(mMenu).getItem(anyInt());
-        doReturn(Mockito.mock(TextView.class)).when(mMenu).findViewById(anyInt());
-        doReturn(mResources).when(mActivity).getResources();
-        doReturn("").when(mResources).getString(anyInt(), anyInt());
-
-        doReturn(mMiniPlayerLayout).when(mMiniPlayerViewStub).inflate();
         doReturn(mBottomSheetController).when(mDelegate).getBottomSheetController();
 
         mMockPrefServiceHelper = new MockPrefServiceHelper();
@@ -144,11 +112,12 @@ public class PlayerCoordinatorUnitTest {
                 .when(mDelegate)
                 .getCurrentLanguageVoicesSupplier();
         doReturn(new ObservableSupplierImpl<String>()).when(mDelegate).getVoiceIdSupplier();
+        doReturn(mActivity).when(mDelegate).getActivity();
 
         mPlayerCoordinator = new PlayerCoordinator(mDelegate);
 
         // Mini player should be inflated and attached.
-        verify(mMiniPlayerViewStub).inflate();
+        verify(mockMiniPlayerStub).inflate();
         // User prefs should be read into the model.
         verify(prefs).getDouble(eq("readaloud.speed"));
     }
@@ -165,7 +134,7 @@ public class PlayerCoordinatorUnitTest {
 
     @Test
     public void testPlayTabRequested_withExpandedPlayerVisible() {
-        doReturn(VisibilityState.VISIBLE).when(mExpandedPlayer).getVisibility();
+        doReturn(true).when(mExpandedPlayer).anySheetShowing();
         mPlayerCoordinator.playTabRequested();
 
         // Mini player is not shown.
@@ -199,16 +168,24 @@ public class PlayerCoordinatorUnitTest {
     }
 
     @Test
+    public void testRecordPlaybackDuration() {
+        mPlayerCoordinator.recordPlaybackDuration();
+        verify(mMediator).recordPlaybackDuration();
+    }
+
+    @Test
     public void testExpand() {
         mPlayerCoordinator.playbackReady(mPlayback, PlaybackListener.State.PLAYING);
         mPlayerCoordinator.expand();
         verify(mExpandedPlayer).show();
+        verify(mMiniPlayer).dismiss(/* animate= */ eq(false));
     }
 
     @Test
     public void testRestoreMiniPlayer() {
         mPlayerCoordinator.restoreMiniPlayer();
         verify(mMiniPlayer).show(eq(true));
+        verify(mMediator).setHiddenAndPlaying(eq(false));
     }
 
     @Test
@@ -222,6 +199,106 @@ public class PlayerCoordinatorUnitTest {
         verify(mMediator).setPlayback(eq(null));
         verify(mMediator).setPlaybackState(eq(PlaybackListener.State.STOPPED));
         verify(mMiniPlayer).dismiss(eq(true));
+        verify(mMediator).setHiddenAndPlaying(eq(false));
+    }
+
+    @Test
+    public void testHideMiniPlayer_visible() {
+        doReturn(VisibilityState.VISIBLE).when(mMiniPlayer).getVisibility();
+        mPlayerCoordinator.playbackReady(mPlayback, PlaybackListener.State.PLAYING);
+
+        verify(mMediator).setPlayback(eq(mPlayback));
+        verify(mMediator).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+
+        mPlayerCoordinator.hideMiniPlayer();
+        verify(mMiniPlayer).getVisibility();
+        verify(mMediator).setPlayback(eq(mPlayback));
+        verify(mMediator).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+        verify(mMiniPlayer).dismiss(eq(true));
+        verify(mMediator).setHiddenAndPlaying(eq(true));
+    }
+
+    @Test
+    public void testHideMiniPlayer_noopWhenHidden() {
+        doReturn(VisibilityState.HIDING).when(mMiniPlayer).getVisibility();
+        mPlayerCoordinator.playbackReady(mPlayback, PlaybackListener.State.PLAYING);
+
+        verify(mMediator).setPlayback(eq(mPlayback));
+        verify(mMediator).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+        reset(mMediator);
+        mPlayerCoordinator.hideMiniPlayer();
+        verify(mMiniPlayer).getVisibility();
+        verify(mMediator, never()).setPlayback(eq(mPlayback));
+        verify(mMediator, never()).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+        verify(mMiniPlayer, never()).dismiss(eq(true));
+        verify(mMediator, never()).setHiddenAndPlaying(eq(true));
+    }
+
+    @Test
+    public void testHideAndRestoreMiniPlayer() {
+        doReturn(VisibilityState.VISIBLE).when(mMiniPlayer).getVisibility();
+        doReturn(VisibilityState.GONE).when(mExpandedPlayer).getVisibility();
+
+        mPlayerCoordinator.playbackReady(mPlayback, PlaybackListener.State.PLAYING);
+
+        verify(mMediator).setPlayback(eq(mPlayback));
+        verify(mMediator).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+
+        mPlayerCoordinator.hidePlayers();
+        verify(mMiniPlayer).getVisibility();
+        verify(mExpandedPlayer).getVisibility();
+        verify(mMediator).setPlayback(eq(mPlayback));
+        verify(mMediator).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+        verify(mMiniPlayer).dismiss(eq(true));
+        verify(mMediator).setHiddenAndPlaying(eq(true));
+        verify(mExpandedPlayer, never()).dismiss();
+
+        mPlayerCoordinator.restorePlayers();
+        verify(mMiniPlayer).show(eq(true));
+        verify(mMediator).setHiddenAndPlaying(eq(false));
+        verify(mExpandedPlayer, never()).show();
+    }
+
+    @Test
+    public void testHideAndRestoreExpandedPlayer() {
+        doReturn(VisibilityState.GONE).when(mMiniPlayer).getVisibility();
+        doReturn(VisibilityState.VISIBLE).when(mExpandedPlayer).getVisibility();
+
+        mPlayerCoordinator.playbackReady(mPlayback, PlaybackListener.State.PLAYING);
+
+        verify(mMediator).setPlayback(eq(mPlayback));
+        verify(mMediator).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+
+        mPlayerCoordinator.hidePlayers();
+        verify(mMiniPlayer).getVisibility();
+        verify(mExpandedPlayer).getVisibility();
+        verify(mMediator).setPlayback(eq(mPlayback));
+        verify(mMediator).setPlaybackState(eq(PlaybackListener.State.PLAYING));
+        verify(mExpandedPlayer).dismiss();
+        verify(mMiniPlayer, never()).dismiss(eq(true));
+        verify(mMediator).setHiddenAndPlaying(eq(true));
+
+        mPlayerCoordinator.restorePlayers();
+        verify(mExpandedPlayer).show();
+        verify(mMiniPlayer, never()).show(eq(true));
+        verify(mMediator).setHiddenAndPlaying(eq(false));
+    }
+
+    @Test
+    public void testHideAndRestoreNoPlayerVisible() {
+        mPlayerCoordinator.hidePlayers();
+        verify(mExpandedPlayer, never()).dismiss();
+        verify(mMiniPlayer, never()).dismiss(eq(true));
+
+        mPlayerCoordinator.restorePlayers();
+        verify(mExpandedPlayer, never()).show();
+        verify(mMiniPlayer, never()).show(eq(true));
+    }
+
+    @Test
+    public void testOnScreenStatusChanged() {
+        mPlayerCoordinator.onScreenStatusChanged(true);
+        verify(mMediator).onScreenStatusChanged(true);
     }
 
     @Test

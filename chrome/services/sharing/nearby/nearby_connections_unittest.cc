@@ -85,7 +85,7 @@ mojom::AdvertisingOptionsPtr CreateAdvertisingOptions() {
 }
 
 mojom::ConnectionOptionsPtr CreateConnectionOptions(
-    absl::optional<std::vector<uint8_t>> bluetooth_mac_address,
+    std::optional<std::vector<uint8_t>> bluetooth_mac_address,
     base::TimeDelta keep_alive_interval,
     base::TimeDelta keep_alive_timeout) {
   auto allowed_mediums = mojom::MediumSelection::New(/* bluetooth= */ true,
@@ -487,7 +487,7 @@ class NearbyConnectionsTest : public testing::Test {
   ClientProxy* RequestConnection(
       FakeConnectionLifecycleListener& fake_connection_life_cycle_listener,
       const EndpointData& endpoint_data,
-      absl::optional<std::vector<uint8_t>> bluetooth_mac_address =
+      std::optional<std::vector<uint8_t>> bluetooth_mac_address =
           std::vector<uint8_t>(std::begin(kBluetoothMacAddress),
                                std::end(kBluetoothMacAddress))) {
     ClientProxy* client_proxy;
@@ -574,7 +574,7 @@ class NearbyConnectionsTest : public testing::Test {
   ClientProxy* RequestConnectionV3(
       FakeConnectionListenerV3& fake_connection_listener_v3,
       PresenceDevicePtr remote_device,
-      absl::optional<std::vector<uint8_t>> bluetooth_mac_address =
+      std::optional<std::vector<uint8_t>> bluetooth_mac_address =
           std::vector<uint8_t>(std::begin(kBluetoothMacAddress),
                                std::end(kBluetoothMacAddress))) {
     ClientProxy* client_proxy;
@@ -699,7 +699,7 @@ class NearbyConnectionsTest : public testing::Test {
   mojo::SelfOwnedReceiverRef<sharing::mojom::TcpSocketFactory>
       tcp_socket_factory_self_owned_receiver_ref_;
   std::unique_ptr<NearbyConnections> nearby_connections_;
-  raw_ptr<testing::NiceMock<MockServiceControllerRouter>, ExperimentalAsh>
+  raw_ptr<testing::NiceMock<MockServiceControllerRouter>>
       service_controller_router_ptr_;
   base::RunLoop disconnect_run_loop_;
 };
@@ -850,7 +850,7 @@ TEST_F(NearbyConnectionsTest,
   FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
 
   RequestConnection(fake_connection_life_cycle_listener, endpoint_data,
-                    /* bluetooth_mac_address= */ absl::nullopt);
+                    /* bluetooth_mac_address= */ std::nullopt);
 }
 
 TEST_F(NearbyConnectionsTest, RequestConnectionAccept) {

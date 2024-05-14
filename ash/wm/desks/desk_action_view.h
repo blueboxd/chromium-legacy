@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "ash/style/blurred_background_shield.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -19,11 +20,13 @@ class CloseButton;
 
 // A view that holds buttons that act on a single DeskMiniView instance, such as
 // combining two desks or closing a desk and all of its windows.
-class DeskActionView : public views::BoxLayoutView, views::ViewObserver {
- public:
-  METADATA_HEADER(DeskActionView);
+class ASH_EXPORT DeskActionView : public views::BoxLayoutView,
+                                  views::ViewObserver {
+  METADATA_HEADER(DeskActionView, views::BoxLayoutView)
 
-  DeskActionView(const std::u16string& initial_combine_desks_target_name,
+ public:
+  DeskActionView(const std::u16string& combine_desks_target_name,
+                 const std::u16string& close_all_target_name,
                  base::RepeatingClosure combine_desks_callback,
                  base::RepeatingClosure close_all_callback,
                  base::RepeatingClosure focus_change_callback);
@@ -57,8 +60,8 @@ class DeskActionView : public views::BoxLayoutView, views::ViewObserver {
   void OnViewFocused(views::View* observed) override;
   void OnViewBlurred(views::View* observed) override;
 
-  raw_ptr<CloseButton, ExperimentalAsh> combine_desks_button_;
-  raw_ptr<CloseButton, ExperimentalAsh> close_all_button_;
+  raw_ptr<CloseButton> combine_desks_button_;
+  raw_ptr<CloseButton> close_all_button_;
 
   // Maintains blurred rounded rect background without clipping. Useful when
   // generating a focus ring that will partially extend outside of the view.

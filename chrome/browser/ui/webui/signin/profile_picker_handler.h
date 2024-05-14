@@ -39,6 +39,8 @@ struct Account;
 
 class Browser;
 
+enum class ReauthUIError;
+
 // The handler for Javascript messages related to the profile picker main view.
 class ProfilePickerHandler : public content::WebUIMessageHandler,
                              public content::WebContentsObserver,
@@ -157,9 +159,15 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   // Displays either a sign-in or an error dialog within the profile picker
   // using `profile`.
   void OnProfileForDialogLoaded(Profile* profile);
-  // Callback to the reauth failing, used to display an error dialog on top of
-  // the profile picker.
-  void OnReauthErrorCallback();
+  // Displays an error dialog on top of the profile picker based on the error
+  // enum.
+  // Empty `profile_path` will not show an additional "Sign in"
+  // button that allows to reach reauth step.
+  // The `email` value is only used when the error is
+  // `ReauthUIError::kWrongAccount` in order to show the expected email address.
+  void DisplayForceSigninErrorDialog(const base::FilePath& profile_path,
+                                     const std::string& email,
+                                     ReauthUIError error);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // GaiaId as input string.

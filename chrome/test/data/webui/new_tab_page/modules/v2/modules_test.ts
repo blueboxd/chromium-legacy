@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Module, MODULE_CUSTOMIZE_ELEMENT_ID, ModuleDescriptor, ModuleRegistry, ModulesV2Element, ModuleWrapperElement, NamedWidth, SUPPORTED_MODULE_WIDTHS} from 'chrome://new-tab-page/lazy_load.js';
+import type {Module, ModuleWrapperElement, NamedWidth} from 'chrome://new-tab-page/lazy_load.js';
+import {MODULE_CUSTOMIZE_ELEMENT_ID, ModuleDescriptor, ModuleRegistry, ModulesV2Element, SUPPORTED_MODULE_WIDTHS} from 'chrome://new-tab-page/lazy_load.js';
 import {NewTabPageProxy} from 'chrome://new-tab-page/new_tab_page.js';
-import {PageCallbackRouter, PageHandlerRemote, PageRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
+import type {PageRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
+import {PageCallbackRouter, PageHandlerRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {fakeMetricsPrivate, MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
+import type {MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
+import {fakeMetricsPrivate} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
-import {TestMock} from 'chrome://webui-test/test_mock.js';
+import type {TestMock} from 'chrome://webui-test/test_mock.js';
 
 import {assertNotStyle, assertStyle, createElement, initNullModule, installMock} from '../../test_support.js';
 
@@ -279,35 +282,6 @@ suite('NewTabPageModulesModulesV2Test', () => {
     );
   });
 
-  test('module use events trigger onModulesUsed handler function', async () => {
-    const fooDescriptor = new ModuleDescriptor('foo', initNullModule);
-    handler.setResultFor('getModulesIdNames', {
-      data: [
-        {id: fooDescriptor.id, name: fooDescriptor.id},
-      ],
-    });
-
-    const modulesElement = await createModulesElement(
-        [
-          {
-            descriptor: fooDescriptor,
-            elements: [createElement()],
-          },
-        ],
-        true, SAMPLE_SCREEN_WIDTH);
-    assertEquals(1, handler.getCallCount('getModulesIdNames'));
-
-    const moduleWrapper =
-        modulesElement.shadowRoot!.querySelector('ntp-module-wrapper');
-    assertTrue(!!moduleWrapper);
-    const moduleEl = moduleWrapper.shadowRoot!.querySelector('#moduleElement');
-    assertTrue(!!moduleEl);
-    moduleEl.dispatchEvent(
-        new Event('menu-button-click', {bubbles: true, composed: true}));
-    moduleEl.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
-    assertEquals(2, handler.getCallCount('onModulesUsed'));
-  });
-
   test('modules maxium instance count works correctly', async () => {
     const SAMPLE_MAX_MODULE_INSTANCE_COUNT = 2;
     loadTimeData.overrideValues({
@@ -360,7 +334,9 @@ suite('NewTabPageModulesModulesV2Test', () => {
             `modules can be disabled and restored via ${undoStrategy}`,
             async () => {
               // Arrange.
-              const fooDescriptor = new ModuleDescriptor('foo', initNullModule);
+              const moduleId = 'foo';
+              const fooDescriptor =
+                  new ModuleDescriptor(moduleId, initNullModule);
               handler.setResultFor('getModulesIdNames', {
                 data: [
                   {id: fooDescriptor.id, name: fooDescriptor.id},
@@ -400,7 +376,7 @@ suite('NewTabPageModulesModulesV2Test', () => {
                   ['foo', true], handler.getArgs('setModuleDisabled')[0]);
 
               // Act.
-              callbackRouterRemote.setDisabledModules(false, ['foo']);
+              callbackRouterRemote.setDisabledModules(false, [moduleId]);
               await callbackRouterRemote.$.flushForTesting();
 
               // Assert.
@@ -409,18 +385,20 @@ suite('NewTabPageModulesModulesV2Test', () => {
               assertEquals(
                   'Foo', modulesElement.$.undoToastMessage.textContent!.trim());
               assertEquals(
-                  1, metrics.count('NewTabPage.Modules.Disabled', 'foo'));
+                  1, metrics.count('NewTabPage.Modules.Disabled', moduleId));
               assertEquals(
                   1,
                   metrics.count(
-                      'NewTabPage.Modules.Disabled.ModuleRequest', 'foo'));
+                      'NewTabPage.Modules.Disabled.ModuleRequest', moduleId));
               assertFalse(restoreCalled);
 
               // Act.
               await waitAfterNextRender(modulesElement);
               if (undoStrategy === UndoStrategy.BUTTON_ACTIVATION) {
-                const undoButton = modulesElement.shadowRoot!.querySelector(
-                                       '#undoButton') as HTMLElement;
+                const undoButton =
+                    modulesElement.shadowRoot!.querySelector<HTMLElement>(
+                        '#undoButton');
+                assertTrue(!!undoButton);
                 undoButton.click();
               } else if (undoStrategy === UndoStrategy.SHORTCUT_KEY) {
                 window.dispatchEvent(new KeyboardEvent('keydown', {
@@ -442,15 +420,18 @@ suite('NewTabPageModulesModulesV2Test', () => {
               assertFalse(modulesElement.$.undoToast.open);
               assertTrue(restoreCalled);
               assertEquals(
-                  1, metrics.count('NewTabPage.Modules.Enabled', 'foo'));
+                  1, metrics.count('NewTabPage.Modules.Enabled', moduleId));
               assertEquals(
-                  1, metrics.count('NewTabPage.Modules.Enabled.Toast', 'foo'));
+                  1,
+                  metrics.count('NewTabPage.Modules.Enabled.Toast', moduleId));
             });
 
         test(
             `modules can be dismissed and restored via ${undoStrategy}`,
             async () => {
-              const fooDescriptor = new ModuleDescriptor('foo', initNullModule);
+              const moduleId = 'foo';
+              const fooDescriptor =
+                  new ModuleDescriptor(moduleId, initNullModule);
               handler.setResultFor('getModulesIdNames', {
                 data: [
                   {id: fooDescriptor.id, name: fooDescriptor.id},
@@ -488,16 +469,15 @@ suite('NewTabPageModulesModulesV2Test', () => {
                       .length);
               assertTrue(modulesElement.$.undoToast.open);
               assertFalse(restoreCalled);
-              assertEquals(
-                  1, metrics.count('NewTabPage.Modules.Dismissed'),
-                  'Dismiss metric value');
-              assertEquals(
-                  1, metrics.count('NewTabPage.Modules.Dismissed.foo'));
+              assertEquals(1, handler.getCallCount('onDismissModule'));
+              assertEquals(moduleId, handler.getArgs('onDismissModule')[0]);
 
               await waitAfterNextRender(modulesElement);
               if (undoStrategy === UndoStrategy.BUTTON_ACTIVATION) {
-                const undoButton = modulesElement.shadowRoot!.querySelector(
-                                       '#undoButton') as HTMLElement;
+                const undoButton =
+                    modulesElement.shadowRoot!.querySelector<HTMLElement>(
+                        '#undoButton');
+                assertTrue(!!undoButton);
                 undoButton.click();
               } else if (undoStrategy === UndoStrategy.SHORTCUT_KEY) {
                 window.dispatchEvent(new KeyboardEvent('keydown', {

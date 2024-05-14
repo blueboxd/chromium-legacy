@@ -11,8 +11,10 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
+
 #include "base/containers/contains.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -23,13 +25,13 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/image_util.h"
@@ -231,7 +233,7 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
 }
 
 scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
-                                       const std::string& extension_id,
+                                       const ExtensionId& extension_id,
                                        ManifestLocation location,
                                        int flags,
                                        std::string* error) {
@@ -242,7 +244,7 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
 scoped_refptr<Extension> LoadExtension(
     const base::FilePath& extension_path,
     const base::FilePath::CharType* manifest_file,
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     ManifestLocation location,
     int flags,
     std::string* error) {
@@ -473,7 +475,7 @@ base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir) {
 }
 
 base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
-  base::StringPiece url_path = url.path_piece();
+  std::string_view url_path = url.path_piece();
   if (url_path.empty() || url_path[0] != '/')
     return base::FilePath();
 

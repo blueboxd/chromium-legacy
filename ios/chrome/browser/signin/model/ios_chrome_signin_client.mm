@@ -9,7 +9,6 @@
 #import "components/signin/core/browser/cookie_settings_util.h"
 #import "components/signin/ios/browser/wait_for_network_callback_helper_ios.h"
 #import "components/signin/public/identity_manager/primary_account_change_event.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
@@ -46,6 +45,10 @@ IOSChromeSigninClient::GetURLLoaderFactory() {
 
 network::mojom::CookieManager* IOSChromeSigninClient::GetCookieManager() {
   return browser_state_->GetCookieManager();
+}
+
+network::mojom::NetworkContext* IOSChromeSigninClient::GetNetworkContext() {
+  return browser_state_->GetNetworkContext();
 }
 
 void IOSChromeSigninClient::DoFinalInit() {}

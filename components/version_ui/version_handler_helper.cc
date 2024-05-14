@@ -37,7 +37,7 @@ base::Value::List GetVariationsList() {
   // displayed locally (and is useful for diagnostics purposes).
   base::FieldTrialListIncludingLowAnonymity::GetActiveFieldTrialGroups(
       &active_groups);
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || true
   const unsigned char kNonBreakingHyphenUTF8[] = {0xE2, 0x80, 0x91, '\0'};
   const std::string kNonBreakingHyphenUTF8String(
       reinterpret_cast<const char*>(kNonBreakingHyphenUTF8));

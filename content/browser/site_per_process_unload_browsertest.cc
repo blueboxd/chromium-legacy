@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/site_per_process_browsertest.h"
-
 #include <list>
 #include <memory>
 #include <string>
@@ -14,14 +12,17 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/ranges/algorithm.h"
-#include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/with_feature_override.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -29,6 +30,7 @@
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/site_per_process_browsertest.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/navigation_handle.h"
@@ -203,12 +205,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   ASSERT_TRUE(
       ExecJs(web_contents(),
              "document.querySelector('iframe').style.visibility = 'hidden';"));
-  while (!frame_connector_delegate->IsHidden()) {
-    base::RunLoop run_loop;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(base::test::RunUntil(
+      [&]() { return frame_connector_delegate->IsHidden(); }));
 
   // Now we navigate the child to about:blank, but since we do not proceed with
   // the navigation, the OOPIF should stay alive and RemoteFrameView intact.
@@ -228,12 +226,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   ASSERT_TRUE(
       ExecJs(web_contents(),
              "document.querySelector('iframe').style.visibility = 'visible';"));
-  while (frame_connector_delegate->IsHidden()) {
-    base::RunLoop run_loop;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(base::test::RunUntil(
+      [&]() { return !frame_connector_delegate->IsHidden(); }));
 }
 
 // Ensure that after a main frame with an OOPIF is navigated cross-site, the
@@ -992,26 +986,26 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   shutdown_B.Wait();
 }
 
-// Tests that running layout from an unload handler inside teardown of the
+// Tests that running layout from an pagehide handler inside teardown of the
 // RenderWidget (inside WidgetMsg_Close) can succeed.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       RendererInitiatedWindowCloseWithUnload) {
+                       RendererInitiatedWindowCloseWithPagehide) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/empty.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
 
   // We will window.open() another URL on the same domain so they share a
-  // renderer. This window has an unload handler that forces layout to occur.
+  // renderer. This window has an pagehide handler that forces layout to occur.
   // Then we (in a new stack) close that window causing that layout. If all
   // goes well the window closes. If it goes poorly, the renderer may crash.
   //
   // This path is special because the unload results from window.close() which
   // avoids the user-initiated close path through ViewMsg_ClosePage. In that
-  // path the unload handlers are run early, before the actual teardown of
+  // path the pagehide handlers are run early, before the actual teardown of
   // the closing RenderWidget.
   GURL open_url = embedded_test_server()->GetURL(
-      "a.com", "/unload_handler_force_layout.html");
+      "a.com", "/pagehide_handler_force_layout.html");
 
   // Listen for messages from the window that the test opens, and convert them
   // into the document title, which we can wait on in the main test window.
@@ -1021,7 +1015,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                      "});"));
 
   // This performs window.open() and waits for the title of the original
-  // document to change to signal that the unload handler has been registered.
+  // document to change to signal that the pagehide handler has been registered.
   {
     std::u16string title_when_loaded = u"loaded";
     TitleWatcher title_watcher(shell()->web_contents(), title_when_loaded);
@@ -1030,7 +1024,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   }
 
   // The closes the window and waits for the title of the original document to
-  // change again to signal that the unload handler has run.
+  // change again to signal that the pagehide handler has run.
   {
     std::u16string title_when_done = u"unloaded";
     TitleWatcher title_watcher(shell()->web_contents(), title_when_done);
@@ -1722,4 +1716,61 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessSSLBrowserTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+
+// This test sets up a main frame which has an OOPIF. The main frame commits a
+// same-site navigation. The test then stops at the stage where the unload
+// handler of the OOPIF is running and the main frame RenderFrameHost's
+// `DocumentAssociatedData` is retrieved from the OOPIF. The test shows that
+// the `DocumentAssociatedData` is different from the one before navigation if
+// RenderDocument feature is not enabled for all frames. One place we have seen
+// this issue is in Protected Audience auctions. Please see crbug.com/1422301.
+IN_PROC_BROWSER_TEST_P(
+    SitePerProcessBrowserTest,
+    MainFrameDocumentAssociatedDataChangesOnSameSiteNavigation) {
+  GURL initial_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL next_url(embedded_test_server()->GetURL("login.a.com", "/title1.html"));
+
+  // 1) Navigate on a page with an OOPIF.
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+
+  FrameTreeNode* root_ftn = web_contents()->GetPrimaryFrameTree().root();
+  RenderFrameHostImpl* main_rfh = root_ftn->current_frame_host();
+
+  // 2) Act as if there was an infinite unload handler in the OOPIF.
+  RenderFrameHostImpl* child_rfh = root_ftn->child_at(0)->current_frame_host();
+
+  child_rfh->DoNotDeleteForTesting();
+
+  // Set an arbitrarily long timeout to ensure the subframe unload timer doesn't
+  // fire before we call OnDetach().
+  child_rfh->SetSubframeUnloadTimeoutForTesting(base::Seconds(30));
+
+  // With BackForwardCache, old document doesn't fire unload handlers as the
+  // page is stored in BackForwardCache on navigation.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_USES_UNLOAD_EVENT);
+
+  // 3) Retrieve the weak pointer to the owned page by the main
+  // RenderFrameHost's `DocumentAssociatedData`.
+  base::WeakPtr<PageImpl> weak_ptr_page = child_rfh->GetPage().GetWeakPtrImpl();
+
+  // 4) Navigate the main frame to a same-site url. The unload handler of the
+  // OOPIF is running.
+  EXPECT_TRUE(NavigateToURL(shell(), next_url));
+  EXPECT_TRUE(child_rfh->IsPendingDeletion());
+
+  // 5) If RenderDocument feature is not enabled for all frames, the main frame
+  // RenderFrameHost will be the same.
+  EXPECT_EQ(
+      main_rfh ==
+          web_contents()->GetPrimaryFrameTree().root()->current_frame_host(),
+      GetRenderDocumentLevel() < RenderDocumentLevel::kAllFrames);
+
+  // 6) If RenderDocument feature is not enabled for all frames, verify
+  // `PageImpl` has changed by checking the weak pointer.
+  EXPECT_EQ(weak_ptr_page == nullptr,
+            GetRenderDocumentLevel() < RenderDocumentLevel::kAllFrames);
+}
+
 }  // namespace content

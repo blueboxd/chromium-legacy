@@ -4,7 +4,7 @@
 
 #import "base/feature_list.h"
 #import "components/supervised_user/core/common/features.h"
-#import "ios/chrome/browser/policy/policy_earl_grey_matchers.h"
+#import "ios/chrome/browser/policy/model/policy_earl_grey_matchers.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -40,13 +40,6 @@ NSString* const kTestLearnMoreLabel = @"Learn more";
 @end
 
 @implementation SupervisedUserIncognitoModeTestCase
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(
-      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
-  return config;
-}
 
 // Signs in with a supervised account.
 - (void)signInWithSupervisedAccount {

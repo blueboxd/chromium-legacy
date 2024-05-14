@@ -19,6 +19,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -71,7 +72,7 @@ class EnsureMinHeightView : public NonAccessibleView {
   ~EnsureMinHeightView() override = default;
 
   // NonAccessibleView:
-  void Layout() override {
+  void Layout(PassKey) override {
     // Make sure our height is at least as tall as the parent, so the layout
     // manager will center us properly.
     int min_height = parent()->height();
@@ -80,7 +81,7 @@ class EnsureMinHeightView : public NonAccessibleView {
       new_size.set_height(min_height);
       SetSize(new_size);
     }
-    NonAccessibleView::Layout();
+    LayoutSuperclass<NonAccessibleView>(this);
   }
 };
 
@@ -169,7 +170,7 @@ ScrollableUsersListView::TestApi::TestApi(ScrollableUsersListView* view)
 
 ScrollableUsersListView::TestApi::~TestApi() = default;
 
-const std::vector<LoginUserView*>&
+const std::vector<raw_ptr<LoginUserView, VectorExperimental>>&
 ScrollableUsersListView::TestApi::user_views() const {
   return view_->user_views_;
 }
@@ -222,10 +223,12 @@ ScrollableUsersListView::ScrollableUsersListView(
   SetBackgroundColor(std::nullopt);
   SetDrawOverflowIndicator(false);
 
-  auto vertical_scroll = std::make_unique<RoundedScrollBar>(false);
+  auto vertical_scroll = std::make_unique<RoundedScrollBar>(
+      views::ScrollBar::Orientation::kVertical);
   vertical_scroll->SetInsets(kVerticalScrollInsets);
   SetVerticalScrollBar(std::move(vertical_scroll));
-  SetHorizontalScrollBar(std::make_unique<RoundedScrollBar>(true));
+  SetHorizontalScrollBar(std::make_unique<RoundedScrollBar>(
+      views::ScrollBar::Orientation::kHorizontal));
 
   observation_.Observe(Shell::Get()->wallpaper_controller());
 }
@@ -234,7 +237,7 @@ ScrollableUsersListView::~ScrollableUsersListView() = default;
 
 LoginUserView* ScrollableUsersListView::GetUserView(
     const AccountId& account_id) {
-  for (auto* view : user_views_) {
+  for (ash::LoginUserView* view : user_views_) {
     if (view->current_user().basic_user_info.account_id == account_id) {
       return view;
     }
@@ -252,7 +255,7 @@ void ScrollableUsersListView::UpdateUserViewHostLayoutInsets() {
                             : layout_params.insets_portrait);
 }
 
-void ScrollableUsersListView::Layout() {
+void ScrollableUsersListView::Layout(PassKey) {
   DCHECK(user_view_host_layout_);
 
   // Update clipping height.
@@ -267,7 +270,7 @@ void ScrollableUsersListView::Layout() {
   UpdateUserViewHostLayoutInsets();
 
   // Layout everything.
-  ScrollView::Layout();
+  LayoutSuperclass<ScrollView>(this);
 }
 
 void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {

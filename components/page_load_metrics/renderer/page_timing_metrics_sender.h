@@ -52,7 +52,8 @@ class PageTimingMetricsSender {
                           mojom::PageLoadTimingPtr initial_timing,
                           const PageTimingMetadataRecorder::MonotonicTiming&
                               initial_monotonic_timing,
-                          std::unique_ptr<PageResourceDataUse> initial_request);
+                          std::unique_ptr<PageResourceDataUse> initial_request,
+                          bool is_main_frame);
 
   PageTimingMetricsSender(const PageTimingMetricsSender&) = delete;
   PageTimingMetricsSender& operator=(const PageTimingMetricsSender&) = delete;
@@ -71,7 +72,8 @@ class PageTimingMetricsSender {
   void DidStartResponse(const url::SchemeHostPort& final_response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
-                        network::mojom::RequestDestination request_destination);
+                        network::mojom::RequestDestination request_destination,
+                        bool is_ad_resource);
   void DidReceiveTransferSizeUpdate(int resource_id, int received_data_length);
   void DidCompleteResponse(int resource_id,
                            const network::URLLoaderCompletionStatus& status);
@@ -89,6 +91,7 @@ class PageTimingMetricsSender {
 
   void DidObserveUserInteraction(base::TimeTicks max_event_start,
                                  base::TimeTicks max_event_end,
+                                 base::TimeTicks max_event_queued_main_thread,
                                  blink::UserInteractionType interaction_type,
                                  uint64_t interaction_offset);
   // Updates the timing information. Buffers |timing| to be sent over mojo
@@ -103,9 +106,7 @@ class PageTimingMetricsSender {
   // Updates the PageLoadMetrics::CpuTiming data and starts the send timer.
   void UpdateCpuTiming(base::TimeDelta task_time);
 
-  void UpdateResourceMetadata(int resource_id,
-                              bool is_ad_resource,
-                              bool is_main_frame_resource);
+  void UpdateResourceMetadata(int resource_id, bool is_main_frame_resource);
   void SetUpSmoothnessReporting(base::ReadOnlySharedMemoryRegion shared_memory);
   void InitiateUserInteractionTiming();
   mojom::SoftNavigationMetricsPtr GetSoftNavigationMetrics() {
@@ -132,7 +133,7 @@ class PageTimingMetricsSender {
   mojom::PageLoadTimingPtr last_timing_;
   mojom::CpuTimingPtr last_cpu_timing_;
   mojom::InputTimingPtr input_timing_delta_;
-  absl::optional<blink::SubresourceLoadMetrics> subresource_load_metrics_;
+  std::optional<blink::SubresourceLoadMetrics> subresource_load_metrics_;
 
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.

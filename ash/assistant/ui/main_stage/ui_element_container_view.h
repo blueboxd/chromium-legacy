@@ -41,11 +41,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   void OnOverflowIndicatorVisibilityChanged(bool is_visible);
 
   // AnimatedContainerView:
-  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   gfx::Size GetMinimumSize() const override;
-  void Layout() override;
+  void Layout(PassKey) override;
   void OnCommittedQueryChanged(const AssistantQuery& query) override;
 
   // views::View:
@@ -64,8 +63,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
       const AssistantUiElement* ui_element) override;
   void OnAllViewsAnimatedIn() override;
 
-  raw_ptr<views::View, ExperimentalAsh> scroll_indicator_ =
-      nullptr;  // Owned by view hierarchy.
+  raw_ptr<views::View> scroll_indicator_ = nullptr;  // Owned by view hierarchy.
 
   // Factory instance used to construct views for modeled UI elements.
   std::unique_ptr<AssistantUiElementViewFactory> view_factory_;

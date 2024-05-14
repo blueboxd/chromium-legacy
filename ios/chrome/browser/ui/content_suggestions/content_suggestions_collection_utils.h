@@ -14,6 +14,9 @@ extern const CGFloat kHintTextScale;
 // Bottom margin for the Return to Recent Tab tile.
 extern const CGFloat kReturnToRecentTabSectionBottomMargin;
 
+// The width of NTP modules, as a multiplier of the view width.
+extern const CGFloat kModuleWidth;
+
 // Returns the proper height for the doodle. `logo_is_showing` is YES if showing
 // the Google logo. `doodle_is_showing` is YES if the doodle is showing. The
 // SizeClass of the `trait_collection` of the view displaying the doodle is used
@@ -46,8 +49,6 @@ CGFloat HeightForLogoHeader(BOOL logo_is_showing,
 // Returns the bottom padding for the header. This represents the spacing
 // between the fake omnibox and the content suggestions tiles.
 CGFloat HeaderBottomPadding();
-// Creates a magnifying glass to be added to the fake omnibox.
-UIImageView* CreateMagnifyingGlassView();
 // Configure the `search_hint_label` for the fake omnibox.  `hintLabelContainer`
 // is added to the `search_tab_target` with autolayout and `search_hint_label`
 // is added to `hintLabelContainer` with autoresizing.  This is done due to the
@@ -64,12 +65,14 @@ void ConfigureLensButtonAppearance(UIButton* lens_button, BOOL use_new_badge);
 // Returns the nearest ancestor of `view` that is kind of `of_class`.
 UIView* NearestAncestor(UIView* view, Class of_class);
 
-// YES if the Magic Stack should be using a wider layout.
-BOOL ShouldShowWiderMagicStackLayer(UITraitCollection* traitCollection,
-                                    UIWindow* window);
-
 // Returns the color of the search hint label in the fakebox.
 UIColor* SearchHintLabelColor();
+
+// Returns the string ID to be used to get the title of the SetUpList.
+int SetUpListTitleStringID();
+
+// Returns the localized title to be used for the SetUpList.
+NSString* SetUpListTitleString();
 
 }  // namespace content_suggestions
 

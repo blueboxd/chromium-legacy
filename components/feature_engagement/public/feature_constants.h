@@ -29,13 +29,15 @@ BASE_DECLARE_FEATURE(kIPHDummyFeature);
 BASE_DECLARE_FEATURE(kIPHBatterySaverModeFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelRegionSearchFeature);
+BASE_DECLARE_FEATURE(kIPHComposeMenuNewBadgeFeature);
+BASE_DECLARE_FEATURE(kIPHComposeMSBBSettingsFeature);
 BASE_DECLARE_FEATURE(kIPHComposeNewBadgeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopSharedHighlightingFeature);
-BASE_DECLARE_FEATURE(kIPHDesktopTabGroupsNewGroupFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeRefreshFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopNewTabPageModulesCustomizeFeature);
-BASE_DECLARE_FEATURE(kIPHDownloadToolbarButtonFeature);
+BASE_DECLARE_FEATURE(kIPHDownloadEsbPromoFeature);
+BASE_DECLARE_FEATURE(kIPHExperimentalAIPromoFeature);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_DECLARE_FEATURE(kIPHExtensionsMenuFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsRequestAccessButtonFeature);
@@ -43,7 +45,7 @@ BASE_DECLARE_FEATURE(kIPHExtensionsRequestAccessButtonFeature);
 BASE_DECLARE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature);
 BASE_DECLARE_FEATURE(kIPHGMCCastStartStopFeature);
 BASE_DECLARE_FEATURE(kIPHGMCLocalMediaCastingFeature);
-BASE_DECLARE_FEATURE(kIPHHighEfficiencyModeFeature);
+BASE_DECLARE_FEATURE(kIPHMemorySaverModeFeature);
 BASE_DECLARE_FEATURE(kIPHLiveCaptionFeature);
 BASE_DECLARE_FEATURE(kIPHTabAudioMutingFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordsAccountStorageFeature);
@@ -145,7 +147,6 @@ BASE_DECLARE_FEATURE(kIPHKeyboardAccessoryPaymentFillingFeature);
 BASE_DECLARE_FEATURE(kIPHKeyboardAccessoryPaymentOfferFeature);
 BASE_DECLARE_FEATURE(kIPHLowUserEngagementDetectorFeature);
 BASE_DECLARE_FEATURE(kIPHMicToolbarFeature);
-BASE_DECLARE_FEATURE(kIPHNewTabPageHomeButtonFeature);
 BASE_DECLARE_FEATURE(kIPHPageInfoFeature);
 BASE_DECLARE_FEATURE(kIPHPageInfoStoreInfoFeature);
 BASE_DECLARE_FEATURE(kIPHPageZoomFeature);
@@ -158,7 +159,6 @@ BASE_DECLARE_FEATURE(kIPHReadLaterAppMenuBookmarksFeature);
 BASE_DECLARE_FEATURE(kIPHReadLaterBottomSheetFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteAppMenuFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteDefaultOnFeature);
-BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteOptInFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteExceptionsGenericFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteWindowSettingFeature);
 BASE_DECLARE_FEATURE(kIPHShoppingListMenuItemFeature);
@@ -200,6 +200,7 @@ BASE_DECLARE_FEATURE(kIPHLongPressToolbarTipFeature);
 BASE_DECLARE_FEATURE(kIPHNewIncognitoTabTipFeature);
 BASE_DECLARE_FEATURE(kIPHBadgedReadingListFeature);
 BASE_DECLARE_FEATURE(kIPHWhatsNewFeature);
+BASE_DECLARE_FEATURE(kIPHWhatsNewUpdatedFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListMessagesFeature);
 BASE_DECLARE_FEATURE(kIPHBadgedTranslateManualTriggerFeature);
 BASE_DECLARE_FEATURE(kIPHDiscoverFeedHeaderFeature);
@@ -221,15 +222,20 @@ BASE_DECLARE_FEATURE(kIPHiOSNewTabToolbarItemFeature);
 BASE_DECLARE_FEATURE(kIPHiOSTabGridToolbarItemFeature);
 BASE_DECLARE_FEATURE(kIPHiOSHistoryOnOverflowMenuFeature);
 BASE_DECLARE_FEATURE(kIPHiOSShareToolbarItemFeature);
-BASE_DECLARE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPasswordManagerWidgetFeature);
 BASE_DECLARE_FEATURE(kIPHiOSChoiceScreenFeature);
 BASE_DECLARE_FEATURE(kIPHiOSParcelTrackingFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPullToRefreshFeature);
 BASE_DECLARE_FEATURE(kIPHiOSReplaceSyncPromosWithSignInPromos);
-BASE_DECLARE_FEATURE(kIPHiOSBlueDotPromoEnhancedSafeBrowsingFeature);
-BASE_DECLARE_FEATURE(kIPHiOSInlinePromoEnhancedSafeBrowsingFeature);
+BASE_DECLARE_FEATURE(kIPHiOSTabGridSwipeRightForIncognito);
+BASE_DECLARE_FEATURE(kIPHiOSDockingPromoFeature);
+BASE_DECLARE_FEATURE(kIPHiOSDockingPromoRemindMeLaterFeature);
+BASE_DECLARE_FEATURE(kIPHiOSPromoAllTabsFeature);
+BASE_DECLARE_FEATURE(kIPHiOSPromoMadeForIOSFeature);
+BASE_DECLARE_FEATURE(kIPHiOSPromoStaySafeFeature);
+BASE_DECLARE_FEATURE(kIPHiOSSwipeBackForwardFeature);
+BASE_DECLARE_FEATURE(kIPHiOSPostDefaultAbandonmentPromoFeature);
 
 // A feature flag to enable and parametrize the sliding window of time for a
 // user's eligibility to be shown a default browser promo. This is not an FET
@@ -241,6 +247,15 @@ BASE_DECLARE_FEATURE(kDefaultBrowserEligibilitySlidingWindow);
 // days.
 extern const base::FeatureParam<int>
     kDefaultBrowserEligibilitySlidingWindowParam;
+
+// The param name for the lifetime maximum occurrence for gesture in-product
+// help features.
+extern const char kGestureInProductHelpMaxOccurrence[];
+
+// The param name for the minimum number of days between two impressions for
+// each type of in-product help feature.
+extern const char kGestureInProductHelpDaysBetweenOccurrences[];
+
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

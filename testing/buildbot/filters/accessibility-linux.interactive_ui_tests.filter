@@ -5,8 +5,11 @@
 -AutofillInteractiveTest.*
 -AutofillInteractiveTestBase.*
 -AutofillInteractiveTestDynamicForm.*
+-AutofillInteractiveFormSubmissionClearFormTest.*
+-AutofillInteractiveFormSubmissionTest.*
 -AutofillInteractiveTest/AutofillInteractiveTestShadowDom.*
 -AutofillInteractiveTest_UndoAutofill.BasicUndoAutofill
+-BookmarksFocusTest.DNDManager
 -CaptionBubbleControllerViewsTest.AccessibleTextIsSometimesFocusable
 -CookieControlsInteractiveUiTest.*
 -ExtensionsToolbarContainerUITest.ClickingOnASecondActionClosesTheFirst
@@ -14,11 +17,11 @@
 -HighEfficiencyChipInteractiveTest.*
 -HighEfficiencyMemorySavingsReportingImprovementsTest.RenderVisualizationInDialog
 -IbanBubbleViewFullFormBrowserTest.*
--MigrateToProfileAddressProfileTest.SaveWithEdit
 -FreeListingCoupon/OfferNotificationBubbleViewsInteractiveUiTest.*
 -FreeListingCoupon/OfferNotificationBubbleViewsWithDiscountOnChromeHistoryClusterTest.*
 -GPayCardLinked/OfferNotificationBubbleViewsInteractiveUiTest.*
 -GPayPromoCode/OfferNotificationBubbleViewsInteractiveUiTest.*
+-MigrateToProfileAddressProfileTest.SaveWithEdit
 -OfferNotificationIconViewInteractiveTest.IconAutoCollapse
 -OfferNotificationIconViewInteractiveTest.IconCollapseAfterBubbleWidgetIsClosed
 -OfferNotificationIconViewInteractiveTest.StopCollapseTimerAfterClickingIcon
@@ -26,6 +29,7 @@
 -PopupBlockerBrowserTest.*
 -PopupBlockerFencedFrameTest.BlockPopupThroughContentSettingFencedFrame
 -SaveAddressProfileTest.SaveWithEdit
+-TabResourceUsageTabHelperTest.MemoryUsageUpdatesAfterNavigation
 -UpdateAccountAddressProfileTest.UpdateThroughEdit
 -UpdateAddressProfileTest.UpdateThroughEdit
 -WebUITabStripInteractiveTest.*

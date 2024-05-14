@@ -16,6 +16,7 @@ include_rules = [
   "+components/live_caption",
   "+components/media_message_center",
   "+components/metrics/structured/structured_events.h",
+  "+components/metrics/structured/structured_metrics_client.h",
   "+components/pref_registry",
   "+components/prefs",
   "+components/quirks",
@@ -65,6 +66,7 @@ include_rules = [
   "-chromeos",
   # //ash can use chromeos components that sit below it in the dependency tree.
   "+chromeos/ash/components/audio",
+  "+chromeos/ash/components/auth_panel",
   "+chromeos/ash/components/cryptohome",
   "+chromeos/ash/components/feature_usage",
   "+chromeos/ash/components/human_presence",
@@ -75,6 +77,7 @@ include_rules = [
   "+chromeos/ash/components/peripheral_notification",
   "+chromeos/ash/components/proximity_auth",
   "+chromeos/ash/components/system",
+  "+chromeos/components/mahi",
   "+chromeos/components/quick_answers",
   "+chromeos/components/security_token_pin",
   "+chromeos/components/sensors",

@@ -60,7 +60,7 @@ class WallpaperWidgetDelegate : public views::WidgetDelegateView {
   WallpaperWidgetDelegate& operator=(const WallpaperWidgetDelegate&) = delete;
 
   // Overrides views::View.
-  void Layout() override {
+  void Layout(PassKey) override {
     aura::Window* window = GetWidget()->GetNativeWindow();
     // Keep |this| at the bottom since there may be other windows on top of the
     // wallpaper view such as an overview mode shield.
@@ -68,7 +68,7 @@ class WallpaperWidgetDelegate : public views::WidgetDelegateView {
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window);
 
-    for (auto* child : children()) {
+    for (views::View* child : children()) {
       child->SetBounds(0, 0, display.size().width(), display.size().height());
       gfx::Transform transform;
       // Apply RTL transform explicitly becacuse Views layer code
@@ -112,10 +112,6 @@ void WallpaperView::SetLockShieldEnabled(bool enabled) {
     parent()->RemoveChildViewT(shield_view_.get());
     shield_view_ = nullptr;
   }
-}
-
-const char* WallpaperView::GetClassName() const {
-  return "WallpaperView";
 }
 
 bool WallpaperView::OnMousePressed(const ui::MouseEvent& event) {

@@ -116,7 +116,7 @@ void HelpAppZeroStateResult::Open(int event_flags) {
 HelpAppZeroStateProvider::HelpAppZeroStateProvider(
     Profile* profile,
     ash::AppListNotifier* notifier)
-    : profile_(profile) {
+    : SearchProvider(SearchCategory::kHelp), profile_(profile) {
   DCHECK(profile_);
 
   app_registry_cache_observer_.Observe(
@@ -135,8 +135,7 @@ void HelpAppZeroStateProvider::StartZeroState() {
   SearchProvider::Results search_results;
 
   if (ash::ReleaseNotesStorage(profile_).ShouldShowSuggestionChip()) {
-    // With productivity launcher enabled, release notes are shown in continue
-    // section.
+    // Release notes are shown in the Continue section.
     auto* color_provider = ash::ColorProvider::Get();
     // NOTE: Color provider may not be set in unit tests.
     SkColor icon_color =
@@ -199,7 +198,6 @@ void HelpAppZeroStateProvider::OnLoadIcon(apps::IconValuePtr icon_value) {
 void HelpAppZeroStateProvider::LoadIcon() {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   proxy->LoadIcon(
-      proxy->AppRegistryCache().GetAppType(web_app::kHelpAppId),
       web_app::kHelpAppId, apps::IconType::kStandard,
       ash::SharedAppListConfig::instance().suggestion_chip_icon_dimension(),
       /*allow_placeholder_icon=*/false,

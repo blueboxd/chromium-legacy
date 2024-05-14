@@ -100,9 +100,9 @@ struct CrossThreadCopier<
 };
 
 template <>
-struct CrossThreadCopier<absl::optional<mojo_base::BigBuffer>> {
+struct CrossThreadCopier<std::optional<mojo_base::BigBuffer>> {
   STATIC_ONLY(CrossThreadCopier);
-  using Type = absl::optional<mojo_base::BigBuffer>;
+  using Type = std::optional<mojo_base::BigBuffer>;
   static Type Copy(Type&& value) { return std::move(value); }
 };
 
@@ -120,13 +120,14 @@ namespace blink {
 namespace {
 
 BackgroundResourceFetchSupportStatus CanHandleRequestInternal(
-    const ResourceRequestHead& request,
-    const ResourceLoaderOptions& options) {
+    const network::ResourceRequest& request,
+    const ResourceLoaderOptions& options,
+    bool is_prefech_only_document) {
   if (options.synchronous_policy == kRequestSynchronously) {
     return BackgroundResourceFetchSupportStatus::kUnsupportedSyncRequest;
   }
   // Currently, BackgroundURLLoader only supports GET requests.
-  if (request.HttpMethod() != http_names::kGET) {
+  if (request.method != net::HttpRequestHeaders::kGetMethod) {
     return BackgroundResourceFetchSupportStatus::kUnsupportedNonGetRequest;
   }
 
@@ -135,14 +136,21 @@ BackgroundResourceFetchSupportStatus CanHandleRequestInternal(
   //   "chrome-extension://" urls. But ChildURLLoaderFactoryBundle::Clone()
   //   can't clone `subresource_overrides_`. So BackgroundURLLoader can't handle
   //   requests from the PDF plugin.
-  if (!request.Url().ProtocolIsInHTTPFamily()) {
+  if (!request.url.SchemeIsHTTPOrHTTPS()) {
     return BackgroundResourceFetchSupportStatus::kUnsupportedNonHttpUrlRequest;
   }
 
   // Don't support keepalive request which must be handled aligning with the
   // page lifecycle states. It is difficult to handle in the background thread.
-  if (request.GetKeepalive()) {
+  if (request.keepalive) {
     return BackgroundResourceFetchSupportStatus::kUnsupportedKeepAliveRequest;
+  }
+
+  // Currently prerender::NoStatePrefetchHelper doesn't work on the background
+  // thread.
+  if (is_prefech_only_document) {
+    return BackgroundResourceFetchSupportStatus::
+        kUnsupportedPrefetchOnlyDocument;
   }
 
   // TODO(crbug.com/1379780): Determine the range of supported requests.
@@ -157,22 +165,18 @@ class BackgroundURLLoader::Context
   Context(scoped_refptr<WebBackgroundResourceFetchAssets>
               background_resource_fetch_context,
           const Vector<String>& cors_exempt_header_list,
-          scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
           scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
           BackForwardCacheLoaderHelper* back_forward_cache_loader_helper,
-          Vector<std::unique_ptr<URLLoaderThrottle>> throttles,
           scoped_refptr<BackgroundCodeCacheHost> background_code_cache_host)
       : background_resource_fetch_context_(
             std::move(background_resource_fetch_context)),
         cors_exempt_header_list_(cors_exempt_header_list),
-        freezable_task_runner_(std::move(freezable_task_runner)),
         unfreezable_task_runner_(std::move(unfreezable_task_runner)),
         background_task_runner_(
             background_resource_fetch_context_->GetTaskRunner()),
         back_forward_cache_loader_helper_(
             std::make_unique<WeakPersistent<BackForwardCacheLoaderHelper>>(
                 back_forward_cache_loader_helper)),
-        throttles_(std::move(throttles)),
         background_code_cache_host_(std::move(background_code_cache_host)) {
     DETACH_FROM_SEQUENCE(background_sequence_checker_);
   }
@@ -211,7 +215,7 @@ class BackgroundURLLoader::Context
                                             scoped_refptr(this), mode));
 
     if (freeze_mode_ == LoaderFreezeMode::kNone) {
-      PostCrossThreadTask(*freezable_task_runner_, FROM_HERE,
+      PostCrossThreadTask(*unfreezable_task_runner_, FROM_HERE,
                           CrossThreadBindOnce(&Context::RunTasksOnMainThread,
                                               scoped_refptr(this)));
     }
@@ -239,20 +243,13 @@ class BackgroundURLLoader::Context
     has_devtools_request_id_ = request->devtools_request_id.has_value();
     client_ = client;
 
-    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
-    throttles.reserve(throttles_.size());
-    for (auto& throttle : throttles_) {
-      throttle->DetachFromCurrentSequence();
-      throttles.push_back(std::move(throttle));
-    }
-
     PostCrossThreadTask(
         *background_task_runner_, FROM_HERE,
         CrossThreadBindOnce(
             &Context::StartOnBackground, scoped_refptr(this),
             std::move(background_resource_fetch_context_), std::move(request),
             top_frame_origin ? top_frame_origin->ToUrlOrigin() : url::Origin(),
-            no_mime_sniffing, cors_exempt_header_list_, std::move(throttles),
+            no_mime_sniffing, cors_exempt_header_list_,
             std::move(resource_load_info_notifier_wrapper),
             should_use_code_cache_host));
   }
@@ -288,7 +285,7 @@ class BackgroundURLLoader::Context
     void OnReceivedResponse(
         network::mojom::URLResponseHeadPtr head,
         mojo::ScopedDataPipeConsumerHandle body,
-        absl::optional<mojo_base::BigBuffer> cached_metadata) override {
+        std::optional<mojo_base::BigBuffer> cached_metadata) override {
       context_->PostTaskToMainThread(CrossThreadBindOnce(
           &Context::OnReceivedResponse, context_, std::move(head),
           std::move(body), std::move(cached_metadata)));
@@ -314,7 +311,6 @@ class BackgroundURLLoader::Context
       const url::Origin& top_frame_origin,
       bool no_mime_sniffing,
       const Vector<String>& cors_exempt_header_list,
-      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       std::unique_ptr<ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
       bool should_use_code_cache_host) {
@@ -323,6 +319,20 @@ class BackgroundURLLoader::Context
       // This happens when the request was canceled (eg: window.stop())
       // quickly after starting the request.
       return;
+    }
+
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+    URLLoaderThrottleProvider* throttle_provider =
+        background_resource_fetch_context->GetThrottleProvider();
+    if (throttle_provider) {
+      WebVector<std::unique_ptr<blink::URLLoaderThrottle>> web_throttles =
+          throttle_provider->CreateThrottles(
+              background_resource_fetch_context->GetLocalFrameToken(),
+              *request);
+      throttles.reserve(base::checked_cast<wtf_size_t>(web_throttles.size()));
+      for (auto& throttle : web_throttles) {
+        throttles.push_back(std::move(throttle));
+      }
     }
 
     resource_request_sender_ = std::make_unique<ResourceRequestSender>();
@@ -343,7 +353,7 @@ class BackgroundURLLoader::Context
         cors_exempt_header_list, base::MakeRefCounted<RequestClient>(this),
         background_resource_fetch_context->GetLoaderFactory(),
         std::move(throttles), std::move(resource_load_info_notifier_wrapper),
-        should_use_code_cache_host
+        should_use_code_cache_host && background_code_cache_host_
             ? &background_code_cache_host_->GetCodeCacheHost(
                   background_task_runner_)
             : nullptr,
@@ -385,7 +395,7 @@ class BackgroundURLLoader::Context
       base::AutoLock locker(tasks_lock_);
       tasks_.push_back(CrossThreadBindOnce(std::move(task), request_id_));
     }
-    PostCrossThreadTask(*freezable_task_runner_, FROM_HERE,
+    PostCrossThreadTask(*unfreezable_task_runner_, FROM_HERE,
                         CrossThreadBindOnce(&Context::RunTasksOnMainThread,
                                             scoped_refptr(this)));
   }
@@ -445,7 +455,7 @@ class BackgroundURLLoader::Context
   }
   void OnReceivedResponse(network::mojom::URLResponseHeadPtr head,
                           mojo::ScopedDataPipeConsumerHandle body,
-                          absl::optional<mojo_base::BigBuffer> cached_metadata,
+                          std::optional<mojo_base::BigBuffer> cached_metadata,
                           int request_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_sequence_checker_);
     WebURLResponse response = WebURLResponse::Create(
@@ -468,8 +478,7 @@ class BackgroundURLLoader::Context
                        encoded_body_size, status.decoded_body_length);
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
-                                encoded_body_size, status.decoded_body_length,
-                                status.should_report_corb_blocking);
+                                encoded_body_size, status.decoded_body_length);
     }
   }
 
@@ -535,9 +544,6 @@ class BackgroundURLLoader::Context
       back_forward_cache_loader_helper_
           GUARDED_BY_CONTEXT(main_thread_sequence_checker_);
 
-  Vector<std::unique_ptr<URLLoaderThrottle>> throttles_
-      GUARDED_BY_CONTEXT(main_thread_sequence_checker_);
-
   scoped_refptr<BackgroundCodeCacheHost> background_code_cache_host_
       GUARDED_BY_CONTEXT(background_sequence_checker_);
 
@@ -563,10 +569,12 @@ class BackgroundURLLoader::Context
 
 // static
 bool BackgroundURLLoader::CanHandleRequest(
-    const ResourceRequestHead& request,
-    const ResourceLoaderOptions& options) {
+    const network::ResourceRequest& request,
+    const ResourceLoaderOptions& options,
+    bool is_prefech_only_document) {
   CHECK(IsMainThread());
-  auto result = CanHandleRequestInternal(request, options);
+  auto result =
+      CanHandleRequestInternal(request, options, is_prefech_only_document);
   base::UmaHistogramEnumeration(
       kBackgroundResourceFetchSupportStatusHistogramName, result);
   return result == BackgroundResourceFetchSupportStatus::kSupported;
@@ -576,18 +584,14 @@ BackgroundURLLoader::BackgroundURLLoader(
     scoped_refptr<WebBackgroundResourceFetchAssets>
         background_resource_fetch_context,
     const Vector<String>& cors_exempt_header_list,
-    scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
     BackForwardCacheLoaderHelper* back_forward_cache_loader_helper,
-    Vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     scoped_refptr<BackgroundCodeCacheHost> background_code_cache_host)
     : context_(base::MakeRefCounted<Context>(
           std::move(background_resource_fetch_context),
           cors_exempt_header_list,
-          std::move(freezable_task_runner),
           std::move(unfreezable_task_runner),
           back_forward_cache_loader_helper,
-          std::move(throttles),
           std::move(background_code_cache_host))) {
   CHECK(IsMainThread());
 }
@@ -605,7 +609,7 @@ void BackgroundURLLoader::LoadSynchronously(
     base::TimeDelta timeout_interval,
     URLLoaderClient* client,
     WebURLResponse& response,
-    absl::optional<WebURLError>& error,
+    std::optional<WebURLError>& error,
     scoped_refptr<SharedBuffer>& data,
     int64_t& encoded_data_length,
     uint64_t& encoded_body_length,

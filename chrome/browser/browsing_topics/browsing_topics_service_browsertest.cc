@@ -222,11 +222,11 @@ class BrowsingTopicsBrowserTestBase : public MixinBasedInProcessBrowserTest {
     }
   }
 
-  absl::optional<std::string> GetTopicsHeaderForRequestPath(
+  std::optional<std::string> GetTopicsHeaderForRequestPath(
       const std::string& request_path) {
     auto it = request_path_topics_map_.find(request_path);
     if (it == request_path_topics_map_.end()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     return it->second;
@@ -1158,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -1186,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, FetchWithoutTopicsFlagSet) {
     EXPECT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(),
                        content::JsReplace("fetch($1)", fetch_url)));
 
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -1202,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, FetchWithoutTopicsFlagSet) {
         web_contents()->GetPrimaryMainFrame(),
         content::JsReplace("fetch($1, {browsingTopics: false})", fetch_url)));
 
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -1228,7 +1228,7 @@ IN_PROC_BROWSER_TEST_F(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -1325,13 +1325,13 @@ IN_PROC_BROWSER_TEST_F(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
-  // Expect no topics header as the request was not eligible for topics due to
-  // user settings.
-  EXPECT_FALSE(topics_header_value);
+  // When the request is ineligible for topics due to user settings, an empty
+  // list of topics will be sent in the header.
+  EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
 
   // No observation should have been recorded in addition to the pre-existing
   // one even though the response had the `Observe-Browsing-Topics: ?1` header,
@@ -1364,7 +1364,7 @@ IN_PROC_BROWSER_TEST_F(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -1407,7 +1407,7 @@ IN_PROC_BROWSER_TEST_F(
               testing::HasSubstr("browsingTopics: Topics operations are only "
                                  "available in secure contexts."));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath("/browsing_topics/empty_page.html");
 
   // Expect no topics header as the request was not eligible for topics due to
@@ -1442,7 +1442,7 @@ IN_PROC_BROWSER_TEST_F(
         web_contents()->GetPrimaryMainFrame(),
         content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath("/browsing_topics/empty_page.html");
 
     // No topics header was sent, as the permissions policy denied it.
@@ -1465,7 +1465,7 @@ IN_PROC_BROWSER_TEST_F(
         web_contents()->GetPrimaryMainFrame(),
         content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath("/browsing_topics/empty_page.html");
 
     EXPECT_TRUE(topics_header_value);
@@ -1521,14 +1521,14 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
   {
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header.html");
     EXPECT_TRUE(topics_header_value);
     EXPECT_EQ(*topics_header_value, kExpectedHeaderValueForSiteB);
   }
   {
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header2.html");
     EXPECT_TRUE(topics_header_value);
@@ -1620,7 +1620,7 @@ IN_PROC_BROWSER_TEST_F(
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
   {
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -1628,7 +1628,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_FALSE(topics_header_value);
   }
   {
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header2.html");
     EXPECT_TRUE(topics_header_value);
@@ -1746,7 +1746,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
   EXPECT_TRUE(topics_header_value);
@@ -1794,7 +1794,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
                     "/browsing_topics/page_with_custom_attribute_iframe.html",
                     topics_attribute_replacement));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
   EXPECT_FALSE(topics_header_value);
@@ -1830,7 +1830,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
   CreateIframe(subframe_url, /*browsing_topics_attribute=*/true);
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
   EXPECT_TRUE(topics_header_value);
@@ -1874,7 +1874,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
   CreateIframe(subframe_url);
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
   EXPECT_FALSE(topics_header_value);
@@ -1882,6 +1882,47 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   // Since the request wasn't eligible for topics, no observation should have
   // been recorded in addition to the pre-existing one, even though the response
   // contains a `Observe-Browsing-Topics: ?1` header.
+  std::vector<ApiUsageContext> api_usage_contexts =
+      content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
+  EXPECT_EQ(api_usage_contexts.size(), 1u);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    BrowsingTopicsBrowserTest,
+    CrossOriginDynamicIframe_TopicsNotEligibleDueToUserSettings_HasObserveResponse) {
+  GURL main_frame_url =
+      https_server_.GetURL("b.test", "/browsing_topics/empty_page.html");
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
+
+  base::StringPairs replacement;
+  replacement.emplace_back(std::make_pair("{{STATUS}}", "200 OK"));
+  replacement.emplace_back(std::make_pair("{{OBSERVE_BROWSING_TOPICS_HEADER}}",
+                                          "Observe-Browsing-Topics: ?1"));
+  replacement.emplace_back(std::make_pair("{{REDIRECT_HEADER}}", ""));
+
+  GURL subframe_url = https_server_.GetURL(
+      "a.test", net::test_server::GetFilePathWithReplacements(
+                    "/browsing_topics/"
+                    "page_with_custom_topics_header.html",
+                    replacement));
+
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetCookieSetting(subframe_url, CONTENT_SETTING_BLOCK);
+
+  CreateIframe(subframe_url, /*browsing_topics_attribute=*/true);
+
+  std::optional<std::string> topics_header_value =
+      GetTopicsHeaderForRequestPath(
+          "/browsing_topics/page_with_custom_topics_header.html");
+
+  // When the request is ineligible for topics due to user settings, an empty
+  // list of topics will be sent in the header.
+  EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
+
+  // No observation should have been recorded in addition to the pre-existing
+  // one even though the response had the `Observe-Browsing-Topics: ?1` header,
+  // as the request was not eligible for topics.
   std::vector<ApiUsageContext> api_usage_contexts =
       content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
   EXPECT_EQ(api_usage_contexts.size(), 1u);
@@ -1911,7 +1952,7 @@ IN_PROC_BROWSER_TEST_F(
     CreateIframe(subframe_url, /*browsing_topics_attribute=*/true);
 
     // No topics header was sent, as the permissions policy denied it.
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath("/browsing_topics/empty_page.html");
     EXPECT_FALSE(topics_header_value);
   }
@@ -1922,7 +1963,7 @@ IN_PROC_BROWSER_TEST_F(
 
     CreateIframe(subframe_url, /*browsing_topics_attribute=*/true);
 
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath("/browsing_topics/empty_page.html");
     EXPECT_TRUE(topics_header_value);
   }
@@ -1969,14 +2010,14 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   CreateIframe(subframe_url, /*browsing_topics_attribute=*/true);
 
   {
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header.html");
     EXPECT_TRUE(topics_header_value);
     EXPECT_EQ(*topics_header_value, kExpectedHeaderValueForSiteB);
   }
   {
-    absl::optional<std::string> topics_header_value =
+    std::optional<std::string> topics_header_value =
         GetTopicsHeaderForRequestPath(
             "/browsing_topics/page_with_custom_topics_header2.html");
     EXPECT_TRUE(topics_header_value);
@@ -2135,7 +2176,7 @@ IN_PROC_BROWSER_TEST_F(AttestationBrowsingTopicsBrowserTest,
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -2169,11 +2210,11 @@ IN_PROC_BROWSER_TEST_F(AttestationBrowsingTopicsBrowserTest,
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
-  EXPECT_FALSE(topics_header_value);
+  EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
 
   ASSERT_TRUE(console_observer.Wait());
   EXPECT_FALSE(console_observer.messages().empty());
@@ -2204,11 +2245,11 @@ IN_PROC_BROWSER_TEST_F(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
-  EXPECT_FALSE(topics_header_value);
+  EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
 
   ASSERT_TRUE(console_observer.Wait());
   EXPECT_FALSE(console_observer.messages().empty());
@@ -2250,7 +2291,7 @@ IN_PROC_BROWSER_TEST_F(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
@@ -2310,11 +2351,11 @@ IN_PROC_BROWSER_TEST_F(AttestationBrowsingTopicsBrowserTest,
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
-  EXPECT_FALSE(topics_header_value);
+  EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
 
   // Because a.test is not attested for Topics, we should not have any new
   // observations of API usage.
@@ -2362,11 +2403,11 @@ IN_PROC_BROWSER_TEST_F(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
 
-  absl::optional<std::string> topics_header_value =
+  std::optional<std::string> topics_header_value =
       GetTopicsHeaderForRequestPath(
           "/browsing_topics/page_with_custom_topics_header.html");
 
-  EXPECT_FALSE(topics_header_value);
+  EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
 
   // Because a.test is not attested for Topics, we should not have any new
   // observations of API usage.

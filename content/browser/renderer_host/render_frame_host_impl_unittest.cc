@@ -9,11 +9,11 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/buildflag.h"
-#include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/features.h"
+#include "content/common/input/timeout_monitor.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -162,6 +162,22 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
   // fact, FindLatestNavigationRequestThatIsStillCommitting might possibly be
   // removed entirely once we swap on all document changes.
   EXPECT_EQ(initial_rfh, main_rfh());
+}
+
+// Test that navigating to an invalid URL (which creates an empty GURL) causes
+// about:blank to commit.
+TEST_F(RenderFrameHostImplTest, InvalidURL) {
+  // Start from a valid commit.
+  NavigateAndCommit(GURL("https://test.example.com"));
+
+  // Attempt to navigate to a non-empty invalid URL, which GURL treats as an
+  // empty invalid URL. Blink treats navigations to an empty URL as navigations
+  // to about:blank.
+  GURL invalid_url("invalidurl");
+  EXPECT_TRUE(invalid_url.is_empty());
+  EXPECT_FALSE(invalid_url.is_valid());
+  NavigateAndCommit(invalid_url);
+  EXPECT_EQ(GURL(url::kAboutBlankURL), main_rfh()->GetLastCommittedURL());
 }
 
 // Ensures that IsolationInfo's SiteForCookies is empty and
@@ -445,7 +461,7 @@ TEST_F(RenderFrameHostImplTest, ChildOfCredentiallessIsCredentialless) {
 
   // A credentialless document sets a nonce on its network isolation key.
   EXPECT_TRUE(child_frame->GetNetworkIsolationKey().GetNonce().has_value());
-  EXPECT_EQ(main_test_rfh()->credentialless_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->GetPage().credentialless_iframes_nonce(),
             child_frame->GetNetworkIsolationKey().GetNonce().value());
 
   // A child of a credentialless RFH is credentialless.
@@ -463,7 +479,7 @@ TEST_F(RenderFrameHostImplTest, ChildOfCredentiallessIsCredentialless) {
   // isolation key.
   EXPECT_TRUE(
       grandchild_frame->GetNetworkIsolationKey().GetNonce().has_value());
-  EXPECT_EQ(main_test_rfh()->credentialless_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->GetPage().credentialless_iframes_nonce(),
             grandchild_frame->GetNetworkIsolationKey().GetNonce().value());
 }
 
@@ -496,9 +512,6 @@ class FakeLocalFrameWithBeforeUnload : public content::FakeLocalFrame {
 // Verifies BeforeUnload() is not sent to renderer if there is no before
 // unload handler present.
 TEST_F(RenderFrameHostImplTest, BeforeUnloadNotSentToRenderer) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {}, {features::kAvoidUnnecessaryBeforeUnloadCheckSync});
   FakeLocalFrameWithBeforeUnload local_frame(contents()->GetPrimaryMainFrame());
   auto simulator = NavigationSimulatorImpl::CreateBrowserInitiated(
       GURL("https://example.com/simple.html"), contents());
@@ -706,10 +719,19 @@ TEST_F(RenderFrameHostImplTest, CalculateStorageKey) {
                 grandchild_frame->GetLastCommittedOrigin(), nullptr));
 }
 
+// TODO(https://crbug.com/1510555): Flaky on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_CalculateStorageKeyFirstPartyOverride \
+  DISABLED_CalculateStorageKeyFirstPartyOverride
+#else
+#define MAYBE_CalculateStorageKeyFirstPartyOverride \
+  CalculateStorageKeyFirstPartyOverride
+#endif
+
 // TODO(https://crbug.com/1425337): Eventually, this test will be moved to
 // chrome/browser/ so that we no longer need to override the
 // ContentBrowserClient, and we can test using real extension URLs.
-TEST_F(RenderFrameHostImplTest, CalculateStorageKeyFirstPartyOverride) {
+TEST_F(RenderFrameHostImplTest, MAYBE_CalculateStorageKeyFirstPartyOverride) {
   // Enable third-party storage partitioning.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -1194,7 +1216,7 @@ TEST_F(RenderFrameHostImplWebAuthnTest,
   EXPECT_CALL(*browser_client_,
               IsSecurityLevelAcceptableForWebAuthn(main_test_rfh(), origin))
       .WillOnce(testing::Return(false));
-  absl::optional<blink::mojom::AuthenticatorStatus> status;
+  std::optional<blink::mojom::AuthenticatorStatus> status;
   main_test_rfh()->PerformGetAssertionWebAuthSecurityChecks(
       "doofenshmirtz.evil", url::Origin::Create(url),
       /*is_payment_credential_get_assertion=*/false,
@@ -1213,7 +1235,7 @@ TEST_F(RenderFrameHostImplWebAuthnTest,
   EXPECT_CALL(*browser_client_,
               IsSecurityLevelAcceptableForWebAuthn(main_test_rfh(), origin))
       .WillOnce(testing::Return(false));
-  absl::optional<blink::mojom::AuthenticatorStatus> status;
+  std::optional<blink::mojom::AuthenticatorStatus> status;
   main_test_rfh()->PerformMakeCredentialWebAuthSecurityChecks(
       "doofenshmirtz.evil", url::Origin::Create(url),
       /*is_payment_credential_creation=*/false,
@@ -1230,7 +1252,7 @@ TEST_F(RenderFrameHostImplWebAuthnTest,
   EXPECT_CALL(*browser_client_,
               IsSecurityLevelAcceptableForWebAuthn(main_test_rfh(), origin))
       .WillOnce(testing::Return(true));
-  absl::optional<blink::mojom::AuthenticatorStatus> status;
+  std::optional<blink::mojom::AuthenticatorStatus> status;
   main_test_rfh()->PerformGetAssertionWebAuthSecurityChecks(
       "owca.org", url::Origin::Create(url),
       /*is_payment_credential_get_assertion=*/false,
@@ -1248,7 +1270,7 @@ TEST_F(RenderFrameHostImplWebAuthnTest,
   EXPECT_CALL(*browser_client_,
               IsSecurityLevelAcceptableForWebAuthn(main_test_rfh(), origin))
       .WillOnce(testing::Return(true));
-  absl::optional<blink::mojom::AuthenticatorStatus> status;
+  std::optional<blink::mojom::AuthenticatorStatus> status;
   main_test_rfh()->PerformMakeCredentialWebAuthSecurityChecks(
       "owca.org", url::Origin::Create(url),
       /*is_payment_credential_creation=*/false,
@@ -1258,73 +1280,6 @@ TEST_F(RenderFrameHostImplWebAuthnTest,
 }
 
 #endif  // BUILDFLAG(IS_ANDROID)
-
-TEST_F(RenderFrameHostImplTest, NoBeforeUnloadCheckForBrowserInitiated) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAvoidUnnecessaryBeforeUnloadCheckSync);
-  contents()->GetController().LoadURLWithParams(
-      NavigationController::LoadURLParams(
-          GURL("https://example.com/navigation.html")));
-  EXPECT_FALSE(contents()
-                   ->GetPrimaryMainFrame()
-                   ->is_waiting_for_beforeunload_completion());
-}
-
-TEST_F(RenderFrameHostImplTest,
-       NoBeforeUnloadCheckForBrowserInitiatedSyncTakesPrecedence) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kAvoidUnnecessaryBeforeUnloadCheckSync}, {});
-  contents()->GetController().LoadURLWithParams(
-      NavigationController::LoadURLParams(
-          GURL("https://example.com/navigation.html")));
-  EXPECT_FALSE(contents()
-                   ->GetPrimaryMainFrame()
-                   ->is_waiting_for_beforeunload_completion());
-}
-
-// ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync() is
-// android specific.
-#if BUILDFLAG(IS_ANDROID)
-class TestContentBrowserClientImpl : public ContentBrowserClient {
-  bool SupportsAvoidUnnecessaryBeforeUnloadCheckSync() override {
-    return false;
-  }
-};
-
-TEST_F(RenderFrameHostImplTest,
-       SupportsAvoidUnnecessaryBeforeUnloadCheckSyncReturnsFalse) {
-  TestContentBrowserClientImpl browser_client;
-  ContentBrowserClient* old_browser_client =
-      SetBrowserClientForTesting(&browser_client);
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAvoidUnnecessaryBeforeUnloadCheckSync);
-  contents()->GetController().LoadURLWithParams(
-      NavigationController::LoadURLParams(
-          GURL("https://example.com/navigation.html")));
-  // Should be waiting on beforeunload as
-  // SupportsAvoidUnnecessaryBeforeUnloadCheckSync() takes
-  // precedence.
-  EXPECT_TRUE(contents()
-                  ->GetPrimaryMainFrame()
-                  ->is_waiting_for_beforeunload_completion());
-  SetBrowserClientForTesting(old_browser_client);
-}
-#endif
-
-TEST_F(RenderFrameHostImplTest, BeforeUnloadCheckForBrowserInitiated) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kAvoidUnnecessaryBeforeUnloadCheckSync);
-  contents()->GetController().LoadURLWithParams(
-      NavigationController::LoadURLParams(
-          GURL("https://example.com/navigation.html")));
-  EXPECT_TRUE(contents()
-                  ->GetPrimaryMainFrame()
-                  ->is_waiting_for_beforeunload_completion());
-}
 
 class RenderFrameHostImplThirdPartyStorageTest
     : public RenderViewHostImplTestHarness,
@@ -1552,21 +1507,25 @@ TEST_F(RenderFrameHostImplTest, CapturedMediaStreamAddedRemoved) {
 
   // Calling OnMediaStreamAdded for the first time will cause a notification.
   EXPECT_CALL(observer, OnFrameIsCapturingMediaStreamChanged(main_rfh, true));
-  main_rfh->OnMediaStreamAdded();
+  main_rfh->OnMediaStreamAdded(
+      RenderFrameHostImpl::MediaStreamType::kCapturingMediaStream);
 
   // Calling it again will not result in a notification (verified by the
   // StrictMock).
-  main_rfh->OnMediaStreamAdded();
+  main_rfh->OnMediaStreamAdded(
+      RenderFrameHostImpl::MediaStreamType::kCapturingMediaStream);
 
   // Calling OnMediaStreamRemoved to cancel out one of the OnMediaStreamAdded
   // calls. Overall, the frame is still capturing at least one media stream so
   // there is no notifications.
-  main_rfh->OnMediaStreamRemoved();
+  main_rfh->OnMediaStreamRemoved(
+      RenderFrameHostImpl::MediaStreamType::kCapturingMediaStream);
 
   // Cancelling the first OnMediaStreamAdded call. This changes the state of the
   // frame and thus cause a notification.
   EXPECT_CALL(observer, OnFrameIsCapturingMediaStreamChanged(main_rfh, false));
-  main_rfh->OnMediaStreamRemoved();
+  main_rfh->OnMediaStreamRemoved(
+      RenderFrameHostImpl::MediaStreamType::kCapturingMediaStream);
 }
 
 }  // namespace content

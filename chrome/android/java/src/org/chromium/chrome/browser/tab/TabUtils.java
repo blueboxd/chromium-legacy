@@ -22,8 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.jni_zero.CalledByNative;
-
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
@@ -227,19 +225,6 @@ public class TabUtils {
     }
 
     /**
-     * Return whether hardware keyboard is available, including QWERTY and 12Key keyboards.
-     * @param tab The tab used to retrieve context for keyboard configuration.
-     * TODO(shuyng): Create ConfigurationChangedObserver to update the current value in C++; to
-     * avoid extra JNI request on each navigation.
-     */
-    @CalledByNative
-    public static boolean isHardwareKeyboardAvailable(Tab tab) {
-        int keyboard = tab.getContext().getResources().getConfiguration().keyboard;
-        return keyboard == Configuration.KEYBOARD_QWERTY
-                || keyboard == Configuration.KEYBOARD_12KEY;
-    }
-
-    /**
      * Return aspect ratio for grid tab card based on form factor and orientation.
      * @param context - Context of the application.
      * @param browserControlsStateProvider - For getting browser controls height.
@@ -314,7 +299,8 @@ public class TabUtils {
     public static void setBitmapAndUpdateImageMatrix(
             ImageView view, Bitmap bitmap, Size destinationSize) {
         if (BuildInfo.getInstance().isAutomotive) {
-            bitmap.setDensity(DisplayUtil.getUiDensityForAutomotive(bitmap.getDensity()));
+            bitmap.setDensity(
+                    DisplayUtil.getUiDensityForAutomotive(view.getContext(), bitmap.getDensity()));
         }
         view.setImageBitmap(bitmap);
         int newWidth = destinationSize == null ? 0 : destinationSize.getWidth();

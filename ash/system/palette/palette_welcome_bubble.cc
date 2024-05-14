@@ -37,8 +37,9 @@ constexpr int kBubbleContentLabelPreferredWidthDp = 380;
 // Controlled by PaletteWelcomeBubble and anchored to a PaletteTray.
 class PaletteWelcomeBubble::WelcomeBubbleView
     : public views::BubbleDialogDelegateView {
+  METADATA_HEADER(WelcomeBubbleView, views::BubbleDialogDelegateView)
+
  public:
-  METADATA_HEADER(WelcomeBubbleView);
   WelcomeBubbleView(views::View* anchor, views::BubbleBorder::Arrow arrow)
       : views::BubbleDialogDelegateView(anchor, arrow) {
     SetTitle(
@@ -125,8 +126,8 @@ void PaletteWelcomeBubble::ShowIfNeeded() {
 
   std::optional<user_manager::UserType> user_type =
       session_controller->GetUserType();
-  if (user_type && (*user_type == user_manager::USER_TYPE_GUEST ||
-                    *user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)) {
+  if (user_type && (*user_type == user_manager::UserType::kGuest ||
+                    *user_type == user_manager::UserType::kPublicAccount)) {
     return;
   }
 

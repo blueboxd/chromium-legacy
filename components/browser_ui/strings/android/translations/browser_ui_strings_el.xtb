@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1384959399684842514">Η λήψη διακόπηκε προσωρινά.</translation>
 <translation id="1415402041810619267">Περικομμένο URL</translation>
-<translation id="1426410128494586442">Ναι</translation>
+<translation id="1434873037477293673">κάρτα πτώσης τιμής</translation>
 <translation id="1448064542941920355">Σμίκρυνση</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> ιστότοπος}other{<ph name="SITE_COUNT" /> ιστότοποι}}</translation>
 <translation id="1510341833810331442">Οι ιστότοποι δεν επιτρέπεται να αποθηκεύουν δεδομένα στη συσκευή σας</translation>
@@ -66,6 +66,7 @@
 <translation id="2228071138934252756">Για να επιτρέψετε στην εφαρμογή <ph name="APP_NAME" /> να αποκτήσει πρόσβαση στην κάμερά σας, ενεργοποιήστε επίσης την κάμερα στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="2235344399760031203">Τα cookie τρίτου μέρους αποκλείστηκαν.</translation>
 <translation id="2238944249568001759">Προτεινόμενες αναζητήσεις βάσει της τελευταίας καρτέλας σας</translation>
+<translation id="2241587408274973373">Κάρτες σελίδας Νέα καρτέλα</translation>
 <translation id="2241634353105152135">Μόνο μία φορά</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Κατάργηση</translation>
 <translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 ιστότοπος έχει αποκλειστεί}other{# ιστότοποι έχουν αποκλειστεί}}</translation>
@@ -119,8 +120,8 @@
 <translation id="2968755619301702150">Πρόγρ. προβολής πιστοποιητικού</translation>
 <translation id="2979365474350987274">Τα cookie τρίτου μέρους περιορίζονται</translation>
 <translation id="3008272652534848354">Επαναφορά αδειών</translation>
-<translation id="3013291976881901233">Συσκευές MIDI</translation>
 <translation id="301521992641321250">Αποκλείστηκε αυτόματα</translation>
+<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Να επιτρέπεται η σύνδεση τρίτου μέρους για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Λήγει αύριο}other{Λήγει σε # ημέρες}}</translation>
 <translation id="310297983047869047">Προηγούμενη διαφάνεια</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">Όταν είναι ενεργοποιημένη αυτή η επιλογή, οι ιστότοποι μπορούν να ζητήσουν να χρησιμοποιήσουν την κάμερά σας. Όταν είναι απενεργοποιημένη αυτή η επιλογή, οι ιστότοποι δεν μπορούν να χρησιμοποιήσουν την κάμερά σας.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Το Chrome θα αποκλείσει ξανά τα cookie αύριο}other{# ημέρες έως ότου το Chrome αποκλείσει ξανά τα cookie}}</translation>
 <translation id="3521663503435878242">Ιστότοποι του τομέα <ph name="DOMAIN" /></translation>
+<translation id="3536227077203206203">Επιτράπηκε για αυτήν τη φορά</translation>
 <translation id="3538390592868664640">Αποκλείστε ιστοτόπους από τη δημιουργία ενός τρισδιάστατου χάρτη του περιβάλλοντα χώρου σας ή την παρακολούθηση της θέσης της κάμερας.</translation>
 <translation id="3544058026430919413">Μια εταιρεία μπορεί να ορίσει μια ομάδα ιστοτόπων που μπορούν να χρησιμοποιούν cookie για την κοινοποίηση της δραστηριότητάς σας στην ομάδα. Αυτή η επιλογή είναι απενεργοποιημένη στην Ανώνυμη περιήγηση.</translation>
 <translation id="3551268116566418498">Έξοδος από ανώνυμη περιήγηση;</translation>
@@ -186,9 +188,11 @@
 <translation id="4149994727733219643">Απλοποιημένη προβολή για ιστοσελίδες</translation>
 <translation id="4151930093518524179">Προεπιλεγμένη εστίαση</translation>
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
+<translation id="4169019654293892025">Απόκρυψη στοιχείου <ph name="TITLE_OF_MODULE" /></translation>
 <translation id="4169549551965910670">Συνδέθηκε σε συσκευή USB</translation>
 <translation id="4194328954146351878">Να γίνεται ερώτηση πριν επιτραπεί στους ιστοτόπους να βλέπουν και να αλλάζουν πληροφορίες σε συσκευές NFC (συνιστάται)</translation>
 <translation id="4200726100658658164">Άνοιγμα ρυθμίσεων τοποθεσίας</translation>
+<translation id="4206661981211220935"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Από <ph name="FROM_DEVICE" /></translation>
 <translation id="4226663524361240545">Κατά τη λήψη ειδοποιήσεων ενδέχεται να δονείται η συσκευή</translation>
 <translation id="4259722352634471385">Αποκλείστηκε η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Επιτρέπεται</translation>
@@ -238,6 +242,7 @@
 <translation id="5099358668261120049">Αυτή η ενέργεια θα διαγράψει όλα τα δεδομένα και τα cookie που έχουν αποθηκευτεί από το <ph name="ORIGIN" /> ή από την εφαρμογή του στην Αρχική οθόνη σας.</translation>
 <translation id="5100237604440890931">Συμπτυγμένη - Κάντε κλικ για ανάπτυξη</translation>
 <translation id="5123685120097942451">Καρτέλα ανώνυμης περιήγησης</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{Πτώση τιμής στις ανοικτές καρτέλες σας}other{Πτώσεις τιμών στις ανοικτές καρτέλες σας}}</translation>
 <translation id="5186036860380548585">Η επιλογή είναι διαθέσιμη κοντά στην κορυφή της οθόνης</translation>
 <translation id="5197729504361054390">Οι επαφές που επιλέγετε θα κοινοποιηθούν στον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Τελευταία επίσκεψη σήμερα</translation>
@@ -325,6 +330,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Αποκλείστε τη χρήση της συσκευής και των δεδομένων εικονικής πραγματικότητας από ιστοτόπους.</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="6452138246455930388">Πτώση τιμής στην ανοιχτή καρτέλα, από <ph name="OLD_PRICE" /> σε <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" /></translation>
 <translation id="6500423977866688905">Όταν το παράθυρο είναι στενό, ζητήστε προβολή για κινητά</translation>
 <translation id="6527303717912515753">Κοινοποίηση</translation>
 <translation id="652937045869844725">Δοκιμάστε να επιτρέψετε τα cookie τρίτου μέρους, κάτι που σημαίνει ότι θα έχετε λιγότερη προστασία, αλλά οι λειτουργίες ιστοτόπου θα είναι πιο πιθανό να είναι διαθέσιμες</translation>
@@ -348,6 +354,7 @@
 <translation id="6790428901817661496">Αναπαραγωγή</translation>
 <translation id="6818926723028410516">Επιλέξτε στοιχεία</translation>
 <translation id="6864395892908308021">Αυτή η συσκευή δεν μπορεί να διαβάσει NFC</translation>
+<translation id="6867014948848323204">Από <ph name="FROM_DEVICE" /></translation>
 <translation id="6912998170423641340">Αποκλεισμός ιστοτόπων από ανάγνωση κειμένου και εικόνων από το πρόχειρο</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6950072572526089586">Ένας ιστότοπος που επισκέπτεστε μπορεί να αποθηκεύει πληροφορίες σχετικά με τις ενέργειές σας έτσι ώστε να λειτουργεί με τον αναμενόμενο τρόπο, για παράδειγμα, για τη διατήρηση της σύνδεσής σας σε έναν ιστότοπο ή για την αποθήκευση στοιχείων στο καλάθι αγορών σας. Συχνά οι ιστότοποι αποθηκεύουν προσωρινά αυτές τις πληροφορίες στη συσκευή σας.</translation>
@@ -360,10 +367,10 @@
 <translation id="7053983685419859001">Αποκλεισμός</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 επιλεγμένο}other{# επιλεγμένα}}</translation>
 <translation id="7087918508125750058">Επιλέχθηκαν <ph name="ITEM_COUNT" />. Οι επιλογές είναι διαθέσιμες κοντά στο επάνω μέρος της οθόνης</translation>
-<translation id="7137403271056944713">Έλεγχος συσκ. MIDI/επαναπρογρ.</translation>
 <translation id="7141896414559753902">Αποκλεισμός εμφάνισης αναδυόμενων παραθύρων και ανακατευθύνσεων σε ιστοτόπους (συνιστάται)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
+<translation id="7180865173735832675">Προσαρμογή</translation>
 <translation id="7188508872042490670">Δεδομένα ιστοτόπων στη συσκευή</translation>
 <translation id="7201549776650881587">Με αυτή την ενέργεια, θα διαγραφούν όλα τα δεδομένα και τα cookie που έχουν αποθηκευτεί από όλους τους ιστοτόπους στο <ph name="ORIGIN" /> ή από την εφαρμογή του στην Αρχική οθόνη σας.</translation>
 <translation id="7203150201908454328">Ανεπτυγμένο</translation>
@@ -397,6 +404,7 @@
 <translation id="7719367874908701697">Εστίαση σελίδας</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
+<translation id="7801888679188438140">{TILE_COUNT,plural, =1{Συνέχεια με αυτή την καρτέλα}other{Συνέχεια με αυτές τις καρτέλες}}</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7804248752222191302">Ένας ιστότοπος χρησιμοποιεί την κάμερά σας.</translation>
 <translation id="7807060072011926525">Παρέχεται από την Google</translation>

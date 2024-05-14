@@ -137,7 +137,7 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
     TestSessionControllerClient* test_session_client =
         GetSessionControllerClient();
     test_session_client->AddUserSession(
-        kTestUserEmail, user_manager::USER_TYPE_REGULAR,
+        kTestUserEmail, user_manager::UserType::kRegular,
         true /* provide_pref_service */, false /* is_new_profile */);
     test_session_client->SetSessionState(session_manager::SessionState::ACTIVE);
     test_session_client->SwitchActiveUser(
@@ -304,8 +304,7 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
   }
 
   base::HistogramTester histogram_tester_;
-  raw_ptr<TestSystemTrayClient, DanglingUntriaged | ExperimentalAsh>
-      test_system_tray_client_;
+  raw_ptr<TestSystemTrayClient, DanglingUntriaged> test_system_tray_client_;
   TestMessageCenter test_message_center_;
   std::unique_ptr<multidevice_setup::FakeMultiDeviceSetup>
       fake_multidevice_setup_;

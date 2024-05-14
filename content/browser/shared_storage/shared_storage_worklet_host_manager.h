@@ -19,7 +19,7 @@
 
 namespace content {
 
-struct FencedFrameConfig;
+class FencedFrameConfig;
 class SharedStorageDocumentServiceImpl;
 class SharedStorageWorkletHost;
 
@@ -27,6 +27,9 @@ class SharedStorageWorkletHost;
 // manager is bound to the StoragePartition.
 class CONTENT_EXPORT SharedStorageWorkletHostManager {
  public:
+  using WorkletHosts = std::map<SharedStorageWorkletHost*,
+                                std::unique_ptr<SharedStorageWorkletHost>>;
+
   SharedStorageWorkletHostManager();
   virtual ~SharedStorageWorkletHostManager();
 
@@ -64,23 +67,25 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
     virtual void OnUrnUuidGenerated(const GURL& urn_uuid) = 0;
 
     virtual void OnConfigPopulated(
-        const absl::optional<FencedFrameConfig>& config) = 0;
+        const std::optional<FencedFrameConfig>& config) = 0;
   };
 
   void OnDocumentServiceDestroyed(
       SharedStorageDocumentServiceImpl* document_service);
 
   void ExpireWorkletHostForDocumentService(
-      SharedStorageDocumentServiceImpl* document_service);
+      SharedStorageDocumentServiceImpl* document_service,
+      SharedStorageWorkletHost* worklet_host);
 
   void CreateWorkletHost(
       SharedStorageDocumentServiceImpl* document_service,
       const url::Origin& frame_origin,
       const GURL& script_source_url,
+      network::mojom::CredentialsMode credentials_mode,
       const std::vector<blink::mojom::OriginTrialFeature>&
           origin_trial_features,
       mojo::PendingAssociatedReceiver<blink::mojom::SharedStorageWorkletHost>
-          worklet_host,
+          worklet_host_receiver,
       blink::mojom::SharedStorageDocumentService::CreateWorkletCallback
           callback);
 
@@ -94,8 +99,7 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
       const std::string& owner_origin,
       const SharedStorageEventParams& params);
 
-  const std::map<SharedStorageDocumentServiceImpl*,
-                 std::unique_ptr<SharedStorageWorkletHost>>&
+  std::map<SharedStorageDocumentServiceImpl*, WorkletHosts>&
   GetAttachedWorkletHostsForTesting() {
     return attached_shared_storage_worklet_hosts_;
   }
@@ -108,7 +112,7 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
 
   void NotifyUrnUuidGenerated(const GURL& urn_uuid);
 
-  void NotifyConfigPopulated(const absl::optional<FencedFrameConfig>& config);
+  void NotifyConfigPopulated(const std::optional<FencedFrameConfig>& config);
 
  protected:
   void OnWorkletKeepAliveFinished(SharedStorageWorkletHost*);
@@ -118,6 +122,7 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
       SharedStorageDocumentServiceImpl& document_service,
       const url::Origin& frame_origin,
       const GURL& script_source_url,
+      network::mojom::CredentialsMode credentials_mode,
       const std::vector<blink::mojom::OriginTrialFeature>&
           origin_trial_features,
       mojo::PendingAssociatedReceiver<blink::mojom::SharedStorageWorkletHost>
@@ -129,18 +134,16 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
   // The hosts that are attached to the worklet's owner document. Those hosts
   // are created on demand when the `SharedStorageDocumentServiceImpl` requests
   // it. When the corresponding document is destructed (where it will call
-  // `OnDocumentServiceDestroyed`), those hosts will either be removed from this
-  // map entirely, or will be moved from this map to
+  // `OnDocumentServiceDestroyed`), its associated worklet hosts will either be
+  // destroyed, or will be moved from this map to
   // `keep_alive_shared_storage_worklet_hosts_`, depending on whether there are
   // pending operations.
-  std::map<SharedStorageDocumentServiceImpl*,
-           std::unique_ptr<SharedStorageWorkletHost>>
+  std::map<SharedStorageDocumentServiceImpl*, WorkletHosts>
       attached_shared_storage_worklet_hosts_;
 
   // The hosts that are detached from the worklet's owner document and have
   // entered keep-alive phase.
-  std::map<SharedStorageWorkletHost*, std::unique_ptr<SharedStorageWorkletHost>>
-      keep_alive_shared_storage_worklet_hosts_;
+  WorkletHosts keep_alive_shared_storage_worklet_hosts_;
 
   base::ObserverList<SharedStorageObserverInterface> observers_;
 };

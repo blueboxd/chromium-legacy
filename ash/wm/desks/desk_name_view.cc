@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
@@ -32,6 +32,8 @@ DeskNameView::DeskNameView(DeskMiniView* mini_view)
 
   set_use_default_focus_manager(mini_view_->owner_bar()->type() ==
                                 DeskBarViewBase::Type::kDeskButton);
+
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_DESKS_DESK_NAME));
 }
 
 DeskNameView::~DeskNameView() = default;
@@ -58,7 +60,7 @@ void DeskNameView::OnFocusableViewFocused() {
   mini_view_->owner_bar()->ScrollToShowViewIfNecessary(mini_view_);
 }
 
-BEGIN_METADATA(DeskNameView, DeskTextfield)
+BEGIN_METADATA(DeskNameView)
 END_METADATA
 
 }  // namespace ash

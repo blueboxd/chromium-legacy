@@ -89,8 +89,8 @@ AppListSearchView::AppListSearchView(
   // Set up scroll bars.
   scroll_view_->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
-  auto vertical_scroll =
-      std::make_unique<RoundedScrollBar>(/*horizontal=*/false);
+  auto vertical_scroll = std::make_unique<RoundedScrollBar>(
+      views::ScrollBar::Orientation::kVertical);
   vertical_scroll->SetInsets(kVerticalScrollInsets);
   scroll_view_->SetVerticalScrollBar(std::move(vertical_scroll));
 
@@ -259,7 +259,7 @@ void AppListSearchView::OnSearchResultContainerResultsChanged() {
     base::UmaHistogramBoolean("Ash.SearchResultUpdateAnimationShortened",
                               aggregate_animation_info.use_short_animations);
   }
-  Layout();
+  DeprecatedLayoutImmediately();
 
   last_search_result_count_ = result_count;
   last_result_metadata_.swap(search_result_metadata);
@@ -284,7 +284,7 @@ void AppListSearchView::VisibilityChanged(View* starting_from,
                                           bool is_visible) {
   if (!is_visible) {
     result_selection_controller_->ClearSelection();
-    for (auto* container : result_container_views_) {
+    for (ash::SearchResultContainerView* container : result_container_views_) {
       container->ResetAndHide();
     }
   }
@@ -357,7 +357,7 @@ void AppListSearchView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void AppListSearchView::OnActiveAppListModelsChanged(
     AppListModel* model,
     SearchModel* search_model) {
-  for (auto* container : result_container_views_) {
+  for (ash::SearchResultContainerView* container : result_container_views_) {
     container->SetResults(search_model->results());
   }
 }
@@ -376,7 +376,7 @@ bool AppListSearchView::OverrideKeyNavigationAboveSearchResults(
 }
 
 void AppListSearchView::UpdateForNewSearch(bool search_active) {
-  for (auto* container : result_container_views_) {
+  for (ash::SearchResultContainerView* container : result_container_views_) {
     container->SetActive(search_active);
   }
 
@@ -522,7 +522,7 @@ ui::Layer* AppListSearchView::GetPageAnimationLayer() const {
   return scroll_view_->contents()->layer();
 }
 
-BEGIN_METADATA(AppListSearchView, views::View)
+BEGIN_METADATA(AppListSearchView)
 END_METADATA
 
 }  // namespace ash

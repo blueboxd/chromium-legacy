@@ -20,7 +20,6 @@
 #include "chrome/browser/ash/arc/arc_support_host.h"
 #include "chrome/browser/ash/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/ash/arc/optin/arc_optin_preference_handler.h"
-#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/policy/core/device_policy_builder.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
@@ -44,7 +43,6 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -91,6 +89,15 @@ class TestUserMetricsServiceClient
  private:
   bool should_use_user_consent_ = false;
   bool current_user_metrics_consent_ = false;
+};
+
+class MockErrorDelegate : public ArcSupportHost::ErrorDelegate {
+ public:
+  MOCK_METHOD0(OnWindowClosed, void());
+  MOCK_METHOD0(OnRetryClicked, void());
+  MOCK_METHOD0(OnSendFeedbackClicked, void());
+  MOCK_METHOD0(OnRunNetworkTestsClicked, void());
+  MOCK_METHOD1(OnErrorPageShown, void(bool network_tests_shown));
 };
 
 }  // namespace
@@ -153,8 +160,8 @@ class ArcTermsOfServiceDefaultNegotiatorTest
   void TearDown() override {
     negotiator_.reset();
     fake_arc_support_.reset();
+    support_host_->SetErrorDelegate(nullptr);
     support_host_.reset();
-    fake_user_manager_.Reset();
     owner_key_util_->Clear();
 
     test_metrics_service_.reset();
@@ -179,10 +186,6 @@ class ArcTermsOfServiceDefaultNegotiatorTest
   ArcTermsOfServiceNegotiator* negotiator() { return negotiator_.get(); }
   TestUserMetricsServiceClient* metrics_service_client() {
     return test_metrics_service_client_.get();
-  }
-
-  ash::FakeChromeUserManager* user_manager() {
-    return fake_user_manager_.Get();
   }
 
   consent_auditor::FakeConsentAuditor* consent_auditor() {
@@ -220,11 +223,10 @@ class ArcTermsOfServiceDefaultNegotiatorTest
       test_enabled_state_provider_;
   std::unique_ptr<metrics::MetricsService> test_metrics_service_;
 
-  user_manager::TypedScopedUserManager<ash::FakeChromeUserManager>
-      fake_user_manager_{std::make_unique<ash::FakeChromeUserManager>()};
   std::unique_ptr<ArcSupportHost> support_host_;
   std::unique_ptr<FakeArcSupport> fake_arc_support_;
   std::unique_ptr<ArcTermsOfServiceDefaultNegotiator> negotiator_;
+  std::unique_ptr<MockErrorDelegate> error_delegate_;
 };
 
 class ArcTermsOfServiceDefaultNegotiatorForNonOwnerTest
@@ -241,15 +243,6 @@ class ArcTermsOfServiceDefaultNegotiatorForNonOwnerTest
     session_manager_client_.set_device_policy(device_policy_.GetBlob());
 
     ArcTermsOfServiceDefaultNegotiatorTest::SetUp();
-  }
-
-  // BrowserWithTestWindowTest:
-  TestingProfile* CreateProfile() override {
-    const std::string name = "test2@example.com";
-    const AccountId account_id(AccountId::FromUserEmail(name));
-    user_manager()->AddUser(account_id);
-    user_manager()->LoginUser(account_id);
-    return profile_manager()->CreateTestingProfile(name);
   }
 };
 
@@ -735,6 +728,9 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Cancel) {
 }
 
 TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Retry) {
+  error_delegate_ = std::make_unique<MockErrorDelegate>();
+  support_host()->SetErrorDelegate(error_delegate_.get());
+
   // Show Terms of service page.
   Status status = Status::PENDING;
   negotiator()->StartNegotiation(UpdateStatusCallback(&status));
@@ -744,6 +740,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Retry) {
   EXPECT_EQ(fake_arc_support()->ui_page(), ArcSupportHost::UIPage::TERMS);
 
   // Switch to error page.
+  EXPECT_CALL(*error_delegate_, OnErrorPageShown(true));
   support_host()->ShowError(
       ArcSupportHost::ErrorInfo(ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR),
       false /* should_show_send_feedback */,

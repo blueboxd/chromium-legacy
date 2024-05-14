@@ -54,9 +54,8 @@ void OnCookiesFetchFinished(const net::CookieList& cookies) {
         i->ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds(),
         i->LastAccessDate().ToDeltaSinceWindowsEpoch().InMicroseconds(),
         i->LastUpdateDate().ToDeltaSinceWindowsEpoch().InMicroseconds(),
-        i->IsSecure(), i->IsHttpOnly(), static_cast<int>(i->SameSite()),
-        i->Priority(), /*sameParty=*/false,
-        base::android::ConvertUTF8ToJavaString(env, pk),
+        i->SecureAttribute(), i->IsHttpOnly(), static_cast<int>(i->SameSite()),
+        i->Priority(), base::android::ConvertUTF8ToJavaString(env, pk),
         static_cast<int>(i->SourceScheme()), i->SourcePort());
     env->SetObjectArrayElement(joa.obj(), index++, java_cookie.obj());
   }
@@ -97,7 +96,6 @@ static void JNI_CookiesFetcher_RestoreCookies(
     jboolean httponly,
     jint same_site,
     jint priority,
-    jboolean same_party,
     const JavaParamRef<jstring>& partition_key,
     jint source_scheme,
     jint source_port) {

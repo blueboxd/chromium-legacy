@@ -20,6 +20,7 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "net/cert/x509_util.h"
 #include "net/cert_net/cert_net_fetcher_url_request.h"
@@ -264,6 +265,9 @@ std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
         "CertVerifyProcBuiltin",
         net::CreateCertVerifyProcBuiltin(
             std::move(cert_net_fetcher), std::move(crl_set),
+            // TODO(https://crbug.com/848277): support CT.
+            std::make_unique<net::DoNothingCTVerifier>(),
+            base::MakeRefCounted<net::DefaultCTPolicyEnforcer>(),
             CreateSystemTrustStore(impl_name, root_store_type), {}));
   }
 
@@ -502,7 +506,7 @@ int main(int argc, char** argv) {
     bssl::CertificateTrust trust = bssl::CertificateTrust::ForTrustedLeaf();
     std::string trust_str = command_line.GetSwitchValueASCII("trust-leaf-cert");
     if (!trust_str.empty()) {
-      absl::optional<bssl::CertificateTrust> parsed_trust =
+      std::optional<bssl::CertificateTrust> parsed_trust =
           bssl::CertificateTrust::FromDebugString(trust_str);
       if (!parsed_trust) {
         std::cerr << "ERROR: invalid leaf trust string " << trust_str << "\n";
@@ -519,7 +523,7 @@ int main(int argc, char** argv) {
 
   if (command_line.HasSwitch("root-trust")) {
     std::string trust_str = command_line.GetSwitchValueASCII("root-trust");
-    absl::optional<bssl::CertificateTrust> parsed_trust =
+    std::optional<bssl::CertificateTrust> parsed_trust =
         bssl::CertificateTrust::FromDebugString(trust_str);
     if (!parsed_trust) {
       std::cerr << "ERROR: invalid root trust string " << trust_str << "\n";

@@ -38,6 +38,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.readaloud.player.InteractionHandler;
 import org.chromium.chrome.browser.readaloud.player.R;
 import org.chromium.chrome.modules.readaloud.PlaybackListener;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 
 /** Unit tests for {@link PlayerCoordinator}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -187,21 +188,19 @@ public class MiniPlayerLayoutUnitTest {
 
     @Test
     public void testFadeInWithoutAnimation() {
-        View container = mLayout.findViewById(R.id.mini_player_container);
-        assertEquals(0f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(0f, mLayout.getAlpha(), /* delta= */ 0f);
 
         mLayout.enableAnimations(false);
         mLayout.changeOpacity(0f, 1f);
 
         assertNull(mLayout.getAnimatorForTesting());
-        assertEquals(1f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(1f, mLayout.getAlpha(), /* delta= */ 0f);
         verify(mMediator).onFullOpacityReached();
     }
 
     @Test
     public void testFadeInWithAnimation() {
-        View container = mLayout.findViewById(R.id.mini_player_container);
-        assertEquals(0f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(0f, mLayout.getAlpha(), /* delta= */ 0f);
 
         mLayout.enableAnimations(true);
         mLayout.changeOpacity(0f, 1f);
@@ -211,7 +210,7 @@ public class MiniPlayerLayoutUnitTest {
         assertEquals(300L, animator.getDuration());
 
         animator.end();
-        assertEquals(1f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(1f, mLayout.getAlpha(), /* delta= */ 0f);
         verify(mMediator).onFullOpacityReached();
     }
 
@@ -222,14 +221,13 @@ public class MiniPlayerLayoutUnitTest {
         mLayout.changeOpacity(0f, 1f);
 
         // Ensure we're starting with full opacity.
-        View container = mLayout.findViewById(R.id.mini_player_container);
-        assertEquals(1f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(1f, mLayout.getAlpha(), /* delta= */ 0f);
 
         // Fade out.
         mLayout.changeOpacity(1f, 0f);
 
         assertNull(mLayout.getAnimatorForTesting());
-        assertEquals(0f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(0f, mLayout.getAlpha(), /* delta= */ 0f);
         verify(mMediator).onZeroOpacityReached();
     }
 
@@ -240,8 +238,7 @@ public class MiniPlayerLayoutUnitTest {
         mLayout.changeOpacity(0f, 1f);
 
         // Ensure we're starting with full opacity.
-        View container = mLayout.findViewById(R.id.mini_player_container);
-        assertEquals(1f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(1f, mLayout.getAlpha(), /* delta= */ 0f);
 
         // Fade out.
         mLayout.enableAnimations(true);
@@ -252,7 +249,7 @@ public class MiniPlayerLayoutUnitTest {
         assertEquals(300L, animator.getDuration());
 
         animator.end();
-        assertEquals(0f, container.getAlpha(), /* delta= */ 0f);
+        assertEquals(0f, mLayout.getAlpha(), /* delta= */ 0f);
         verify(mMediator).onZeroOpacityReached();
     }
 
@@ -321,6 +318,16 @@ public class MiniPlayerLayoutUnitTest {
         TouchDelegate delegate =
                 ((View) mLayout.findViewById(R.id.close_button).getParent()).getTouchDelegate();
         assertNotNull(delegate);
+    }
+
+    @Test
+    @Config(qualifiers = "night")
+    public void testDarkModeBackgroundColor() {
+        View spyBackdrop = replaceWithSpy(R.id.backdrop);
+        mLayout.onFinishInflate();
+        int bg = ChromeColors.getSurfaceColor(mActivity, R.dimen.default_elevation_4);
+        verify(spyBackdrop).setBackgroundColor(eq(bg));
+        verify(mMediator).onBackgroundColorUpdated(eq(bg));
     }
 
     private View replaceWithSpy(int childId) {

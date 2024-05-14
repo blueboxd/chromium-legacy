@@ -8,32 +8,32 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/check.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/content_settings/core/common/features.h"
-#import "components/feature_engagement/public/event_constants.h"
-#import "components/feature_engagement/public/feature_constants.h"
-#import "components/feature_engagement/public/tracker.h"
 #import "components/handoff/pref_names_ios.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#import "components/signin/public/identity_manager/account_info.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/supervised_user/core/browser/supervised_user_preferences.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
-#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
-#import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/net/model/crurl.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_cell.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_item.h"
@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -100,13 +101,16 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 
 @interface PrivacyTableViewController () <BooleanObserver,
                                           PrefObserverDelegate,
-                                          PopoverLabelViewControllerDelegate> {
-  ChromeBrowserState* _browserState;  // weak
+                                          PopoverLabelViewControllerDelegate,
+                                          SyncObserverModelBridge> {
+  raw_ptr<ChromeBrowserState> _browserState;  // weak
 
   // Pref observer to track changes to prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
   PrefChangeRegistrar _prefChangeRegistrar;
+  // Sync Observer.
+  std::unique_ptr<SyncObserverBridge> _syncObserver;
 
   // Updatable Items.
   TableViewDetailIconItem* _handoffDetailItem;
@@ -140,10 +144,6 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 // The item related to the Incognito interstitial setting.
 @property(nonatomic, strong) TableViewSwitchItem* incognitoInterstitialItem;
 
-// YES if the safe browsing settings row is currently showing the notification
-// dot.
-@property(nonatomic, assign) BOOL showingSafeBrowsingDot;
-
 @end
 
 @implementation PrivacyTableViewController
@@ -174,6 +174,8 @@ const char kSyncSettingsURL[] = "settings://open_sync";
         prefs::kSafeBrowsingEnhanced, &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
         prefs::kBrowserLockdownModeEnabled, &_prefChangeRegistrar);
+    _syncObserver.reset(new SyncObserverBridge(
+        self, SyncServiceFactory::GetForBrowserState(_browserState)));
 
     _incognitoReauthPref = [[PrefBackedBoolean alloc]
         initWithPrefService:GetApplicationContext()->GetLocalState()
@@ -354,14 +356,28 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       SyncServiceFactory::GetInstance()->GetForBrowserState(_browserState);
 
   NSMutableArray* urls = [[NSMutableArray alloc] init];
-  // TODO(crbug.com/1462552): Remove IsSyncFeatureEnabled() usage after kSync
+  // TODO(crbug.com/40066949): Remove IsSyncFeatureEnabled() usage after kSync
   // users are migrated to kSignin in phase 3. See ConsentLevel::kSync for more
   // details.
   if (syncService->IsSyncFeatureEnabled()) {
     privacyFooterText =
         l10n_util::GetNSString(IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER);
     [urls addObject:[[CrURL alloc] initWithGURL:GURL(kSyncSettingsURL)]];
+  } else if (base::FeatureList::IsEnabled(
+                 kLinkAccountSettingsToPrivacyFooter)) {
+    if (!syncService->GetAccountInfo().IsEmpty()) {
+      // Footer for signed in users.
+      privacyFooterText = l10n_util::GetNSString(
+          IDS_IOS_PRIVACY_ACCOUNT_SETTINGS_AND_GOOGLE_SERVICES_FOOTER);
+      [urls addObject:[[CrURL alloc] initWithGURL:GURL(kSyncSettingsURL)]];
+    } else {
+      // Footer for signed out users.
+      privacyFooterText =
+          l10n_util::GetNSString(IDS_IOS_PRIVACY_SIGNED_OUT_FOOTER);
+    }
   } else {
+    // Footer for signed in or signed out users. Should be deprecated once
+    // kLinkAccountSettingsToPrivacyFooter is enabled by default.
     privacyFooterText =
         l10n_util::GetNSString(IDS_IOS_PRIVACY_GOOGLE_SERVICES_FOOTER);
   }
@@ -371,6 +387,19 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   showPrivacyFooterItem.text = privacyFooterText;
   showPrivacyFooterItem.urls = urls;
   return showPrivacyFooterItem;
+}
+
+- (void)updatePrivacyFooterItem {
+  // The user might sign out from account settings, and thus the footer should
+  // change.
+  DCHECK([self.tableViewModel
+      hasSectionForSectionIdentifier:SectionIdentifierLockdownMode]);
+  [self.tableViewModel setFooter:[self showPrivacyFooterItem]
+        forSectionWithIdentifier:SectionIdentifierLockdownMode];
+  NSUInteger sectionIndex = [self.tableViewModel
+      sectionForSectionIdentifier:SectionIdentifierLockdownMode];
+  [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+                withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (TableViewItem*)clearBrowsingDetailItem {
@@ -387,9 +416,6 @@ const char kSyncSettingsURL[] = "settings://open_sync";
                           titleId:IDS_IOS_PRIVACY_SAFE_BROWSING_TITLE
                        detailText:detailText
           accessibilityIdentifier:kSettingsPrivacySafeBrowsingCellId];
-
-  [self maybeActivateSafeBrowsingBlueDotPromo];
-
   return _safeBrowsingDetailItem;
 }
 
@@ -482,6 +508,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 
   // Remove observer bridges.
   _prefObserverBridge.reset();
+
+  // Remove sync observer.
+  _syncObserver.reset();
 
   // Clear C++ ivars.
   _browserState = nullptr;
@@ -645,6 +674,12 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   [super view:nil didTapLinkURL:[[CrURL alloc] initWithNSURL:URL]];
 }
 
+#pragma mark - SyncObserverModelBridge
+
+- (void)onSyncStateChanged {
+  [self updatePrivacyFooterItem];
+}
+
 #pragma mark - Private
 
 // Called when the user taps on the information button of the disabled Incognito
@@ -789,35 +824,6 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   }
   return l10n_util::GetNSString(
       IDS_IOS_PRIVACY_SAFE_BROWSING_NO_PROTECTION_DETAIL_TITLE);
-}
-
-// Decides whether the safe browsing blue dot promo should be active, and adds
-// the blue dot badge to the right settings row if it is.
-- (void)maybeActivateSafeBrowsingBlueDotPromo {
-  self.showingSafeBrowsingDot = NO;
-
-  if (!_browserState) {
-    return;
-  }
-
-  feature_engagement::Tracker* tracker =
-      feature_engagement::TrackerFactory::GetForBrowserState(_browserState);
-  syncer::SyncService* syncService =
-      SyncServiceFactory::GetForBrowserState(_browserState);
-  if (!tracker || !syncService) {
-    return;
-  }
-
-  if (tracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHiOSBlueDotPromoEnhancedSafeBrowsingFeature) &&
-      safe_browsing::GetSafeBrowsingState(*_browserState->GetPrefs()) ==
-          safe_browsing::SafeBrowsingState::STANDARD_PROTECTION) {
-    // Add the blue dot promo badge to the safe browsing row.
-    tracker->Dismissed(
-        feature_engagement::kIPHiOSBlueDotPromoEnhancedSafeBrowsingFeature);
-    _safeBrowsingDetailItem.badgeType = BadgeType::kNotificationDot;
-    self.showingSafeBrowsingDot = YES;
-  }
 }
 
 @end

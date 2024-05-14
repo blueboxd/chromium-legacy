@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.modaldialog;
 
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -31,7 +30,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.espresso.Espresso;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -49,10 +47,12 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -141,7 +141,7 @@ public class ChromeTabModalPresenterTest {
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mManager.destroy();
+                    mManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
                 });
     }
 
@@ -421,7 +421,8 @@ public class ChromeTabModalPresenterTest {
     @Test
     @SmallTest
     @Feature({"ModalDialog"})
-    public void testDismiss_BackPressed() throws Exception {
+    @Features.DisableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    public void testDismiss_BackPressed() {
         PropertyModel dialog1 = createDialog(mActivity, mManager, "1", null);
         PropertyModel dialog2 = createDialog(mActivity, mManager, "2", null);
 
@@ -439,7 +440,7 @@ public class ChromeTabModalPresenterTest {
         checkCurrentPresenter(mManager, ModalDialogType.TAB);
 
         // Perform a back press. The first tab modal dialog should be dismissed.
-        Espresso.pressBack();
+        pressBack();
         checkPendingSize(mManager, ModalDialogType.TAB, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(
@@ -451,7 +452,7 @@ public class ChromeTabModalPresenterTest {
         checkCurrentPresenter(mManager, ModalDialogType.TAB);
 
         // Perform a second back press. The second tab modal dialog should be dismissed.
-        Espresso.pressBack();
+        pressBack();
         checkPendingSize(mManager, ModalDialogType.APP, 0);
         checkPendingSize(mManager, ModalDialogType.TAB, 0);
         onView(withId(R.id.tab_modal_dialog_container))
@@ -462,6 +463,14 @@ public class ChromeTabModalPresenterTest {
                                         not(hasDescendant(withText("2"))))));
         ChromeModalDialogTestUtils.checkBrowserControls(mActivity, false);
         checkCurrentPresenter(mManager, null);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ModalDialog"})
+    @Features.EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    public void testDismiss_BackPressed_BackPressRefactor() {
+        testDismiss_BackPressed();
     }
 
     @Test
@@ -497,6 +506,7 @@ public class ChromeTabModalPresenterTest {
     @Test
     @SmallTest
     @Feature({"ModalDialog"})
+    @Features.DisableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
     public void testDismiss_DismissalCause_BackPressed() throws Exception {
         PropertyModel dialog1 = createDialog(mActivity, mManager, "1", mTestObserver);
         mExpectedDismissalCause = DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE;
@@ -505,10 +515,18 @@ public class ChromeTabModalPresenterTest {
 
         // Dismiss the tab modal dialog and verify dismissal cause.
         int callCount = mTestObserver.onDialogDismissedCallback.getCallCount();
-        Espresso.pressBack();
+        pressBack();
         mTestObserver.onDialogDismissedCallback.waitForCallback(callCount);
 
         mExpectedDismissalCause = null;
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ModalDialog"})
+    @Features.EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    public void testDismiss_DismissalCause_BackPressed_BackPressRefactor() throws Exception {
+        testDismiss_DismissalCause_BackPressed();
     }
 
     @Test
@@ -609,5 +627,10 @@ public class ChromeTabModalPresenterTest {
     private void ensureDialogContainerVisible() {
         final View dialogContainer = mTabModalPresenter.getDialogContainerForTest();
         onViewWaiting(allOf(is(dialogContainer), isDisplayed()));
+    }
+
+    private void pressBack() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                mActivity.getOnBackPressedDispatcher()::onBackPressed);
     }
 }

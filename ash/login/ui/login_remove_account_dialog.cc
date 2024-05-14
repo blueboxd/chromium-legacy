@@ -70,7 +70,7 @@ class TrappedFocusSearch : public views::FocusSearch {
   }
 
  private:
-  const raw_ptr<views::View, ExperimentalAsh> trapped_focus_;
+  const raw_ptr<views::View> trapped_focus_;
 };
 
 }  // namespace
@@ -114,7 +114,7 @@ class RemoveUserButton : public PillButton {
     }
   }
 
-  raw_ptr<LoginRemoveAccountDialog, ExperimentalAsh> bubble_;
+  raw_ptr<LoginRemoveAccountDialog> bubble_;
 };
 
 BEGIN_METADATA(RemoveUserButton)
@@ -207,7 +207,7 @@ LoginRemoveAccountDialog::LoginRemoveAccountDialog(
     std::u16string part1 = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_1);
     std::u16string part2 = l10n_util::GetStringFUTF16(
-        type == user_manager::UserType::USER_TYPE_CHILD
+        type == user_manager::UserType::kChild
             ? IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_2_SUPERVISED_USER
             : IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_2,
         email);
@@ -262,10 +262,6 @@ bool LoginRemoveAccountDialog::HasFocus() const {
   return remove_user_button_ && remove_user_button_->HasFocus();
 }
 
-const char* LoginRemoveAccountDialog::GetClassName() const {
-  return "LoginRemoveAccountDialog";
-}
-
 void LoginRemoveAccountDialog::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kDialog;
@@ -313,7 +309,7 @@ void LoginRemoveAccountDialog::RemoveUserButtonPressed() {
     }
     remove_user_button_->SetAlert(true);
 
-    Layout();
+    DeprecatedLayoutImmediately();
 
     // Change the node's description to force assistive technologies, like
     // ChromeVox, to report the updated description.

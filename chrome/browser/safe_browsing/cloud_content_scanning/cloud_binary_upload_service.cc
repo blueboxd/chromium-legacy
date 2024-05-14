@@ -15,6 +15,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -181,11 +182,8 @@ bool CanUseAccessToken(const BinaryUploadService::Request& request,
   }
 
   // This code being reached implies that the browser and profile are
-  // not affiliated. In that case, and only with the new relaxed affiliation
-  // logic, it's ok to attach the access token for profile requests.
-  return request.per_profile_request() &&
-         base::FeatureList::IsEnabled(
-             enterprise_connectors::kEnableRelaxedAffiliationCheck);
+  // not affiliated.
+  return request.per_profile_request();
 }
 
 }  // namespace
@@ -256,7 +254,10 @@ void CloudBinaryUploadService::MaybeUploadForDeepScanning(
     return;
   }
 
-  if (!can_upload_enterprise_data_.contains(token_and_connector)) {
+  // Validate if `token_and_connector` is authorized to upload data if this is
+  // the first time or the previous check failed.
+  if (!can_upload_enterprise_data_.contains(token_and_connector) ||
+      !can_upload_enterprise_data_[token_and_connector]) {
     // Get data from `request` before calling `IsAuthorized` since it is about
     // to move.
     GURL url = request->GetUrlWithParams();
@@ -502,7 +503,7 @@ void CloudBinaryUploadService::OnGetRequestData(Request::Id request_id,
 
   std::string metadata;
   request->SerializeToString(&metadata);
-  base::Base64Encode(metadata, &metadata);
+  metadata = base::Base64Encode(metadata);
 
   GURL url = request->GetUrlWithParams();
   if (!url.is_valid())
@@ -798,7 +799,10 @@ void CloudBinaryUploadService::IsAuthorized(
   }
 
   TokenAndConnector token_and_connector = {dm_token, connector};
-  if (!can_upload_enterprise_data_.contains(token_and_connector)) {
+  // Validate if `token_and_connector` is authorized to upload data if this is
+  // the first time or the previous check failed.
+  if (!can_upload_enterprise_data_.contains(token_and_connector) ||
+      !can_upload_enterprise_data_[token_and_connector]) {
     // Send a request to check if the browser can upload data.
     authorization_callbacks_[token_and_connector].push_back(
         std::move(callback));
@@ -815,6 +819,17 @@ void CloudBinaryUploadService::IsAuthorized(
       request->set_device_token(dm_token);
       request->set_analysis_connector(connector);
       request->set_per_profile_request(per_profile_request);
+
+#if BUILDFLAG(IS_CHROMEOS)
+      // WebProtect handles requests from ChromeOS Managed Guest Sessions
+      // differently, as it cannot rely on the GAIA ID to determine whether or
+      // not the user has the BCE license.
+      enterprise_connectors::ClientMetadata client_metadata;
+      client_metadata.mutable_profile()->set_is_chrome_os_managed_guest_session(
+          chromeos::IsManagedGuestSession());
+      request->set_client_metadata(std::move(client_metadata));
+#endif
+
       QueueForDeepScanning(std::move(request));
     }
     return;

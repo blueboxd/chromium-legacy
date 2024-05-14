@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.view.View;
 import android.widget.TextView;
 
@@ -38,7 +39,10 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
@@ -53,8 +57,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.feature_engagement.TriggerDetails;
@@ -63,6 +65,8 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
+
+import java.util.Locale;
 
 /** Tests {@link WebFeedSnackbarController}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -102,6 +106,12 @@ public final class WebFeedSnackbarControllerTest {
     public void setUp() {
         // Print logs to stdout.
         ShadowLog.stream = System.out;
+
+        // Set default locale to other country in order not to make
+        // FeedFeatures.isFeedFollowUiUpdateEnabled always return true.
+        Configuration config = new Configuration();
+        config.setLocale(new Locale("tl", "PH"));
+        LocaleUtils.setDefaultLocalesFromConfiguration(config);
 
         Profile.setLastUsedProfileForTesting(mProfile);
         MockitoAnnotations.initMocks(this);

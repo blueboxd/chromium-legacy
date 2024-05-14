@@ -191,7 +191,7 @@ void SafetyCheckHandler::PerformSafetyCheck() {
       GetStringForSafeBrowsing(safe_browsing_status_));
 
   if (!version_updater_) {
-    version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
+    version_updater_ = VersionUpdater::Create(web_ui()->GetWebContents());
   }
   DCHECK(version_updater_);
   if (!update_helper_) {
@@ -392,10 +392,6 @@ void SafetyCheckHandler::OnExtensionsCheckResult(
             GetStringForExtensions(status, Blocklisted(blocklisted),
                                    reenabled_user, reenabled_admin));
   FireWebUIListener(kExtensionsEvent, event);
-  if (status != ExtensionsStatus::kChecking) {
-    base::UmaHistogramEnumeration("Settings.SafetyCheck.ExtensionsResult",
-                                  status);
-  }
   extensions_status_ = status;
   CompleteParentIfChildrenCompleted();
 }

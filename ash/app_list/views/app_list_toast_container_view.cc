@@ -92,6 +92,7 @@ AppListToastContainerView::AppListToastContainerView(
 }
 
 AppListToastContainerView::~AppListToastContainerView() {
+  set_context_menu_controller(nullptr);
   toast_view_ = nullptr;
 }
 
@@ -184,6 +185,9 @@ void AppListToastContainerView::CreateReorderNudgeView() {
                   IDR_APP_LIST_SORT_NUDGE_IMAGE))
           .SetIconBackground(true)
           .Build());
+  if (available_width_) {
+    toast_view_->SetAvailableWidth(*available_width_);
+  }
   current_toast_ = AppListToastType::kReorderNudge;
 }
 
@@ -300,6 +304,9 @@ void AppListToastContainerView::OnTemporarySortOrderChanged(
       a11y_text_on_undo_button);
 
   toast_view_->UpdateInteriorMargins(kReorderUndoInteriorMargin);
+  if (available_width_) {
+    toast_view_->SetAvailableWidth(*available_width_);
+  }
   current_toast_ = AppListToastType::kReorderUndo;
 }
 
@@ -316,6 +323,14 @@ void AppListToastContainerView::AnnounceSortOrder(AppListSortOrder new_order) {
 void AppListToastContainerView::AnnounceUndoSort() {
   a11y_announcer_->Announce(
       l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_UNDO_SORT_DONE_SPOKEN_TEXT));
+}
+
+void AppListToastContainerView::ConfigureLayoutForAvailableWidth(
+    int available_width) {
+  available_width_ = available_width;
+  if (toast_view_) {
+    toast_view_->SetAvailableWidth(available_width);
+  }
 }
 
 views::LabelButton* AppListToastContainerView::GetToastButton() {

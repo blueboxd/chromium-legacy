@@ -558,7 +558,7 @@ void PluginVmInstallerView::OnStateUpdated() {
       download_progress_message_label_visible);
 
   DialogModelChanged();
-  GetWidget()->GetRootView()->Layout();
+  GetWidget()->GetRootView()->DeprecatedLayoutImmediately();
 
   if (state_ == State::kCreated || state_ == State::kImported ||
       state_ == State::kError) {
@@ -634,7 +634,7 @@ void PluginVmInstallerView::StartInstallation() {
     OnError(failure_reason.value());
 }
 
-BEGIN_METADATA(PluginVmInstallerView, views::BubbleDialogDelegateView)
+BEGIN_METADATA(PluginVmInstallerView)
 ADD_READONLY_PROPERTY_METADATA(std::u16string, Title)
 ADD_READONLY_PROPERTY_METADATA(std::u16string, Message)
 END_METADATA

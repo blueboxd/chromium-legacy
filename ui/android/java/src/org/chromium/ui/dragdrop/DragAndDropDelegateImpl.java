@@ -39,6 +39,7 @@ import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.MimeTypeUtils;
 import org.chromium.ui.dragdrop.AnimatedImageDragShadowBuilder.CursorOffset;
 import org.chromium.ui.dragdrop.AnimatedImageDragShadowBuilder.DragShadowSpec;
+import org.chromium.ui.dragdrop.DragDropMetricUtils.UrlIntentSource;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -266,7 +267,8 @@ public class DragAndDropDelegateImpl implements DragAndDropDelegate, DragStateTr
             case DragTargetType.LINK:
                 if (mDragAndDropBrowserDelegate != null) {
                     Intent intent =
-                            mDragAndDropBrowserDelegate.createLinkIntent(dropData.gurl.getSpec());
+                            mDragAndDropBrowserDelegate.createUrlIntent(
+                                    dropData.gurl.getSpec(), UrlIntentSource.LINK);
                     if (intent != null) {
                         return new ClipData(
                                 null,
@@ -293,18 +295,20 @@ public class DragAndDropDelegateImpl implements DragAndDropDelegate, DragStateTr
     protected int buildFlags(DropDataAndroid dropData) {
         if (dropData.hasBrowserContent()) {
             return View.DRAG_FLAG_GLOBAL | View.DRAG_FLAG_OPAQUE;
-        } else if (dropData.isPlainText() || dropData.hasLink()) {
-            return View.DRAG_FLAG_GLOBAL;
-        } else if (dropData.hasImage()) {
-            int flag = View.DRAG_FLAG_GLOBAL | View.DRAG_FLAG_GLOBAL_URI_READ;
+        }
+        int flag = 0;
+        if (dropData.isPlainText() || dropData.hasLink()) {
+            flag |= View.DRAG_FLAG_GLOBAL;
+        }
+        if (dropData.hasImage()) {
+            flag |= View.DRAG_FLAG_GLOBAL | View.DRAG_FLAG_GLOBAL_URI_READ;
             if (mDragAndDropBrowserDelegate != null
                     && mDragAndDropBrowserDelegate.getSupportAnimatedImageDragShadow()) {
                 flag |= View.DRAG_FLAG_OPAQUE;
             }
-            return flag;
-        } else {
-            return 0;
+
         }
+        return flag;
     }
 
     protected View.DragShadowBuilder createDragShadowBuilder(

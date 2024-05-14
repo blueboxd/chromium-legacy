@@ -16,6 +16,12 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 
+namespace {
+
+constexpr int kRoundedRadius = 12;
+
+}  // namespace
+
 MediaViewControllerBase::MediaViewControllerBase(
     MediaView& base_view,
     bool needs_borders,
@@ -38,8 +44,6 @@ MediaViewControllerBase::MediaViewControllerBase(
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   if (needs_borders) {
-    const int kRoundedRadius = provider->GetCornerRadiusMetric(
-        views::ShapeContextTokens::kOmniboxExpandedRadius);
     const int kBorderThickness =
         provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
@@ -69,10 +73,11 @@ MediaViewControllerBase::~MediaViewControllerBase() {
   device_selector_combobox_->SetCallback({});
 }
 
-void MediaViewControllerBase::AdjustComboboxEnabledState(bool has_devices) {
+void MediaViewControllerBase::OnDeviceListChanged(size_t device_count) {
+  bool has_devices = device_count > 0;
   live_feed_container_->SetVisible(has_devices);
   no_device_connected_label_->SetVisible(!has_devices);
-  device_selector_combobox_->SetEnabled(has_devices);
+  device_selector_combobox_->SetEnabled(device_count > 1);
   if (has_devices) {
     OnComboboxSelection();
   }

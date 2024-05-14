@@ -6,6 +6,7 @@
 
 #include "base/functional/bind.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/response_head_update_params.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -93,7 +94,7 @@ void WorkerScriptLoader::Start() {
         base::BindOnce(
             [](base::WeakPtr<WorkerScriptLoader> self,
                bool /*reset_subresource_loader_params*/,
-               const ResponseHeadUpdateParams&) {
+               ResponseHeadUpdateParams) {
               if (self) {
                 self->LoadFromNetwork();
               }
@@ -107,7 +108,7 @@ void WorkerScriptLoader::Start() {
 
 void WorkerScriptLoader::MaybeStartLoader(
     ServiceWorkerMainResourceLoaderInterceptor* interceptor,
-    scoped_refptr<network::SharedURLLoaderFactory> single_request_factory) {
+    std::optional<NavigationLoaderInterceptor::Result> interceptor_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!completed_);
   DCHECK(interceptor);
@@ -118,15 +119,14 @@ void WorkerScriptLoader::MaybeStartLoader(
     return;
   }
 
-  // Create SubresourceLoaderParams for intercepting subresource requests and
-  // populating the "controller" field in ServiceWorkerContainer. This can be
-  // null if the interceptor is not interested in this request.
   subresource_loader_params_ =
-      interceptor->MaybeCreateSubresourceLoaderParams();
+      interceptor_result
+          ? std::move(interceptor_result->subresource_loader_params)
+          : SubresourceLoaderParams();
 
-  if (single_request_factory) {
+  if (interceptor_result && interceptor_result->single_request_factory) {
     // The interceptor elected to handle the request. Use it.
-    url_loader_factory_ = std::move(single_request_factory);
+    url_loader_factory_ = std::move(interceptor_result->single_request_factory);
     url_loader_.reset();
     url_loader_factory_->CreateLoaderAndStart(
         url_loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
@@ -164,7 +164,7 @@ void WorkerScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const absl::optional<GURL>& new_url) {
+    const std::optional<GURL>& new_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
                                   "supported yet. crbug.com/845683";
@@ -231,7 +231,7 @@ void WorkerScriptLoader::OnReceiveEarlyHints(
 void WorkerScriptLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle body,
-    absl::optional<mojo_base::BigBuffer> cached_metadata) {
+    std::optional<mojo_base::BigBuffer> cached_metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   client_->OnReceiveResponse(std::move(response_head), std::move(body),
                              std::move(cached_metadata));

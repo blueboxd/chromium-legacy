@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.editors.EditorDialogView;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldItem;
 import org.chromium.components.autofill.AutofillProfile;
-import org.chromium.components.autofill.ServerFieldType;
+import org.chromium.components.autofill.FieldType;
 import org.chromium.payments.mojom.PayerErrors;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.ListModel;
@@ -57,7 +57,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class ContactEditorTest {
     private static final AutofillProfile sProfile =
             AutofillProfile.builder()
-                    .setHonorificPrefix("Mr")
                     .setFullName("John Doe")
                     .setCompanyName("Google")
                     .setStreetAddress("Lake Street 123")
@@ -145,7 +144,7 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 null,
-                ServerFieldType.NAME_FULL,
+                FieldType.NAME_FULL,
                 mActivity.getString(R.string.payments_name_field_in_contact_details));
     }
 
@@ -169,7 +168,7 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 null,
-                ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
+                FieldType.PHONE_HOME_WHOLE_NUMBER,
                 mActivity.getString(R.string.autofill_profile_editor_phone_number));
     }
 
@@ -193,7 +192,7 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 null,
-                ServerFieldType.EMAIL_ADDRESS,
+                FieldType.EMAIL_ADDRESS,
                 mActivity.getString(R.string.autofill_profile_editor_email_address));
     }
 
@@ -217,17 +216,17 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 null,
-                ServerFieldType.NAME_FULL,
+                FieldType.NAME_FULL,
                 mActivity.getString(R.string.payments_name_field_in_contact_details));
         validateTextField(
                 editorFields.get(1),
                 null,
-                ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
+                FieldType.PHONE_HOME_WHOLE_NUMBER,
                 mActivity.getString(R.string.autofill_profile_editor_phone_number));
         validateTextField(
                 editorFields.get(2),
                 null,
-                ServerFieldType.EMAIL_ADDRESS,
+                FieldType.EMAIL_ADDRESS,
                 mActivity.getString(R.string.autofill_profile_editor_email_address));
     }
 
@@ -262,7 +261,7 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 "Payer name",
-                ServerFieldType.NAME_FULL,
+                FieldType.NAME_FULL,
                 mActivity.getString(R.string.payments_name_field_in_contact_details));
     }
 
@@ -297,7 +296,7 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 "Payer phone",
-                ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
+                FieldType.PHONE_HOME_WHOLE_NUMBER,
                 mActivity.getString(R.string.autofill_profile_editor_phone_number));
     }
 
@@ -332,7 +331,7 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 "Payer email",
-                ServerFieldType.EMAIL_ADDRESS,
+                FieldType.EMAIL_ADDRESS,
                 mActivity.getString(R.string.autofill_profile_editor_email_address));
     }
 
@@ -367,17 +366,17 @@ public class ContactEditorTest {
         validateTextField(
                 editorFields.get(0),
                 "Payer name",
-                ServerFieldType.NAME_FULL,
+                FieldType.NAME_FULL,
                 mActivity.getString(R.string.payments_name_field_in_contact_details));
         validateTextField(
                 editorFields.get(1),
                 "Payer phone",
-                ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
+                FieldType.PHONE_HOME_WHOLE_NUMBER,
                 mActivity.getString(R.string.autofill_profile_editor_phone_number));
         validateTextField(
                 editorFields.get(2),
                 "Payer email",
-                ServerFieldType.EMAIL_ADDRESS,
+                FieldType.EMAIL_ADDRESS,
                 mActivity.getString(R.string.autofill_profile_editor_email_address));
     }
 

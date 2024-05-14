@@ -109,8 +109,7 @@ class HotseatWidgetTest
   virtual void SetupFeatureLists() {
     scoped_feature_list_.InitWithFeatureStates(
         {{features::kHideShelfControlsInTabletMode,
-          !navigation_buttons_shown_in_tablet_mode()},
-         {features::kShelfPalmRejectionSwipeOffset, true}});
+          !navigation_buttons_shown_in_tablet_mode()}});
   }
 
   void TearDown() override {
@@ -231,7 +230,6 @@ class StackedHotseatWidgetTest : public HotseatWidgetTest {
     scoped_feature_list_.InitWithFeatureStates(
         {{features::kHideShelfControlsInTabletMode,
           !navigation_buttons_shown_in_tablet_mode()},
-         {features::kShelfPalmRejectionSwipeOffset, true},
          {features::kShelfStackedHotseat, true}});
   }
 };
@@ -336,8 +334,7 @@ class HotseatTransitionAnimationObserver
     int aborted;
   } observer_counts_ = {0};
   std::unique_ptr<base::RunLoop> run_loop_;
-  raw_ptr<HotseatTransitionAnimator, ExperimentalAsh>
-      hotseat_transition_animator_;
+  raw_ptr<HotseatTransitionAnimator> hotseat_transition_animator_;
 };
 
 // Used to test the Hotseat, ScrollableShelf, and DenseShelf features.
@@ -1615,7 +1612,7 @@ TEST_P(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
   ShelfTestUtil::AddAppShortcut("app_id_1", TYPE_APP);
 
   TabletModeControllerTestApi().EnterTabletMode();
-  ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  ASSERT_TRUE(display::Screen::GetScreen()->InTabletMode());
   ASSERT_FALSE(WindowState::Get(window1.get())->IsMinimized());
 
   // Enter overview, hotseat is visible. Choose the point to the farthest left.

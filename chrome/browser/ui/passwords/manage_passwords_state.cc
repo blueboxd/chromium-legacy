@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
@@ -23,7 +24,8 @@ using password_manager_util::GetMatchType;
 namespace {
 
 std::vector<std::unique_ptr<PasswordForm>> DeepCopyNonPSLVector(
-    const std::vector<const PasswordForm*>& password_forms) {
+    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
+        password_forms) {
   std::vector<std::unique_ptr<PasswordForm>> result;
   result.reserve(password_forms.size());
   for (const PasswordForm* form : password_forms) {
@@ -33,11 +35,13 @@ std::vector<std::unique_ptr<PasswordForm>> DeepCopyNonPSLVector(
   return result;
 }
 
-void AppendDeepCopyVector(const std::vector<const PasswordForm*>& forms,
-                          std::vector<std::unique_ptr<PasswordForm>>* result) {
+void AppendDeepCopyVector(
+    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>& forms,
+    std::vector<std::unique_ptr<PasswordForm>>* result) {
   result->reserve(result->size() + forms.size());
-  for (auto* form : forms)
+  for (const password_manager::PasswordForm* form : forms) {
     result->push_back(std::make_unique<PasswordForm>(*form));
+  }
 }
 
 // Updates one form in |forms| that has the same unique key as |updated_form|.
@@ -89,6 +93,14 @@ void ManagePasswordsState::OnPendingPassword(
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
+void ManagePasswordsState::OnDefaultStoreChanged(
+    std::unique_ptr<PasswordFormManagerForUI> form_manager) {
+  // OnPendingPassword() sets the state to PENDING_PASSWORD_STATE, so
+  // TransitionToState() needs to be called second.
+  OnPendingPassword(std::move(form_manager));
+  TransitionToState(password_manager::ui::PASSWORD_STORE_CHANGED_BUBBLE_STATE);
+}
+
 void ManagePasswordsState::OnUpdatePassword(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager) {
   ClearData();
@@ -124,7 +136,8 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
     std::unique_ptr<PasswordFormManagerForUI> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
-  for (const auto* form : form_manager_->GetBestMatches()) {
+  for (const password_manager::PasswordForm* form :
+       form_manager_->GetBestMatches()) {
     if (GetMatchType(*form) == password_manager_util::GetLoginMatchType::kPSL)
       continue;
     local_credentials_forms_.push_back(std::make_unique<PasswordForm>(*form));
@@ -172,9 +185,11 @@ void ManagePasswordsState::OnSubmittedGeneratedPassword(
 }
 
 void ManagePasswordsState::OnPasswordAutofilled(
-    const std::vector<const PasswordForm*>& password_forms,
+    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
+        password_forms,
     url::Origin origin,
-    const std::vector<const PasswordForm*>* federated_matches) {
+    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>*
+        federated_matches) {
   DCHECK(!password_forms.empty() ||
          (federated_matches && !federated_matches->empty()));
   auto local_credentials_forms = DeepCopyNonPSLVector(password_forms);
@@ -211,7 +226,7 @@ void ManagePasswordsState::OnPasswordMovable(
   AppendDeepCopyVector(form_manager_->GetFederatedMatches(),
                        &local_credentials_forms_);
   origin_ = url::Origin::Create(form_manager_->GetURL());
-  SetState(password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE);
+  SetState(password_manager::ui::MOVE_CREDENTIAL_AFTER_LOG_IN_STATE);
 }
 
 void ManagePasswordsState::OnKeychainError() {
@@ -223,13 +238,17 @@ void ManagePasswordsState::TransitionToState(
     password_manager::ui::State state) {
   CHECK_NE(password_manager::ui::INACTIVE_STATE, state_);
   CHECK(state == password_manager::ui::MANAGE_STATE ||
+        state == password_manager::ui::PENDING_PASSWORD_STATE ||
         state == password_manager::ui::PASSWORD_UPDATED_SAFE_STATE ||
         state == password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX ||
         state ==
             password_manager::ui::BIOMETRIC_AUTHENTICATION_FOR_FILLING_STATE ||
         state ==
             password_manager::ui::BIOMETRIC_AUTHENTICATION_CONFIRMATION_STATE ||
-        state == password_manager::ui::NOTIFY_RECEIVED_SHARED_CREDENTIALS)
+        state == password_manager::ui::NOTIFY_RECEIVED_SHARED_CREDENTIALS ||
+        state ==
+            password_manager::ui::MOVE_CREDENTIAL_FROM_MANAGE_BUBBLE_STATE ||
+        state == password_manager::ui::PASSWORD_STORE_CHANGED_BUBBLE_STATE)
       << state_;
   if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     if (!credentials_callback_.is_null()) {

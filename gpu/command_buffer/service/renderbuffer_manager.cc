@@ -142,9 +142,14 @@ Renderbuffer::Renderbuffer(RenderbufferManager* manager,
 
 bool Renderbuffer::RegenerateAndBindBackingObjectIfNeeded(
     const GpuDriverBugWorkarounds& workarounds) {
+  // There are two workarounds which need this code path:
+  //   depth_stencil_renderbuffer_resize_emulation
+  //   multisample_renderbuffer_resize_emulation
   bool multisample_workaround =
       workarounds.multisample_renderbuffer_resize_emulation;
-  if (!multisample_workaround) {
+  bool depth_stencil_workaround =
+      workarounds.depth_stencil_renderbuffer_resize_emulation;
+  if (!multisample_workaround && !depth_stencil_workaround) {
     return false;
   }
 
@@ -152,7 +157,11 @@ bool Renderbuffer::RegenerateAndBindBackingObjectIfNeeded(
     return false;
   }
 
-  bool workaround_needed = (multisample_workaround && samples_ > 0);
+  bool workaround_needed = (multisample_workaround && samples_ > 0) ||
+                           (depth_stencil_workaround &&
+                            TextureManager::ExtractFormatFromStorageFormat(
+                                internal_format_) == GL_DEPTH_STENCIL);
+
   if (!workaround_needed) {
     return false;
   }

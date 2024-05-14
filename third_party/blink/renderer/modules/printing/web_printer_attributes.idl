@@ -21,6 +21,9 @@ dictionary WebPrintJobTemplateAttributes {
   unsigned long copies;
 
   WebPrintingMultipleDocumentHandling multipleDocumentHandling;
+  WebPrintingOrientationRequested orientationRequested;
+  WebPrintingResolution printerResolution;
+  WebPrintColorMode printColorMode;
   WebPrintQuality printQuality;
   WebPrintingSides sides;
 };
@@ -36,6 +39,19 @@ dictionary WebPrinterAttributes {
 
   WebPrintingMultipleDocumentHandling multipleDocumentHandlingDefault;
   sequence<WebPrintingMultipleDocumentHandling> multipleDocumentHandlingSupported;
+
+  WebPrintingOrientationRequested orientationRequestedDefault;
+  sequence<WebPrintingOrientationRequested> orientationRequestedSupported;
+
+  WebPrintingResolution printerResolutionDefault;
+  sequence<WebPrintingResolution> printerResolutionSupported;
+
+  WebPrintColorMode printColorModeDefault;
+  sequence<WebPrintColorMode> printColorModeSupported;
+
+  WebPrinterState printerState;
+  DOMString printerStateMessage;
+  sequence<WebPrinterStateReason> printerStateReasons;
 
   WebPrintQuality printQualityDefault;
   sequence<WebPrintQuality> printQualitySupported;

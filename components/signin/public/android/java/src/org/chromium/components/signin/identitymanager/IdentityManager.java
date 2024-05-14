@@ -158,8 +158,8 @@ public class IdentityManager {
     }
 
     /**
-     * Refreshes extended {@link AccountInfo} with image for the given
-     * list of {@link CoreAccountInfo} if the existing ones are stale.
+     * Refreshes extended {@link AccountInfo} with image for all accounts with a refresh token or
+     * the given list of {@link CoreAccountInfo} if the existing ones are stale.
      */
     public void refreshAccountInfoIfStale(List<CoreAccountInfo> accountInfos) {
         for (CoreAccountInfo accountInfo : accountInfos) {
@@ -199,7 +199,8 @@ public class IdentityManager {
 
         CoreAccountInfo[] getAccountsWithRefreshTokens(long nativeIdentityManager);
 
-        void refreshAccountInfoIfStale(long nativeIdentityManager, CoreAccountId coreAccountId);
+        // TODO(crbug.com/1491005): Remove the accountId parameter.
+        void refreshAccountInfoIfStale(long nativeIdentityManager, CoreAccountId accountId);
 
         boolean isClearPrimaryAccountAllowed(long nativeIdentityManager);
     }

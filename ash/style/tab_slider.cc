@@ -91,7 +91,7 @@ class TabSlider::SelectorView : public views::View {
   // Indicates if there is a movement animation.
   const bool has_animation_;
   // Now owned.
-  raw_ptr<TabSliderButton, ExperimentalAsh> button_ = nullptr;
+  raw_ptr<TabSliderButton> button_ = nullptr;
 };
 
 BEGIN_METADATA(TabSlider, SelectorView, views::View)
@@ -115,10 +115,7 @@ TabSlider::TabSlider(size_t max_tab_num, const InitParams& params)
 
   Init();
 
-  // Explicitly mark this view as ignored because
-  // `views::kViewIgnoredByLayoutKey` is not supported by `views::TableLayout`.
-  static_cast<views::TableLayout*>(GetLayoutManager())
-      ->SetChildViewIgnoredByLayout(selector_view_, /*ignored=*/true);
+  selector_view_->SetProperty(views::kViewIgnoredByLayoutKey, true);
 
   enabled_changed_subscription_ = AddEnabledChangedCallback(base::BindRepeating(
       &TabSlider::OnEnabledStateChanged, base::Unretained(this)));
@@ -141,7 +138,7 @@ void TabSlider::OnButtonSelected(TabSliderButton* button) {
   DCHECK(button->selected());
 
   // Deselect all the other buttons.
-  for (auto* b : buttons_) {
+  for (ash::TabSliderButton* b : buttons_) {
     b->SetSelected(b == button);
   }
 
@@ -149,8 +146,8 @@ void TabSlider::OnButtonSelected(TabSliderButton* button) {
   selector_view_->MoveToSelectedButton(button);
 }
 
-void TabSlider::Layout() {
-  views::View::Layout();
+void TabSlider::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
 
   // Synchronize the selector bounds with selected button's bounds.
   auto it =
@@ -213,7 +210,7 @@ void TabSlider::OnEnabledStateChanged() {
   // Propagate the enabled state to all slider buttons and the selector view.
   const bool enabled = GetEnabled();
 
-  for (auto* b : buttons_) {
+  for (ash::TabSliderButton* b : buttons_) {
     b->SetEnabled(enabled);
   }
 
@@ -221,7 +218,7 @@ void TabSlider::OnEnabledStateChanged() {
   SchedulePaint();
 }
 
-BEGIN_METADATA(TabSlider, views::View)
+BEGIN_METADATA(TabSlider)
 END_METADATA
 
 }  // namespace ash

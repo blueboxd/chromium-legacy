@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 // <if expr="_google_chrome">
 import '/nearby/nearby-share-internal-icons.m.js';
 // </if>
 
-import '/shared/settings/controls/password_prompt_dialog.js';
+import '../common/password_prompt_dialog/password_prompt_dialog.js';
 import '../settings_shared.css.js';
 import '../nearby_share_page/nearby_share_subpage.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 import '../os_settings_page/settings_card.js';
-import 'chrome://resources/cr_components/localized_link/localized_link.js';
+import 'chrome://resources/ash/common/cr_elements/localized_link/localized_link.js';
 import './multidevice_feature_toggle.js';
 import './multidevice_notification_access_setup_dialog.js';
 import './multidevice_permissions_setup_dialog.js';
@@ -25,7 +25,7 @@ import './multidevice_forget_device_dialog.js';
 
 import {NearbyShareSettingsMixin} from '/shared/nearby_share_settings_mixin.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {Visibility} from 'chrome://resources/mojo/chromeos/ash/services/nearby/public/mojom/nearby_share_settings.mojom-webui.js';
@@ -263,9 +263,7 @@ export class SettingsMultidevicePageElement extends
   }
 
   private getLabelText_(): string {
-    if (this.isRevampWayfindingEnabled_ &&
-        this.pageContentData.mode ===
-            MultiDeviceSettingsMode.HOST_SET_VERIFIED) {
+    if (this.isRevampWayfindingEnabled_) {
       return this.i18n('multideviceSetupItemHeading');
     }
 
@@ -569,12 +567,8 @@ export class SettingsMultidevicePageElement extends
     return this.pageContentData.isNearbyShareDisallowedByPolicy;
   }
 
-  private getNearbyShareDescription_(
-      state: boolean, visibility: Visibility|undefined): string|undefined {
-    if (!state) {
-      return this.i18n('nearbyShareDescriptionOff');
-    }
-
+  private getNearbyShareDescription_(visibility: Visibility|undefined): string
+      |undefined {
     if (visibility === undefined) {
       return this.i18n('nearbyShareDescriptionHidden');
     }
@@ -592,11 +586,6 @@ export class SettingsMultidevicePageElement extends
       default:
         assertNotReached();
     }
-  }
-
-  private getOnOffString_(state: boolean, onstr: string, offstr: string):
-      string {
-    return state ? onstr : offstr;
   }
 
   private showNearbyShareToggle_(isOnboardingComplete: boolean): boolean {

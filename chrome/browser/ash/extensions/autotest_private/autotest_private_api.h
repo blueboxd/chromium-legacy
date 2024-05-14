@@ -897,7 +897,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI,
   base::ScopedObservation<ui::ClipboardMonitor, ui::ClipboardObserver>
       clipboard_observation_{this};
 
-  const raw_ptr<content::BrowserContext, ExperimentalAsh> browser_context_;
+  const raw_ptr<content::BrowserContext> browser_context_;
   bool test_mode_;  // true for AutotestPrivateApiTest.AutotestPrivate test.
 };
 
@@ -1860,6 +1860,17 @@ class AutotestPrivateGetArcWakefulnessModeFunction : public ExtensionFunction {
 
   // Get return value from mojo call.
   void OnGetWakefulnessStateRespond(arc::mojom::WakefulnessMode mode);
+};
+
+class AutotestPrivateSetDeviceLanguageFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetDeviceLanguageFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setDeviceLanguage",
+                             AUTOTESTPRIVATE_SETDEVICELANGUAGE)
+
+ private:
+  ~AutotestPrivateSetDeviceLanguageFunction() override;
+  ResponseAction Run() override;
 };
 
 template <>

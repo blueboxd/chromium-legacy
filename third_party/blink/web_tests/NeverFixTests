@@ -76,6 +76,14 @@
 [ Win ] virtual/text-antialias/mac-system-ui-width.html [ Skip ]
 [ Mac10.15 ] virtual/text-antialias/mac-system-ui-width.html [ Skip ]
 
+# Tests Mac system fallback for character.
+[ Linux ] virtual/text-antialias/mac-fallback-font-for-character.html [ Skip ]
+[ Win ] virtual/text-antialias/mac-fallback-font-for-character.html [ Skip ]
+
+# Tests Mac system dot prefixed fonts matching.
+[ Linux ] inspector-protocol/layout-fonts/mac-dot-prefixed-font-matching.js [ Skip ]
+[ Win ] inspector-protocol/layout-fonts/mac-dot-prefixed-font-matching.js [ Skip ]
+
 # Tests Mac system font oblique faces.
 [ Linux ] virtual/text-antialias/mac-system-ui-slant.html [ Skip ]
 [ Win ] virtual/text-antialias/mac-system-ui-slant.html [ Skip ]
@@ -85,6 +93,9 @@
 [ Mac ] fast/forms/select/popup-with-display-none-optgroup.html [ Skip ]
 [ Mac ] fast/forms/select-popup/* [ Skip ]
 [ Mac ] dark-mode/colors/select-popup.html [ Skip ]
+
+# IOS's popup behavior is different.
+[ iOS16-simulator ] fast/forms/select-popup/* [ Skip ]
 
 # These tests are specific to Windows and Linux.
 [ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Skip ]
@@ -445,9 +456,6 @@ external/wpt/css/css-text/tab-size/tab-size-integer-004.html [ Skip ]
 
 # Undefined behavior without any implementations.
 external/wpt/css/css-text/white-space/seg-break-transformation-019.tentative.html [ Skip ]
-
-# UAX#9 L1 is not implemented yet.
-crbug.com/316409 external/wpt/css/css-text/white-space/eol-spaces-bidi-002.html [ Skip ]
 
 # Removing trailing ogham spaces not implemented.
 external/wpt/css/css-text/white-space/trailing-ogham-001.html [ Skip ]
@@ -2029,10 +2037,6 @@ external/wpt/webcodecs/full-cycle-test.https.any.html?h265_annexb [ Skip ]
 external/wpt/webcodecs/full-cycle-test.https.any.worker.html?h265_annexb [ Skip ]
 external/wpt/webcodecs/full-cycle-test.https.any.html?h265_hevc [ Skip ]
 external/wpt/webcodecs/full-cycle-test.https.any.worker.html?h265_hevc [ Skip ]
-virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/full-cycle-test.https.any.html?h265_annexb [ Skip ]
-virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/full-cycle-test.https.any.worker.html?h265_annexb [ Skip ]
-virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/full-cycle-test.https.any.html?h265_hevc [ Skip ]
-virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/full-cycle-test.https.any.worker.html?h265_hevc [ Skip ]
 
 # HEVC Webcodecs decoder is only available on macOS 11+, Android 5.0 +, and Win10+ with supported hardware.
 [ Fuchsia ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_annexb [ Skip ]
@@ -2051,22 +2055,10 @@ virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs
 [ Mac10.15 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_annexb [ Skip ]
 [ Mac10.15 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_hevc [ Skip ]
 [ Mac10.15 ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_hevc [ Skip ]
-[ Fuchsia ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_annexb [ Skip ]
-[ Fuchsia ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_annexb [ Skip ]
-[ Fuchsia ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_hevc [ Skip ]
-[ Fuchsia ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_hevc [ Skip ]
-[ Win ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_annexb [ Skip ]
-[ Win ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_annexb [ Skip ]
-[ Win ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_hevc [ Skip ]
-[ Win ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_hevc [ Skip ]
-[ Linux ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_annexb [ Skip ]
-[ Linux ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_annexb [ Skip ]
-[ Linux ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_hevc [ Skip ]
-[ Linux ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_hevc [ Skip ]
-[ Mac10.15 ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_annexb [ Skip ]
-[ Mac10.15 ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_annexb [ Skip ]
-[ Mac10.15 ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_hevc [ Skip ]
-[ Mac10.15 ] virtual/webcodecs-without-task-runner-with-custom-deleter/external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_hevc [ Skip ]
+[ Chrome ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_annexb [ Skip ]
+[ Chrome ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_annexb [ Skip ]
+[ Chrome ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.html?h265_hevc [ Skip ]
+[ Chrome ] external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h265_hevc [ Skip ]
 
 # This test is Mac specific, it checks default monospace font-family on Mac.
 crbug.com/1449469 [ Linux ] wpt_internal/css/css-fonts/default-monospace-family-mac.html [ Skip ]
@@ -2082,9 +2074,9 @@ crbug.com/1476305 external/wpt/subapps/* [ Skip ]
 crbug.com/1197087 [ Debug ] external/wpt/web-animations/interfaces/Animation/finished.html [ Skip ]
 
 # Chrome only runs nonvirtual WPT tests at the moment.
+# wpt_internal tests are all skipped for Chrome, but feature teams can choose to opt-in their directories.
 [ Chrome ] * [ Skip ]
 [ Chrome ] external/wpt/* [ Pass ]
-[ Chrome ] wpt_internal/* [ Pass ]
 
 # At the moment, no plans to run wdspec tests for anything other than Chrome on
 # Linux due to resource constraints.
@@ -2093,29 +2085,78 @@ crbug.com/1197087 [ Debug ] external/wpt/web-animations/interfaces/Animation/fin
 
 # Bluetooth tests do not work on Chrome
 [ Chrome ] external/wpt/bluetooth/* [ Skip ]
-[ Chrome ] wpt_internal/bluetooth/* [ Skip ]
 [ Chrome ] external/wpt/fledge/* [ Skip ]
-[ Chrome ] wpt_internal/import-maps/* [ Skip ]
+
+# bfcache related tests does not work on headless_shell, see crbug.com/1510549
+crbug.com/1510549 [ Chrome ] external/wpt/performance-timeline/not-restored-reasons/* [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/html/semantics/embedded-content/bfcache/* [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/html/browsers/browsing-the-web/back-forward-cache/* [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/IndexedDB/back-forward-cache-* [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/webrtc/back-forward-cache-* [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/websockets/back-forward-cache-* [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/webtransport/back-forward-cache-* [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/fs/FileSystemFileHandle-sync-access-handle-back-forward-cache.https.tentative.window.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/fs/FileSystemFileHandle-writable-file-stream-back-forward-cache.https.tentative.window.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/navigation-api/navigation-activation/activation-after-bfcache-cross-origin.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/navigation-api/navigation-activation/activation-after-bfcache.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/navigation-api/navigation-history-entry/entries-after-bfcache-in-iframe.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/navigation-api/navigation-history-entry/entries-after-bfcache.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/navigation-api/per-entry-events/dispose-after-bfcache.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/webaudio/the-audio-api/the-audiocontext-interface/suspend-with-navigation.html [ Skip ]
+crbug.com/1510549 [ Chrome ] external/wpt/webmessaging/message-channels/close-event/entangled-after-back-forward-cache-restore.https.tentative.window.html [ Skip ]
+
 # many failures in the folders below, skip for now
 crbug.com/1499775 [ Chrome ] external/wpt/html/cross-origin-opener-policy/* [ Skip ]
 crbug.com/1499775 [ Chrome ] external/wpt/attribution-reporting/* [ Skip ]
 crbug.com/1499775 [ Chrome ] external/wpt/css/css-ui/compute-kind-widget-generated/* [ Skip ]
-[ Chrome ] external/wpt/speculation-rules/prerender/* [ Skip ]
-[ Chrome ] external/wpt/speculation-rules/prerender/credentialed-prerender-not-opt-in.html [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/csp-script-src-self.html?target_hint=_self [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/csp-script-src-self.html?target_hint=_blank [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/referrer-policy-from-rules.html?2-last [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/remove-script-element.html [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=204 [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=205 [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=402 [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=500 [ Pass ]
-[ Chrome ] external/wpt/speculation-rules/prerender/response-code-successful.html?code=202 [ Pass ]
+
+# Most Prerender tests do not work on Chrome
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/* [ Skip ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/credentialed-prerender-not-opt-in.html [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/csp-script-src-self.html?target_hint=_self [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/csp-script-src-self.html?target_hint=_blank [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/referrer-policy-from-rules.html?2-last [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/remove-script-element.html [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=204 [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=205 [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=402 [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=500 [ Pass ]
+crbug.com/1509302 [ Chrome ] external/wpt/speculation-rules/prerender/response-code-successful.html?code=202 [ Pass ]
+
 crbug.com/1499775 [ Chrome ] external/wpt/notifications/getnotifications-across-processes.https.window.html [ Skip ]
 crbug.com/1499775 [ Chrome ] external/wpt/screen-orientation/lock-sandboxed-iframe.html [ Skip ]
-crbug.com/1499775 [ Chrome ] wpt_internal/webmidi/loopback-receive.https.html [ Skip ]
-crbug.com/1499775 [ Chrome ] wpt_internal/webmidi/loopback-with-timestamp.https.html [ Skip ]
-crbug.com/1499775 [ Chrome ] wpt_internal/webmidi/requestmidiaccess-upgrade.https.html [ Skip ]
+
+# get_computed_role not implemented in vendored testdriver
+crbug.com/1517744 external/wpt/dpub-aam/role/roles.html [ Skip ]
+crbug.com/1517744 external/wpt/graphics-aria/graphics-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/fragile/area-role.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/fragile/optgroup-role.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/roles-contextual.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/roles-dynamic-switch.tentative.window.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/roles-generic.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/roles.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/roles.tentative.html [ Skip ]
+crbug.com/1517744 external/wpt/html-aam/table-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/svg-aam/role/roles-generic.html [ Skip ]
+crbug.com/1517744 external/wpt/svg-aam/role/roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/abstract-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/basic.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/button-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/contextual-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/fallback-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/form-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/grid-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/invalid-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/list-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/listbox-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/menu-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/region-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/role_none_conflict_resolution.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/synonym-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/tab-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/table-roles.html [ Skip ]
+crbug.com/1517744 external/wpt/wai-aria/role/tree-roles.html [ Skip ]
 
 # Skip one flaky test
 crbug.com/1508175 [ Chrome ] external/wpt/soft-navigation-heuristics/image-lcp-before-detection.tentative.html [ Skip ]
@@ -2124,9 +2165,33 @@ crbug.com/1508175 [ Chrome ] external/wpt/soft-navigation-heuristics/image-lcp-b
 crbug.com/1500120 [ Win10.20h2 ] virtual/webnn-service-enabled/external/wpt/webnn/gpu/* [ Skip ]
 
 ######## Unload Deprecation
-# This is for tests in the "deprecate-unload" virtual suite that
-# cannot be fixed, e.g. because they are explicitly testing unload.
+# This is for tests in the "unload-allowed" virtual suite that
+# fail by default but keep passing when DeprecteUnload is disabled.
+# They will be removed when unload is removed.
 
-crbug.com/1488371 virtual/deprecate-unload/http/tests/devtools/sources/debugger/skip-pause-during-navigation.js [ Skip ]
+crbug.com/1488371 external/wpt/fetch/api/basic/keepalive.any.html [ Skip ]
+crbug.com/1488371 external/wpt/fetch/api/cors/cors-keepalive.any.html [ Skip Skip ]
+crbug.com/1488371 external/wpt/fetch/api/redirect/redirect-keepalive.any.html [ Skip ]
+crbug.com/1488371 external/wpt/fetch/metadata/unload.https.sub.html [ Skip ]
+crbug.com/1488371 external/wpt/html/browsers/the-window-object/open-close/close_unload.html [ Skip ]
+crbug.com/1488371 external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/009.html [ Skip ]
+crbug.com/1488371 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_unload_1.html [ Skip ]
+crbug.com/1488371 external/wpt/navigation-api/navigate-event/replaceState-in-unload-then-remove-iframe.html [ Skip ]
+# Also tests timing, so cannot be moved to pagehide.
+crbug.com/1488371 external/wpt/navigation-timing/nested-unload-timing.html [ Skip ]
+crbug.com/1488371 external/wpt/screen-details/getScreenDetails.tentative.https.window.html [ Skip ]
+crbug.com/1488371 http/tests/inspector-protocol/issues/deprecation-issue-unload.js [ Skip ]
+crbug.com/1488371 http/tests/navigation/targeted-navigation-in-unload-handler.html [ Skip ]
+crbug.com/1488371 http/tests/devtools/sources/debugger/skip-pause-during-navigation.js [ Skip Skip ]
+crbug.com/1488371 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/bailout-exception-vs-return-origin.sub.window.html [ Skip ]
+crbug.com/1488371 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/bailout-exception-vs-return-xml.window.html [ Skip ]
+crbug.com/1488371 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/bailout-side-effects-ignore-opens-during-unload.window.html [ Skip ]
+crbug.com/1488371 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/ignore-opens-during-unload.window.html [ Skip ]
+
+# Pagehide is not appropriate as the test checks if PiP window is functional until the very end of the page's lifecycle:
+crbug.com/1488371 external/wpt/document-picture-in-picture/clears-session-on-close.https.html [ Skip ]
+
+# Skip the test for this currently unreleased feature on Mac where it times out the most.
+crbug.com/1430215 [ Mac ] external/wpt/dom/events/scrolling/overscroll-deltas.html [ Skip ]
 
 ######## End Unload Deprecation

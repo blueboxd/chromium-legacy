@@ -58,6 +58,7 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
       bool activated,
       const gfx::Vector2d& origin_offset,
       float raster_scale,
+      aura::Window::OcclusionState occlusion_state,
       std::optional<chromeos::WindowStateType> restore_state_type)>;
   using OriginChangeCallback =
       base::RepeatingCallback<void(const gfx::Point& origin)>;
@@ -155,9 +156,11 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
 
   // Overridden from ShellSurfaceBase:
   void InitializeWindowState(ash::WindowState* window_state) override;
-  absl::optional<gfx::Rect> GetWidgetBounds() const override;
+  std::optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
   void SetUseImmersiveForFullscreen(bool value) override;
+  void OnDidProcessDisplayChanges(
+      const DisplayConfigurationChange& configuration_change) override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
@@ -216,7 +219,7 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
     void set_needs_configure() { needs_configure_ = true; }
 
    private:
-    const raw_ptr<ShellSurface, ExperimentalAsh> shell_surface_;
+    const raw_ptr<ShellSurface> shell_surface_;
     const bool force_configure_;
     bool needs_configure_ = false;
   };
@@ -244,6 +247,11 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   void UpdateLayerSurfaceRange(ui::Layer* layer,
                                const viz::LocalSurfaceId& current_lsi);
 
+  // Called when the widget window's position in screen coordinates may have
+  // changed.
+  // TODO(tluk): Screen position changes should be merged into Configure().
+  void OnWidgetScreenPositionChanged();
+
   std::unique_ptr<ash::ScopedAnimationDisabler> animations_disabler_;
 
   // Temporarily stores the `host_window()`'s layer when it's recreated for
@@ -259,7 +267,7 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   RotateFocusCallback rotate_focus_callback_;
   OverviewChangeCallback overview_change_callback_;
 
-  raw_ptr<ScopedConfigure, ExperimentalAsh> scoped_configure_ = nullptr;
+  raw_ptr<ScopedConfigure> scoped_configure_ = nullptr;
   base::circular_deque<std::unique_ptr<Config>> pending_configs_;
   // Stores the config which is acked but not yet committed. This will keep the
   // compositor locked until reset after Commit() is called.
@@ -283,6 +291,8 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   bool notify_bounds_changes_ = true;
   bool window_state_is_changing_ = false;
   float pending_raster_scale_ = 1.0;
+  aura::Window::OcclusionState last_occlusion_state_ =
+      aura::Window::OcclusionState::UNKNOWN;
 
   struct InflightFocusRotateRequest {
     uint32_t serial;

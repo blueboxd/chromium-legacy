@@ -87,7 +87,8 @@ class DirectionFlippingScope {
   ~DirectionFlippingScope();
 
  private:
-  bool needs_flipping_;
+  bool needs_horizontal_flipping_;
+  bool needs_vertical_flipping_;
   const PaintInfo& paint_info_;
 };
 
@@ -95,18 +96,30 @@ DirectionFlippingScope::DirectionFlippingScope(
     const LayoutObject& layout_object,
     const PaintInfo& paint_info,
     const gfx::Rect& rect)
-    : needs_flipping_(!layout_object.StyleRef().IsLeftToRightDirection()),
+    : needs_horizontal_flipping_(
+          IsHorizontalWritingMode(layout_object.StyleRef().GetWritingMode()) &&
+          !layout_object.StyleRef().IsLeftToRightDirection()),
+      needs_vertical_flipping_(
+          !IsHorizontalWritingMode(layout_object.StyleRef().GetWritingMode()) &&
+          RuntimeEnabledFeatures::
+              FormControlsVerticalWritingModeDirectionSupportEnabled() &&
+          layout_object.StyleRef().IsLeftToRightDirection()),
       paint_info_(paint_info) {
-  if (!needs_flipping_)
-    return;
-  paint_info_.context.Save();
-  paint_info_.context.Translate(2 * rect.x() + rect.width(), 0);
-  paint_info_.context.Scale(-1, 1);
+  if (needs_horizontal_flipping_) {
+    paint_info_.context.Save();
+    paint_info_.context.Translate(2 * rect.x() + rect.width(), 0);
+    paint_info_.context.Scale(-1, 1);
+  } else if (needs_vertical_flipping_) {
+    paint_info_.context.Save();
+    paint_info_.context.Translate(0, 2 * rect.y() + rect.height());
+    paint_info_.context.Scale(1, -1);
+  }
 }
 
 DirectionFlippingScope::~DirectionFlippingScope() {
-  if (!needs_flipping_)
+  if (!needs_horizontal_flipping_ && !needs_vertical_flipping_) {
     return;
+  }
   paint_info_.context.Restore();
 }
 
@@ -177,9 +190,9 @@ gfx::Rect ConvertToPaintingRect(const LayoutObject& input_layout_object,
   return ToPixelSnappedRect(part_rect);
 }
 
-absl::optional<SkColor> GetAccentColor(const ComputedStyle& style,
-                                       const Document& document) {
-  absl::optional<Color> css_accent_color = style.AccentColorResolved();
+std::optional<SkColor> GetAccentColor(const ComputedStyle& style,
+                                      const Document& document) {
+  std::optional<Color> css_accent_color = style.AccentColorResolved();
   if (css_accent_color)
     return css_accent_color->Rgb();
 
@@ -194,7 +207,7 @@ absl::optional<SkColor> GetAccentColor(const ComputedStyle& style,
     }
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 }  // namespace
@@ -438,12 +451,14 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
                                            const gfx::Rect& rect,
                                            const ComputedStyle& style) {
   WebThemeEngine::SliderExtraParams slider;
-  slider.vertical = (RuntimeEnabledFeatures::
-                         FormControlsVerticalWritingModeSupportEnabled() &&
-                     !IsHorizontalWritingMode(style.GetWritingMode())) ||
-                    (RuntimeEnabledFeatures::
-                         NonStandardAppearanceValueSliderVerticalEnabled() &&
-                     style.EffectiveAppearance() == kSliderVerticalPart);
+  bool is_slider_vertical =
+      RuntimeEnabledFeatures::
+          NonStandardAppearanceValueSliderVerticalEnabled() &&
+      style.EffectiveAppearance() == kSliderVerticalPart;
+  bool is_writing_mode_vertical =
+      RuntimeEnabledFeatures::FormControlsVerticalWritingModeSupportEnabled() &&
+      !IsHorizontalWritingMode(style.GetWritingMode());
+  slider.vertical = is_writing_mode_vertical || is_slider_vertical;
   slider.in_drag = false;
 
   PaintSliderTicks(layout_object, paint_info, rect);
@@ -451,12 +466,18 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
   slider.zoom = style.EffectiveZoom();
   slider.thumb_x = 0;
   slider.thumb_y = 0;
+  // If we do not allow direction support for vertical writing-mode or the
+  // slider is vertical by computed appearance slider-vertical, then it should
+  // behave like it has direction rtl and its value should be rendered
+  // bottom-to-top.
   slider.right_to_left =
-      !RuntimeEnabledFeatures::
-                  FormControlsVerticalWritingModeDirectionSupportEnabled() &&
-              slider.vertical
-          ? true
-          : !style.IsLeftToRightDirection();
+      (IsHorizontalWritingMode(style.GetWritingMode()) &&
+       !is_slider_vertical) ||
+              (RuntimeEnabledFeatures::
+                   FormControlsVerticalWritingModeDirectionSupportEnabled() &&
+               is_writing_mode_vertical)
+          ? !style.IsLeftToRightDirection()
+          : true;
   if (auto* input = DynamicTo<HTMLInputElement>(element)) {
     Element* thumb_element = input->UserAgentShadowRoot()
                                  ? input->UserAgentShadowRoot()->getElementById(
@@ -506,7 +527,7 @@ bool ThemePainterDefault::PaintSliderThumb(const Element& element,
       DynamicTo<SliderThumbElement>(&element);
   DCHECK(slider_element);  // PaintSliderThumb should always be passed a
                            // SliderThumbElement
-  absl::optional<SkColor> accent_color =
+  std::optional<SkColor> accent_color =
       GetAccentColor(*slider_element->HostInput()->EnsureComputedStyle(),
                      element.GetDocument());
   WebThemeEngine::ExtraParams extra_params(slider);

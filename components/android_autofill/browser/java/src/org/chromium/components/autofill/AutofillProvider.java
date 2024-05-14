@@ -28,8 +28,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
+import org.chromium.base.version_info.VersionConstants;
 import org.chromium.components.autofill.AutofillRequest.FocusField;
-import org.chromium.components.version_info.VersionConstants;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -98,7 +98,9 @@ public class AutofillProvider {
             mContainerView = containerView;
             mAutofillUMA =
                     new AutofillProviderUMA(
-                            context, mAutofillManager.isAwGCurrentAutofillService());
+                            context,
+                            mAutofillManager.isAwGCurrentAutofillService(),
+                            mAutofillManager.getPackageName());
             mInputUIObserver =
                     new AutofillManagerWrapper.InputUIObserver() {
                         @Override
@@ -117,7 +119,7 @@ public class AutofillProvider {
     }
 
     public void destroy() {
-        mAutofillUMA.recordSession(mAutofillManager.isDisabled());
+        mAutofillUMA.recordSession();
         detachFromJavaAutofillProvider();
         mAutofillManager.destroy();
     }
@@ -462,7 +464,7 @@ public class AutofillProvider {
         forceNotifyFormValues();
         mAutofillManager.commit(submissionSource);
         mRequest = null;
-        mAutofillUMA.onFormSubmitted(submissionSource, mAutofillManager.isDisabled());
+        mAutofillUMA.onFormSubmitted(submissionSource);
     }
 
     /**
@@ -666,7 +668,7 @@ public class AutofillProvider {
 
     public void setWebContents(WebContents webContents) {
         if (webContents == mWebContents) return;
-        mAutofillUMA.recordSession(mAutofillManager.isDisabled());
+        mAutofillUMA.recordSession();
         if (mWebContents != null) mRequest = null;
         mWebContents = webContents;
         detachFromJavaAutofillProvider();
@@ -683,12 +685,11 @@ public class AutofillProvider {
     }
 
     @CalledByNative
-    private void onServerPredictionQueryDone(boolean success) {
+    private void onServerPredictionsAvailable() {
         if (mRequest == null) return;
-        mRequest.onQueryDone(success);
-        mAutofillUMA.onServerTypeAvailable(
-                success ? mRequest.getForm() : null, /* afterSessionStarted= */ true);
-        mAutofillManager.onQueryDone(success);
+        mRequest.onServerPredictionsAvailable();
+        mAutofillManager.onServerPredictionsAvailable();
+        mAutofillUMA.onServerTypeAvailable(mRequest.getForm(), /* afterSessionStarted= */ true);
     }
 
     private void forceNotifyFormValues() {

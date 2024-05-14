@@ -12,13 +12,9 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
-// TODO(crbug.com/1011533): Re-define these temporary values in layout provider
+// TODO(crbug.com/1011533): Re-define this temporary value in layout provider
 // once the spec is ready. Make the style GM3-compatible.
 constexpr int DISTANCE_BUTTON_VERTICAL = 8;
-constexpr int FOLDER_ICON_SIZE = 16;
-constexpr int FILENAME_AREA_MARGIN = 8;
-constexpr int BETWEEN_FILENAME_SPACING = 4;
-constexpr int MAX_SCROLL_HEIGHT = 96;
 
 // Bubble dialog that prompts user to restore the permission for
 // files/directories previously granted to.
@@ -27,9 +23,10 @@ constexpr int MAX_SCROLL_HEIGHT = 96;
 // styles, accessibility support, etc.
 class FileSystemAccessRestorePermissionBubbleView
     : public LocationBarBubbleDelegateView {
- public:
-  METADATA_HEADER(FileSystemAccessRestorePermissionBubbleView);
+  METADATA_HEADER(FileSystemAccessRestorePermissionBubbleView,
+                  LocationBarBubbleDelegateView)
 
+ public:
   FileSystemAccessRestorePermissionBubbleView(
       const std::u16string window_title,
       const std::vector<

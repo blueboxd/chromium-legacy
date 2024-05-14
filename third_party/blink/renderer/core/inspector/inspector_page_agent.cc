@@ -31,16 +31,17 @@
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/containers/span.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_evidence.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
@@ -897,7 +898,7 @@ protocol::Response InspectorPageAgent::getPermissionsPolicyState(
     if (blink::DisabledByOriginTrial(feature_name, frame->DomWindow()))
       continue;
 
-    absl::optional<blink::PermissionsPolicyBlockLocator> locator =
+    std::optional<blink::PermissionsPolicyBlockLocator> locator =
         blink::TracePermissionsPolicyBlockSource(frame, feature);
 
     std::unique_ptr<protocol::Page::PermissionsPolicyFeatureState>
@@ -987,22 +988,22 @@ void InspectorPageAgent::DidCreateMainWorldContext(LocalFrame* frame) {
     EvaluateScriptOnNewDocument(*frame, key);
   }
 
-  if (!script_to_evaluate_on_load_once_.empty()) {
-    ClassicScript::CreateUnspecifiedScript(script_to_evaluate_on_load_once_)
-        ->RunScript(frame->DomWindow(),
-                    ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
+  if (script_to_evaluate_on_load_once_.empty()) {
+    return;
   }
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state) {
+    return;
+  }
+
+  v8_session_->evaluate(
+      script_state->GetContext(),
+      ToV8InspectorStringView(script_to_evaluate_on_load_once_));
 }
 
 void InspectorPageAgent::EvaluateScriptOnNewDocument(
     LocalFrame& frame,
     const String& script_identifier) {
-  // Throughout this method,
-  // `ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled` is used because
-  // `inspector-protocol/page/add-script-to-evaluate-on-load-disabled-js.js`
-  // requires that the scripts here should be evaluated on pages with scripting
-  // disabled.
-
   auto* window = frame.DomWindow();
   v8::HandleScope handle_scope(window->GetIsolate());
 
@@ -1021,18 +1022,12 @@ void InspectorPageAgent::EvaluateScriptOnNewDocument(
     return;
   }
 
-  std::unique_ptr<v8_inspector::V8InspectorSession::CommandLineAPIScope> scope;
-  if (include_command_line_api_for_scripts_to_evaluate_on_load_.Get(
-          script_identifier)) {
-    scope = v8_session_->initializeCommandLineAPIScope(
-        v8_inspector::V8ContextInfo::executionContextId(
-            script_state->GetContext()));
-    DCHECK(scope);
-  }
-  ClassicScript::CreateUnspecifiedScript(
-      scripts_to_evaluate_on_load_.Get(script_identifier))
-      ->RunScriptOnScriptState(
-          script_state, ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
+  v8_session_->evaluate(
+      script_state->GetContext(),
+      ToV8InspectorStringView(
+          scripts_to_evaluate_on_load_.Get(script_identifier)),
+      include_command_line_api_for_scripts_to_evaluate_on_load_.Get(
+          script_identifier));
 }
 
 void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {
@@ -1076,7 +1071,7 @@ void InspectorPageAgent::DidOpenDocument(LocalFrame* frame,
 
 void InspectorPageAgent::FrameAttachedToParent(
     LocalFrame* frame,
-    const absl::optional<AdScriptIdentifier>& ad_script_on_stack) {
+    const std::optional<AdScriptIdentifier>& ad_script_on_stack) {
   // TODO(crbug.com/1217041): If an ad script on the stack caused this frame to
   // be tagged as an ad, send the script's ID to the frontend.
   Frame* parent_frame = frame->Tree().Parent();
@@ -1504,7 +1499,7 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
             .setMimeType(cached_resource->GetResponse().MimeType())
             .setContentSize(cached_resource->GetResponse().DecodedBodyLength())
             .build();
-    absl::optional<base::Time> last_modified =
+    std::optional<base::Time> last_modified =
         cached_resource->GetResponse().LastModified();
     if (last_modified) {
       resource_object->setLastModified(

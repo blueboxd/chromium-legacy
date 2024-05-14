@@ -6,12 +6,13 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 #if BUILDFLAG(IS_WIN)
-#include <windows.h>
-
 #include <initguid.h>
+#include <windows.h>
 
 #include "base/logging_win.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -23,6 +24,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
@@ -82,7 +84,7 @@ constexpr Charmap kQueryCharmap = {{0xffffffffL, 0xfc00987dL, 0x78000001L,
 // to +, otherwise, if spaces are in the charmap, they are converted to
 // %20. And if keep_escaped is true, %XX will be kept as it is, otherwise, if
 // '%' is in the charmap, it is converted to %25.
-std::string Escape(base::StringPiece text,
+std::string Escape(std::string_view text,
                    const Charmap& charmap,
                    bool use_plus,
                    bool keep_escaped = false) {
@@ -105,7 +107,7 @@ std::string Escape(base::StringPiece text,
   return escaped;
 }
 
-std::string EscapeQueryParamValue(base::StringPiece text, bool use_plus) {
+std::string EscapeQueryParamValue(std::string_view text, bool use_plus) {
   return Escape(text, kQueryCharmap, use_plus);
 }
 
@@ -115,8 +117,9 @@ std::optional<base::FilePath> GetVersionedInstallDirectory(
     UpdaterScope scope,
     const base::Version& version) {
   const std::optional<base::FilePath> path = GetInstallDirectory(scope);
-  if (!path)
+  if (!path) {
     return std::nullopt;
+  }
   return path->AppendASCII(version.GetString());
 }
 
@@ -179,13 +182,16 @@ TagParsingResult GetTagArgsForCommandLine(
     const base::CommandLine& command_line) {
   std::string tag = command_line.HasSwitch(kTagSwitch)
                         ? command_line.GetSwitchValueASCII(kTagSwitch)
+                    : command_line.HasSwitch(kInstallSwitch)
+                        ? command_line.GetSwitchValueASCII(kInstallSwitch)
                         : command_line.GetSwitchValueASCII(kHandoffSwitch);
-  if (tag.empty())
+  if (tag.empty()) {
     return {};
+  }
 
   tagging::TagArgs tag_args;
   const tagging::ErrorCode error = tagging::Parse(
-      tag, command_line.GetSwitchValueASCII(kAppArgsSwitch), &tag_args);
+      tag, command_line.GetSwitchValueASCII(kAppArgsSwitch), tag_args);
   VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
       << "Tag parsing returned " << error << ".";
   return {tag_args, error};
@@ -233,7 +239,6 @@ std::string GetInstallDataIndexFromAppArgs(const std::string& app_id) {
   return app_args ? app_args->install_data_index : std::string();
 }
 
-// The log file is created in DIR_LOCAL_APP_DATA or DIR_ROAMING_APP_DATA.
 std::optional<base::FilePath> GetLogFilePath(UpdaterScope scope) {
   const std::optional<base::FilePath> log_dir = GetInstallDirectory(scope);
   if (log_dir) {
@@ -287,8 +292,9 @@ GURL AppendQueryParameter(const GURL& url,
                           const std::string& value) {
   std::string query(url.query());
 
-  if (!query.empty())
+  if (!query.empty()) {
     query += "&";
+  }
 
   query += (EscapeQueryParamValue(name, true) + "=" +
             EscapeQueryParamValue(value, true));
@@ -312,9 +318,10 @@ std::wstring GetTaskDisplayName(UpdaterScope scope) {
 }
 
 base::CommandLine GetCommandLineLegacyCompatible() {
+  const std::wstring cmd_string = ::GetCommandLine();
   std::optional<base::CommandLine> cmd_line =
-      CommandLineForLegacyFormat(::GetCommandLine());
-  return cmd_line ? *cmd_line : *base::CommandLine::ForCurrentProcess();
+      CommandLineForLegacyFormat(cmd_string);
+  return cmd_line ? *cmd_line : base::CommandLine::FromString(cmd_string);
 }
 
 #endif  // BUILDFLAG(IS_WIN)
@@ -324,16 +331,19 @@ std::optional<base::FilePath> WriteInstallerDataToTempFile(
     const std::string& installer_data) {
   VLOG(2) << __func__ << ": " << directory << ": " << installer_data;
 
-  if (!base::DirectoryExists(directory))
+  if (!base::DirectoryExists(directory)) {
     return std::nullopt;
+  }
 
-  if (installer_data.empty())
+  if (installer_data.empty()) {
     return std::nullopt;
+  }
 
   base::FilePath path;
   base::File file = base::CreateAndOpenTemporaryFileInDir(directory, &path);
-  if (!file.IsValid())
+  if (!file.IsValid()) {
     return std::nullopt;
+  }
 
   const std::string installer_data_utf8_bom =
       base::StrCat({kUTF8BOM, installer_data});

@@ -54,10 +54,7 @@ class TableViewTestHelper;
 // - only text
 // - a small icon (16x16) and some text
 // - a check box and some text
-enum TableTypes {
-  TEXT_ONLY = 0,
-  ICON_AND_TEXT,
-};
+enum class TableType { kTextOnly, kIconAndText };
 
 class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   METADATA_HEADER(TableView, View)
@@ -107,7 +104,7 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   TableView();
   TableView(ui::TableModel* model,
             const std::vector<ui::TableColumn>& columns,
-            TableTypes table_type,
+            TableType table_type,
             bool single_selection);
 
   TableView(const TableView&) = delete;
@@ -127,7 +124,7 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   // Initialize the table with the appropriate data.
   void Init(ui::TableModel* model,
             const std::vector<ui::TableColumn>& columns,
-            TableTypes table_type,
+            TableType table_type,
             bool single_selection);
 
   // Assigns a new model to the table view, detaching the old one if present.
@@ -139,8 +136,8 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
 
   void SetColumns(const std::vector<ui::TableColumn>& columns);
 
-  void SetTableType(TableTypes table_type);
-  TableTypes GetTableType() const;
+  void SetTableType(TableType table_type);
+  TableType GetTableType() const;
 
   void SetSingleSelection(bool single_selection);
   bool GetSingleSelection() const;
@@ -153,13 +150,13 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   size_t GetRowCount() const;
 
   // Selects the specified item, making sure it's visible.
-  void Select(absl::optional<size_t> model_row);
+  void Select(std::optional<size_t> model_row);
 
   // Selects all items.
   void SetSelectionAll(bool select);
 
   // Returns the first selected row in terms of the model.
-  absl::optional<size_t> GetFirstSelectedRow() const;
+  std::optional<size_t> GetFirstSelectedRow() const;
 
   const ui::ListSelectionModel& selection_model() const {
     return selection_model_;
@@ -186,9 +183,9 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   void SetObserver(TableViewObserver* observer);
   TableViewObserver* GetObserver() const;
 
-  absl::optional<size_t> GetActiveVisibleColumnIndex() const;
+  std::optional<size_t> GetActiveVisibleColumnIndex() const;
 
-  void SetActiveVisibleColumnIndex(absl::optional<size_t> index);
+  void SetActiveVisibleColumnIndex(std::optional<size_t> index);
 
   const std::vector<VisibleColumn>& visible_columns() const {
     return visible_columns_;
@@ -252,7 +249,7 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   bool header_row_is_active() const { return header_row_is_active_; }
 
   // View overrides:
-  void Layout() override;
+  void Layout(PassKey) override;
   gfx::Size CalculatePreferredSize() const override;
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
   void OnVisibleBoundsChanged() override;
@@ -369,7 +366,7 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   void AdvanceActiveVisibleColumn(AdvanceDirection direction);
 
   // Sets the selection to the specified index (in terms of the view).
-  void SelectByViewIndex(absl::optional<size_t> view_index);
+  void SelectByViewIndex(std::optional<size_t> view_index);
 
   // Sets the selection model to |new_selection|.
   void SetSelectionModel(ui::ListSelectionModel new_selection);
@@ -497,7 +494,7 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
 
   // The active visible column. Used for keyboard access to functionality such
   // as sorting and resizing. nullopt if no visible column is active.
-  absl::optional<size_t> active_visible_column_index_ = absl::nullopt;
+  std::optional<size_t> active_visible_column_index_ = std::nullopt;
 
   // The header. This is only created if more than one column is specified or
   // the first column has a non-empty title.
@@ -508,7 +505,7 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
   // is the header row, since the selection model doesn't support that.
   bool header_row_is_active_ = false;
 
-  TableTypes table_type_ = TableTypes::TEXT_ONLY;
+  TableType table_type_ = TableType::kTextOnly;
 
   bool single_selection_ = true;
 
@@ -530,8 +527,8 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
 
   int row_height_;
 
-  // Width of the ScrollView last time Layout() was invoked. Used to determine
-  // when we should invoke UpdateVisibleColumnSizes().
+  // Width of the ScrollView at last layout. Used to determine when we should
+  // invoke UpdateVisibleColumnSizes().
   int last_parent_width_ = 0;
 
   // The width we layout to. This may differ from |last_parent_width_|.
@@ -558,12 +555,12 @@ class VIEWS_EXPORT TableView : public View, public ui::TableModelObserver {
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, TableView, View)
-VIEW_BUILDER_PROPERTY(absl::optional<size_t>, ActiveVisibleColumnIndex)
+VIEW_BUILDER_PROPERTY(std::optional<size_t>, ActiveVisibleColumnIndex)
 VIEW_BUILDER_PROPERTY(const std::vector<ui::TableColumn>&,
                       Columns,
                       std::vector<ui::TableColumn>)
 VIEW_BUILDER_PROPERTY(ui::TableModel*, Model)
-VIEW_BUILDER_PROPERTY(TableTypes, TableType)
+VIEW_BUILDER_PROPERTY(TableType, TableType)
 VIEW_BUILDER_PROPERTY(bool, SingleSelection)
 VIEW_BUILDER_PROPERTY(TableGrouper*, Grouper)
 VIEW_BUILDER_PROPERTY(TableViewObserver*, Observer)

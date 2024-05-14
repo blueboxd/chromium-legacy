@@ -7,6 +7,7 @@
 #import "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_constants.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
@@ -154,6 +155,14 @@ id<GREYMatcher> PasswordSettingsTableView() {
   return grey_accessibilityID(kPasswordsSettingsTableViewId);
 }
 
+id<GREYMatcher> PasswordDetailsTableViewMatcher() {
+  return grey_accessibilityID(kPasswordDetailsTableViewID);
+}
+
+id<GREYMatcher> PasswordDetailsShareButtonMatcher() {
+  return grey_accessibilityID(kPasswordShareButtonID);
+}
+
 GREYElementInteraction* GetInteractionForIssuesListItem(
     id<GREYMatcher> matcher,
     GREYDirection direction) {
@@ -182,13 +191,14 @@ GREYElementInteraction* GetInteractionForPasswordIssueEntry(
 
 #pragma mark - Saving passwords
 
-void SavePasswordForm(NSString* password,
-                      NSString* username,
-                      NSString* origin) {
-  GREYAssert([PasswordSettingsAppInterface saveExamplePassword:password
-                                                      username:username
-                                                        origin:origin],
-             kPasswordStoreErrorMessage);
+void SavePasswordFormToProfileStore(NSString* password,
+                                    NSString* username,
+                                    NSString* origin) {
+  GREYAssert(
+      [PasswordSettingsAppInterface saveExamplePasswordToProfileStore:password
+                                                             username:username
+                                                               origin:origin],
+      kPasswordStoreErrorMessage);
 }
 
 void SavePasswordFormToAccountStore(NSString* password,
@@ -201,21 +211,23 @@ void SavePasswordFormToAccountStore(NSString* password,
       kPasswordStoreErrorMessage);
 }
 
-void SaveCompromisedPasswordForm(NSString* password,
-                                 NSString* username,
-                                 NSString* origin) {
-  GREYAssert([PasswordSettingsAppInterface saveCompromisedPassword:password
-                                                          username:username
-                                                            origin:origin],
+void SaveCompromisedPasswordFormToProfileStore(NSString* password,
+                                               NSString* username,
+                                               NSString* origin) {
+  GREYAssert([PasswordSettingsAppInterface
+                 saveCompromisedPasswordToProfileStore:password
+                                              username:username
+                                                origin:origin],
              kPasswordStoreErrorMessage);
 }
 
-void SaveMutedCompromisedPasswordForm(NSString* origin,
-                                      NSString* username,
-                                      NSString* password) {
-  GREYAssert([PasswordSettingsAppInterface saveMutedCompromisedPassword:password
-                                                               username:username
-                                                                 origin:origin],
+void SaveMutedCompromisedPasswordFormToProfileStore(NSString* origin,
+                                                    NSString* username,
+                                                    NSString* password) {
+  GREYAssert([PasswordSettingsAppInterface
+                 saveMutedCompromisedPasswordToProfileStore:password
+                                                   username:username
+                                                     origin:origin],
              kPasswordStoreErrorMessage);
 }
 
@@ -230,7 +242,7 @@ void OpenPasswordManager() {
   // background task runner and wait until it is finished. Because the
   // background task runner is sequenced, this means that previously posted
   // tasks are also finished when this function exits.
-  [PasswordSettingsAppInterface passwordStoreResultsCount];
+  [PasswordSettingsAppInterface passwordProfileStoreResultsCount];
 }
 
 void TapNavigationBarEditButton() {

@@ -15,7 +15,7 @@
 namespace blink {
 
 struct CORE_EXPORT GridPlacementData {
-  USING_FAST_MALLOC(GridPlacementData);
+  DISALLOW_NEW();
 
  public:
   GridPlacementData(GridPlacementData&&) = default;
@@ -110,6 +110,14 @@ class CORE_EXPORT GridLayoutData {
     return (track_direction == kForColumns)
                ? !(columns_ && columns_->IsForSizing())
                : !(rows_ && rows_->IsForSizing());
+  }
+
+  bool IsSubgridWithStandaloneAxis(
+      GridTrackSizingDirection track_direction) const {
+    return columns_ && rows_ &&
+           ((track_direction == kForColumns)
+                ? columns_->IsForSizing() && !rows_->IsForSizing()
+                : rows_->IsForSizing() && !columns_->IsForSizing());
   }
 
   GridLayoutTrackCollection& Columns() const {

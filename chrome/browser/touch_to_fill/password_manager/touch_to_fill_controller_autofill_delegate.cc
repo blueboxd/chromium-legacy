@@ -214,7 +214,7 @@ void TouchToFillControllerAutofillDelegate::OnCredManDismissed(
   std::move(action_completed).Run();
 }
 
-const GURL& TouchToFillControllerAutofillDelegate::GetFrameUrl() {
+GURL TouchToFillControllerAutofillDelegate::GetFrameUrl() {
   CHECK(filler_);
   return filler_->GetFrameUrl();
 }
@@ -274,14 +274,26 @@ void TouchToFillControllerAutofillDelegate::FillCredential(
         credential.username());
   }
 
-  base::UmaHistogramEnumeration("PasswordManager.TouchToFill.Outcome",
-                                TouchToFillOutcome::kCredentialFilled);
+  CleanUpFillerAndReportOutcome(TouchToFillOutcome::kCredentialFilled,
+                                /*show_virtual_keyboard=*/false);
   std::move(action_complete_).Run();
 }
 
 void TouchToFillControllerAutofillDelegate::CleanUpFillerAndReportOutcome(
     TouchToFillOutcome outcome,
     bool show_virtual_keyboard) {
+  // User action is complete which indicates that the user has been informed
+  // about any shared unnotified password. Report that to the client to mark
+  // them as notified.
+  // If the render frame host has been destroyed already, the url will be empty
+  // and the credentials cache in the `password_client_` has been cleared. In
+  // this case it's not possible to mark credentials as notitied. If the user
+  // has properly interact with the touch to fill UI, the client would have been
+  // notified properly.
+  GURL url = GetFrameUrl();
+  if (!url.is_empty()) {
+    password_client_->MarkSharedCredentialsAsNotified(url);
+  }
   filler_->Dismiss(ToShowVirtualKeyboard(show_virtual_keyboard));
   filler_.reset();
   base::UmaHistogramEnumeration("PasswordManager.TouchToFill.Outcome", outcome);

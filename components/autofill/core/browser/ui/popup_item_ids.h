@@ -38,10 +38,8 @@ enum class PopupItemId : int {
   // will fill every email field.
   kFillFullEmail,
   kAddressFieldByFieldFilling,
-  kTitle,
   kEditAddressProfile,
   kDeleteAddressProfile,
-  kAddressEntryNotSelectable,
   kAutofillOptions,
 
   // Compose suggestions.
@@ -52,16 +50,17 @@ enum class PopupItemId : int {
 
   // Password suggestions.
   kPasswordEntry,
-  kUsernameEntry,
   kAllSavedPasswordsEntry,
   kGeneratePasswordEntry,
   kShowAccountCards,
   kPasswordAccountStorageOptIn,
   kPasswordAccountStorageOptInAndGenerate,
   kAccountStoragePasswordEntry,
-  kAccountStorageUsernameEntry,
   kPasswordAccountStorageReSignin,
   kPasswordAccountStorageEmpty,
+  kPasswordFieldByFieldFilling,
+  kFillPassword,
+  kViewPasswordDetails,
 
   // Payment suggestions.
   kCreditCardEntry,
@@ -70,7 +69,6 @@ enum class PopupItemId : int {
   kVirtualCreditCardEntry,
   kCreditCardFieldByFieldFilling,
   kIbanEntry,
-  kPaymentsEntryNotSelectable,
 
   // Plus address suggestions.
   kCreateNewPlusAddress,
@@ -102,13 +100,12 @@ enum class PopupItemId : int {
 // Set of `PopupItemId`s that trigger filling a value into an input element
 // when the user selects a suggestion with that id.
 inline constexpr auto kItemsTriggeringFieldFilling = DenseSet<PopupItemId>(
-    {PopupItemId::kAccountStoragePasswordEntry,
-     PopupItemId::kAccountStorageUsernameEntry, PopupItemId::kAddressEntry,
+    {PopupItemId::kAccountStoragePasswordEntry, PopupItemId::kAddressEntry,
      PopupItemId::kAutocompleteEntry, PopupItemId::kCompose,
      PopupItemId::kCreditCardEntry, PopupItemId::kDatalistEntry,
      PopupItemId::kFillEverythingFromAddressProfile,
      PopupItemId::kMerchantPromoCodeEntry, PopupItemId::kPasswordEntry,
-     PopupItemId::kUsernameEntry, PopupItemId::kVirtualCreditCardEntry});
+     PopupItemId::kVirtualCreditCardEntry});
 
 }  // namespace autofill
 

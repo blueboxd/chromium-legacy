@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include "base/functional/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store/smart_bubble_stats_store.h"
@@ -30,6 +31,7 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
                base::OnceCallback<void(bool)> completion),
               (override));
   MOCK_METHOD(void, Shutdown, (base::OnceClosure), (override));
+  MOCK_METHOD(bool, IsAbleToSavePasswords, (), (override));
   MOCK_METHOD(void,
               GetAllLoginsAsync,
               (LoginsOrErrorReply callback),
@@ -96,6 +98,11 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
               OnSyncServiceInitialized,
               (syncer::SyncService*),
               (override));
+
+  base::WeakPtr<PasswordStoreBackend> AsWeakPtr() override;
+
+ private:
+  base::WeakPtrFactory<MockPasswordStoreBackend> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

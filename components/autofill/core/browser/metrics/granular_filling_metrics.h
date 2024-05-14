@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_GRANULAR_FILLING_METRICS_H_
 
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/filling_product.h"
 
 namespace autofill::autofill_metrics {
 
@@ -31,7 +32,7 @@ enum class AutofillFillingMethodMetric {
 // and numeric values should never be reused. This is a subset of field
 // types that can be chosen when the user fills a specific field using one of
 // the field by field filling suggestions. Update this enum when a new
-// `ServerFieldType` is included in the available field by field filling field
+// `FieldType` is included in the available field by field filling field
 // type suggestions.
 enum class AutofillFieldByFieldFillingTypes {
   kNameFirst = 0,
@@ -49,7 +50,9 @@ enum class AutofillFieldByFieldFillingTypes {
   kCreditCardExpiryDate = 12,
   kCreditCardExpiryYear = 13,
   kCreditCardExpiryMonth = 14,
-  kMaxValue = kCreditCardExpiryMonth
+  kCity = 15,
+  kCompany = 16,
+  kMaxValue = kCompany
 };
 
 // This metric is only relevant for granular filling, i.e. when the edit dialog
@@ -58,15 +61,30 @@ void LogEditAddressProfileDialogClosed(bool user_saved_changes);
 
 // This metric is only relevant for granular filling, i.e. when the delete
 // dialog is opened from the Autofill popup.
-void LogDeleteAddressProfileDialogClosed(bool user_accepted_delete);
+void LogDeleteAddressProfileFromExtendedMenu(bool user_accepted_delete);
 
 // Logs the `AutofillFillingMethodMetric` chosen by the user.
-void LogFillingMethodUsed(AutofillFillingMethodMetric filling_method);
+// `filling_product` defines what type of filling the user chose, for example
+// address or payment. `triggering_field_type_matches_filling_product` defines
+// whether the `filling_product` chosen matches the triggering field type. For
+// example, if an user chose to fill their address profile into an unclassified
+// field, triggering_field_type_matches_filling_product will be false.
+void LogFillingMethodUsed(AutofillFillingMethodMetric filling_method,
+                          FillingProduct filling_product,
+                          bool triggering_field_type_matches_filling_product);
 
 // Logs the `AutofillFieldByFieldFillingTypes` that corresponds
 // to the `field_type` chosen by the user when accepting a field-by-field
 // filling suggestions.
-void LogFieldByFieldFillingFieldUsed(ServerFieldType field_type);
+// `filling_product` defines what type of filling the user chose, for example
+// address or payment. `triggering_field_type_matches_filling_product` defines
+// whether the `filling_product` chosen matches the triggering field type. For
+// example, if an user chose to fill their address profile into an unclassified
+// field, triggering_field_type_matches_filling_product will be false.
+void LogFieldByFieldFillingFieldUsed(
+    FieldType field_type_used,
+    FillingProduct filling_product,
+    bool triggering_field_type_matches_filling_product);
 
 }  // namespace autofill::autofill_metrics
 

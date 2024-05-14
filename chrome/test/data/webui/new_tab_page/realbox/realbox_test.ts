@@ -4,8 +4,10 @@
 
 import 'chrome://new-tab-page/new_tab_page.js';
 
-import {$$, BrowserProxyImpl, decodeString16, MetricsReporterImpl, mojoString16, RealboxBrowserProxy, RealboxElement, RealboxIconElement, RealboxMatchElement} from 'chrome://new-tab-page/new_tab_page.js';
-import {AutocompleteMatch, NavigationPredictor, SideType} from 'chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js';
+import type {RealboxElement, RealboxIconElement, RealboxMatchElement} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BrowserProxyImpl, decodeString16, MetricsReporterImpl, mojoString16, RealboxBrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import type {AutocompleteMatch} from 'chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js';
+import {NavigationPredictor, RenderType, SideType} from 'chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PageMetricsCallbackRouter} from 'chrome://resources/js/metrics_reporter.mojom-webui.js';
@@ -235,17 +237,38 @@ suite('NewTabPageRealboxTest', () => {
     });
   });
 
-  test('Single colored voice search icon has masked image', async () => {
+  test('Color source baseline search icon has background image', async () => {
     // Arrange.
+    loadTimeData.overrideValues({realboxCr23Theming: true});
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     realbox = document.createElement('ntp-realbox');
-    realbox.singleColoredIcons = true;
+    realbox.colorSourceIsBaseline = true;
+    document.body.appendChild(realbox);
+
+    // Assert.
+    assertStyle(
+        realbox.$.voiceSearchButton, 'background-image',
+        'url("chrome://new-tab-page/icons/googlemic_clr_24px.svg")');
+
+    // Restore.
+    loadTimeData.overrideValues({realboxCr23Theming: false});
+  });
+
+  test('Color source not baseline search icon has mask image', async () => {
+    // Arrange.
+    loadTimeData.overrideValues({realboxCr23Theming: true});
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    realbox = document.createElement('ntp-realbox');
+    realbox.colorSourceIsBaseline = false;
     document.body.appendChild(realbox);
 
     // Assert.
     assertStyle(
         realbox.$.voiceSearchButton, '-webkit-mask-image',
         'url("chrome://new-tab-page/icons/googlemic_clr_24px.svg")');
+
+    // Restore.
+    loadTimeData.overrideValues({realboxCr23Theming: false});
   });
 
   //============================================================================
@@ -2014,6 +2037,7 @@ suite('NewTabPageRealboxTest', () => {
         hideGroupA11yLabel: mojoString16(''),
         showGroupA11yLabel: mojoString16(''),
         hidden: true,
+        renderType: RenderType.kDefaultVertical,
         sideType: SideType.kDefaultPrimary,
       },
       101: {
@@ -2021,6 +2045,7 @@ suite('NewTabPageRealboxTest', () => {
         hideGroupA11yLabel: mojoString16(''),
         showGroupA11yLabel: mojoString16(''),
         hidden: false,
+        renderType: RenderType.kDefaultVertical,
         sideType: SideType.kDefaultPrimary,
       },
     };
@@ -2113,6 +2138,7 @@ suite('NewTabPageRealboxTest', () => {
         hideGroupA11yLabel: mojoString16(''),
         showGroupA11yLabel: mojoString16(''),
         hidden: false,
+        renderType: RenderType.kDefaultVertical,
         sideType: SideType.kSecondary,
       },
     };
@@ -2150,6 +2176,7 @@ suite('NewTabPageRealboxTest', () => {
             hideGroupA11yLabel: mojoString16(''),
             showGroupA11yLabel: mojoString16(''),
             hidden: false,
+            renderType: RenderType.kDefaultVertical,
             sideType: SideType.kDefaultPrimary,
           },
         };
@@ -2394,7 +2421,7 @@ suite('NewTabPageRealboxTest', () => {
     assertEquals(1, testProxy.handler.getCallCount('executeAction'));
 
     const pedalElTab =
-        $$(matchEls[1]!.shadowRoot!.querySelectorAll('cr-realbox-action')![1]!,
+        $$(matchEls[1]!.shadowRoot!.querySelectorAll('cr-realbox-action')[1]!,
            '.contents')!;
 
     pedalElTab.dispatchEvent(leftClick);

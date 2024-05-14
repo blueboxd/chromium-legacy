@@ -6,7 +6,7 @@
 
 #import "base/functional/bind.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/snapshots/model/snapshot_generator.h"
+#import "ios/chrome/browser/snapshots/model/legacy_snapshot_generator.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_id.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_storage.h"
 #import "ios/web/public/thread/web_thread.h"
@@ -16,7 +16,7 @@
   SnapshotID _snapshotID;
 }
 
-- (instancetype)initWithGenerator:(SnapshotGenerator*)generator
+- (instancetype)initWithGenerator:(LegacySnapshotGenerator*)generator
                        snapshotID:(SnapshotID)snapshotID {
   if ((self = [super init])) {
     DCHECK(snapshotID.valid());
@@ -39,7 +39,7 @@
   DCHECK(callback);
 
   __weak SnapshotManager* weakSelf = self;
-  __weak SnapshotGenerator* weakGenerator = _snapshotGenerator;
+  __weak LegacySnapshotGenerator* weakGenerator = _snapshotGenerator;
   void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
     if (!image) {
       image = [weakGenerator generateUIViewSnapshotWithOverlays];
@@ -59,7 +59,7 @@
   }
 }
 
-- (void)updateWKWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
+- (void)updateSnapshotWithCompletion:(void (^)(UIImage*))completion {
   DCHECK(_snapshotGenerator);
 
   __weak SnapshotManager* weakSelf = self;
@@ -72,23 +72,7 @@
       completion(image);
     }
   };
-  [_snapshotGenerator
-      generateWKWebViewSnapshotWithCompletion:wrappedCompletion];
-}
-
-- (void)updateUIViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
-  DCHECK(_snapshotGenerator);
-  UIImage* image = [_snapshotGenerator generateUIViewSnapshotWithOverlays];
-
-  // Update the snapshot storage with the latest snapshot. The old image is
-  // deleted it if `image` is nil.
-  [self updateSnapshotStorageWithImage:image];
-
-  // Post a task to the current thread (UI thread).
-  if (completion) {
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(completion, image));
-  }
+  [_snapshotGenerator generateSnapshotWithCompletion:wrappedCompletion];
 }
 
 - (UIImage*)generateUIViewSnapshot {

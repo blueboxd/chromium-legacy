@@ -21,9 +21,6 @@ BASE_DECLARE_FEATURE(kAdSamplerTriggerFeature);
 // Enables adding warning shown timestamp to client safe browsing report.
 BASE_DECLARE_FEATURE(kAddWarningShownTSToClientSafeBrowsingReport);
 
-// Enables logging new phishing prevention data.
-BASE_DECLARE_FEATURE(kAntiPhishingTelemetry);
-
 // Killswitch for client side phishing detection. Since client side models are
 // run on a large fraction of navigations, crashes due to the model are very
 // impactful, even if only a small fraction of users have a bad version of the
@@ -31,21 +28,6 @@ BASE_DECLARE_FEATURE(kAntiPhishingTelemetry);
 // while we fix the root cause. This will also halt the model distribution from
 // OptimizationGuide.
 BASE_DECLARE_FEATURE(kClientSideDetectionKillswitch);
-
-// The client side detection model is a flatbuffer.
-BASE_DECLARE_FEATURE(kClientSideDetectionModelIsFlatBuffer);
-
-// Determines the tag to pass to Omaha to get a client side detection model.
-BASE_DECLARE_FEATURE(kClientSideDetectionModelTag);
-
-// The parameter name used for getting the tag values from client side detection
-// features, `kClientSideDetectionModelTag` and
-// `kClientSideDetectionModelHighMemoryTag`.
-const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
-
-// Enables force request CSD-P ping when RT Lookup Response has FORCE_REQUEST in
-// the client_side_detection_type field
-BASE_DECLARE_FEATURE(kClientSideDetectionTypeForceRequest);
 
 // Creates and sends CSBRRs when warnings are first shown to users.
 BASE_DECLARE_FEATURE(kCreateWarningShownClientSafeBrowsingReports);
@@ -68,40 +50,9 @@ BASE_DECLARE_FEATURE(kDownloadTailoredWarnings);
 // passwords for local decryption on encrypted archives.
 BASE_DECLARE_FEATURE(kEncryptedArchivesMetadata);
 
-// Enables decreased Phishguard password length minimum.
-BASE_DECLARE_FEATURE(kEvaluateProtectedPasswordLengthMinimum);
-
-// Specifies the minimum password length for password protection.
-extern const base::FeatureParam<int>
-    kEvaluateProtectedPasswordLengthMinimumValue;
-
 // Allows the Extension Telemetry Service to accept and use configurations
 // sent by the server.
 BASE_DECLARE_FEATURE(kExtensionTelemetryConfiguration);
-
-// Allows the Extension Telemetry Service to process installed extension files
-// and attach file data to reports.
-BASE_DECLARE_FEATURE(kExtensionTelemetryFileData);
-
-// Specifies the max number of files to process per extension in Extension
-// Telemetry's File Processor.
-extern const base::FeatureParam<int>
-    kExtensionTelemetryFileDataMaxFilesToProcess;
-
-// Specifies the max file size to process in Extension Telemetry's File
-// Processor.
-extern const base::FeatureParam<int>
-    kExtensionTelemetryFileDataMaxFileSizeBytes;
-
-// Specifies the interval for extension telemetry to collect offstore extension
-// file data.
-extern const base::FeatureParam<int>
-    kExtensionTelemetryFileDataCollectionIntervalSeconds;
-
-// Specifies the initial delay for extension telemetry to start collecting
-// offstore extension file data.
-extern const base::FeatureParam<int>
-    kExtensionTelemetryFileDataStartupDelaySeconds;
 
 // Allows the Extension Telemetry Service to include file data of extensions
 // specified in the --load-extension commandline switch in telemetry reports.
@@ -148,29 +99,17 @@ BASE_DECLARE_FEATURE(kFriendlierSafeBrowsingSettingsStandardProtection);
 BASE_DECLARE_FEATURE(kHashPrefixRealTimeLookups);
 
 // This parameter controls the relay URL that will forward the lookup requests
-// to the Safe Browsing server. This is similar to the
-// kHashRealTimeOverOhttpRelayUrl parameter, but it applies to the
-// kHashPrefixRealTimeLookups feature.
+// to the Safe Browsing server.
 extern const base::FeatureParam<std::string> kHashPrefixRealTimeLookupsRelayUrl;
 
-// For hash-prefix real-time lookup requests that are triggered by the lookup
-// mechanism experiment (see kSafeBrowsingLookupMechanismExperiment), enables
-// sending the requests over OHTTP to anonymize the source of the requests.
-BASE_DECLARE_FEATURE(kHashRealTimeOverOhttp);
-
-// This parameter controls the relay URL that will forward the lookup requests
-// to the Safe Browsing server. This is similar to the
-// kHashPrefixRealTimeLookupsRelayUrl parameter, but it applies to the
-// kHashRealTimeOverOhttp feature.
-extern const base::FeatureParam<std::string> kHashRealTimeOverOhttpRelayUrl;
-
-// UX improvements to download warnings in the download bubble and
-// chrome://downloads page, respectively.
-BASE_DECLARE_FEATURE(kImprovedDownloadBubbleWarnings);
+// UX improvements to download warnings on chrome://downloads page.
 BASE_DECLARE_FEATURE(kImprovedDownloadPageWarnings);
 
 // Enable logging of the account enhanced protection setting in Protego pings.
 BASE_DECLARE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings);
+
+// If enabled, do not run Maldoca over downloaded office documents.
+BASE_DECLARE_FEATURE(kMaldocaSkipCheck);
 
 // If enabled, the Safe Browsing database will be stored in a separate file and
 // mapped into memory.
@@ -182,6 +121,10 @@ extern const base::FeatureParam<bool> kMmapSafeBrowsingDatabaseAsync;
 
 // Enables unpacking of nested archives during downloads.
 BASE_DECLARE_FEATURE(kNestedArchives);
+
+// Controls whether custom messages from admin are shown for warn and block
+// enterprise interstitials.
+BASE_DECLARE_FEATURE(kRealTimeUrlFilteringCustomMessage);
 
 // Controls whether we are using red interstitial facelift updates.
 BASE_DECLARE_FEATURE(kRedInterstitialFacelift);
@@ -198,28 +141,10 @@ extern const base::FeatureParam<int> kReferrerChainEventMaximumAgeSeconds;
 // The maximum number of navigation events we keep in memory.
 extern const base::FeatureParam<int> kReferrerChainEventMaximumCount;
 
-// Controls whether download Client Safe Browsing Reports are sent under the
-// new triggers
-BASE_DECLARE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger);
-
 // Controls whether asynchronous real-time check is enabled. When enabled, the
 // navigation can be committed before real-time Safe Browsing check is
 // completed.
 BASE_DECLARE_FEATURE(kSafeBrowsingAsyncRealTimeCheck);
-
-// Controls whether the lookup mechanism experiment is enabled, which runs all
-// three lookup mechanisms instead of just real-time URL lookups for ESB users.
-// The other two lookup mechanisms are run in the background, and the results
-// of the three are logged for comparison purposes. This experiment is also
-// known as the hash-prefix real-time lookup experiment, since that mechanism is
-// the main comparison anchor.
-BASE_DECLARE_FEATURE(kSafeBrowsingLookupMechanismExperiment);
-// Controls whether the SafeBrowsingLookupMechanismExperiment (AKA HPRT
-// experiment) conditionally logs a Client Safe Browsing Report when the
-// experiment ends for URL-level validation purposes. This is only relevant
-// while the HPRT experiment is running, which is only enabled for ESB users.
-extern const base::FeatureParam<bool>
-    kUrlLevelValidationForHprtExperimentEnabled;
 
 #if BUILDFLAG(IS_ANDROID)
 // Use new GMSCore API for hash database check on browser URLs.
@@ -237,10 +162,6 @@ BASE_DECLARE_FEATURE(kSafeBrowsingReferrerChainWithCopyPasteNavigation);
 
 // Controls whether cookies are removed when the access token is present.
 BASE_DECLARE_FEATURE(kSafeBrowsingRemoveCookiesInAuthRequests);
-
-// Controls whether to skip Safe Browsing checks on images, CSS and font URLs in
-// renderer URL loader throttle.
-BASE_DECLARE_FEATURE(kSafeBrowsingSkipImageCssFont);
 
 // Controls whether to skip Safe Browsing checks on all subresource URLs in
 // renderer and browser URL loader throttles.
@@ -305,10 +226,6 @@ BASE_DECLARE_FEATURE(kThreatDomDetailsTagAndAttributeFeature);
 BASE_DECLARE_FEATURE(kVisualFeaturesSizes);
 
 base::Value::List GetFeatureStatusList();
-
-// Returns the tag used for Client Side Phishing Detection models, as
-// computed from the current feature flags.
-std::string GetClientSideDetectionTag();
 
 // Enables new ESB specific threshold fields in Visual TF Lite model files
 BASE_DECLARE_FEATURE(kSafeBrowsingPhishingClassificationESBThreshold);

@@ -6,7 +6,6 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/shell.h"
 #include "ash/system/media/media_notification_provider.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/screen_ai/screen_ai_dlc_installer.h"
+#include "chrome/browser/ui/ash/birch/birch_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/glanceables/glanceables_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
@@ -156,8 +156,9 @@ void UserSessionInitializer::OnUserProfileLoaded(const AccountId& account_id) {
     FamilyUserMetricsServiceFactory::GetForBrowserContext(profile);
   }
 
-  if (user->GetType() == user_manager::USER_TYPE_CHILD)
+  if (user->GetType() == user_manager::UserType::kChild) {
     InitializeChildUserServices(profile);
+  }
 }
 
 void UserSessionInitializer::InitializeChildUserServices(Profile* profile) {
@@ -229,7 +230,7 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
 
   lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
-  if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
+  if (user->GetType() == user_manager::UserType::kRegular) {
     // App install logs for extensions and ARC++ are uploaded via the user's
     // communication channel with the management server. This channel exists for
     // regular users only. `AppInstallEventLogManagerWrapper` and
@@ -266,6 +267,10 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
 
   // Ensure that the `HoldingSpaceKeyedService` for `profile` is created.
   HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile);
+
+  // Ensure that the `BirchKeyedService` for `profile` is created. It is created
+  // one per user in a multiprofile session.
+  BirchKeyedServiceFactory::GetInstance()->GetService(profile);
 
   // Ensure that the `CalendarKeyedService` for `profile` is created. It is
   // created one per user in a multiprofile session.
@@ -310,7 +315,7 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
 
     CrasAudioHandler::Get()->RefreshNoiseCancellationState();
 
-    Shell::Get()->media_notification_provider()->OnPrimaryUserSessionStarted();
+    MediaNotificationProvider::Get()->OnPrimaryUserSessionStarted();
     if (base::FeatureList::IsEnabled(media::kShowForceRespectUiGainsToggle)) {
       CrasAudioHandler::Get()->RefreshForceRespectUiGainsState();
     }

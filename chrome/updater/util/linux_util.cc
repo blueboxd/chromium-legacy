@@ -8,9 +8,11 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/registration_data.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/posix_util.h"
@@ -51,6 +53,14 @@ std::optional<base::FilePath> GetUpdateServiceLauncherPath(UpdaterScope scope) {
   std::optional<base::FilePath> path = GetInstallDirectory(scope);
   return path ? std::optional<base::FilePath>(path->AppendASCII(kLauncherName))
               : std::nullopt;
+}
+
+bool MigrateLegacyUpdaters(
+    UpdaterScope scope,
+    base::RepeatingCallback<void(const RegistrationRequest&)>
+        register_callback) {
+  // There is no legacy update client for Linux.
+  return true;
 }
 
 }  // namespace updater

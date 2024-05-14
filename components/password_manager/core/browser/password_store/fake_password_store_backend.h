@@ -12,6 +12,7 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_store/password_store.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend.h"
 
@@ -61,6 +62,7 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
+  bool IsAbleToSavePasswords() override;
   void GetAllLoginsAsync(LoginsOrErrorReply callback) override;
   void GetAllLoginsWithAffiliationAndBrandingAsync(
       LoginsOrErrorReply callback) override;
@@ -96,6 +98,7 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
+  base::WeakPtr<PasswordStoreBackend> AsWeakPtr() override;
 
   // Returns the task runner. Defaults to
   // `base::SequencedTaskRunner::GetCurrentDefault` if none is injected.
@@ -123,6 +126,7 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
   raw_ptr<AffiliatedMatchHelper> match_helper_;
   PasswordMap stored_passwords_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::WeakPtrFactory<FakePasswordStoreBackend> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

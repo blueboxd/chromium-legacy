@@ -249,10 +249,6 @@ const char kEnableBookmarkUndo[] = "enable-bookmark-undo";
 // Proxy component within the service process.
 const char kEnableCloudPrintProxy[] = "enable-cloud-print-proxy";
 
-// Enables CriticalPersistedTabData - redesign/replacement for TabState
-const char kEnableCriticalPersistedTabData[] =
-    "enable-critical-persisted-tab-data";
-
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
@@ -273,6 +269,11 @@ const char kEnableHangoutServicesExtensionForTesting[] =
     "enable-hangout-services-extension-for-testing";
 
 #if BUILDFLAG(IS_CHROMEOS)
+// Makes Lacros fork the zygotes before blocking when prelaunched at login
+// screen.
+const char kEnableLacrosForkZygotesAtLoginScreen[] =
+    "enable-lacros-fork-zygotes-at-login-screen";
+
 // Makes Lacros use a location shared across users for browser components.
 const char kEnableLacrosSharedComponentsDir[] =
     "enable-lacros-shared-components-dir";
@@ -555,6 +556,13 @@ const char kSimulateUpgrade[] = "simulate-upgrade";
 // possible) for testing purposes.
 const char kSimulateIdleTimeout[] = "simulate-idle-timeout";
 
+// Causes password_manager_android_util::SetUsesSplitStoresAndUPMForLocal() to
+// ignore the min GmsCore version requirement.
+// TODO(crbug.com/324370397): Remove once min GmsCore version running on the
+// bots is above the checked value.
+const char kSkipLocalUpmGmsCoreVersionCheckForTesting[] =
+    "skip-local-upm-gms-core-version-check-for-testing";
+
 // Specifies the maximum SSL/TLS version ("tls1.2" or "tls1.3").
 const char kSSLVersionMax[] = "ssl-version-max";
 
@@ -696,6 +704,10 @@ const char kMarketUrlForTesting[] = "market-url-for-testing";
 
 // Force enable user agent overrides to request desktop sites in Clank.
 const char kRequestDesktopSites[] = "request-desktop-sites";
+
+// Hash names of Java functions in SSM. Only has an effect if SSM is enabled.
+const char kStartStackProfilerWithJavaNameHashing[] =
+    "start-stack-profiler-with-java-name-hashing";
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -785,6 +797,10 @@ const char kEnableProfileShortcutManager[] = "enable-profile-shortcut-manager";
 // for accessibility software (see https://crbug.com/1072735).
 extern const char kFromInstaller[] = "from-installer";
 
+// Indicates that this launch of the browser originated from the Legacy Browser
+// Support for Edge extension's native host. This is recorded in UMA.
+extern const char kFromBrowserSwitcher[] = "from-browser-switcher";
+
 // Makes Windows happy by allowing it to show "Enable access to this program"
 // checkbox in Add/Remove Programs->Set Program Access and Defaults. This only
 // shows an error box because the only way to hide Chrome is by uninstalling
@@ -813,14 +829,6 @@ const char kNotificationInlineReply[] = "notification-inline-reply";
 // Used for launching Chrome when a toast displayed in the Windows Action Center
 // has been activated. Should contain the launch ID encoded by Chrome.
 const char kNotificationLaunchId[] = "notification-launch-id";
-
-// /prefetch:# arguments for the browser process launched in background mode and
-// for the watcher process. Use profiles 5, 6 and 7 as documented on
-// kPrefetchArgument* in content_switches.cc.
-const char kPrefetchArgumentBrowserBackground[] = "/prefetch:5";
-// /prefetch:6 was formerly used by the watcher but is no longer used.
-// /prefetch:7 is used by crashpad, which can't depend on constants defined
-// here. See crashpad_win.cc for more details.
 
 // See kHideIcons.
 const char kShowIcons[] = "show-icons";

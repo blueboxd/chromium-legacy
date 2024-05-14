@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/check_is_test.h"
 #include "base/files/dir_reader_posix.h"
@@ -58,14 +59,27 @@ bool RecordEarlyBootTrialInChrome(
   return true;
 }
 
-void RecordEarlyBootTrialAfterChromeStartup(const FileWatchOptions& opts,
-                                            const base::FilePath& path,
-                                            bool error) {
+void RecordEarlyBootTrialAfterChromeStartup(
+    const FileWatchOptions& opts,
+    const base::FilePathWatcher::ChangeInfo& change_info,
+    const base::FilePath& path,
+    bool error) {
   if (error || path.DirName() != opts.expected_dir) {
     // TODO(b/296394808): Add UMA metric if we enter this code path since it
     // is not expected.
     return;
   }
+
+  if (change_info.file_path_type !=
+          base::FilePathWatcher::FilePathType::kFile ||
+      change_info.change_type != base::FilePathWatcher::ChangeType::kCreated) {
+    // Only record field trial files that were just created. We do not want to
+    // record a field trial on any of the other change options like
+    // base::FilePathWatcher::ChangeType::kModified or
+    // base::FilePathWatcher::ChangeType::kDeleted.
+    return;
+  }
+
   // TODO(b/296394808): Add UMA metric if unable to record trial due to parse
   // error.
   RecordEarlyBootTrialInChrome(opts.listen_callback, path);
@@ -79,7 +93,7 @@ void ListenForActiveEarlyBootTrials(base::FilePathWatcher* watcher,
       // Reports the path of modified files in the directory.
       .report_modified_path = true};
 
-  watcher->WatchWithOptions(
+  watcher->WatchWithChangeInfo(
       opts.expected_dir, options,
       base::BindRepeating(&RecordEarlyBootTrialAfterChromeStartup, opts));
 }
@@ -191,7 +205,7 @@ class FeaturedClientImpl : public FeaturedClient {
   // Watches for early-boot trial files written to `expected_dir_`.
   std::unique_ptr<base::FilePathWatcher> watcher_;
 
-  raw_ptr<dbus::ObjectProxy, ExperimentalAsh> featured_service_proxy_ = nullptr;
+  raw_ptr<dbus::ObjectProxy> featured_service_proxy_ = nullptr;
 
   // Sequence runner that an post tasks that may block.
   scoped_refptr<base::SequencedTaskRunner> file_listener_task_runner_ =
@@ -251,7 +265,7 @@ bool FeaturedClient::ParseTrialFilename(
     const base::FilePath& path,
     base::FieldTrial::ActiveGroup& active_group) {
   std::string filename = path.BaseName().value();
-  std::vector<base::StringPiece> components =
+  std::vector<std::string_view> components =
       base::SplitStringPiece(filename, feature::kTrialGroupSeparator,
                              base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (components.size() != 2) {

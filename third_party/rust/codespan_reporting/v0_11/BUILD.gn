@@ -35,12 +35,15 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
+  proc_macro_configs -= [ "//build/config/compiler:chromium_code" ]
+  proc_macro_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
     "//third_party/rust/termcolor/v1:lib",
     "//third_party/rust/unicode_width/v0_1:lib",
   ]
 
   # Only for usage from third-party crates. Add the crate to
-  # third_party.toml to use it from first-party code.
+  # //third_party/rust/chromium_crates_io/Cargo.toml to use
+  # it from first-party code.
   visibility = [ "//third_party/rust/*" ]
 }

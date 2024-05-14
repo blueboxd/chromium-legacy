@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/functional/callback.h"
+#include "chrome/browser/password_edit_dialog/android/password_edit_dialog_bridge_delegate.h"
 
 namespace content {
 class WebContents;
@@ -57,12 +58,11 @@ class PasswordEditDialog {
   virtual ~PasswordEditDialog();
 
   // Calls Java side of the bridge to display password edit modal dialog.
-  // Called when PasswordEditDialogWithDetails feature is enabled.
   virtual void ShowPasswordEditDialog(
       const std::vector<std::u16string>& usernames,
       const std::u16string& username,
       const std::u16string& password,
-      const std::string& account_email) = 0;
+      const std::optional<std::string>& account_email) = 0;
 
   // Dismisses displayed dialog. The owner of PassworDeidtDialogBridge should
   // call this function to correctly dismiss and destroy the dialog. The object
@@ -79,19 +79,18 @@ class PasswordEditDialogBridge : public PasswordEditDialog {
   // Returns nullptr if |web_contents| is not attached to a window.
   static std::unique_ptr<PasswordEditDialog> Create(
       content::WebContents* web_contents,
-      DialogAcceptedCallback dialog_accepted_callback,
-      DialogDismissedCallback dialog_dismissed_callback);
+      PasswordEditDialogBridgeDelegate* delegate);
 
   // Disallow copy and assign.
   PasswordEditDialogBridge(const PasswordEditDialogBridge&) = delete;
   PasswordEditDialogBridge& operator=(const PasswordEditDialogBridge&) = delete;
 
   // Calls Java side of the bridge to display password edit modal dialog.
-  // Called when PasswordEditDialogWithDetails feature is enabled.
-  void ShowPasswordEditDialog(const std::vector<std::u16string>& usernames,
-                              const std::u16string& username,
-                              const std::u16string& password,
-                              const std::string& account_email) override;
+  void ShowPasswordEditDialog(
+      const std::vector<std::u16string>& usernames,
+      const std::u16string& username,
+      const std::u16string& password,
+      const std::optional<std::string>& account_email) override;
 
   // Dismisses displayed dialog. The owner of PassworDeidtDialogBridge should
   // call this function to correctly dismiss and destroy the dialog. The object
@@ -101,28 +100,26 @@ class PasswordEditDialogBridge : public PasswordEditDialog {
   // Called from Java to indicate that the user tapped the positive button with
   // |username| and
   // |password| which are going to be saved.
-  // Used when PasswordEditDialogWithDetails flag is on.
   void OnDialogAccepted(JNIEnv* env,
                         const base::android::JavaParamRef<jstring>& username,
                         const base::android::JavaParamRef<jstring>& password);
 
-  // Called from Java to indicate that the user tapped the positive button with
-  // |username_index|.
-  // Used when PasswordEditDialogWithDetails flag is off.
-  void OnLegacyDialogAccepted(JNIEnv* env, jint username_index);
-
   // Called from Java when the modal dialog is dismissed.
   void OnDialogDismissed(JNIEnv* env, jboolean dialogAccepted);
+
+  // Called from Java to identify whether the credential to be saved/updated
+  // will be saved/updated in the account storage.
+  jboolean IsUsingAccountStorage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& username);
 
  private:
   PasswordEditDialogBridge(
       base::android::ScopedJavaLocalRef<jobject> jwindow_android,
-      DialogAcceptedCallback dialog_accepted_callback,
-      DialogDismissedCallback dialog_dismissed_callback);
+      PasswordEditDialogBridgeDelegate* delegate);
 
   base::android::ScopedJavaGlobalRef<jobject> java_password_dialog_;
-  DialogAcceptedCallback dialog_accepted_callback_;
-  DialogDismissedCallback dialog_dismissed_callback_;
+  raw_ptr<PasswordEditDialogBridgeDelegate> delegate_;
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_EDIT_DIALOG_ANDROID_PASSWORD_EDIT_DIALOG_BRIDGE_H_

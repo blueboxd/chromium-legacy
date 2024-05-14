@@ -24,7 +24,11 @@ namespace internal {
 
 class BindStateBase;
 
-template <typename Functor, typename... BoundArgs>
+template <bool is_method,
+          bool is_nullable,
+          bool is_callback,
+          typename Functor,
+          typename... BoundArgs>
 struct BindState;
 
 struct BASE_EXPORT BindStateBaseRefCountTraits {
@@ -49,9 +53,12 @@ class BASE_EXPORT BindStateBase
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
-  enum CancellationQueryMode {
-    IS_CANCELLED,
-    MAYBE_VALID,
+  // What kind of cancellation query the call to the cancellation traits is
+  // making. This enum could be removed, at the cost of storing an extra
+  // function pointer.
+  enum class CancellationQueryMode : bool {
+    kIsCancelled = false,
+    kMaybeValid = true,
   };
 
   using InvokeFuncStorage = void (*)();
@@ -60,13 +67,14 @@ class BASE_EXPORT BindStateBase
   BindStateBase& operator=(const BindStateBase&) = delete;
 
  private:
-  BindStateBase(InvokeFuncStorage polymorphic_invoke,
-                void (*destructor)(const BindStateBase*));
-  BindStateBase(InvokeFuncStorage polymorphic_invoke,
-                void (*destructor)(const BindStateBase*),
-                bool (*query_cancellation_traits)(const BindStateBase*,
-                                                  CancellationQueryMode mode));
+  using DestructorPtr = void (*)(const BindStateBase*);
+  using QueryCancellationTraitsPtr = bool (*)(const BindStateBase*,
+                                              CancellationQueryMode mode);
 
+  BindStateBase(InvokeFuncStorage polymorphic_invoke, DestructorPtr destructor);
+  BindStateBase(InvokeFuncStorage polymorphic_invoke,
+                DestructorPtr destructor,
+                QueryCancellationTraitsPtr query_cancellation_traits);
   ~BindStateBase() = default;
 
   friend struct BindStateBaseRefCountTraits;
@@ -75,16 +83,21 @@ class BASE_EXPORT BindStateBase
   friend class BindStateHolder;
 
   // Allowlist subclasses that access the destructor of BindStateBase.
-  template <typename Functor, typename... BoundArgs>
+  template <bool is_method,
+            bool is_nullable,
+            bool is_callback,
+            typename Functor,
+            typename... BoundArgs>
   friend struct BindState;
   friend struct ::base::FakeBindState;
 
   bool IsCancelled() const {
-    return query_cancellation_traits_(this, IS_CANCELLED);
+    return query_cancellation_traits_(this,
+                                      CancellationQueryMode::kIsCancelled);
   }
 
   bool MaybeValid() const {
-    return query_cancellation_traits_(this, MAYBE_VALID);
+    return query_cancellation_traits_(this, CancellationQueryMode::kMaybeValid);
   }
 
   // In C++, it is safe to cast function pointers to function pointers of
@@ -94,9 +107,8 @@ class BASE_EXPORT BindStateBase
   InvokeFuncStorage polymorphic_invoke_;
 
   // Pointer to a function that will properly destroy |this|.
-  void (*destructor_)(const BindStateBase*);
-  bool (*query_cancellation_traits_)(const BindStateBase*,
-                                     CancellationQueryMode mode);
+  DestructorPtr destructor_;
+  QueryCancellationTraitsPtr query_cancellation_traits_;
 };
 
 // Minimal wrapper around a `scoped_refptr<BindStateBase>`. It allows more
@@ -174,7 +186,7 @@ struct ThenHelper<OriginalCallback<void(OriginalArgs...)>,
                   ThenCallback<ThenR(ThenArgs...)>> {
  private:
   // For context on this "templated struct with a lambda that asserts" pattern,
-  // see comments in MakeBindStateTypeImpl.
+  // see comments in `Invoker<>`.
   template <bool v = sizeof...(ThenArgs) == 0>
   struct CorrectNumberOfArgs {
     static constexpr bool value = [] {

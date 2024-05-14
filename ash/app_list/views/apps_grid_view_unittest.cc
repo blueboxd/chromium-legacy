@@ -61,6 +61,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
 #include "ash/utility/haptics_tracking_test_input_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/callback_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -187,7 +188,7 @@ class PageFlipWaiter : public PaginationModelObserver {
   }
 
   std::unique_ptr<base::RunLoop> ui_run_loop_;
-  raw_ptr<PaginationModel, ExperimentalAsh> model_ = nullptr;
+  raw_ptr<PaginationModel> model_ = nullptr;
   bool wait_ = false;
   std::string selected_pages_;
 };
@@ -214,7 +215,7 @@ class WindowDeletionWaiter : aura::WindowObserver {
   }
 
   base::RunLoop run_loop_;
-  raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh> window_;
+  raw_ptr<aura::Window, DanglingUntriaged> window_;
 };
 
 // Find the window with type WINDOW_TYPE_MENU and returns the firstly found one.
@@ -222,7 +223,7 @@ class WindowDeletionWaiter : aura::WindowObserver {
 aura::Window* FindMenuWindow(aura::Window* root) {
   if (root->GetType() == aura::client::WINDOW_TYPE_MENU)
     return root;
-  for (auto* child : root->children()) {
+  for (aura::Window* child : root->children()) {
     auto* menu_in_child = FindMenuWindow(child);
     if (menu_in_child)
       return menu_in_child;
@@ -255,7 +256,7 @@ class PostPageFlipTask : public PaginationModelObserver {
   void TransitionChanged() override {}
   void TransitionEnded() override {}
 
-  raw_ptr<PaginationModel, ExperimentalAsh> model_;
+  raw_ptr<PaginationModel> model_;
   base::OnceClosure task_;
 };
 
@@ -278,7 +279,7 @@ class BoundsChangeCounter : public views::ViewObserver {
   int bounds_change_count() const { return bounds_change_count_; }
 
  private:
-  const raw_ptr<views::View, ExperimentalAsh> observed_view_;
+  const raw_ptr<views::View> observed_view_;
   int bounds_change_count_ = 0;
 };
 
@@ -335,7 +336,7 @@ class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
     auto* helper = GetAppListTestHelper();
     if (create_as_tablet_mode_) {
       // The app list will be shown automatically when tablet mode is enabled.
-      Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+      ash::TabletModeControllerTestApi().EnterTabletMode();
     } else {
       helper->ShowAppList();
     }
@@ -757,23 +758,24 @@ class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
     return view->new_install_dot_;
   }
 
+  bool IsUIStateDraggingForItemView(AppListItemView* item) {
+    return item->ui_state_ == AppListItemView::UI_STATE_DRAGGING ||
+           item->ui_state_ == AppListItemView::UI_STATE_TOUCH_DRAGGING;
+  }
+
   AppListTestModel* GetTestModel() { return GetAppListTestHelper()->model(); }
 
   // May be a PagedAppsGridView in tablet mode or a ScrollableAppsGridView in
   // clamshell mode.
-  raw_ptr<AppsGridView, DanglingUntriaged | ExperimentalAsh> apps_grid_view_ =
-      nullptr;
+  raw_ptr<AppsGridView, DanglingUntriaged> apps_grid_view_ = nullptr;
 
   // May be owned by different parent views depending on tablet mode.
-  raw_ptr<AppListFolderView, DanglingUntriaged | ExperimentalAsh>
-      app_list_folder_view_ = nullptr;
-  raw_ptr<SearchBoxView, DanglingUntriaged | ExperimentalAsh> search_box_view_ =
-      nullptr;
+  raw_ptr<AppListFolderView, DanglingUntriaged> app_list_folder_view_ = nullptr;
+  raw_ptr<SearchBoxView, DanglingUntriaged> search_box_view_ = nullptr;
 
   // These views exist in tablet mode.
-  raw_ptr<PagedAppsGridView, DanglingUntriaged | ExperimentalAsh>
-      paged_apps_grid_view_ = nullptr;
-  raw_ptr<AppListView, DanglingUntriaged | ExperimentalAsh> app_list_view_ =
+  raw_ptr<PagedAppsGridView, DanglingUntriaged> paged_apps_grid_view_ = nullptr;
+  raw_ptr<AppListView, DanglingUntriaged> app_list_view_ =
       nullptr;  // Owned by native widget.
 
   std::unique_ptr<AppsGridViewTestApi> test_api_;
@@ -6609,6 +6611,38 @@ TEST_F(AppsGridViewTest, DragEndsDuringPromiseAppReplacement) {
   EXPECT_FALSE(installed_view->GetIconView()->layer());
   EXPECT_FALSE(HasPendingPromiseAppRemoval(promise_app_id));
   EXPECT_FALSE(installed_view->layer());
+}
+
+TEST_P(AppsGridViewDragTest, DraggedItemExitsGridItemExitsDragState) {
+  if (!use_drag_drop_refactor()) {
+    return;
+  }
+
+  size_t kTotalItems = 2;
+  GetTestModel()->PopulateApps(kTotalItems);
+  UpdateLayout();
+  AppListItemView* drag_view =
+      GetItemViewInCurrentPageAt(0, 0, apps_grid_view_);
+  StartDragForViewAndFireTimer(AppsGridView::MOUSE, drag_view);
+
+  std::list<base::OnceClosure> tasks;
+  tasks.push_back(base::BindLambdaForTesting([&]() {
+    MaybeCheckHaptickEventsCount(1);
+
+    // Move item outside of the grid.
+    UpdateDragInScreen(AppsGridView::MOUSE,
+                       apps_grid_view_->GetBoundsInScreen().top_center() +
+                           gfx::Vector2d(0, -drag_view->height()
+                                         /*padding to completely exit view*/),
+                       /*steps=*/10);
+  }));
+  tasks.push_back(base::BindLambdaForTesting(
+      [&]() { EXPECT_FALSE(IsUIStateDraggingForItemView(drag_view)); }));
+  tasks.push_back(base::BindLambdaForTesting([&]() {
+    // Needed by the controller
+    EndDrag();
+  }));
+  MaybeRunDragAndDropSequenceForAppList(&tasks, /*is_touch =*/false);
 }
 
 }  // namespace test

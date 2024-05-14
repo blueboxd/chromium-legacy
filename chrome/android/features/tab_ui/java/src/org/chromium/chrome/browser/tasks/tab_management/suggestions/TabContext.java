@@ -6,11 +6,10 @@ package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.profiles.Profile;
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.components.site_engagement.SiteEngagementService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,11 +101,6 @@ public class TabContext {
                     tab.isIncognito());
         }
 
-        public double getSiteEngagementScore() {
-            return SiteEngagementService.getForBrowserContext(Profile.getLastUsedRegularProfile())
-                    .getScore(visibleUrl);
-        }
-
         @Override
         public boolean equals(Object other) {
             if (this == other) return true;
@@ -173,19 +167,19 @@ public class TabContext {
     }
 
     /**
-     * Creates an instance of TabContext based on the provided {@link TabModelSelector}.
-     * @param tabModelSelector TabModelSelector for which the TabContext will be derived
+     * Creates an instance of TabContext based on the provided {@link TabModelFilter}.
+     *
+     * @param tabModelFilter The TabModelFilter for which the TabContext will be derived
      * @return an instance of TabContext
      */
-    public static TabContext createCurrentContext(TabModelSelector tabModelSelector) {
-        TabModelFilter tabModelFilter =
-                tabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
+    public static TabContext createCurrentContext(@Nullable TabModelFilter tabModelFilter) {
         List<TabInfo> ungroupedTabs = new ArrayList<>();
         List<TabGroupInfo> existingGroups = new ArrayList<>();
 
         // Examine each tab in the current model and either add it to the list of ungrouped tabs or
         // add it to a group it belongs to.
-        for (int i = 0; i < tabModelFilter.getCount(); i++) {
+        int count = tabModelFilter == null ? 0 : tabModelFilter.getCount();
+        for (int i = 0; i < count; i++) {
             Tab currentTab = tabModelFilter.getTabAt(i);
 
             assert currentTab != null : "currentTab should not be null";

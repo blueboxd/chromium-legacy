@@ -89,7 +89,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   device::mojom::XRDeviceId GetId() const { return id_; }
 
 #if BUILDFLAG(IS_WIN)
-  absl::optional<CHROME_LUID> GetLuid() const;
+  std::optional<CHROME_LUID> GetLuid() const;
 #endif
 
   // BrowserXRRuntime
@@ -124,7 +124,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
       immersive_session_controller_;
   bool immersive_session_has_camera_access_ = false;
 
-  std::set<VRServiceImpl*> services_;
+  std::set<raw_ptr<VRServiceImpl, SetExperimental>> services_;
 
   raw_ptr<VRServiceImpl> presenting_service_ = nullptr;
 

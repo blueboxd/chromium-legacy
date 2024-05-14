@@ -25,6 +25,7 @@
 #include "third_party/blink/public/common/features_generated.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/virtual_display_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -32,10 +33,6 @@
 #include "ash/shell.h"
 #include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_MAC)
-#include "ui/display/mac/test/virtual_display_mac_util.h"
-#endif  // BUILDFLAG(IS_MAC)
 
 namespace {
 
@@ -66,12 +63,6 @@ ExclusiveAccessBubbleViews* GetExclusiveAccessBubble(Browser* browser) {
   return browser_view->exclusive_access_bubble();
 }
 
-// Enables tests to use a special windows driver to create virtual displays when
-// this command line switch is enabled.
-// TODO(crbug.com/1034772): Make this switch do more than just logging.
-static constexpr char kSwitchWinVirtualDisplayDriver[] =
-    "win-virtual-display-driver";
-
 // Tests popups with multi-screen features from the Window Management API.
 // Tests are run with and without the requisite Window Management permission.
 // Tests must run in series to manage virtual displays on supported platforms.
@@ -80,7 +71,7 @@ static constexpr char kSwitchWinVirtualDisplayDriver[] =
 #define MAYBE_PopupMultiScreenTest PopupMultiScreenTest
 #else
 #define MAYBE_PopupMultiScreenTest DISABLED_PopupMultiScreenTest
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 class MAYBE_PopupMultiScreenTest : public PopupTestBase,
                                    public ::testing::WithParamInterface<bool> {
  public:
@@ -95,16 +86,8 @@ class MAYBE_PopupMultiScreenTest : public PopupTestBase,
   }
 
   void SetUpOnMainThread() override {
-    auto* cmd_line = base::CommandLine::ForCurrentProcess();
-
-    // Log a message if windows virtual display driver is enabled.
-    // TODO(crbug.com/1034772): Make this switch do more than just logging.
-    if (cmd_line->HasSwitch(kSwitchWinVirtualDisplayDriver)) {
-      LOG(INFO) << kSwitchWinVirtualDisplayDriver << " switch is enabled.";
-    }
-
     if (!SetUpVirtualDisplays()) {
-      GTEST_SKIP() << "Virtual displays not supported on this platform.";
+      GTEST_SKIP() << "Skipping test; unavailable multi-screen support.";
     }
     ASSERT_GE(display::Screen::GetScreen()->GetNumDisplays(), 2);
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -120,9 +103,7 @@ class MAYBE_PopupMultiScreenTest : public PopupTestBase,
   }
 
   void TearDownOnMainThread() override {
-#if BUILDFLAG(IS_MAC)
     virtual_display_util_.reset();
-#endif
   }
 
  protected:
@@ -139,26 +120,20 @@ class MAYBE_PopupMultiScreenTest : public PopupTestBase,
     display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
         .UpdateDisplay("100+100-801x802,901+100-802x803");
     return true;
-#elif BUILDFLAG(IS_MAC)
-    if (display::test::VirtualDisplayMacUtil::IsAPIAvailable()) {
-      virtual_display_util_ =
-          std::make_unique<display::test::VirtualDisplayMacUtil>();
+#else
+    if ((virtual_display_util_ = display::test::VirtualDisplayUtil::TryCreate(
+             display::Screen::GetScreen()))) {
       virtual_display_util_->AddDisplay(
-          1, display::test::VirtualDisplayMacUtil::k1920x1080);
+          1, display::test::VirtualDisplayUtil::k1920x1080);
       return true;
     }
-    return false;
-#else
     return false;
 #endif
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-#if BUILDFLAG(IS_MAC)
-  std::unique_ptr<display::test::VirtualDisplayMacUtil> virtual_display_util_;
-#endif
+  std::unique_ptr<display::test::VirtualDisplayUtil> virtual_display_util_;
 };
 
 INSTANTIATE_TEST_SUITE_P(, MAYBE_PopupMultiScreenTest, ::testing::Bool());

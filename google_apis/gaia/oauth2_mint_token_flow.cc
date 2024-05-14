@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include <optional>
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
@@ -18,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -26,6 +28,7 @@
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_api_call_flow.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -152,16 +155,16 @@ OAuth2MintTokenFlow::Parameters::Parameters() : mode(MODE_ISSUE_ADVICE) {}
 // static
 OAuth2MintTokenFlow::Parameters
 OAuth2MintTokenFlow::Parameters::CreateForExtensionFlow(
-    base::StringPiece extension_id,
-    base::StringPiece client_id,
-    base::span<const base::StringPiece> scopes,
+    std::string_view extension_id,
+    std::string_view client_id,
+    base::span<const std::string_view> scopes,
     Mode mode,
     bool enable_granular_permissions,
-    base::StringPiece version,
-    base::StringPiece channel,
-    base::StringPiece device_id,
-    base::StringPiece selected_user_id,
-    base::StringPiece consent_result) {
+    std::string_view version,
+    std::string_view channel,
+    std::string_view device_id,
+    std::string_view selected_user_id,
+    std::string_view consent_result) {
   Parameters parameters;
   parameters.extension_id = extension_id;
   parameters.client_id = client_id;
@@ -179,11 +182,12 @@ OAuth2MintTokenFlow::Parameters::CreateForExtensionFlow(
 // static
 OAuth2MintTokenFlow::Parameters
 OAuth2MintTokenFlow::Parameters::CreateForClientFlow(
-    base::StringPiece client_id,
-    base::span<const base::StringPiece> scopes,
-    base::StringPiece version,
-    base::StringPiece channel,
-    base::StringPiece device_id) {
+    std::string_view client_id,
+    base::span<const std::string_view> scopes,
+    std::string_view version,
+    std::string_view channel,
+    std::string_view device_id,
+    std::string_view bound_oauth_token) {
   Parameters parameters;
   parameters.client_id = client_id;
   parameters.scopes = std::vector<std::string>(scopes.begin(), scopes.end());
@@ -191,6 +195,7 @@ OAuth2MintTokenFlow::Parameters::CreateForClientFlow(
   parameters.version = version;
   parameters.channel = channel;
   parameters.device_id = device_id;
+  parameters.bound_oauth_token = bound_oauth_token;
   return parameters;
 }
 
@@ -287,6 +292,17 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
         base::EscapeUrlEncodedData(parameters_.consent_result, true).c_str()));
   }
   return body;
+}
+
+std::string OAuth2MintTokenFlow::CreateAuthorizationHeaderValue(
+    const std::string& access_token) {
+  if (!parameters_.bound_oauth_token.empty()) {
+    // Replace a regular token with the one containing binding assertion.
+    return base::StrCat({"BoundOAuthToken ", parameters_.bound_oauth_token});
+  }
+
+  // Call the base class method to get a regular authorization value.
+  return OAuth2ApiCallFlow::CreateAuthorizationHeaderValue(access_token);
 }
 
 void OAuth2MintTokenFlow::ProcessApiCallSuccess(

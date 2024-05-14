@@ -47,6 +47,7 @@ buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
     "CHROME_ENABLE_LOGGING_BY_DEFAULT=$chrome_enable_logging_by_default",
+    "CHROME_CERTIFICATE_POLICIES_SUPPORTED=$chrome_certificate_policies_supported",
     "ENABLE_BACKGROUND_MODE=$enable_background_mode",
     "ENABLE_BACKGROUND_CONTENTS=$enable_background_contents",
     "ENABLE_CHROME_NOTIFICATIONS=$enable_chrome_notifications",
@@ -262,6 +263,7 @@ static_library("common_lib") {
     "//components/no_state_prefetch/common",
     "//components/no_state_prefetch/common:mojo_bindings",
     "//components/page_load_metrics/common:common",
+    "//components/pdf/common:constants",
   ]
 
   if (is_android || enable_library_cdms) {
@@ -270,10 +272,6 @@ static_library("common_lib") {
 
   if (enable_supervised_users) {
     public_deps += [ "//components/supervised_user/core/common" ]
-  }
-
-  if (enable_pdf) {
-    deps += [ "//components/pdf/common" ]
   }
 
   if (enable_ppapi) {

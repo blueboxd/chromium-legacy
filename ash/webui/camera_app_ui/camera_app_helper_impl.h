@@ -103,6 +103,7 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
                            StartStorageMonitorCallback callback) override;
   void StopStorageMonitor() override;
   void OpenStorageManagement() override;
+  void OpenWifiDialog(camera_app::mojom::WifiConfigPtr wifi_config) override;
 
  private:
   void CheckExternalScreenState();
@@ -132,7 +133,7 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
   // it. For SWA, since CameraAppUI owns CameraAppHelperImpl, it is safe to
   // assume that the |camera_app_ui_| is always valid during the whole lifetime
   // of CameraAppHelperImpl.
-  raw_ptr<CameraAppUI, ExperimentalAsh> camera_app_ui_;
+  raw_ptr<CameraAppUI> camera_app_ui_;
 
   CameraResultCallback camera_result_callback_;
 
@@ -142,7 +143,7 @@ class CameraAppHelperImpl : public ScreenBacklightObserver,
 
   std::optional<uint32_t> pending_intent_id_;
 
-  raw_ptr<aura::Window, ExperimentalAsh> window_;
+  raw_ptr<aura::Window> window_;
 
   mojo::Remote<TabletModeMonitor> tablet_mode_monitor_;
   mojo::Remote<ScreenStateMonitor> screen_state_monitor_;

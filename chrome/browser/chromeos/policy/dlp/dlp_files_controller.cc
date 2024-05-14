@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_scoped_file_access_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_paths.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/enterprise/data_controls/component.h"
@@ -29,8 +28,8 @@
 namespace policy {
 namespace {
 // FileSystemContext instance set for testing.
-absl::optional<storage::FileSystemContext*> g_file_system_context_for_testing =
-    absl::nullopt;
+std::optional<storage::FileSystemContext*> g_file_system_context_for_testing =
+    std::nullopt;
 
 // This callback is used when we copy a file within the internal filesystem
 // (Downloads / MyFiles). It is called after the source URL of the source file
@@ -102,16 +101,6 @@ void GotFilesSourcesOfCopy(
 
   chromeos::DlpClient::Get()->RequestFileAccess(file_access_request,
                                                 std::move(add_file_callback));
-}
-
-// Returns true if `file_path` is in My Files directory.
-bool IsInLocalFileSystem(const base::FilePath& file_path) {
-  base::FilePath my_files_folder;
-  base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &my_files_folder);
-  if (my_files_folder == file_path || my_files_folder.IsParent(file_path)) {
-    return true;
-  }
-  return false;
 }
 
 // Converts DataTransferEndpoint object to DlpFileDestination.
@@ -292,9 +281,9 @@ void DlpFilesController::RequestCopyAccess(
   }
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
 
-  absl::optional<data_controls::Component> dst_component =
+  std::optional<data_controls::Component> dst_component =
       MapFilePathToPolicyComponent(profile, destination.path());
-  absl::optional<data_controls::Component> src_component =
+  std::optional<data_controls::Component> src_component =
       MapFilePathToPolicyComponent(profile, source_file.path());
 
   // Copy from external is not limited by DLP.
@@ -460,7 +449,7 @@ void DlpFilesController::ReturnIfActionAllowed(
 
   std::vector<base::FilePath> blocked_files(response.files_paths().begin(),
                                             response.files_paths().end());
-  ShowDlpBlockedFiles(/*task_id=*/absl::nullopt, std::move(blocked_files),
+  ShowDlpBlockedFiles(/*task_id=*/std::nullopt, std::move(blocked_files),
                       action);
   std::move(result_callback).Run(/*is_allowed=*/false);
 }

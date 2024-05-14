@@ -48,31 +48,26 @@ _default_specs = {
     ),
 }
 
-_blank_thresholds = {
-    "Unhealthy": struct(
-        score = 5,
-        period_days = 7,
-        infra_fail_rate = struct(
-            average = None,
-        ),
-        fail_rate = struct(
-            average = None,
-        ),
-        build_time = struct(
-            p50_mins = None,
-        ),
-        pending_time = struct(
-            p50_mins = None,
-        ),
+_blank_unhealthy_thresholds = struct(
+    infra_fail_rate = struct(
+        average = None,
     ),
-    "Low Value": struct(
-        score = 1,
-        period_days = 90,
-        fail_rate = struct(
-            average = None,
-        ),
+    fail_rate = struct(
+        average = None,
     ),
-}
+    build_time = struct(
+        p50_mins = None,
+    ),
+    pending_time = struct(
+        p50_mins = None,
+    ),
+)
+
+_blank_low_value_thresholds = struct(
+    fail_rate = struct(
+        average = None,
+    ),
+)
 
 DEFAULT = {
     "Unhealthy": struct(
@@ -91,8 +86,27 @@ DEFAULT = {
 # So all user-exposed functions expect a dictionary.
 # We then convert that into a list of [problem_specs] so the object encapsulates
 # its own name, for ease of processing
-def thresholds(modifications):
-    return _merge_mods(_blank_thresholds, modifications)
+def unhealthy_thresholds(
+        fail_rate = struct(),
+        infra_fail_rate = struct(),
+        build_time = struct(),
+        pending_time = struct()):
+    thresholds = {"fail_rate": fail_rate, "infra_fail_rate": infra_fail_rate, "build_time": build_time, "pending_time": pending_time}
+    fail_if_any_none_val(thresholds)
+
+    return structs.evolve(_blank_unhealthy_thresholds, **thresholds)
+
+def low_value_thresholds(
+        fail_rate = struct()):
+    thresholds = {"fail_rate": fail_rate}
+    fail_if_any_none_val(thresholds)
+
+    return structs.evolve(_blank_low_value_thresholds, **thresholds)
+
+def fail_if_any_none_val(vals):
+    for k, v in vals.items():
+        if v == None:
+            fail(k + " threshold was None. Thresholds can't be None. Use an empty struct() instead")
 
 def modified_default(modifications):
     return _merge_mods(_default_specs, modifications)
@@ -100,11 +114,15 @@ def modified_default(modifications):
 def _merge_mods(base, modifications):
     spec = dict(base)
 
-    for mod_name in modifications:
+    for mod_name, mod in modifications.items():
+        mods_proto = structs.to_proto_properties(mod)
+        if len(mods_proto) == 0:
+            fail("Modifications for health spec \"{}\" were empty.".format(mod_name))
+
         if mod_name not in spec:
-            spec[mod_name] = modifications[mod_name]
+            spec[mod_name] = mod
         else:
-            spec[mod_name] = structs.evolve(spec[mod_name], **structs.to_proto_properties(modifications[mod_name]))
+            spec[mod_name] = structs.evolve(spec[mod_name], **mods_proto)
 
     return spec
 
@@ -137,12 +155,14 @@ def _convert_specs(specs):
     """
     converted_specs = []
     for name, spec in specs.items():
-        scoreless_spec = structs.to_proto_properties(spec)
-        scoreless_spec.pop("score")
+        thresholds_spec = structs.to_proto_properties(spec)
+        thresholds_spec.pop("score")
+        thresholds_spec.pop("period_days")
         converted_specs.append(struct(
             name = name,
             score = spec.score,
-            thresholds = scoreless_spec,
+            period_days = spec.period_days,
+            thresholds = thresholds_spec,
         ))
 
     return converted_specs
@@ -178,7 +198,6 @@ _exempted_from_contact_builders = {
         "ASan Release (32-bit x86 with V8-ARM)",
         "ASan Release Media (32-bit x86 with V8-ARM)",
         "Blink Unexpected Pass Finder",
-        "Cast Audio Linux",
         "Cast Linux ARM64",
         "Cast Linux Debug",
         "Cast Linux",
@@ -342,8 +361,6 @@ _exempted_from_contact_builders = {
         "chromeos-amd64-generic-cfi-thin-lto-rel",
         "chromeos-amd64-generic-dbg",
         "chromeos-amd64-generic-lacros-dbg",
-        "chromeos-amd64-generic-rel (reclient compare)",
-        "chromeos-amd64-generic-rel (reclient)",
         "chromeos-amd64-generic-rel",
         "chromeos-arm-generic-dbg",
         "chromeos-arm-generic-rel",
@@ -353,7 +370,6 @@ _exempted_from_contact_builders = {
         "chromeos-octopus-rel",
         "fuchsia-angle-builder",
         "fuchsia-code-coverage",
-        "fuchsia-official",
         "fuchsia-x64-accessibility-rel",
         "ios-angle-builder",
         "ios-asan",
@@ -375,7 +391,6 @@ _exempted_from_contact_builders = {
         "ios17-sdk-device",
         "ios17-sdk-simulator",
         "lacros-amd64-generic-binary-size-rel",
-        "lacros-amd64-generic-rel (reclient)",
         "lacros-amd64-generic-rel",
         "lacros-amd64-generic-rel-fyi",
         "lacros-amd64-generic-rel-skylab",
@@ -430,7 +445,6 @@ _exempted_from_contact_builders = {
         "linux-network-sandbox-rel",
         "linux-official",
         "linux-perfetto-rel",
-        "linux-rel-dev",
         "linux-rel-jammy-dev",
         "linux-rel-no-external-ip",
         "linux-remote-ssd-rel-dev",
@@ -464,6 +478,7 @@ _exempted_from_contact_builders = {
         "mac-perfetto-rel",
         "mac-rel-dev",
         "mac-rust-x64-dbg",
+        "mac-ubsan-fyi-rel",
         "mac-updater-builder-arm64-dbg",
         "mac-updater-builder-arm64-rel",
         "mac-updater-builder-asan-dbg",
@@ -593,8 +608,6 @@ _exempted_from_contact_builders = {
         "chromeos-amd64-generic-lacros-dbg",
         "chromeos-amd64-generic-rel",
         "chromeos-amd64-generic-rel-compilator",
-        "chromeos-amd64-generic-siso-rel",
-        "chromeos-amd64-generic-siso-rel-compilator",
         "chromeos-arm-generic-dbg",
         "chromeos-arm-generic-rel",
         "chromeos-arm64-generic-rel",
@@ -620,7 +633,6 @@ _exempted_from_contact_builders = {
         "dawn-win10-x86-deps-rel",
         "fuchsia-angle-try",
         "fuchsia-arm64-cast-receiver-rel",
-        "fuchsia-arm64-rel",
         "fuchsia-binary-size",
         "fuchsia-clang-tidy-rel",
         "fuchsia-code-coverage",
@@ -628,11 +640,9 @@ _exempted_from_contact_builders = {
         "fuchsia-deterministic-dbg",
         "fuchsia-fyi-arm64-dbg",
         "fuchsia-fyi-x64-dbg",
-        "fuchsia-official",
         "fuchsia-x64-accessibility-rel",
         "fuchsia-x64-cast-receiver-rel",
         "fuchsia-x64-cast-receiver-rel-compilator",
-        "fuchsia-x64-rel",
         "gpu-fyi-cq-android-arm64",
         "gpu-fyi-try-android-m-nexus-5x-64",
         "gpu-fyi-try-android-nvidia-shield-tv",
@@ -818,6 +828,7 @@ _exempted_from_contact_builders = {
         "mac-dawn-rel",
         "mac-fieldtrial-tester",
         "mac-intel-on-arm64-rel",
+        "mac-lsan-fyi-rel",
         "mac-official",
         "mac-osxbeta-rel",
         "mac-perfetto-rel",
@@ -826,6 +837,7 @@ _exempted_from_contact_builders = {
         "mac-rel-compilator",
         "mac-rust-x64-dbg",
         "mac-swangle-chromium-try-x64",
+        "mac-ubsan-fyi-rel",
         "mac-updater-try-builder-dbg",
         "mac-updater-try-builder-rel",
         "mac10.15-blink-rel",
@@ -848,6 +860,7 @@ _exempted_from_contact_builders = {
         "mac13-tests",
         "mac13-wpt-content-shell-fyi-rel",
         "mac13.arm64-blink-rel",
+        "mac13.arm64-skia-alt-blink-rel",
         "mac_chromium_10.15_rel_ng",
         "mac_chromium_11.0_rel_ng",
         "mac_chromium_asan_rel_ng",
@@ -935,20 +948,14 @@ _exempted_from_contact_builders = {
     "goma": [
         "Chromium Linux Goma RBE Staging (dbg)",
         "Chromium Linux Goma RBE Staging",
-        "Chromium Mac Goma RBE Staging (dbg)",
-        "Chromium Mac Goma RBE Staging",
         "Chromium Win Goma RBE Staging",
         "Linux Builder Goma RBE Canary",
-        "Mac Builder (dbg) Goma RBE Canary (clobber)",
-        "Mac M1 Builder (dbg) Goma RBE Canary (clobber)",
         "Win Builder (dbg) Goma RBE Canary",
         "Win Builder Goma RBE Canary",
         "chromeos-amd64-generic-rel-goma-rbe-canary",
         "chromeos-amd64-generic-rel-goma-rbe-staging",
-        "ios-device-goma-rbe-canary-clobber",
         "linux-archive-rel-goma-rbe-ats-canary",
         "linux-archive-rel-goma-rbe-canary",
-        "mac-archive-rel-goma-rbe-canary",
     ],
     "reclient": [
         "Comparison Linux (reclient vs reclient remote links)",
@@ -1031,7 +1038,8 @@ _exempted_from_contact_builders = {
 
 health_spec = struct(
     DEFAULT = DEFAULT,
-    thresholds = thresholds,
+    unhealthy_thresholds = unhealthy_thresholds,
+    low_value_thresholds = low_value_thresholds,
     modified_default = modified_default,
 )
 

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -21,6 +22,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_with_payload.h"
 
@@ -31,7 +33,7 @@ const float kMaxModuleEngagementIndex = 50;
 }
 
 @implementation ContentSuggestionsMetricsRecorder {
-  PrefService* _localState;
+  raw_ptr<PrefService> _localState;
 }
 
 - (instancetype)initWithLocalState:(PrefService*)localState {
@@ -72,9 +74,7 @@ const float kMaxModuleEngagementIndex = 50;
       break;
     }
 
-    case ContentSuggestionsModuleType::kSafetyCheck:
-    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
-    case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow: {
+    case ContentSuggestionsModuleType::kSafetyCheck: {
       // Increment freshness pref since it is an impression of
       // the latest Safety Check results as the top module.
       int freshness_impression_count = _localState->GetInteger(
@@ -97,8 +97,7 @@ const float kMaxModuleEngagementIndex = 50;
           freshness_impression_count + 1);
       break;
     }
-    case ContentSuggestionsModuleType::kParcelTracking:
-    case ContentSuggestionsModuleType::kParcelTrackingSeeMore: {
+    case ContentSuggestionsModuleType::kParcelTracking: {
       // Increment freshness pref since it is an impression of
       // the latest Tab Resumption results as the top module.
       int freshness_impression_count = _localState->GetInteger(
@@ -113,8 +112,10 @@ const float kMaxModuleEngagementIndex = 50;
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kSetUpListNotifications:
     case ContentSuggestionsModuleType::kCompactedSetUpList:
     case ContentSuggestionsModuleType::kSetUpListAllSet:
+    case ContentSuggestionsModuleType::kPlaceholder:
       break;
   }
   UMA_HISTOGRAM_ENUMERATION(kMagicStackTopModuleImpressionHistogram, type);
@@ -136,8 +137,6 @@ const float kMaxModuleEngagementIndex = 50;
           kMaxModuleEngagementIndex);
       break;
     case ContentSuggestionsModuleType::kSafetyCheck:
-    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
-    case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
       UMA_HISTOGRAM_EXACT_LINEAR(
           kMagicStackModuleEngagementSafetyCheckIndexHistogram, index,
           kMaxModuleEngagementIndex);
@@ -148,7 +147,6 @@ const float kMaxModuleEngagementIndex = 50;
           kMaxModuleEngagementIndex);
       break;
     case ContentSuggestionsModuleType::kParcelTracking:
-    case ContentSuggestionsModuleType::kParcelTrackingSeeMore:
       UMA_HISTOGRAM_EXACT_LINEAR(
           kMagicStackModuleEngagementParcelTrackingIndexHistogram, index,
           kMaxModuleEngagementIndex);
@@ -156,11 +154,14 @@ const float kMaxModuleEngagementIndex = 50;
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kSetUpListNotifications:
     case ContentSuggestionsModuleType::kCompactedSetUpList:
     case ContentSuggestionsModuleType::kSetUpListAllSet:
       UMA_HISTOGRAM_EXACT_LINEAR(
           kMagicStackModuleEngagementSetUpListIndexHistogram, index,
           kMaxModuleEngagementIndex);
+      break;
+    case ContentSuggestionsModuleType::kPlaceholder:
       break;
   }
 }
@@ -214,8 +215,7 @@ const float kMaxModuleEngagementIndex = 50;
 }
 
 - (void)recordMostVisitedTileOpened:(ContentSuggestionsMostVisitedItem*)item
-                            atIndex:(NSInteger)index
-                           webState:(web::WebState*)webState {
+                            atIndex:(NSInteger)index {
   base::RecordAction(base::UserMetricsAction(kMostVisitedAction));
 
   ntp_tiles::metrics::RecordTileClick(ntp_tiles::NTPTileImpression(
@@ -223,8 +223,8 @@ const float kMaxModuleEngagementIndex = 50;
       [self getVisualTypeFromAttributes:item.attributes],
       [self getIconTypeFromAttributes:item.attributes], item.URL));
 
-  new_tab_page_uma::RecordAction(
-      false, webState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
+  new_tab_page_uma::RecordNTPAction(
+      false, true, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
 }
 
 - (void)recordMostVisitedTileRemoved {
@@ -241,6 +241,15 @@ const float kMaxModuleEngagementIndex = 50;
 
 - (void)recordSetUpListItemSelected:(SetUpListItemType)type {
   set_up_list_metrics::RecordItemSelected(type);
+}
+
+- (void)recordContentNotificationSnackbarEvent:
+    (ContentNotificationSnackbarEvent)event {
+  UMA_HISTOGRAM_ENUMERATION(kContentNotificationSnackbarEventHistogram, event);
+  if (event == ContentNotificationSnackbarEvent::kActionButtonTapped) {
+    base::RecordAction(
+        base::UserMetricsAction(kContentNotificationSnackbarAction));
+  }
 }
 
 #pragma mark - Private

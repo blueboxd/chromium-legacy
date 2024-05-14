@@ -4,14 +4,16 @@
 
 #include "content/browser/devtools/protocol/fedcm_handler.h"
 
+#include <optional>
+
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/webid/federated_auth_request_impl.h"
 #include "content/browser/webid/federated_auth_request_page_data.h"
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace content {
 namespace {
 namespace FedCm = content::protocol::FedCm;
 
@@ -31,9 +33,24 @@ FedCm::DialogType ConvertDialogType(
       return FedCm::DialogTypeEnum::Error;
   }
 }
+
+std::optional<std::pair<IdentityProviderData, IdentityRequestAccount>>
+GetAccountAt(const std::vector<IdentityProviderData>& idp_data, int index) {
+  int current = 0;
+  for (const auto& data : idp_data) {
+    for (const IdentityRequestAccount& account : data.accounts) {
+      if (current == index) {
+        return std::make_pair(data, account);
+      }
+      ++current;
+    }
+  }
+  return std::nullopt;
+}
+
 }  // namespace
 
-namespace content::protocol {
+namespace protocol {
 
 FedCmHandler::FedCmHandler()
     : DevToolsDomainHandler(FedCm::Metainfo::domainName) {}
@@ -108,8 +125,8 @@ void FedCmHandler::DidShowDialog() {
     for (const auto& data : *idp_data) {
       for (const IdentityRequestAccount& account : data.accounts) {
         FedCm::LoginState login_state;
-        absl::optional<std::string> tos_url;
-        absl::optional<std::string> pp_url;
+        std::optional<std::string> tos_url;
+        std::optional<std::string> pp_url;
         switch (*account.login_state) {
           case IdentityRequestAccount::LoginState::kSignUp:
             login_state = FedCm::LoginStateEnum::SignUp;
@@ -149,7 +166,7 @@ void FedCmHandler::DidShowDialog() {
   FedCm::DialogType dialog_type =
       ConvertDialogType(auth_request->GetDialogType());
   Maybe<String> maybe_subtitle;
-  absl::optional<std::string> subtitle = dialog->GetSubtitle();
+  std::optional<std::string> subtitle = dialog->GetSubtitle();
   if (subtitle) {
     maybe_subtitle = *subtitle;
   }
@@ -178,18 +195,55 @@ DispatchResponse FedCmHandler::SelectAccount(const String& in_dialogId,
     return DispatchResponse::ServerError(
         "selectAccount called while no FedCm dialog is shown");
   }
-  int current = 0;
-  for (const auto& data : *idp_data) {
-    for (const IdentityRequestAccount& account : data.accounts) {
-      if (current == in_accountIndex) {
-        auth_request->AcceptAccountsDialogForDevtools(
-            data.idp_metadata.config_url, account);
-        return DispatchResponse::Success();
-      }
-      ++current;
-    }
+  auto account = GetAccountAt(*idp_data, in_accountIndex);
+  if (!account) {
+    return DispatchResponse::InvalidParams("Invalid account index");
   }
-  return DispatchResponse::InvalidParams("Invalid account index");
+
+  auth_request->AcceptAccountsDialogForDevtools(
+      account->first.idp_metadata.config_url, account->second);
+  return DispatchResponse::Success();
+}
+
+DispatchResponse FedCmHandler::OpenUrl(
+    const String& in_dialogId,
+    int in_accountIndex,
+    const FedCm::AccountUrlType& in_accountUrlType) {
+  if (in_dialogId != dialog_id_) {
+    return DispatchResponse::InvalidParams(
+        "Dialog ID does not match current dialog");
+  }
+
+  auto* auth_request = GetFederatedAuthRequest();
+  const auto* idp_data = GetIdentityProviderData(auth_request);
+  if (!idp_data) {
+    return DispatchResponse::ServerError(
+        "openUrl called while no FedCm dialog is shown");
+  }
+
+  auto account = GetAccountAt(*idp_data, in_accountIndex);
+  if (!account) {
+    return DispatchResponse::InvalidParams("Invalid account index");
+  }
+
+  IdentityRequestDialogController::LinkType type;
+  GURL url;
+  if (in_accountUrlType == FedCm::AccountUrlTypeEnum::TermsOfService) {
+    type = IdentityRequestDialogController::LinkType::TERMS_OF_SERVICE;
+    url = account->first.client_metadata.terms_of_service_url;
+  } else if (in_accountUrlType == FedCm::AccountUrlTypeEnum::PrivacyPolicy) {
+    type = IdentityRequestDialogController::LinkType::PRIVACY_POLICY;
+    url = account->first.client_metadata.privacy_policy_url;
+  } else {
+    return DispatchResponse::InvalidParams("Invalid account URL type");
+  }
+  if (!url.is_valid() || account->second.login_state !=
+                             IdentityRequestAccount::LoginState::kSignUp) {
+    return DispatchResponse::InvalidParams(
+        "Account does not have requested URL");
+  }
+  auth_request->GetDialogController()->ShowUrl(type, url);
+  return DispatchResponse::Success();
 }
 
 DispatchResponse FedCmHandler::ClickDialogButton(
@@ -325,4 +379,5 @@ FedCmHandler::GetApiPermissionContext() {
       ->GetFederatedIdentityApiPermissionContext();
 }
 
-}  // namespace content::protocol
+}  // namespace protocol
+}  // namespace content

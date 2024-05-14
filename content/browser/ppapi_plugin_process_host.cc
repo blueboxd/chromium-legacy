@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/app_launch_prefetch/app_launch_prefetch.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/child_process_host_impl.h"
 #include "content/browser/plugin_service_impl.h"
@@ -92,7 +93,7 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const ContentPluginInfo& info,
     const base::FilePath& profile_data_directory,
-    const absl::optional<url::Origin>& origin_lock) {
+    const std::optional<url::Origin>& origin_lock) {
   PpapiPluginProcessHost* plugin_host =
       new PpapiPluginProcessHost(info, profile_data_directory, origin_lock);
   if (plugin_host->Init(info))
@@ -172,7 +173,7 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 PpapiPluginProcessHost::PpapiPluginProcessHost(
     const ContentPluginInfo& info,
     const base::FilePath& profile_data_directory,
-    const absl::optional<url::Origin>& origin_lock)
+    const std::optional<url::Origin>& origin_lock)
     : profile_data_directory_(profile_data_directory),
       origin_lock_(origin_lock) {
   uint32_t base_permissions = info.permissions;
@@ -235,7 +236,8 @@ bool PpapiPluginProcessHost::Init(const ContentPluginInfo& info) {
   BrowserChildProcessHostImpl::CopyTraceStartupFlags(cmd_line.get());
 
 #if BUILDFLAG(IS_WIN)
-  cmd_line->AppendArg(switches::kPrefetchArgumentPpapi);
+  cmd_line->AppendArgNative(
+      app_launch_prefetch::GetPrefetchSwitch(SubprocessType::kPpapi));
 #endif  // BUILDFLAG(IS_WIN)
 
   // These switches are forwarded to plugin pocesses.

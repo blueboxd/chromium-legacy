@@ -143,8 +143,7 @@ AXSelection AXSelection::FromCurrentSelection(
     return {};
 
   auto* ax_object_cache_impl = static_cast<AXObjectCacheImpl*>(ax_object_cache);
-  const AXObject* ax_text_control =
-      ax_object_cache_impl->GetOrCreate(&text_control);
+  const AXObject* ax_text_control = ax_object_cache_impl->Get(&text_control);
   DCHECK(ax_text_control);
 
   // We can't directly use "text_control.Selection()" because the selection it
@@ -355,9 +354,18 @@ bool AXSelection::Select(const AXSelectionBehavior selection_behavior) {
     return false;
   }
 
-  absl::optional<AXSelection::TextControlSelection> text_control_selection =
+  std::optional<AXSelection::TextControlSelection> text_control_selection =
       AsTextControlSelection();
-  if (text_control_selection.has_value()) {
+
+  // We need to make sure we only go into here if we're dealing with a position
+  // in the atomic text field. This is because the offsets are being assumed
+  // to be on the atomic text field, and not on the descendant inline text
+  // boxes.
+  if (text_control_selection.has_value() &&
+      *base_.ContainerObject() ==
+          *base_.ContainerObject()->GetAtomicTextFieldAncestor() &&
+      *extent_.ContainerObject() ==
+          *extent_.ContainerObject()->GetAtomicTextFieldAncestor()) {
     DCHECK_LE(text_control_selection->start, text_control_selection->end);
     TextControlElement& text_control = ToTextControl(
         *base_.ContainerObject()->GetAtomicTextFieldAncestor()->GetNode());
@@ -429,7 +437,7 @@ String AXSelection::ToString() const {
          Extent().ToString();
 }
 
-absl::optional<AXSelection::TextControlSelection>
+std::optional<AXSelection::TextControlSelection>
 AXSelection::AsTextControlSelection() const {
   if (!IsValid() || !base_.IsTextPosition() || !extent_.IsTextPosition() ||
       base_.ContainerObject() != extent_.ContainerObject()) {

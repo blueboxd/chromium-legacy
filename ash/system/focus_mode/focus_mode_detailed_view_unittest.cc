@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/api/tasks/tasks_types.h"
+#include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
@@ -19,20 +21,22 @@
 #include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/focus_mode/focus_mode_countdown_view.h"
 #include "ash/system/focus_mode/focus_mode_feature_pod_controller.h"
+#include "ash/system/focus_mode/focus_mode_histogram_names.h"
 #include "ash/system/focus_mode/focus_mode_task_view.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/fake_detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/tri_view.h"
 #include "ash/system/unified/feature_tile.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/test/ash_test_base.h"
 #include "base/i18n/time_formatting.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/settings/scoped_timezone_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/message_center/message_center.h"
@@ -268,7 +272,8 @@ TEST_F(FocusModeDetailedViewTest, DndOnBeforeStart) {
 TEST_F(FocusModeDetailedViewTest, ToggleRow) {
   auto* focus_mode_controller = FocusModeController::Get();
 
-  auto validate_labels = [&](bool active) {
+  auto validate_labels = [&](bool active, const std::string& trace_name) {
+    SCOPED_TRACE(trace_name);
     EXPECT_EQ(active, focus_mode_controller->in_focus_session());
     EXPECT_EQ(active ? u"Focusing" : u"Focus", GetToggleRowLabel()->GetText());
 
@@ -276,14 +281,13 @@ TEST_F(FocusModeDetailedViewTest, ToggleRow) {
 
     if (active) {
       EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(
-                    focus_mode_controller->end_time()),
+                    focus_mode_controller->GetActualEndTime()),
                 GetToggleRowSubLabel()->GetText());
     }
-    EXPECT_EQ(active ? u"End Focus" : u"Start",
-              GetToggleRowButton()->GetText());
+    EXPECT_EQ(active ? u"Finish" : u"Start", GetToggleRowButton()->GetText());
   };
 
-  validate_labels(/*active=*/false);
+  validate_labels(/*active=*/false, "Initial state");
 
   // Starting the focus session closes the bubble, so we need to simulate
   // recreating the detailed view.
@@ -291,11 +295,11 @@ TEST_F(FocusModeDetailedViewTest, ToggleRow) {
   CreateFakeFocusModeDetailedView();
 
   // Wait a minute to test that the time remaining label updates.
-  task_environment()->FastForwardBy(base::Seconds(61));
-  validate_labels(/*active=*/true);
+  task_environment()->FastForwardBy(base::Seconds(60));
+  validate_labels(/*active=*/true, "Wait for a minute");
 
   LeftClickOn(GetToggleRowButton());
-  validate_labels(/*active=*/false);
+  validate_labels(/*active=*/false, "Toggle off session");
 
   // Verify that the time displays correctly in the 24-hour clock format.
   Shell::Get()->system_tray_model()->SetUse24HourClock(true);
@@ -308,10 +312,10 @@ TEST_F(FocusModeDetailedViewTest, ToggleRow) {
   // Wait a second to avoid the time remaining being either 1500 seconds or
   // 1499.99 seconds.
   task_environment()->FastForwardBy(base::Seconds(1));
-  validate_labels(/*active=*/true);
+  validate_labels(/*active=*/true, "Check time passed");
 
   LeftClickOn(GetToggleRowButton());
-  validate_labels(/*active=*/false);
+  validate_labels(/*active=*/false, "Toggle off session again");
 }
 
 // Tests how the textfield for the timer setting view handles valid and invalid
@@ -347,6 +351,24 @@ TEST_F(FocusModeDetailedViewTest, TimerSettingViewTextfield) {
   EXPECT_EQ(u"333", timer_textfield->GetText());
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   EXPECT_EQ(u"300", timer_textfield->GetText());
+}
+
+// Tests how the textfield for the timer setting view handles valid and invalid
+// inputs from virtual keyboard.
+TEST_F(FocusModeDetailedViewTest, TimerSettingViewTextfieldVK) {
+  SystemTextfield* timer_textfield = GetTimerSettingTextfield();
+  LeftClickOn(timer_textfield);
+  ASSERT_TRUE(timer_textfield->IsActive());
+
+  auto* event_generator = GetEventGenerator();
+  PressAndReleaseKeyOnVK(event_generator, ui::VKEY_DELETE);
+  PressAndReleaseKeyOnVK(event_generator, ui::VKEY_2);
+  PressAndReleaseKeyOnVK(event_generator, ui::VKEY_A);
+  PressAndReleaseKeyOnVK(event_generator, ui::VKEY_A);
+  PressAndReleaseKeyOnVK(event_generator, ui::VKEY_0);
+  PressAndReleaseKeyOnVK(event_generator, ui::VKEY_0);
+  PressAndReleaseKeyOnVK(event_generator, ui::VKEY_0);
+  EXPECT_EQ(u"200", timer_textfield->GetText());
 }
 
 // Tests that incrementing the duration of an inactive focus session follows a
@@ -506,13 +528,13 @@ TEST_F(FocusModeDetailedViewTest, TimerViewVisibility) {
   EXPECT_TRUE(timer_setting_view->GetVisible());
 
   const base::TimeDelta session_duration =
-      focus_mode_controller->session_duration();
+      focus_mode_controller->GetSessionDuration();
   EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(base::Time::Now() +
                                                        session_duration),
             GetEndTimeLabel()->GetText());
 
   // Wait a minute to test that the end time label updates.
-  task_environment()->FastForwardBy(base::Seconds(61));
+  task_environment()->FastForwardBy(base::Seconds(60));
   EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(base::Time::Now() +
                                                        session_duration),
             GetEndTimeLabel()->GetText());
@@ -632,6 +654,167 @@ TEST_F(FocusModeDetailedViewTest, ExpandOrShrinkTaskViewContainer) {
   task_environment()->FastForwardBy(kStartAnimationDelay);
   views::test::RunScheduledLayout(task_container_view);
   EXPECT_EQ(old_height_before_shrink, task_container_view->bounds().height());
+}
+
+// Tests that tabbing to the timer decrease button after setting the time to 1
+// does not cause a crash. Regression test for b/315358227.
+TEST_F(FocusModeDetailedViewTest, TabToDisablingButton) {
+  SystemTextfield* textfield = GetTimerSettingTextfield();
+  LeftClickOn(textfield);
+  ASSERT_TRUE(textfield->IsActive());
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DELETE);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_1);
+  ASSERT_EQ(u"1", textfield->GetText());
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB);
+  EXPECT_FALSE(GetTimerSettingDecrementButton()->GetEnabled());
+}
+
+// Tests that when clicking the `End` button during a focus session, the
+// histogram will record the behavior.
+TEST_F(FocusModeDetailedViewTest, CheckHistogramForToggleRowButton) {
+  base::HistogramTester histogram_tester;
+
+  auto* controller = FocusModeController::Get();
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+
+  auto* button = GetToggleRowButton();
+  LeftClickOn(button);
+  EXPECT_FALSE(controller->in_focus_session());
+  histogram_tester.ExpectBucketCount(
+      /*name=*/focus_mode_histogram_names::
+          kToggleEndButtonDuringSessionHistogramName,
+      /*sample=*/focus_mode_histogram_names::ToggleSource::kFocusPanel,
+      /*expected_count=*/1);
+}
+
+// Tests that the "Until" end time labels update when the timezone updates.
+// Regression test for b/319523086.
+TEST_F(FocusModeDetailedViewTest, UpdateOnTimezoneChange) {
+  ash::system::ScopedTimezoneSettings timezone1(u"GMT");
+  auto* focus_mode_controller = FocusModeController::Get();
+  EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(
+                focus_mode_controller->session_duration() + base::Time::Now()),
+            GetEndTimeLabel()->GetText());
+
+  // Change the timezone without closing or opening the detailed view. The end
+  // time label should update.
+  ash::system::ScopedTimezoneSettings timezone2(u"GMT+3");
+  EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(
+                focus_mode_controller->session_duration() + base::Time::Now()),
+            GetEndTimeLabel()->GetText());
+
+  // Start a focus session to test the toggle row subtext.
+  focus_mode_controller->ToggleFocusMode();
+  EXPECT_TRUE(focus_mode_controller->in_focus_session());
+  CreateFakeFocusModeDetailedView();
+  EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(
+                focus_mode_controller->GetActualEndTime()),
+            GetToggleRowSubLabel()->GetText());
+
+  ash::system::ScopedTimezoneSettings timezone3(u"GMT+6");
+  EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(
+                focus_mode_controller->GetActualEndTime()),
+            GetToggleRowSubLabel()->GetText());
+}
+
+// Tests that starting a new focus session while the timer textfield is still
+// active and the text in the textfield is different from the previous saved
+// session duration.
+TEST_F(FocusModeDetailedViewTest, StartSessionWithActiveTimerTextfield) {
+  auto* controller = FocusModeController::Get();
+  EXPECT_FALSE(controller->in_focus_session());
+
+  // Click the timer textfield and type a digit `1` into it.
+  SystemTextfield* timer_textfield = GetTimerSettingTextfield();
+  LeftClickOn(timer_textfield);
+  EXPECT_TRUE(timer_textfield->IsActive());
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DELETE);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_1);
+  EXPECT_EQ(u"1", timer_textfield->GetText());
+
+  // Verify after starting a new focus session, the session duration is the one
+  // we just typed and we have saved it.
+  LeftClickOn(GetToggleRowButton());
+  EXPECT_TRUE(controller->in_focus_session());
+  EXPECT_EQ(base::Minutes(1), controller->session_duration());
+  EXPECT_EQ(
+      base::Minutes(1),
+      Shell::Get()->session_controller()->GetActivePrefService()->GetTimeDelta(
+          prefs::kFocusModeSessionDuration));
+}
+
+// Verify that when toggling a focus mode, the histogram will record the initial
+// session duration.
+TEST_F(FocusModeDetailedViewTest, CheckInitialDurationHistograms) {
+  base::HistogramTester histogram_tester;
+
+  auto* controller = FocusModeController::Get();
+  EXPECT_FALSE(controller->in_focus_session());
+
+  // 1. Start a focus session with the minimum session duration.
+  controller->SetInactiveSessionDuration(focus_mode_util::kMinimumDuration);
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  histogram_tester.ExpectTimeBucketCount(
+      focus_mode_histogram_names::kInitialDurationOnSessionStartsHistogramName,
+      focus_mode_util::kMinimumDuration, 1);
+
+  controller->ToggleFocusMode();
+  EXPECT_FALSE(controller->in_focus_session());
+
+  // 2. Start a new focus session with the maximum session duration.
+  controller->SetInactiveSessionDuration(focus_mode_util::kMaximumDuration);
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  histogram_tester.ExpectTimeBucketCount(
+      focus_mode_histogram_names::kInitialDurationOnSessionStartsHistogramName,
+      focus_mode_util::kMaximumDuration, 1);
+
+  histogram_tester.ExpectTotalCount(
+      focus_mode_histogram_names::kInitialDurationOnSessionStartsHistogramName,
+      2);
+}
+
+// Verify that we start a focus session, the histogram will record whether there
+// is a selected task.
+TEST_F(FocusModeDetailedViewTest, CheckHasSelectedTaskHistogram) {
+  base::HistogramTester histogram_tester;
+
+  auto* controller = FocusModeController::Get();
+  EXPECT_FALSE(controller->in_focus_session());
+  histogram_tester.ExpectTotalCount(
+      focus_mode_histogram_names::kHasSelectedTaskOnSessionStartHistogramName,
+      0);
+
+  // 1. Start a focus session without a selected task.
+  EXPECT_FALSE(controller->HasSelectedTask());
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  histogram_tester.ExpectBucketCount(
+      focus_mode_histogram_names::kHasSelectedTaskOnSessionStartHistogramName,
+      false, 1);
+  controller->ToggleFocusMode();
+  EXPECT_FALSE(controller->in_focus_session());
+
+  // 2. Start a focus session with a selected task.
+  int id = 0;
+  const std::string title = "Focus Task";
+  controller->SetSelectedTask(std::make_unique<api::Task>(
+                                  /*id=*/base::NumberToString(id), title,
+                                  /*due=*/absl::nullopt, /*completed=*/false,
+                                  /*has_subtasks=*/false,
+                                  /*has_email_link=*/false,
+                                  /*has_notes=*/false,
+                                  /*updated=*/base::Time::Now())
+                                  .get());
+  EXPECT_TRUE(controller->HasSelectedTask());
+
+  controller->ToggleFocusMode();
+  EXPECT_TRUE(controller->in_focus_session());
+  histogram_tester.ExpectBucketCount(
+      focus_mode_histogram_names::kHasSelectedTaskOnSessionStartHistogramName,
+      true, 1);
 }
 
 }  // namespace ash

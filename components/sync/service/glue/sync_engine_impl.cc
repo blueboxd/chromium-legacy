@@ -142,6 +142,10 @@ void SyncEngineImpl::Initialize(InitParams params) {
     prefs_->SetGaiaId(params.authenticated_account_info.gaia);
   }
 
+  // Clear host here to avoid holding a dangling pointer in case the task
+  // outlives the SyncEngineHost. It is safe to clear host here since because
+  // SyncEngineBackend doesn't actually need it.
+  params.host = nullptr;
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoInitialize, backend_,
                                 std::move(params),
@@ -459,12 +463,10 @@ void SyncEngineImpl::HandleMigrationRequestedOnFrontendLoop(
   host_->OnMigrationNeededForTypes(types);
 }
 
-// TODO(crbugg.com/1404927): replace InvalidatorState with a boolean.
-void SyncEngineImpl::OnInvalidatorStateChange(
-    invalidation::InvalidatorState state) {
+void SyncEngineImpl::OnInvalidatorStateChange(bool enabled) {
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnInvalidatorStateChange,
-                                backend_, state));
+                                backend_, enabled));
 }
 
 void SyncEngineImpl::HandleConnectionStatusChangeOnFrontendLoop(
@@ -558,7 +560,7 @@ void SyncEngineImpl::RecordNigoriMemoryUsageAndCountsHistograms() {
 void SyncEngineImpl::OnInvalidationReceived(const std::string& payload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  absl::optional<ModelTypeSet> interested_data_types =
+  std::optional<ModelTypeSet> interested_data_types =
       sync_invalidations_service_->GetInterestedDataTypes();
 
   // Interested data types must be initialized before handling invalidations to
@@ -613,7 +615,7 @@ void SyncEngineImpl::UpdateStandaloneInvalidationsState() {
   // are any).
   if (!sync_invalidations_service_->GetFCMRegistrationToken().has_value() ||
       !sync_invalidations_service_->HasListener(this)) {
-    OnInvalidatorStateChange(invalidation::TRANSIENT_INVALIDATION_ERROR);
+    OnInvalidatorStateChange(/*enabled=*/false);
     return;
   }
 
@@ -623,7 +625,7 @@ void SyncEngineImpl::UpdateStandaloneInvalidationsState() {
 
   // TODO(crbug.com/1442156): wait for FCM token to be committed before change
   // the state to enabled.
-  OnInvalidatorStateChange(invalidation::INVALIDATIONS_ENABLED);
+  OnInvalidatorStateChange(/*enabled=*/true);
 }
 
 }  // namespace syncer

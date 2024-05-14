@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.DeclutterMessageCardViewProperties.ALL_KEYS;
+import static org.chromium.chrome.browser.tasks.tab_management.DeclutterMessageCardViewProperties.ARCHIVED_TABS_EXPAND_CLICK_HANDLER;
+import static org.chromium.chrome.browser.tasks.tab_management.DeclutterMessageCardViewProperties.ARCHIVED_TAB_COUNT;
+import static org.chromium.chrome.browser.tasks.tab_management.DeclutterMessageCardViewProperties.DECLUTTER_INFO_TEXT;
+import static org.chromium.chrome.browser.tasks.tab_management.DeclutterMessageCardViewProperties.DECLUTTER_SETTINGS_CLICK_HANDLER;
 import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED;
 import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.DISMISSED;
 import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED;
@@ -19,19 +24,20 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabContext;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestion;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsObserver;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * One of the concrete {@link MessageService} that only serve {@link MessageType#TAB_SUGGESTION}.
@@ -44,17 +50,14 @@ public class TabSuggestionMessageService extends MessageService
     public class TabSuggestionMessageData implements MessageData {
         private final TabSuggestion mTabSuggestion;
         private final Callback<TabSuggestionFeedback> mTabSuggestionFeedback;
-        private Profile mProfile;
         private CustomMessageCardProvider mCustomMessageCardProvider;
 
         public TabSuggestionMessageData(
                 TabSuggestion tabSuggestion,
                 Callback<TabSuggestionFeedback> feedbackCallback,
-                Profile profile,
                 CustomMessageCardProvider customMessageCardProvider) {
             mTabSuggestion = tabSuggestion;
             mTabSuggestionFeedback = feedbackCallback;
-            mProfile = profile;
             mCustomMessageCardProvider = customMessageCardProvider;
         }
 
@@ -115,36 +118,40 @@ public class TabSuggestionMessageService extends MessageService
     }
 
     private final Context mContext;
-    private final TabModelSelector mTabModelSelector;
+    private final Profile mProfile;
+    private final Supplier<TabModelFilter> mCurrentTabModelFilterSupplier;
     private final Supplier<TabListEditorCoordinator.TabListEditorController>
             mTabListEditorControllerSupplier;
     private final CustomMessageCardProvider mCustomMessageCardProvider;
     private final View mCustomCardView;
+    private final PropertyModel mModel;
 
     public TabSuggestionMessageService(
             Context context,
-            TabModelSelector tabModelSelector,
+            Profile profile,
+            Supplier<TabModelFilter> currentTabModelFilterSupplier,
             Supplier<TabListEditorCoordinator.TabListEditorController>
                     tabListEditorControllerSupplier) {
-        this(
-                context,
-                tabModelSelector,
-                tabListEditorControllerSupplier,
-                LayoutInflater.from(context).inflate(R.layout.declutter_message_card_layout, null));
-    }
-
-    protected TabSuggestionMessageService(
-            Context context,
-            TabModelSelector tabModelSelector,
-            Supplier<TabListEditorCoordinator.TabListEditorController>
-                    tabListEditorControllerSupplier,
-            View customCardView) {
         super(MessageType.TAB_SUGGESTION);
         mContext = context;
-        mTabModelSelector = tabModelSelector;
+        mProfile = profile;
+        mCurrentTabModelFilterSupplier = currentTabModelFilterSupplier;
         mTabListEditorControllerSupplier = tabListEditorControllerSupplier;
         mCustomMessageCardProvider = this;
-        mCustomCardView = customCardView;
+        mCustomCardView =
+                LayoutInflater.from(context).inflate(R.layout.declutter_message_card_layout, null);
+        mModel =
+                new PropertyModel.Builder(ALL_KEYS)
+                        .with(DECLUTTER_INFO_TEXT, R.plurals.tab_declutter_message_card_text_info)
+                        .with(
+                                ARCHIVED_TAB_COUNT,
+                                currentTabModelFilterSupplier.get().getTotalTabCount())
+                        .with(ARCHIVED_TABS_EXPAND_CLICK_HANDLER, () -> {})
+                        .with(DECLUTTER_SETTINGS_CLICK_HANDLER, () -> {})
+                        .build();
+
+        PropertyModelChangeProcessor.create(
+                mModel, mCustomCardView, DeclutterMessageCardViewBinder::bind);
     }
 
     @VisibleForTesting
@@ -188,7 +195,7 @@ public class TabSuggestionMessageService extends MessageService
                     @Override
                     public void preProcessSelectedTabs(List<Tab> selectedTabs) {
                         int totalTabCountBeforeProcess =
-                                mTabModelSelector.getCurrentModel().getCount();
+                                mCurrentTabModelFilterSupplier.get().getTabModel().getCount();
                         List<Integer> selectedTabIds = new ArrayList<>();
                         for (int i = 0; i < selectedTabs.size(); i++) {
                             selectedTabIds.add(selectedTabs.get(i).getId());
@@ -222,26 +229,14 @@ public class TabSuggestionMessageService extends MessageService
     private List<Tab> getTabListFromSuggestion(TabSuggestion tabSuggestion) {
         List<Tab> tabs = new ArrayList<>();
 
-        Set<Integer> suggestedTabIds = new HashSet<>();
         List<TabContext.TabInfo> suggestedTabInfo = tabSuggestion.getTabsInfo();
+        TabModel model = mCurrentTabModelFilterSupplier.get().getTabModel();
         for (int i = 0; i < suggestedTabInfo.size(); i++) {
-            suggestedTabIds.add(suggestedTabInfo.get(i).id);
-            tabs.add(mTabModelSelector.getTabById(suggestedTabInfo.get(i).id));
-        }
+            int tabId = suggestedTabInfo.get(i).id;
+            Tab tab = TabModelUtils.getTabById(model, tabId);
+            if (tab == null) continue;
 
-        tabs.addAll(getNonSuggestedTabs(suggestedTabIds));
-        return tabs;
-    }
-
-    private List<Tab> getNonSuggestedTabs(Set<Integer> suggestedTabIds) {
-        List<Tab> tabs = new ArrayList<>();
-        TabModelFilter tabModelFilter =
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-        List<Tab> filteredTab = tabModelFilter.getTabsWithNoOtherRelatedTabs();
-
-        for (int i = 0; i < filteredTab.size(); i++) {
-            Tab tab = filteredTab.get(i);
-            if (!suggestedTabIds.contains(tab.getId())) tabs.add(tab);
+            tabs.add(tab);
         }
         return tabs;
     }
@@ -278,7 +273,6 @@ public class TabSuggestionMessageService extends MessageService
                     new TabSuggestionMessageData(
                             tabSuggestion,
                             tabSuggestionFeedback,
-                            mTabModelSelector.getModel(false).getProfile(),
                             mCustomMessageCardProvider));
         }
     }

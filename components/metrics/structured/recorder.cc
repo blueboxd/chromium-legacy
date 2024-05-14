@@ -10,6 +10,7 @@
 #include "base/task/current_thread.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/metrics/structured/histogram_util.h"
+#include "components/metrics/structured/lib/histogram_util.h"
 #include "components/metrics/structured/structured_metrics_features.h"
 
 namespace metrics::structured {
@@ -68,12 +69,6 @@ void Recorder::ProfileAdded(const base::FilePath& profile_path) {
 
   // Notify the event processors.
   delegating_events_processor_.OnProfileAdded(profile_path);
-}
-
-void Recorder::OnReportingStateChanged(bool enabled) {
-  for (auto& observer : observers_) {
-    observer.OnReportingStateChanged(enabled);
-  }
 }
 
 void Recorder::OnSystemProfileInitialized() {

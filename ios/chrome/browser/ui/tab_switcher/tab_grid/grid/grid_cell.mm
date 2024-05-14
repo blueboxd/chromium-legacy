@@ -11,10 +11,10 @@
 #import "base/check_op.h"
 #import "base/debug/dump_without_crashing.h"
 #import "base/notreached.h"
+#import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/elements/top_aligned_image_view.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -117,7 +117,7 @@ void PositionView(UIView* view, CGPoint point) {
     snapshotView.translatesAutoresizingMaskIntoConstraints = NO;
 
     UIButton* closeTapTargetButton =
-        [UIButton buttonWithType:UIButtonTypeCustom];
+        [ExtendedTouchTargetButton buttonWithType:UIButtonTypeCustom];
     closeTapTargetButton.translatesAutoresizingMaskIntoConstraints = NO;
     [closeTapTargetButton addTarget:self
                              action:@selector(closeButtonTapped:)
@@ -661,11 +661,6 @@ void PositionView(UIView* view, CGPoint point) {
 }
 
 - (void)setMainTabView:(UIView*)mainTabView {
-  if (!mainTabView) {
-    // TODO(crbug.com/1506555): Temporary investigation to see if there is a
-    // misconfiguration in the transition.
-    base::debug::DumpWithoutCrashing();
-  }
   DCHECK(!_mainTabView) << "mainTabView should only be set once.";
   if (!mainTabView.superview)
     [self.contentView addSubview:mainTabView];

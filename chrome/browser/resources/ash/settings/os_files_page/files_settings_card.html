@@ -9,28 +9,29 @@
     fill: var(--cros-sys-primary);
     margin-inline-end: 16px;
   }
+
+  #smbSharesTextContainer {
+    /*
+    The Add SMB Shares button changes size based on its text translation. Flex
+    here is used for resizing the SMB shares text div based on the size of the
+    button.
+    */
+    flex: 1;
+  }
 </style>
 
 <settings-card header-text="$i18n{filesPageTitle}">
-  <template is="dom-if" if="[[!shouldShowGoogleDriveSettings_]]">
-    <settings-toggle-button id="disconnectGoogleDriveAccountToggle"
-        icon="[[rowIcons_.googleDrive]]"
-        pref="{{prefs.gdata.disabled}}"
-        label="$i18n{disconnectGoogleDriveAccount}"
-        deep-link-focus-id$="[[Setting.kGoogleDriveConnection]]">
-    </settings-toggle-button>
-  </template>
-  <template is="dom-if" if="[[shouldShowGoogleDriveSettings_]]">
-    <cr-link-row id="googleDriveRow"
-        start-icon="[[rowIcons_.googleDrive]]"
-        on-click="onClickGoogleDrive_"
-        label="$i18n{googleDriveLabel}"
-        sub-label="[[computeGoogleDriveSublabel_(driveDisabled_, bulkPinningPrefEnabled_)]]"
-        role-description="$i18n{subpageArrowRoleDescription}">
-    </cr-link-row>
-  </template>
+  <cr-link-row id="googleDriveRow"
+      start-icon="[[rowIcons_.googleDrive]]"
+      on-click="onClickGoogleDrive_"
+      label="$i18n{googleDriveLabel}"
+      role-description="$i18n{subpageArrowRoleDescription}">
+      <div id="googleDriveSubLabel" slot="sub-label"
+          inner-h-t-m-l="[[getGoogleDriveSubLabelInnerHtml_(driveDisabled_, bulkPinningPrefEnabled_)]]">
+      </div>
+  </cr-link-row>
 
-  <template is="dom-if" if="[[shouldShowOfficeSettings_]]">
+  <template is="dom-if" if="[[shouldShowOneDriveSettings_]]">
     <cr-link-row id="oneDriveRow"
         start-icon="[[rowIcons_.oneDrive]]"
         class="hr"
@@ -39,14 +40,17 @@
         sub-label="[[computeOneDriveSignedInLabel_(oneDriveConnectionState_)]]"
         role-description="$i18n{subpageArrowRoleDescription}">
     </cr-link-row>
+  </template>
+
+  <template is="dom-if" if="[[shouldShowOfficeSettings_]]">
     <cr-link-row id="officeRow"
-        class="hr"
-        start-icon="[[rowIcons_.ms365]]"
-        on-click="onClickOffice_"
-        label="$i18n{officeLabel}"
-        sub-label="$i18n{officeSublabel}"
-        role-description="$i18n{subpageArrowRoleDescription}">
-    </cr-link-row>
+          class="hr"
+          start-icon="[[rowIcons_.ms365]]"
+          on-click="onClickOffice_"
+          label="$i18n{officeLabel}"
+          sub-label="$i18n{officeSublabel}"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
   </template>
 
   <template is="dom-if" if="[[isRevampWayfindingEnabled_]]">
@@ -54,7 +58,7 @@
       <div id="addSmbSharesRow" class="settings-box two-line">
         <iron-icon id="smbSharesIcon" icon="[[rowIcons_.smbShares]]">
         </iron-icon>
-        <div class="start">
+        <div id="smbSharesTextContainer" class="start">
           <div class="settings-box-text">
             <div>
               $i18n{smbSharesTitle}

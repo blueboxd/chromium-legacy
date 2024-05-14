@@ -37,17 +37,15 @@ class GlanceablesTaskViewPixelTest
 
     task_ = std::make_unique<api::Task>(
         "task-id", "Task title",
-        /*completed=*/false,
         has_due_date() ? std::make_optional(due_date) : std::nullopt,
-        has_subtasks(),
+        /*completed=*/false, has_subtasks(),
         /*has_email_link=*/false,
         /*has_notes=*/has_notes(), /*updated=*/base::Time());
 
     widget_ = CreateFramelessTestWidget();
     widget_->SetBounds(gfx::Rect(/*width=*/370, /*height=*/50));
     widget_->SetContentsView(std::make_unique<GlanceablesTaskView>(
-        task_.get(), /*mark_as_completed_callback=*/base::DoNothing(),
-        /*save_callback=*/base::DoNothing()));
+        task_.get(), /*mark_as_completed_callback=*/base::DoNothing()));
   }
 
   std::optional<pixel_test::InitParams> CreatePixelTestInitParams()

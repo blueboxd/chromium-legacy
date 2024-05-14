@@ -17,6 +17,7 @@
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/mock_shopping_service.h"
+#include "components/commerce/core/price_tracking_utils.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "components/commerce/core/test_utils.h"
@@ -149,36 +150,6 @@ class CommerceUiTabHelperTest : public testing::Test {
   raw_ptr<content::WebContents> web_contents_;
 };
 
-TEST_F(CommerceUiTabHelperTest, TestSubscriptionEventsUpdateState) {
-  ASSERT_FALSE(tab_helper_->IsPriceTracking());
-
-  AddProductBookmark(bookmark_model_.get(), u"title", GURL(kProductUrl),
-                     kClusterId, true);
-
-  std::optional<ProductInfo> info =
-      CreateProductInfo(kClusterId, GURL(kProductImageUrl));
-
-  shopping_service_->SetResponseForGetProductInfoForUrl(info);
-  shopping_service_->SetIsSubscribedCallbackValue(true);
-  shopping_service_->SetIsClusterIdTrackedByUserResponse(true);
-
-  SimulateNavigationCommitted(GURL(kProductUrl));
-
-  // First ensure that subscribe is successful.
-  tab_helper_->OnSubscribe(CreateUserTrackedSubscription(kClusterId), true);
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_TRUE(tab_helper_->IsPriceTracking());
-
-  // Now assume the user has unsubscribed again.
-  shopping_service_->SetIsSubscribedCallbackValue(false);
-  shopping_service_->SetIsClusterIdTrackedByUserResponse(false);
-  tab_helper_->OnUnsubscribe(CreateUserTrackedSubscription(kClusterId), true);
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_FALSE(tab_helper_->IsPriceTracking());
-}
-
 // The price tracking icon shouldn't be available if no image URL was provided
 // by the shopping service.
 TEST_F(CommerceUiTabHelperTest,
@@ -220,6 +191,7 @@ TEST_F(CommerceUiTabHelperTest,
 
   shopping_service_->SetIsShoppingListEligible(true);
   shopping_service_->SetResponseForGetProductInfoForUrl(info);
+  shopping_service_->SetIsSubscribedCallbackValue(true);
 
   SimulateNavigationCommitted(GURL(kProductUrl));
 
@@ -227,45 +199,6 @@ TEST_F(CommerceUiTabHelperTest,
 
   ASSERT_TRUE(tab_helper_->ShouldShowPriceTrackingIconView());
   ASSERT_EQ(GURL(kProductImageUrl), tab_helper_->GetProductImageURL());
-}
-
-// A request to change the state of a subscription should be immediately
-// reflected in the accessor "IsPriceTracking".
-TEST_F(CommerceUiTabHelperTest,
-       TestSubscriptionChangeImmediatelySetsState) {
-  AddProductBookmark(bookmark_model_.get(), u"title", GURL(kProductUrl),
-                     kClusterId, true);
-
-  std::optional<ProductInfo> info =
-      CreateProductInfo(kClusterId, GURL(kProductImageUrl));
-
-  shopping_service_->SetResponseForGetProductInfoForUrl(info);
-  shopping_service_->SetIsSubscribedCallbackValue(false);
-  shopping_service_->SetIsClusterIdTrackedByUserResponse(false);
-  shopping_service_->SetSubscribeCallbackValue(true);
-
-  SimulateNavigationCommitted(GURL(kProductUrl));
-
-  ASSERT_FALSE(GetPendingTrackingStateForTesting().has_value());
-  ASSERT_FALSE(tab_helper_->IsPriceTracking());
-
-  EXPECT_CALL(
-      *shopping_service_,
-      Subscribe(VectorHasSubscriptionWithId(base::NumberToString(kClusterId)),
-                testing::_))
-      .Times(1);
-
-  shopping_service_->SetIsClusterIdTrackedByUserResponse(true);
-  tab_helper_->SetPriceTrackingState(true, true, base::DoNothing());
-  ASSERT_TRUE(GetPendingTrackingStateForTesting().has_value());
-  ASSERT_TRUE(GetPendingTrackingStateForTesting().value());
-  ASSERT_TRUE(tab_helper_->IsPriceTracking());
-  base::RunLoop().RunUntilIdle();
-
-  // We should still be price tracking, but there should no longer be a pending
-  // value.
-  ASSERT_FALSE(GetPendingTrackingStateForTesting().has_value());
-  ASSERT_TRUE(tab_helper_->IsPriceTracking());
 }
 
 // Make sure unsubscribe without a bookmark for the current page is functional.
@@ -293,10 +226,6 @@ TEST_F(CommerceUiTabHelperTest, TestSubscriptionChangeNoBookmark) {
 
   tab_helper_->SetPriceTrackingState(false, true, base::DoNothing());
   base::RunLoop().RunUntilIdle();
-
-  // We should still be price tracking, but there should no longer be a pending
-  // value.
-  ASSERT_FALSE(tab_helper_->IsPriceTracking());
 }
 
 TEST_F(CommerceUiTabHelperTest, TestShoppingInsightsSidePanelAvailable) {

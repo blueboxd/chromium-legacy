@@ -128,7 +128,7 @@ void UpdatePictureForTemporalLayerEncoding(
     const size_t num_layers,
     H264Picture& pic,
     unsigned int& frame_num,
-    absl::optional<size_t>& ref_frame_idx,
+    std::optional<size_t>& ref_frame_idx,
     const unsigned int num_encoded_frames,
     const base::circular_deque<scoped_refptr<H264Picture>>& ref_pic_list0) {
   DCHECK_GE(num_layers, kMinSupportedH264TemporalLayers);
@@ -254,7 +254,7 @@ bool H264VaapiVideoEncoderDelegate::Initialize(
   // framerate and dimension.
   if (!CheckH264LevelLimits(profile_, level_, config.bitrate.target_bps(),
                             initial_framerate, mb_width_ * mb_height_)) {
-    absl::optional<uint8_t> valid_level =
+    std::optional<uint8_t> valid_level =
         FindValidH264Level(profile_, config.bitrate.target_bps(),
                            initial_framerate, mb_width_ * mb_height_);
     if (!valid_level) {
@@ -345,15 +345,16 @@ BitstreamBufferMetadata H264VaapiVideoEncoderDelegate::GetMetadata(
 
   auto metadata =
       VaapiVideoEncoderDelegate::GetMetadata(encode_job, payload_size);
+  CHECK(metadata.end_of_picture);
   auto picture = GetH264Picture(encode_job);
   DCHECK(picture);
 
   metadata.h264 = picture->metadata_for_encoding;
-
   return metadata;
 }
 
-bool H264VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
+VaapiVideoEncoderDelegate::PrepareEncodeJobResult
+H264VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   scoped_refptr<H264Picture> pic = GetH264Picture(encode_job);
@@ -375,7 +376,7 @@ bool H264VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
 
   pic->type = pic->idr ? H264SliceHeader::kISlice : H264SliceHeader::kPSlice;
 
-  absl::optional<size_t> ref_frame_index;
+  std::optional<size_t> ref_frame_index;
   if (num_temporal_layers_ > 1u) {
     UpdatePictureForTemporalLayerEncoding(num_temporal_layers_, *pic,
                                           frame_num_, ref_frame_index,
@@ -399,7 +400,7 @@ bool H264VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
                              current_pps_, pic, ref_pic_list0_,
                              ref_frame_index)) {
     DVLOGF(1) << "Failed submitting frame parameters";
-    return false;
+    return PrepareEncodeJobResult::kFail;
   }
 
   if (pic->type == H264SliceHeader::kISlice && submit_packed_headers_) {
@@ -407,7 +408,7 @@ bool H264VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
     // operation on the generated stream.
     if (!SubmitPackedHeaders(*packed_sps_, *packed_pps_)) {
       DVLOGF(1) << "Failed submitting keyframe headers";
-      return false;
+      return PrepareEncodeJobResult::kFail;
     }
   }
 
@@ -421,7 +422,7 @@ bool H264VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
 
   num_encoded_frames_++;
   num_encoded_frames_ %= kIDRPeriod;
-  return true;
+  return PrepareEncodeJobResult::kSuccess;
 }
 
 bool H264VaapiVideoEncoderDelegate::UpdateRates(
@@ -878,7 +879,7 @@ bool H264VaapiVideoEncoderDelegate::SubmitFrameParameters(
     const H264PPS& pps,
     scoped_refptr<H264Picture> pic,
     const base::circular_deque<scoped_refptr<H264Picture>>& ref_pic_list0,
-    const absl::optional<size_t>& ref_frame_index) {
+    const std::optional<size_t>& ref_frame_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const Bitrate bitrate = encode_params.bitrate_allocation.GetSumBitrate();
@@ -914,7 +915,7 @@ bool H264VaapiVideoEncoderDelegate::SubmitFrameParameters(
   seq_param.bits_per_second = bitrate_bps;
 
   SPS_TO_SP(max_num_ref_frames);
-  absl::optional<gfx::Size> coded_size = sps.GetCodedSize();
+  std::optional<gfx::Size> coded_size = sps.GetCodedSize();
   if (!coded_size) {
     DVLOGF(1) << "Invalid coded size";
     return false;

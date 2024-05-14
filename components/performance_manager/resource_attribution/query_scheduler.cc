@@ -19,14 +19,15 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/types/variant_util.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/resource_attribution/resource_types.h"
+#include "components/performance_manager/resource_attribution/context_collection.h"
+#include "components/performance_manager/resource_attribution/performance_manager_aliases.h"
 #include "components/performance_manager/resource_attribution/query_params.h"
 
-namespace performance_manager::resource_attribution {
+namespace resource_attribution::internal {
 
 namespace {
-
-using QueryParams = internal::QueryParams;
 
 // A global singleton that holds the TaskRunner the QueryScheduler runs on. In
 // production this is the PM graph sequence, but in unit tests it can be the
@@ -170,7 +171,7 @@ void QueryScheduler::RequestResults(
   // Send out a measurement request for each resource type. The BarrierCallback
   // will invoke OnResultsReceived when all have responded.
   const size_t num_requests = query_params.resource_types.Size();
-  auto barrier_callback = base::BarrierCallback<SingleQueryResultMap>(
+  auto barrier_callback = base::BarrierCallback<QueryResultMap>(
       num_requests, base::BindOnce(&QueryScheduler::OnResultsReceived,
                                    weak_factory_.GetWeakPtr(),
                                    query_params.contexts, std::move(callback)));
@@ -204,8 +205,10 @@ void QueryScheduler::OnPassedToGraph(Graph* graph) {
   CHECK_EQ(graph_, nullptr);
   graph_ = graph;
   graph_->RegisterObject(this);
-  SchedulerTaskRunner::GetInstance()->OnSchedulerPassedToGraph(graph);
   memory_provider_.emplace(graph);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(&cpu_monitor_,
+                                                           "CpuAttribution");
+  SchedulerTaskRunner::GetInstance()->OnSchedulerPassedToGraph(graph);
 }
 
 void QueryScheduler::OnTakenFromGraph(Graph* graph) {
@@ -214,6 +217,7 @@ void QueryScheduler::OnTakenFromGraph(Graph* graph) {
   graph_->UnregisterObject(this);
   graph_ = nullptr;
   SchedulerTaskRunner::GetInstance()->OnSchedulerTakenFromGraph(graph);
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(&cpu_monitor_);
   if (cpu_query_count_ > 0) {
     cpu_monitor_.StopMonitoring();
   }
@@ -281,19 +285,33 @@ void QueryScheduler::RemoveMemoryQuery() {
 }
 
 void QueryScheduler::OnResultsReceived(
-    const internal::ContextCollection& contexts,
+    const ContextCollection& contexts,
     base::OnceCallback<void(const QueryResultMap&)> callback,
-    const std::vector<SingleQueryResultMap>& results) {
+    std::vector<QueryResultMap> all_results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   QueryResultMap merged_results;
-  for (const auto& result_map : results) {
+  for (auto& result_map : all_results) {
     for (auto& [context, result] : result_map) {
-      if (contexts.ContainsContext(context)) {
-        merged_results[context].push_back(std::move(result));
+      if (!contexts.ContainsContext(context)) {
+        continue;
       }
+      QueryResults& merged_result = merged_results[context];
+      // Move from `result` into `merged_result`. Only one member of `result`
+      // should be set since each element of `all_results` is the result for a
+      // single resource type.
+      if (result.cpu_time_result.has_value()) {
+        std::swap(result.cpu_time_result, merged_result.cpu_time_result);
+      } else if (result.memory_summary_result.has_value()) {
+        std::swap(result.memory_summary_result,
+                  merged_result.memory_summary_result);
+      }
+      // If this fails, either `result` had multiple members set, or multiple
+      // entries of `all_results` copied measurements of the same resource into
+      // `merged_result` and the earlier measurement was swapped into `result`.
+      CHECK(result == QueryResults{});
     }
   }
   std::move(callback).Run(merged_results);
 }
 
-}  // namespace performance_manager::resource_attribution
+}  // namespace resource_attribution::internal

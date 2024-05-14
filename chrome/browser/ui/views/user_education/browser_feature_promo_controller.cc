@@ -16,8 +16,8 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/search_engine_choice/search_engine_choice_service.h"
-#include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_controller.h"
@@ -47,13 +47,15 @@ BrowserFeaturePromoController::BrowserFeaturePromoController(
     user_education::HelpBubbleFactoryRegistry* help_bubble_registry,
     user_education::FeaturePromoStorageService* storage_service,
     user_education::FeaturePromoSessionPolicy* session_policy,
-    user_education::TutorialService* tutorial_service)
+    user_education::TutorialService* tutorial_service,
+    user_education::ProductMessagingController* messaging_controller)
     : FeaturePromoControllerCommon(feature_engagement_tracker,
                                    registry,
                                    help_bubble_registry,
                                    storage_service,
                                    session_policy,
-                                   tutorial_service),
+                                   tutorial_service,
+                                   messaging_controller),
       browser_view_(browser_view) {}
 
 BrowserFeaturePromoController::~BrowserFeaturePromoController() = default;
@@ -103,7 +105,8 @@ BrowserFeaturePromoController::MaybeCreateForBrowserView(
       &user_education_service->help_bubble_factory_registry(),
       &user_education_service->feature_promo_storage_service(),
       &user_education_service->feature_promo_session_policy(),
-      &user_education_service->tutorial_service());
+      &user_education_service->tutorial_service(),
+      &user_education_service->product_messaging_controller());
 }
 
 // static
@@ -131,13 +134,6 @@ bool BrowserFeaturePromoController::CanShowPromoForElement(
     ui::TrackedElement* anchor_element) const {
   auto* const profile = browser_view_->GetProfile();
 
-  // Verify that there are no required notices pending.
-  UserEducationService* const ue_service =
-      UserEducationServiceFactory::GetForBrowserContext(profile);
-  if (ue_service->product_messaging_controller().has_pending_notices()) {
-    return false;
-  }
-
   // Turn off IPH while a required privacy interstitial is visible or pending.
   // TODO(dfried): with Desktop User Education 2.0, filtering of IPH may need to
   // be more nuanced; also a contention scheme between required popups may be
@@ -152,18 +148,17 @@ bool BrowserFeaturePromoController::CanShowPromoForElement(
 
   // Turn off IPH while a required search engine choice dialog is visible or
   // pending.
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
   if (search_engines::IsChoiceScreenFlagEnabled(
           search_engines::ChoicePromo::kDialog)) {
     Browser& browser = *browser_view_->browser();
-    SearchEngineChoiceService* search_engine_choice_service =
-        SearchEngineChoiceServiceFactory::GetForProfile(browser.profile());
-    if (search_engine_choice_service &&
-        search_engine_choice_service->HasPendingDialog(browser)) {
+    SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
+        SearchEngineChoiceDialogServiceFactory::GetForProfile(
+            browser.profile());
+    if (search_engine_choice_dialog_service &&
+        search_engine_choice_dialog_service->HasPendingDialog(browser)) {
       return false;
     }
   }
-#endif
 
   // Don't show IPH if the toolbar is collapsed in Responsive Mode/the overflow
   // button is visible.
@@ -175,7 +170,7 @@ bool BrowserFeaturePromoController::CanShowPromoForElement(
   if (base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     if (const auto* const controller =
             browser_view_->toolbar()->toolbar_controller()) {
-      if (controller->ShouldShowOverflowButton()) {
+      if (controller->InOverflowMode()) {
         return false;
       }
     }
@@ -185,11 +180,13 @@ bool BrowserFeaturePromoController::CanShowPromoForElement(
   auto* const anchor_view = anchor_element->AsA<views::TrackedElementViews>();
   auto* const anchor_widget = anchor_view ? anchor_view->view()->GetWidget()
                                           : browser_view_->GetWidget();
-  if (!anchor_widget)
+  if (!anchor_widget) {
     return false;
+  }
 
-  if (!active_window_check_blocked() && !anchor_widget->ShouldPaintAsActive())
+  if (!active_window_check_blocked() && !anchor_widget->ShouldPaintAsActive()) {
     return false;
+  }
 
   return true;
 }

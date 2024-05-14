@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_idb_transaction.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
@@ -188,14 +187,12 @@ class IDBRequestTest : public testing::Test {
   void BuildTransaction(V8TestingScope& scope,
                         MockIDBDatabase& mock_database,
                         MockIDBTransaction& mock_transaction_remote) {
-    auto database_backend = std::make_unique<WebIDBDatabase>(
-        mock_database.BindNewEndpointAndPassDedicatedRemote(),
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-    db_ = MakeGarbageCollected<IDBDatabase>(
-        scope.GetExecutionContext(), std::move(database_backend),
-        mojo::NullAssociatedReceiver(), mojo::NullRemote());
-
     auto* execution_context = scope.GetExecutionContext();
+
+    db_ = MakeGarbageCollected<IDBDatabase>(
+        execution_context, mojo::NullAssociatedReceiver(), mojo::NullRemote(),
+        mock_database.BindNewEndpointAndPassDedicatedRemote());
+
     IDBTransaction::TransactionMojoRemote transaction_remote(execution_context);
     mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction> receiver =
         transaction_remote.BindNewEndpointAndPassReceiver(
@@ -519,7 +516,7 @@ class AsyncTraceStateForTesting : public IDBRequest::AsyncTraceState {
     return *this;
   }
 
-  absl::optional<IDBRequest::TypeForMetrics> type() const {
+  std::optional<IDBRequest::TypeForMetrics> type() const {
     return IDBRequest::AsyncTraceState::type();
   }
   const base::TimeTicks& start_time() const {

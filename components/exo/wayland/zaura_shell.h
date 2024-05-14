@@ -33,8 +33,9 @@ class ShellSurfaceBase;
 namespace wayland {
 class SerialTracker;
 
+// version: 65
 constexpr uint32_t kZAuraShellVersion =
-    ZAURA_TOPLEVEL_SET_SHADOW_CORNER_RADII_SINCE_VERSION;
+    ZAURA_TOPLEVEL_CONFIGURE_OCCLUSION_STATE_SINCE_VERSION;
 
 // Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
 // builds. On non-ChromeOS builds the protocol provides access to Aura windowing
@@ -113,8 +114,8 @@ class AuraSurface : public SurfaceObserver,
       const aura::Window::OcclusionState occlusion_state);
 
  private:
-  raw_ptr<Surface, ExperimentalAsh> surface_;
-  const raw_ptr<wl_resource, ExperimentalAsh> resource_;
+  raw_ptr<Surface> surface_;
+  const raw_ptr<wl_resource> resource_;
 
   // Tooltip text sent from Lacros.
   // This is kept here since it should out-live ShowTooltip() scope.
@@ -166,6 +167,7 @@ class AuraToplevel {
                    bool resizing,
                    bool activated,
                    float raster_scale,
+                   aura::Window::OcclusionState occlusion_state,
                    std::optional<chromeos::WindowStateType> restore_state_type);
   virtual void OnOriginChange(const gfx::Point& origin);
   void OnOverviewChange(bool in_overview);
@@ -176,7 +178,7 @@ class AuraToplevel {
   void SetFullscreenMode(uint32_t mode);
   void SetScaleFactor(float scale_factor);
   void SetPersistable(bool persistable);
-  void SetShape(absl::optional<cc::Region> shape);
+  void SetShape(std::optional<cc::Region> shape);
   void AckRotateFocus(uint32_t serial, uint32_t handled);
   void OnRotatePaneFocus(uint32_t serial,
                          ash::FocusCycler::Direction direction,
@@ -185,12 +187,11 @@ class AuraToplevel {
   void SetCanFullscreen(bool can_fullscreen);
   void SetShadowCornersRadii(const gfx::RoundedCornersF& radii);
 
-  raw_ptr<ShellSurface, DanglingUntriaged | ExperimentalAsh> shell_surface_;
-  const raw_ptr<SerialTracker, ExperimentalAsh> serial_tracker_;
-  const raw_ptr<SerialTracker, ExperimentalAsh> rotation_serial_tracker_;
-  raw_ptr<wl_resource, DanglingUntriaged | ExperimentalAsh>
-      xdg_toplevel_resource_;
-  raw_ptr<wl_resource, ExperimentalAsh> aura_toplevel_resource_;
+  raw_ptr<ShellSurface, DanglingUntriaged> shell_surface_;
+  const raw_ptr<SerialTracker> serial_tracker_;
+  const raw_ptr<SerialTracker> rotation_serial_tracker_;
+  raw_ptr<wl_resource, DanglingUntriaged> xdg_toplevel_resource_;
+  raw_ptr<wl_resource> aura_toplevel_resource_;
   bool supports_window_bounds_ = false;
 
   base::WeakPtrFactory<AuraToplevel> weak_ptr_factory_{this};
@@ -234,8 +235,8 @@ class AuraOutput : public WaylandDisplayObserver {
   virtual void SendLogicalTransform(int32_t transform);
 
  private:
-  const raw_ptr<wl_resource, ExperimentalAsh> resource_;
-  raw_ptr<WaylandDisplayHandler, ExperimentalAsh> display_handler_;
+  const raw_ptr<wl_resource> resource_;
+  raw_ptr<WaylandDisplayHandler> display_handler_;
 };
 
 }  // namespace wayland

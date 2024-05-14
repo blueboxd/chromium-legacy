@@ -271,8 +271,9 @@ void ToastManagerImpl::ShowLatest() {
   serial_++;
 
   if (current_toast_data_->show_on_all_root_windows) {
-    for (auto* root_window : Shell::GetAllRootWindows())
+    for (aura::Window* root_window : Shell::GetAllRootWindows()) {
       CreateToastOverlayForRoot(root_window);
+    }
   } else {
     CreateToastOverlayForRoot(Shell::GetRootWindowForNewWindows());
   }
@@ -297,8 +298,11 @@ void ToastManagerImpl::CreateToastOverlayForRoot(aura::Window* root_window) {
   auto& new_overlay = root_window_to_overlay_[root_window];
   DCHECK(!new_overlay);
   DCHECK(current_toast_data_);
-  new_overlay =
-      std::make_unique<ToastOverlay>(this, *current_toast_data_, root_window);
+  new_overlay = std::make_unique<ToastOverlay>(
+      this, current_toast_data_->text, current_toast_data_->dismiss_text,
+      *current_toast_data_->leading_icon, current_toast_data_->duration,
+      current_toast_data_->persist_on_hover, root_window,
+      current_toast_data_->dismiss_callback);
   new_overlay->Show(true);
 
   // We only want to record this value when the first instance of the toast is

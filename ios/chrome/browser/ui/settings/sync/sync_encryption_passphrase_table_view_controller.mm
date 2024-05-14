@@ -17,7 +17,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -503,6 +504,10 @@ const CGFloat kSpinnerButtonPadding = 18;
     if (settingsNavigationController) {
       [settingsNavigationController
           popViewControllerOrCloseSettingsAnimated:YES];
+    } else if (self.presentModally) {
+      [self.navigationController.presentingViewController
+          dismissViewControllerAnimated:YES
+                             completion:nil];
     } else {
       [self.navigationController popViewControllerAnimated:YES];
     }
@@ -527,8 +532,10 @@ const CGFloat kSpinnerButtonPadding = 18;
           ->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     return;
   }
-  [base::apple::ObjCCastStrict<SettingsNavigationController>(
-      self.navigationController) popViewControllerOrCloseSettingsAnimated:NO];
+  if (!self.presentModally) {
+    [base::apple::ObjCCastStrict<SettingsNavigationController>(
+        self.navigationController) popViewControllerOrCloseSettingsAnimated:NO];
+  }
 }
 
 #pragma mark - SettingsControllerProtocol callbacks
@@ -541,7 +548,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 }
 
 - (void)reportBackUserAction {
-  NOTREACHED();
+  // No-op for this view controller.
 }
 
 - (void)settingsWillBeDismissed {

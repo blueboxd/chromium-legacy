@@ -9,6 +9,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/values_util.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
@@ -569,8 +571,9 @@ void ProfilePickerHandler::OnProfileForDialogLoaded(Profile* profile) {
       if (base::FeatureList::IsEnabled(kForceSigninFlowInProfilePicker)) {
         ProfilePicker::SwitchToReauth(
             profile,
-            base::BindOnce(&ProfilePickerHandler::OnReauthErrorCallback,
-                           weak_factory_.GetWeakPtr()));
+            base::BindOnce(&ProfilePickerHandler::DisplayForceSigninErrorDialog,
+                           weak_factory_.GetWeakPtr(), profile->GetPath(),
+                           base::UTF16ToUTF8(entry->GetUserName())));
       } else {
         ProfilePickerForceSigninDialog::ShowReauthDialog(
             profile, base::UTF16ToUTF8(entry->GetUserName()));
@@ -582,12 +585,25 @@ void ProfilePickerHandler::OnProfileForDialogLoaded(Profile* profile) {
       // previously. A pre-existed profile can still be used if it has been
       // signed in with an email address matched RestrictSigninToPattern policy
       // already.
-      LoginUIServiceFactory::GetForProfile(profile)
-          ->SetProfileBlockingErrorMessage();
-      ProfilePicker::ShowDialogAndDisplayErrorMessage(profile);
+      if (base::FeatureList::IsEnabled(kForceSigninFlowInProfilePicker)) {
+        DisplayForceSigninErrorDialog(/*profile_path=*/base::FilePath(),
+                                      /*email=*/std::string(),
+                                      ReauthUIError::kNotAllowed);
+      } else {
+        LoginUIServiceFactory::GetForProfile(profile)
+            ->SetProfileBlockingErrorMessage();
+        ProfilePicker::ShowDialogAndDisplayErrorMessage(profile);
+      }
     } else {
       // Fresh sign in via profile picker without existing email address.
-      ProfilePickerForceSigninDialog::ShowForceSigninDialog(profile);
+      if (base::FeatureList::IsEnabled(kForceSigninFlowInProfilePicker)) {
+        ProfilePicker::SwitchToDiceSignIn(
+            profile->GetPath(),
+            base::BindOnce(&ProfilePickerHandler::OnLoadSigninFinished,
+                           weak_factory_.GetWeakPtr()));
+      } else {
+        ProfilePickerForceSigninDialog::ShowForceSigninDialog(profile);
+      }
     }
   }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -601,9 +617,16 @@ void ProfilePickerHandler::OnProfileForDialogLoaded(Profile* profile) {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
-void ProfilePickerHandler::OnReauthErrorCallback() {
+void ProfilePickerHandler::DisplayForceSigninErrorDialog(
+    const base::FilePath& profile_path,
+    const std::string& email,
+    ReauthUIError error) {
   AllowJavascript();
-  FireWebUIListener("display-force-signin-error-dialog", base::Value());
+
+  const auto& [title, body] = GetReauthUIErrorMessages(error, email);
+  FireWebUIListener("display-force-signin-error-dialog", base::Value(title),
+                    base::Value(body),
+                    base::Value(profile_path.AsUTF16Unsafe()));
 }
 
 void ProfilePickerHandler::HandleLaunchGuestProfile(
@@ -973,6 +996,7 @@ void ProfilePickerHandler::HandleSelectExistingAccountLacros(
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 void ProfilePickerHandler::OnLoadSigninFinished(bool success) {
+  AllowJavascript();
   FireWebUIListener("load-signin-finished", base::Value(success));
 }
 

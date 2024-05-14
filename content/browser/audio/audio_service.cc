@@ -4,6 +4,8 @@
 
 #include "content/public/browser/audio_service.h"
 
+#include <optional>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/strcat.h"
@@ -28,7 +30,6 @@
 #include "services/audio/public/mojom/audio_service.mojom.h"
 #include "services/audio/service.h"
 #include "services/audio/service_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_PASSTHROUGH_AUDIO_CODECS)
 #include "ui/display/util/edid_parser.h"
@@ -45,6 +46,8 @@
 namespace content {
 
 namespace {
+
+audio::mojom::AudioService* g_service_override = nullptr;
 
 bool IsAudioServiceOutOfProcess() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -176,6 +179,9 @@ uint32_t ScanEdidBitstreams() {
 
 audio::mojom::AudioService& GetAudioService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_service_override) {
+    return *g_service_override;
+  }
 
   // NOTE: We use sequence-local storage slot not because we support access from
   // any sequence, but to limit the lifetime of this Remote to the lifetime of
@@ -206,6 +212,13 @@ audio::mojom::AudioService& GetAudioService() {
     remote.reset_on_disconnect();
   }
   return *remote.get();
+}
+
+base::AutoReset<audio::mojom::AudioService*>
+OverrideAudioServiceForTesting(  // IN-TEST
+    audio::mojom::AudioService* service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return {&g_service_override, service};
 }
 
 std::unique_ptr<media::AudioSystem> CreateAudioSystemForAudioService() {

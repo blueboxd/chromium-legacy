@@ -66,6 +66,12 @@ class ASH_EXPORT SystemTrayModel : public SystemTray {
   void SetPhoneHubManager(
       phonehub::PhoneHubManager* phone_hub_manager) override;
 
+  // This will be set to true in `FakeSystemTrayModel`.
+  virtual bool IsFakeModel() const;
+
+  // True if user is in a child session. Virtual for mocking.
+  virtual bool IsInUserChildSession() const;
+
   ClockModel* clock() { return clock_.get(); }
   EnterpriseDomainModel* enterprise_domain() {
     return enterprise_domain_.get();
@@ -100,11 +106,10 @@ class ASH_EXPORT SystemTrayModel : public SystemTray {
   std::unique_ptr<CalendarModel> calendar_model_;
 
   // Client interface in chrome browser. May be null in tests.
-  raw_ptr<SystemTrayClient, ExperimentalAsh> client_ = nullptr;
+  raw_ptr<SystemTrayClient> client_ = nullptr;
 
   // Unowned.
-  raw_ptr<phonehub::PhoneHubManager, ExperimentalAsh> phone_hub_manager_ =
-      nullptr;
+  raw_ptr<phonehub::PhoneHubManager> phone_hub_manager_ = nullptr;
 };
 
 }  // namespace ash

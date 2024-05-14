@@ -64,7 +64,7 @@ class FakeURLLoader final : public URLLoader {
                          base::TimeDelta timeout_interval,
                          URLLoaderClient*,
                          WebURLResponse&,
-                         absl::optional<WebURLError>&,
+                         std::optional<WebURLError>&,
                          scoped_refptr<SharedBuffer>&,
                          int64_t& encoded_data_length,
                          uint64_t& encoded_body_length,
@@ -88,8 +88,8 @@ class FakeURLLoader final : public URLLoader {
       response.SetHttpStatusCode(404);
       client->DidReceiveResponse(response,
                                  /*body=*/mojo::ScopedDataPipeConsumerHandle(),
-                                 /*cached_metadata=*/absl::nullopt);
-      client->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false);
+                                 /*cached_metadata=*/std::nullopt);
+      client->DidFinishLoading(base::TimeTicks(), 0, 0, 0);
       return;
     }
     // Don't handle other requests intentionally to emulate ongoing load.
@@ -107,7 +107,7 @@ class FakeURLLoader final : public URLLoader {
 class FakeURLLoaderFactory final : public URLLoaderFactory {
  public:
   std::unique_ptr<URLLoader> CreateURLLoader(
-      const WebURLRequest&,
+      const network::ResourceRequest&,
       scoped_refptr<base::SingleThreadTaskRunner>,
       scoped_refptr<base::SingleThreadTaskRunner>,
       mojo::PendingRemote<mojom::blink::KeepAliveHandle>,
@@ -134,7 +134,7 @@ class FakeWebServiceWorkerFetchContext final
   }
   void WillSendRequest(WebURLRequest&) override {}
   WebVector<std::unique_ptr<URLLoaderThrottle>> CreateThrottles(
-      const WebURLRequest& request) override {
+      const network::ResourceRequest& request) override {
     return {};
   }
 
@@ -145,8 +145,8 @@ class FakeWebServiceWorkerFetchContext final
   net::SiteForCookies SiteForCookies() const override {
     return net::SiteForCookies();
   }
-  absl::optional<WebSecurityOrigin> TopFrameOrigin() const override {
-    return absl::optional<WebSecurityOrigin>();
+  std::optional<WebSecurityOrigin> TopFrameOrigin() const override {
+    return std::optional<WebSecurityOrigin>();
   }
   WebString GetAcceptLanguages() const override { return WebString(); }
   void SetIsOfflineMode(bool is_offline_mode) override {}

@@ -3373,75 +3373,6 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
   // - rects[6] == rects[7]
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_F(TextfieldTest, SetAutocorrectRange) {
-  InitTextfield();
-
-  textfield_->SetText(u"abc def ghi");
-  textfield_->SetAutocorrectRange(gfx::Range(4, 7));
-
-  gfx::Range autocorrect_range = textfield_->GetAutocorrectRange();
-  EXPECT_EQ(autocorrect_range, gfx::Range(4, 7));
-}
-
-TEST_F(TextfieldTest, DoesNotSetAutocorrectRangeWhenRangeGivenIsInvalid) {
-  InitTextfield();
-
-  textfield_->SetText(u"abc");
-
-  EXPECT_FALSE(textfield_->SetAutocorrectRange(gfx::Range(8, 11)));
-  EXPECT_TRUE(textfield_->GetAutocorrectRange().is_empty());
-}
-
-TEST_F(TextfieldTest,
-       ClearsAutocorrectRangeWhenSetAutocorrectRangeWithEmptyRange) {
-  InitTextfield();
-
-  textfield_->SetText(u"abc");
-
-  // TODO(b/161490813): Change to EXPECT_TRUE after fixing set range.
-  EXPECT_FALSE(textfield_->SetAutocorrectRange(gfx::Range()));
-  EXPECT_TRUE(textfield_->GetAutocorrectRange().is_empty());
-}
-
-TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {
-  InitTextfield();
-
-  textfield_->InsertText(
-      u"hello placeholder text",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  textfield_->SetAutocorrectRange(gfx::Range(3, 10));
-
-  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 10));
-
-  gfx::Rect rect_for_long_text = textfield_->GetAutocorrectCharacterBounds();
-
-  textfield_->clear();
-
-  textfield_->InsertText(
-      u"hello placeholder text",
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  textfield_->SetAutocorrectRange(gfx::Range(3, 8));
-
-  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 8));
-
-  gfx::Rect rect_for_short_text = textfield_->GetAutocorrectCharacterBounds();
-
-  EXPECT_LT(rect_for_short_text.x(), rect_for_long_text.x());
-  EXPECT_EQ(rect_for_short_text.y(), rect_for_long_text.y());
-  EXPECT_EQ(rect_for_short_text.height(), rect_for_long_text.height());
-  // TODO(crbug.com/1108170): Investigate why the rectangle width is wrong.
-  // The value seems to be wrong due to the incorrect value being returned from
-  // RenderText::GetCursorBounds(). Unfortuantly, that is tricky to fix, since
-  // RenderText is used in other parts of the codebase.
-  // When fixed, the following EXPECT statement should pass.
-  // EXPECT_LT(rect_for_short_text.width(), rect_for_long_text.width());
-}
-
-// TODO(crbug.com/1108170): Add a test to check that when the composition /
-// surrounding text is updated, the AutocorrectRange is updated accordingly.
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 // The word we select by double clicking should remain selected regardless of
 // where we drag the mouse afterwards without releasing the left button.
 TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
@@ -3506,7 +3437,7 @@ TEST_F(TextfieldTest, SelectionClipboard) {
   ui::MouseEvent press_2(ui::ET_MOUSE_PRESSED, point_2, point_2,
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
-  press_2.set_flags(press_2.flags() | ui::EF_SHIFT_DOWN);
+  press_2.SetFlags(press_2.flags() | ui::EF_SHIFT_DOWN);
   textfield_->OnMousePressed(press_2);
   ui::MouseEvent release_2(ui::ET_MOUSE_RELEASED, point_2, point_2,
                            ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
@@ -5268,6 +5199,41 @@ TEST_F(TextfieldTest, AccessibleGraphemeOffsetsElidedTail) {
   textfield_->GetViewAccessibility().GetAccessibleNodeData(&node_data);
   std::vector<int32_t> expected_offsets = {0, 10, 20, 30, 40, 40, 40};
   EXPECT_EQ(node_data.GetIntListAttribute(
+                ax::mojom::IntListAttribute::kCharacterOffsets),
+            expected_offsets);
+}
+
+TEST_F(TextfieldTest, AccessibleGraphemeOffsetsIndependentOfDisplayOffset) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(::features::kUiaProvider);
+  InitTextfield();
+
+  // Size the textfield wide enough to hold 10 characters.
+  gfx::test::RenderTextTestApi render_text_test_api(
+      GetTextfieldTestApi().GetRenderText());
+  constexpr int kGlyphWidth = 10;
+  render_text_test_api.SetGlyphWidth(kGlyphWidth);
+  GetTextfieldTestApi().GetRenderText()->SetDisplayRect(
+      gfx::Rect(kGlyphWidth * 10, 20));
+  textfield_->SetTextWithoutCaretBoundsChangeNotification(
+      u"3.141592653589793238462", 0);
+  GetTextfieldTestApi().SetDisplayOffsetX(0);
+
+  ui::AXNodeData node_data;
+  textfield_->GetViewAccessibility().GetAccessibleNodeData(&node_data);
+  std::vector<int32_t> expected_offsets = {
+      0,   10,  20,  30,  40,  50,  60,  70,  80,  90,  100, 110,
+      120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230};
+  EXPECT_EQ(node_data.GetIntListAttribute(
+                ax::mojom::IntListAttribute::kCharacterOffsets),
+            expected_offsets);
+  GetTextfieldTestApi().SetDisplayOffsetX(-100);
+  EXPECT_EQ(GetTextfieldTestApi().GetDisplayOffsetX(), -100);
+
+  ui::AXNodeData node_data_2;
+  textfield_->GetViewAccessibility().GetAccessibleNodeData(&node_data_2);
+  // The offsets should be the same.
+  EXPECT_EQ(node_data_2.GetIntListAttribute(
                 ax::mojom::IntListAttribute::kCharacterOffsets),
             expected_offsets);
 }

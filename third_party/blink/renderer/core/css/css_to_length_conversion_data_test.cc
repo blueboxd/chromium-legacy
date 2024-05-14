@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#include <optional>
+
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -29,8 +31,8 @@ class CSSToLengthConversionDataTest : public PageTestBase {
   // css_zoom - The zoom to apply to :root.
   // data_zoom - The zoom to pass to the CSSToLengthConversionData constructor.
   CSSToLengthConversionData ConversionData(
-      absl::optional<float> css_zoom,
-      absl::optional<float> data_zoom,
+      std::optional<float> css_zoom,
+      std::optional<float> data_zoom,
       CSSToLengthConversionData::Flags& flags) {
     Element* root = GetDocument().documentElement();
     DCHECK(root);
@@ -58,14 +60,14 @@ class CSSToLengthConversionDataTest : public PageTestBase {
   }
 
   CSSToLengthConversionData ConversionData(
-      absl::optional<float> css_zoom = absl::nullopt,
-      absl::optional<float> data_zoom = absl::nullopt) {
+      std::optional<float> css_zoom = std::nullopt,
+      std::optional<float> data_zoom = std::nullopt) {
     return ConversionData(css_zoom, data_zoom, ignored_flags_);
   }
 
   CSSToLengthConversionData ConversionData(
       CSSToLengthConversionData::Flags& flags) {
-    return ConversionData(absl::nullopt, absl::nullopt, flags);
+    return ConversionData(std::nullopt, std::nullopt, flags);
   }
 
   float Convert(const CSSToLengthConversionData& data, String value) {
@@ -219,6 +221,7 @@ TEST_F(CSSToLengthConversionDataTest, Flags) {
   Flags sv = static_cast<Flags>(Flag::kStaticViewport);
   Flags dv = static_cast<Flags>(Flag::kDynamicViewport);
   Flags cq = static_cast<Flags>(Flag::kContainerRelative);
+  Flags ldr = static_cast<Flags>(Flag::kLogicalDirectionRelative);
 
   EXPECT_EQ(0u, ConversionFlags("1px"));
 
@@ -240,37 +243,37 @@ TEST_F(CSSToLengthConversionDataTest, Flags) {
 
   EXPECT_EQ(sv, ConversionFlags("1svw"));
   EXPECT_EQ(sv, ConversionFlags("1svh"));
-  EXPECT_EQ(sv, ConversionFlags("1svi"));
-  EXPECT_EQ(sv, ConversionFlags("1svb"));
+  EXPECT_EQ(sv | ldr, ConversionFlags("1svi"));
+  EXPECT_EQ(sv | ldr, ConversionFlags("1svb"));
   EXPECT_EQ(sv, ConversionFlags("1svmin"));
   EXPECT_EQ(sv, ConversionFlags("1svmax"));
 
   EXPECT_EQ(sv, ConversionFlags("1lvw"));
   EXPECT_EQ(sv, ConversionFlags("1lvh"));
-  EXPECT_EQ(sv, ConversionFlags("1lvi"));
-  EXPECT_EQ(sv, ConversionFlags("1lvb"));
+  EXPECT_EQ(sv | ldr, ConversionFlags("1lvi"));
+  EXPECT_EQ(sv | ldr, ConversionFlags("1lvb"));
   EXPECT_EQ(sv, ConversionFlags("1lvmin"));
   EXPECT_EQ(sv, ConversionFlags("1lvmax"));
 
   EXPECT_EQ(sv, ConversionFlags("1vw"));
   EXPECT_EQ(sv, ConversionFlags("1vh"));
-  EXPECT_EQ(sv, ConversionFlags("1vi"));
-  EXPECT_EQ(sv, ConversionFlags("1vb"));
+  EXPECT_EQ(sv | ldr, ConversionFlags("1vi"));
+  EXPECT_EQ(sv | ldr, ConversionFlags("1vb"));
   EXPECT_EQ(sv, ConversionFlags("1vmin"));
   EXPECT_EQ(sv, ConversionFlags("1vmax"));
 
   EXPECT_EQ(dv, ConversionFlags("1dvw"));
   EXPECT_EQ(dv, ConversionFlags("1dvh"));
-  EXPECT_EQ(dv, ConversionFlags("1dvi"));
-  EXPECT_EQ(dv, ConversionFlags("1dvb"));
+  EXPECT_EQ(dv | ldr, ConversionFlags("1dvi"));
+  EXPECT_EQ(dv | ldr, ConversionFlags("1dvb"));
   EXPECT_EQ(dv, ConversionFlags("1dvmin"));
   EXPECT_EQ(dv, ConversionFlags("1dvmax"));
 
   // Since there is no container, these units fall back to the small viewport.
   EXPECT_EQ(cq | sv, ConversionFlags("1cqh"));
   EXPECT_EQ(cq | sv, ConversionFlags("1cqw"));
-  EXPECT_EQ(cq | sv, ConversionFlags("1cqi"));
-  EXPECT_EQ(cq | sv, ConversionFlags("1cqb"));
+  EXPECT_EQ(cq | sv | ldr, ConversionFlags("1cqi"));
+  EXPECT_EQ(cq | sv | ldr, ConversionFlags("1cqb"));
   EXPECT_EQ(cq | sv, ConversionFlags("1cqmin"));
   EXPECT_EQ(cq | sv, ConversionFlags("1cqmax"));
 

@@ -84,16 +84,6 @@ if (is_win) {
   }
 }
 
-if (is_mac) {
-  source_set("notification_metrics") {
-    sources = [
-      "notification_metrics.cc",
-      "notification_metrics.h",
-    ]
-    deps = [ "//base" ]
-  }
-}
-
 if (is_android) {
   android_generated_java_resources =
       [ "java/res/values/generated_resources.xml" ] +
@@ -213,10 +203,7 @@ static_library("test_support") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "//chromeos/dbus/constants",
-      "//ui/gfx/linux:gbm",
-    ]
+    deps += [ "//chromeos/dbus/constants" ]
   }
 
   if (is_chromeos_ash) {
@@ -245,33 +232,5 @@ static_library("test_support") {
       "//components/nacl/browser",
       "//components/nacl/renderer/plugin:nacl_trusted_plugin",
     ]
-  }
-}
-
-if (is_fuchsia) {
-  # Generate a packaged component, and an installer script to aid development.
-
-  fuchsia_component("chrome_component") {
-    visibility = [ ":*" ]
-    manifest = "chrome.cml"
-    data_deps = [ "//chrome:chrome_initial" ]
-  }
-
-  fuchsia_package("chrome_pkg") {
-    package_name = "chrome"
-    deps = [ ":chrome_component" ]
-
-    excluded_dirs = FUCHSIA_PACKAGED_CONTENT_EMBEDDER_EXCLUDED_DIRS
-  }
-
-  fuchsia_package_installer("chrome_fuchsia") {
-    visibility = [
-      ":*",  # See https://crbug.com/1328459#c4.
-      "//:gn_all",
-      "//chrome/test/*",
-      "//content/test/*",
-    ]
-    package = ":chrome_pkg"
-    package_name = "chrome"
   }
 }

@@ -334,6 +334,13 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="FocusExisting"/>
 </enum>
 
+<enum name="WebAppManifestIdParseResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Invalid Manifest Id"/>
+  <int value="2" label="Manifest ID Resolution Failure"/>
+  <int value="3" label="Manifest ID Mismatch"/>
+</enum>
+
 <enum name="WebAppManifestUpdateResult">
   <int value="0" label="No app in scope"/>
   <int value="1" label="Updating throttled"/>
@@ -361,17 +368,6 @@ chromium-metrics-reviews@google.com.
       label="Guardrails prevented usage of (any) ML response, no dialog shown"/>
   <int value="4"
       label="The reporter was destroyed, likely on page navigation or close."/>
-</enum>
-
-<enum name="WebAppMoverResult">
-  <summary>Result of executing the WebAppMover on Chrome startup.</summary>
-  <int value="0" label="Invalid Finch Configuration"/>
-  <int value="1" label="App-to-install already installed"/>
-  <int value="2" label="Apps-to-uninstall not installed"/>
-  <int value="3" label="App-to-install is not installable"/>
-  <int value="4" label="Failure during uninstall"/>
-  <int value="5" label="Failure during install"/>
-  <int value="6" label="Success"/>
 </enum>
 
 <enum name="WebAppOpenMode">
@@ -407,6 +403,33 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="ParseSucceed"/>
   <int value="1" label="ParseFailedNotADictionary"/>
   <int value="2" label="ParseFailedInvalidJson"/>
+</enum>
+
+<enum name="WebAppStorageKeyParseResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="No Start URL"/>
+  <int value="2" label="Invalid Start URL"/>
+  <int value="3" label="Invalid Manifest Id"/>
+</enum>
+
+<enum name="WebAppSystemMediaControlsEvent">
+  <summary>
+    Event relating to web apps playing media. These correlate with
+    system_media_controls_observer.h interface. Not all of these are common.
+    This event is only fired from system media controls interactions and not
+    direct interactions with playing media in PWAs. PlayingMedia is fired more
+    frequently, e.g. when audio goes to the next track after finishing one
+    track.
+  </summary>
+  <int value="0" label="PlayingMedia"/>
+  <int value="1" label="Next"/>
+  <int value="2" label="Previous"/>
+  <int value="3" label="Play"/>
+  <int value="4" label="Pause"/>
+  <int value="5" label="PlayPause"/>
+  <int value="6" label="Stop"/>
+  <int value="7" label="Seek"/>
+  <int value="8" label="SeekTo"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">

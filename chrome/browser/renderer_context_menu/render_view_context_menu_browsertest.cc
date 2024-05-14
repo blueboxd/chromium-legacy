@@ -86,7 +86,6 @@
 #include "components/supervised_user/test_support/kids_management_api_server_mock.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_menu_params.h"
@@ -158,11 +157,12 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-#include "chrome/browser/screen_ai/screen_ai_install_state.h"
+#include "chrome/browser/accessibility/pdf_ocr_controller.h"
+#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/ash/window_pin_util.h"
+#include "chrome/browser/ui/chromeos/window_pin_util.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -521,7 +521,10 @@ class PdfPluginContextMenuBrowserTest : public PDFExtensionTestBase {
     // The context menu will be created inside the extension frame.
     extension_frame_ =
         pdf_extension_test_util::GetOnlyPdfExtensionHost(web_contents);
-    EXPECT_TRUE(extension_frame_);
+    if (!extension_frame_) {
+      ADD_FAILURE() << "Failed to get PDF extension frame.";
+      return nullptr;
+    }
     EXPECT_NE(extension_frame_, web_contents->GetPrimaryMainFrame());
 
     if (!UseOopif()) {
@@ -529,7 +532,10 @@ class PdfPluginContextMenuBrowserTest : public PDFExtensionTestBase {
           web_contents->GetBrowserContext()->GetGuestManager();
       WebContents* guest_contents =
           guest_manager->GetFullPageGuest(web_contents);
-      EXPECT_TRUE(guest_contents);
+      if (!guest_contents) {
+        ADD_FAILURE() << "Failed to get guest WebContents.";
+        return nullptr;
+      }
       EXPECT_EQ(extension_frame_, guest_contents->GetPrimaryMainFrame());
     }
 
@@ -564,12 +570,7 @@ class PdfPluginContextMenuBrowserTest : public PDFExtensionTestBase {
 
     WebContents* web_contents = GetActiveWebContents();
 
-    // `test_pdf_viewer_stream_manager` is used only if `UseOopif()` is true.
-    pdf::TestPdfViewerStreamManager* test_pdf_viewer_stream_manager = nullptr;
-    if (UseOopif()) {
-      test_pdf_viewer_stream_manager =
-          pdf::TestPdfViewerStreamManager::CreateForWebContents(web_contents);
-    } else {
+    if (!UseOopif()) {
       // Prepare to load a pdf plugin inside.
       TestMimeHandlerViewGuest::RegisterTestGuestViewType(
           test_guest_view_manager_);
@@ -583,7 +584,8 @@ class PdfPluginContextMenuBrowserTest : public PDFExtensionTestBase {
     // frame.
     content::RenderFrameHost* frame;
     if (UseOopif()) {
-      test_pdf_viewer_stream_manager->WaitUntilPdfLoaded();
+      ASSERT_TRUE(GetTestPdfViewerStreamManager(web_contents)
+                      ->WaitUntilPdfLoadedInFirstChild());
       frame = pdf_extension_test_util::GetOnlyPdfExtensionHost(web_contents);
     } else {
       auto* guest_view =
@@ -705,10 +707,8 @@ class ContextMenuWithoutFilteringForSupervisedUsersBrowserTest
     : public ContextMenuForSupervisedUsersBrowserTest {
  public:
   ContextMenuWithoutFilteringForSupervisedUsersBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{supervised_user::kEnableProtoApiForClassifyUrl},
-        /*disabled_features=*/{
-            supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS});
+    scoped_feature_list_.InitAndDisableFeature(
+        supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
   }
 
  private:
@@ -841,17 +841,9 @@ IN_PROC_BROWSER_TEST_F(
 
 class ContextMenuWithFilteringForSupervisedUsersBrowserTest
     : public ContextMenuForSupervisedUsersBrowserTest {
- public:
-  ContextMenuWithFilteringForSupervisedUsersBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/
-        {supervised_user::kEnableProtoApiForClassifyUrl,
-         supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS},
-        /*disabled_features=*/{});
-  }
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS};
 };
 
 IN_PROC_BROWSER_TEST_F(
@@ -1070,7 +1062,7 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest,
     base::RunLoop run_loop;
 
     ASSERT_TRUE(provider->registrar_unsafe().CanUserUninstallWebApp(app_id));
-    provider->scheduler().UninstallWebApp(
+    provider->scheduler().RemoveUserUninstallableManagements(
         app_id, webapps::WebappUninstallSource::kAppMenu,
         base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
           EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
@@ -1362,13 +1354,7 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, CopyLinkTextTouchTextImage) {
 }
 
 // Opens a link in a new tab via a "real" context menu.
-// TODO(crbug.com/1462760): Enable the test.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_RealMenu DISABLED_RealMenu
-#else
-#define MAYBE_RealMenu RealMenu
-#endif
-IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, MAYBE_RealMenu) {
+IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, RealMenu) {
   ContextMenuNotificationObserver menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;
@@ -2796,12 +2782,8 @@ IN_PROC_BROWSER_TEST_F(
 #if BUILDFLAG(ENABLE_PDF)
 IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
                        FullPagePdfHasPageItems) {
-  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
-  if (UseOopif()) {
-    GTEST_SKIP();
-  }
-
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
+  ASSERT_TRUE(menu);
 
   // The full page related items such as 'reload' should be there.
   ASSERT_TRUE(menu->IsItemPresent(IDC_RELOAD));
@@ -2810,6 +2792,7 @@ IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
 IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
                        FullPagePdfFullscreenItems) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
+  ASSERT_TRUE(menu);
 
   // Test that the 'Rotate' items exist and are enabled.
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_ROTATECW));
@@ -2829,6 +2812,7 @@ IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
 IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
                        CopyWithoutText) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
+  ASSERT_TRUE(menu);
 
   // Test that 'Copy' doesn't exist.
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPY));
@@ -2839,6 +2823,7 @@ IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
   std::unique_ptr<TestRenderViewContextMenu> menu =
       SetupAndCreateMenuWithPdfInfo(
           {/*selection_text=*/u"text", /*can_copy=*/true});
+  ASSERT_TRUE(menu);
 
   // Test that 'Copy' exists and it is enabled.
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPY));
@@ -2850,6 +2835,7 @@ IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
   std::unique_ptr<TestRenderViewContextMenu> menu =
       SetupAndCreateMenuWithPdfInfo(
           {/*selection_text=*/u"text", /*can_copy=*/false});
+  ASSERT_TRUE(menu);
 
   // Test that 'Copy' exists and it is disabled.
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPY));
@@ -2858,17 +2844,19 @@ IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
 
 IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
                        IframedPdfHasNoPageItems) {
+  if (UseOopif()) {
+    // Create the manager first, since the following HTML page doesn't wait for
+    // the PDF navigation to complete.
+    CreateTestPdfViewerStreamManager();
+  }
+
   TestContextMenuOfPdfInsideWebPage(FILE_PATH_LITERAL("test-iframe-pdf.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithOopifOverride,
                        Rotate) {
-  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
-  if (UseOopif()) {
-    GTEST_SKIP();
-  }
-
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
+  ASSERT_TRUE(menu);
   content::RenderFrameHost* target_rfh =
       pdf_frame_util::FindPdfChildFrame(extension_frame());
   auto cb = [](base::OnceClosure quit_loop,
@@ -2921,8 +2909,8 @@ class PdfOcrContextMenuBrowserTest
     accessibility_state_utils::OverrideIsScreenReaderEnabledForTesting(
         IsScreenReaderEnabled());
     if (IsComponentReady()) {
-      screen_ai::ScreenAIInstallState::GetInstance()
-          ->SetComponentReadyForTesting();
+      screen_ai::PdfOcrControllerFactory::GetForProfile(browser()->profile())
+          ->set_ocr_ready_for_testing();
     }
   }
 
@@ -2953,6 +2941,7 @@ class PdfOcrContextMenuBrowserTest
 // TODO(crbug.com/1443346): Re-enable this test.
 IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, DISABLED_PdfOcr) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
+  ASSERT_TRUE(menu);
   ASSERT_EQ(menu->IsItemPresent(IDC_CONTENT_CONTEXT_PDF_OCR),
             IsPdfOcrEnabled() && IsScreenReaderEnabled() && IsComponentReady());
 }
@@ -3063,24 +3052,12 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   size_t request_attempts_ = 0u;
 };
 
-// TODO(crbug.com/1462760): Enable the test.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_LoadImage DISABLED_LoadImage
-#else
-#define MAYBE_LoadImage LoadImage
-#endif
-IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, MAYBE_LoadImage) {
+IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
   SetupAndLoadImagePage("/load_image/image.html", "/load_image/image.png");
   AttemptLoadImage();
 }
 
-// TODO(crbug.com/1462760): Enable the test.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_LoadImageWithMap DISABLED_LoadImageWithMap
-#else
-#define MAYBE_LoadImageWithMap LoadImageWithMap
-#endif
-IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, MAYBE_LoadImageWithMap) {
+IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImageWithMap) {
   SetupAndLoadImagePage("/load_image/image_with_map.html",
                         "/load_image/image.png");
   AttemptLoadImage();
@@ -3184,26 +3161,14 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, BrowserlessWebContentsCrash) {
       blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_MOUSE);
 }
 
-// TODO(crbug.com/1462760): Enable the test.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_GifImageShare DISABLED_GifImageShare
-#else
-#define MAYBE_GifImageShare GifImageShare
-#endif
-IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, MAYBE_GifImageShare) {
+IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, GifImageShare) {
   OpenImagePageAndContextMenu("/google/logo.gif");
   RequestImageAndVerifyResponse(
       gfx::Size(2048, 2048), chrome::mojom::ImageFormat::ORIGINAL,
       gfx::Size(276, 110), gfx::Size(276, 110), ".gif");
 }
 
-// TODO(crbug.com/1462760): Enable the test.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_GifImageDownscaleToJpeg DISABLED_GifImageDownscaleToJpeg
-#else
-#define MAYBE_GifImageDownscaleToJpeg GifImageDownscaleToJpeg
-#endif
-IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, MAYBE_GifImageDownscaleToJpeg) {
+IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, GifImageDownscaleToJpeg) {
   OpenImagePageAndContextMenu("/google/logo.gif");
   RequestImageAndVerifyResponse(
       gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,
@@ -3236,15 +3201,7 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, MAYBE_PngImageDownscaleToPng) {
       gfx::Size(100, 50), ".png");
 }
 
-// TODO(crbug.com/1462760): Enable the test.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_PngImageOriginalDownscaleToPng \
-  DISABLED_PngImageOriginalDownscaleToPng
-#else
-#define MAYBE_PngImageOriginalDownscaleToPng PngImageOriginalDownscaleToPng
-#endif
-IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest,
-                       MAYBE_PngImageOriginalDownscaleToPng) {
+IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, PngImageOriginalDownscaleToPng) {
   OpenImagePageAndContextMenu("/image_search/valid.png");
   RequestImageAndVerifyResponse(
       gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,
@@ -3264,13 +3221,7 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, MAYBE_JpgImageDownscaleToJpg) {
       gfx::Size(480, 320), gfx::Size(100, /* 100 / 480 * 320 =  */ 66), ".jpg");
 }
 
-// TODO(crbug.com/1462760): Enable the test.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_JpgImageDownscaleToWebp DISABLED_JpgImageDownscaleToWebp
-#else
-#define MAYBE_JpgImageDownscaleToWebp JpgImageDownscaleToWebp
-#endif
-IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, MAYBE_JpgImageDownscaleToWebp) {
+IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, JpgImageDownscaleToWebp) {
   OpenImagePageAndContextMenu("/android/watch.jpg");
   RequestImageAndVerifyResponse(
       gfx::Size(100, 100), chrome::mojom::ImageFormat::WEBP,
@@ -3330,29 +3281,45 @@ IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest,
   EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT));
 }
 
-IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, OpenReadingMode) {
-  // Open in reading mode is an option when text is unselected.
-  std::unique_ptr<TestRenderViewContextMenu> menu1 =
-      CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
-                                     GURL("http://www.google.com/"));
-  ASSERT_TRUE(menu1->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
-
+IN_PROC_BROWSER_TEST_P(ContextMenuBrowserTest, OpenInReadingMode) {
   // Open in reading mode is an option when non-editable text is selected.
-  std::unique_ptr<TestRenderViewContextMenu> menu2 =
+  std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuForTextInWebContents(u"selection text");
-  ASSERT_TRUE(menu2->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
 
-  // Open in reading mode is an option when editable text is selected.
+  // Open in reading mode is an option for editables.
   content::ContextMenuParams params;
   params.is_editable = true;
-  std::unique_ptr<TestRenderViewContextMenu> menu3 =
+  menu =
       std::make_unique<TestRenderViewContextMenu>(*browser()
                                                        ->tab_strip_model()
                                                        ->GetActiveWebContents()
                                                        ->GetPrimaryMainFrame(),
                                                   params);
-  menu3->Init();
-  ASSERT_TRUE(menu3->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
+  menu->Init();
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
+
+  // Open in reading mode is NOT an option for links.
+  menu = CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
+                                        GURL("http://www.google.com/"));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
+
+  // Open in reading mode is NOT an option for <image>.
+  menu = CreateContextMenuMediaTypeImage(GURL("http://url.com/image.png"));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
+
+  // Open in reading mode is NOT an option for <video>.
+  menu = CreateContextMenu(GURL("http://www.example.com/"),
+                           GURL("http://www.example.com/foo.mp4"), u"",
+                           blink::mojom::ContextMenuDataMediaType::kVideo,
+                           ui::MENU_SOURCE_MOUSE);
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
+
+  // Open in reading mode is NOT an option for <canvas>.
+  params = content::ContextMenuParams();
+  params.media_type = blink::mojom::ContextMenuDataMediaType::kCanvas;
+  menu = CreateContextMenuFromParams(params);
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
 }
 
 // Ensure that the context menu can tolerate changes to session history that

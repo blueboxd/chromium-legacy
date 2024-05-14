@@ -15,12 +15,34 @@ import("//third_party/jni_zero/jni_zero.gni")
 config("viz_service_implementation") {
 }
 
-viz_component("service") {
+source_set("viz_service_export") {
+  sources = [ "viz_service_export.h" ]
+}
+
+static_library("viz_debugger") {
   sources = [
     "debugger/rwlock.cc",
     "debugger/rwlock.h",
     "debugger/viz_debugger.cc",
     "debugger/viz_debugger.h",
+  ]
+
+  defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
+
+  deps = [
+    ":viz_service_export",
+    "//base",
+    "//components/viz/common:buildflags",
+    "//components/viz/service/debugger/mojom",
+    "//mojo/public/cpp/bindings",
+    "//skia",
+    "//skia:skia_core_public_headers",
+    "//ui/gfx/geometry",
+  ]
+}
+
+viz_component("service") {
+  sources = [
     "display/aggregated_frame.cc",
     "display/aggregated_frame.h",
     "display/bsp_tree.cc",
@@ -165,8 +187,6 @@ viz_component("service") {
     "frame_sinks/gmb_video_frame_pool_context_provider.h",
     "frame_sinks/gmb_video_frame_pool_context_provider_impl.cc",
     "frame_sinks/gmb_video_frame_pool_context_provider_impl.h",
-    "frame_sinks/gpu_vsync_begin_frame_source.cc",
-    "frame_sinks/gpu_vsync_begin_frame_source.h",
     "frame_sinks/root_compositor_frame_sink_impl.cc",
     "frame_sinks/root_compositor_frame_sink_impl.h",
     "frame_sinks/surface_resource_holder.cc",
@@ -227,7 +247,6 @@ viz_component("service") {
     "transitions/surface_animation_manager.h",
     "transitions/transferable_resource_tracker.cc",
     "transitions/transferable_resource_tracker.h",
-    "viz_service_export.h",
   ]
 
   defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
@@ -269,6 +288,8 @@ viz_component("service") {
   ]
 
   public_deps = [
+    ":viz_debugger",
+    ":viz_service_export",
     "//base",
     "//cc",
     "//cc/animation",
@@ -405,6 +426,8 @@ viz_component("service") {
       "display_embedder/skia_output_device_dcomp.h",
       "display_embedder/software_output_device_win.cc",
       "display_embedder/software_output_device_win.h",
+      "frame_sinks/external_begin_frame_source_win.cc",
+      "frame_sinks/external_begin_frame_source_win.h",
       "gl/info_collection_gpu_service_impl.cc",
       "gl/info_collection_gpu_service_impl.h",
     ]
@@ -462,10 +485,14 @@ viz_component("service") {
         "//ui/gfx/x",
       ]
     }
+
+    if (is_chromeos && use_v4l2_codec) {
+      deps += [ "//media/gpu/chromeos:common" ]
+    }
   }
 
   if (skia_use_dawn) {
-    if (is_win) {
+    if (is_win || is_android) {
       sources += [
         "display_embedder/skia_output_device_dawn.cc",
         "display_embedder/skia_output_device_dawn.h",
@@ -545,6 +572,7 @@ viz_source_set("unit_tests") {
 
   deps = [
     ":service",
+    ":viz_debugger",
     "//base",
     "//base/test:test_support",
     "//build:chromeos_buildflags",

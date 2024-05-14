@@ -5,6 +5,7 @@
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,7 +37,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 
 // TODO(crbug/1004580) All these tests crash on Android
@@ -292,7 +292,7 @@ class MediaEngagementContentsObserverTest
     auto ukm_entries = test_ukm_recorder_.GetEntriesByName(Entry::kEntryName);
     ASSERT_NE(0u, ukm_entries.size());
 
-    auto* ukm_entry = ukm_entries.back();
+    auto* ukm_entry = ukm_entries.back().get();
     test_ukm_recorder_.ExpectEntrySourceHasUrl(ukm_entry, origin.GetURL());
     EXPECT_EQ(playbacks_total, *test_ukm_recorder_.GetEntryMetric(
                                    ukm_entry, Entry::kPlaybacks_TotalName));

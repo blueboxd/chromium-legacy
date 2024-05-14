@@ -28,11 +28,11 @@ class Widget;
 
 namespace ash {
 
+class AnchoredNudge;
 class FeatureTile;
 class GameDashboardButton;
 class GameDashboardMainMenuView;
 class GameDashboardToolbarView;
-class GameDashboardWidget;
 class IconButton;
 class PillButton;
 class Switch;
@@ -52,7 +52,7 @@ class GameDashboardContextTestApi {
   const std::u16string& GetRecordingDuration() const;
 
   // Returns the Game Dashboard button widget, button, and title view.
-  GameDashboardWidget* GetGameDashboardButtonWidget() const;
+  views::Widget* GetGameDashboardButtonWidget() const;
   GameDashboardButton* GetGameDashboardButton() const;
   views::Label* GetGameDashboardButtonTitle() const;
 
@@ -71,6 +71,12 @@ class GameDashboardContextTestApi {
   IconButton* GetMainMenuHelpButton();
   IconButton* GetMainMenuSettingsButton();
 
+  // Returns the Game Controls setup nudge.
+  AnchoredNudge* GetGameControlsSetupNudge();
+
+  // Returns the Game Dashboard welcome dialog widget.
+  views::Widget* GetWelcomeDialogWidget();
+
   // Opens the main menu.
   // Before opening the main menu, verifies that the main menu is closed.
   // After opening the main menu, verifies it opened and waits for the thread to
@@ -84,7 +90,7 @@ class GameDashboardContextTestApi {
   void CloseTheMainMenu();
 
   // Returns the toolbar widget and all its views.
-  GameDashboardWidget* GetToolbarWidget();
+  views::Widget* GetToolbarWidget();
   GameDashboardToolbarView* GetToolbarView();
   IconButton* GetToolbarGamepadButton();
   IconButton* GetToolbarGameControlsButton();
@@ -113,9 +119,8 @@ class GameDashboardContextTestApi {
   // `view_id`.
   views::View* GetMainMenuViewById(int view_id);
 
-  const raw_ptr<GameDashboardContext, DanglingUntriaged | ExperimentalAsh>
-      context_;
-  const raw_ptr<ui::test::EventGenerator, ExperimentalAsh> event_generator_;
+  const raw_ptr<GameDashboardContext, DanglingUntriaged> context_;
+  const raw_ptr<ui::test::EventGenerator> event_generator_;
 };
 
 }  // namespace ash

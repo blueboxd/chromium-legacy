@@ -63,6 +63,8 @@ const char kOtherBookmarksId[] = "other_bookmarks_id";
 const char kMobileBookmarksId[] = "mobile_bookmarks_id";
 const char kBookmarksRootId[] = "root_id";
 const char kCacheGuid[] = "generated_id";
+const char kPersistentModelTypeConfigurationTimeMetricName[] =
+    "Sync.ModelTypeConfigurationTime.Persistent.BOOKMARK";
 
 struct BookmarkInfo {
   std::string server_id;
@@ -246,10 +248,10 @@ class ProxyCommitQueue : public syncer::CommitQueue {
 class BookmarkModelTypeProcessorTest : public testing::Test {
  public:
   BookmarkModelTypeProcessorTest()
-      : processor_(std::make_unique<BookmarkModelTypeProcessor>(
+      : bookmark_model_(std::make_unique<TestBookmarkModelView>()),
+        processor_(std::make_unique<BookmarkModelTypeProcessor>(
             &bookmark_undo_service_,
-            syncer::WipeModelUponSyncDisabledBehavior::kNever)),
-        bookmark_model_(std::make_unique<TestBookmarkModelView>()) {
+            syncer::WipeModelUponSyncDisabledBehavior::kNever)) {
     processor_->SetFaviconService(&favicon_service_);
   }
 
@@ -368,8 +370,10 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
   BookmarkUndoService bookmark_undo_service_;
   NiceMock<favicon::MockFaviconService> favicon_service_;
   NiceMock<syncer::MockCommitQueue> mock_commit_queue_;
-  std::unique_ptr<BookmarkModelTypeProcessor> processor_;
   std::unique_ptr<TestBookmarkModelView> bookmark_model_;
+  // `processor_` might hold a raw_ptr to `bookmark_model_`. It should be
+  // destroyed first to avoid holding a briefly dangling pointer.
+  std::unique_ptr<BookmarkModelTypeProcessor> processor_;
 };
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldDoInitialMergeWithZeroBookmarks) {
@@ -384,7 +388,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDoInitialMergeWithZeroBookmarks) {
 
   base::HistogramTester histogram_tester;
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   EXPECT_TRUE(processor()->IsTrackingMetadata());
   EXPECT_THAT(bookmark_model()->bookmark_bar_node()->children(), IsEmpty());
 
@@ -392,6 +396,9 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDoInitialMergeWithZeroBookmarks) {
       "Sync.ModelTypeInitialUpdateReceived",
       /*sample=*/syncer::ModelTypeHistogramValue(syncer::BOOKMARKS),
       /*expected_bucket_count=*/3);
+  histogram_tester.ExpectTotalCount(
+      kPersistentModelTypeConfigurationTimeMetricName,
+      /*count=*/1);
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldDoInitialMergeWithOneBookmark) {
@@ -414,7 +421,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDoInitialMergeWithOneBookmark) {
 
   base::HistogramTester histogram_tester;
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   EXPECT_TRUE(processor()->IsTrackingMetadata());
   EXPECT_THAT(bookmark_model()->bookmark_bar_node()->children(), SizeIs(1));
 
@@ -422,6 +429,9 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDoInitialMergeWithOneBookmark) {
       "Sync.ModelTypeInitialUpdateReceived",
       /*sample=*/syncer::ModelTypeHistogramValue(syncer::BOOKMARKS),
       /*expected_bucket_count=*/4);
+  histogram_tester.ExpectTotalCount(
+      kPersistentModelTypeConfigurationTimeMetricName,
+      /*count=*/1);
 }
 
 TEST_F(BookmarkModelTypeProcessorTest,
@@ -452,13 +462,17 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   base::HistogramTester histogram_tester;
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   EXPECT_FALSE(processor()->IsTrackingMetadata());
   EXPECT_FALSE(processor()->IsConnectedForTest());
 
   // Not an actual requirement but it documents current behavior.
   EXPECT_THAT(bookmark_model()->bookmark_bar_node()->children(), SizeIs(1));
+
+  histogram_tester.ExpectTotalCount(
+      kPersistentModelTypeConfigurationTimeMetricName,
+      /*count=*/0);
 }
 
 TEST_F(BookmarkModelTypeProcessorTest,
@@ -490,7 +504,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   base::HistogramTester histogram_tester;
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   EXPECT_FALSE(processor()->IsTrackingMetadata());
   EXPECT_FALSE(processor()->IsConnectedForTest());
@@ -499,6 +513,10 @@ TEST_F(BookmarkModelTypeProcessorTest,
   // `syncer::WipeModelUponSyncDisabledBehavior::kAlways`, reverting to the
   // pre-merge state means clearing all data.
   EXPECT_THAT(bookmark_model()->bookmark_bar_node()->children(), IsEmpty());
+
+  histogram_tester.ExpectTotalCount(
+      kPersistentModelTypeConfigurationTimeMetricName,
+      /*count=*/0);
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
@@ -523,13 +541,19 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
       bookmark_model()->bookmark_bar_node();
   ASSERT_TRUE(bookmark_bar->children().empty());
 
+  base::HistogramTester histogram_tester;
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   ASSERT_THAT(bookmark_bar->children().front().get(), NotNull());
   EXPECT_THAT(bookmark_bar->children().front()->GetTitle(),
               Eq(ASCIIToUTF16(kTitle)));
   EXPECT_THAT(bookmark_bar->children().front()->url(), Eq(GURL(kUrl)));
+
+  // Incremental updates to not contribute to Sync.ModelTypeConfigurationTime.
+  histogram_tester.ExpectTotalCount(
+      kPersistentModelTypeConfigurationTimeMetricName,
+      /*count=*/0);
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
@@ -561,7 +585,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
 
   base::HistogramTester histogram_tester;
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   // Check if the bookmark has been updated properly.
   EXPECT_THAT(bookmark_bar->children().front().get(), Eq(bookmark_node));
@@ -604,7 +628,7 @@ TEST_F(
 
   EXPECT_CALL(*schedule_save_closure(), Run());
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
@@ -774,7 +798,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   // type state.
   syncer::UpdateResponseDataList empty_updates_list;
   processor()->OnUpdateReceived(model_type_state, std::move(empty_updates_list),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   // The model type state inside the tracker should have been updated, and
   // carries the new encryption key name.
@@ -845,7 +869,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   syncer::UpdateResponseDataList updates;
   updates.push_back(std::move(response_data));
   processor()->OnUpdateReceived(model_type_state, std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   // The bookmarks shouldn't be marked for committing.
   ASSERT_THAT(tracker->GetEntityForSyncId(kNodeId), NotNull());
@@ -1040,7 +1064,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldReuploadLegacyBookmarksOnStart) {
   EXPECT_CALL(*mock_commit_queue(), NudgeForCommit());
   processor()->OnUpdateReceived(CreateDummyModelTypeState(),
                                 syncer::UpdateResponseDataList(),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   // Check that all entities are unsynced now and metadata is marked as
   // reuploaded.
@@ -1053,8 +1077,6 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldReuploadLegacyBookmarksOnStart) {
 
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldReportErrorIfIncrementalLocalCreationCrossesMaxCountLimit) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1086,8 +1108,6 @@ TEST_F(BookmarkModelTypeProcessorTest,
 TEST_F(
     BookmarkModelTypeProcessorTest,
     ShouldReportErrorIfBookmarksCountExceedsLimitOnStartupWhenMetadataMatchesModel) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1138,8 +1158,6 @@ TEST_F(
 TEST_F(
     BookmarkModelTypeProcessorTest,
     ShouldReportErrorIfBookmarksCountExceedsLimitOnStartupWhenMetadataDoesNotMatchModel) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1178,8 +1196,6 @@ TEST_F(
   // Ensure that bookmarks model works normally even after sync reports error
   // when max count limit is crossed.
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1236,8 +1252,6 @@ TEST_F(
 
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldReportErrorIfBookmarksCountExceedsLimitAfterInitialUpdate) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 4 bookmarks: 3 permanent nodes and 1 additional node which
   // is different from the remote.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(4);
@@ -1288,7 +1302,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   ASSERT_FALSE(error_reported);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   EXPECT_TRUE(error_reported);
   EXPECT_FALSE(processor()->IsConnectedForTest());
   // New bookmark gets added though. Note that this is as per the current
@@ -1298,8 +1312,6 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldReportErrorIfBookmarksCountExceedsLimitAfterIncrementalUpdate) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1338,7 +1350,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   ASSERT_FALSE(error_reported);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   EXPECT_TRUE(error_reported);
   EXPECT_FALSE(processor()->IsConnectedForTest());
   EXPECT_TRUE(processor()->IsTrackingMetadata());
@@ -1349,8 +1361,6 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldReportErrorIfInitialUpdatesCrossMaxCountLimit) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1399,7 +1409,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   ASSERT_FALSE(error_reported);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   EXPECT_TRUE(error_reported);
   EXPECT_FALSE(processor()->IsConnectedForTest());
   // Tracker should remain null and bookmark model unchanged.
@@ -1409,8 +1419,6 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldSaveRemoteUpdatesCountExceedingLimitResultDuringInitialMerge) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1447,7 +1455,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   ASSERT_TRUE(processor()->IsConnectedForTest());
 
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
 
   ASSERT_FALSE(processor()->IsTrackingMetadata());
   ASSERT_FALSE(processor()->IsConnectedForTest());
@@ -1463,8 +1471,6 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldReportErrorIfRemoteBookmarksCountExceededLimitOnLastTry) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1507,7 +1513,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   ASSERT_FALSE(error_reported);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   ASSERT_TRUE(error_reported);
   ASSERT_FALSE(processor()->IsTrackingMetadata());
   ASSERT_FALSE(processor()->IsConnectedForTest());
@@ -1540,8 +1546,6 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldPersistRemoteBookmarksCountExceedingLimitAcrossBrowserRestarts) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kSyncEnforceBookmarksCountLimit);
   // Set a limit of 3 bookmarks, i.e. limit it to the 3 permanent nodes.
   processor()->SetMaxBookmarksTillSyncEnabledForTest(3);
 
@@ -1583,7 +1587,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   ASSERT_FALSE(error_reported);
   processor()->OnUpdateReceived(CreateDummyModelTypeState(), std::move(updates),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   ASSERT_TRUE(error_reported);
 
   ASSERT_FALSE(processor()->IsTrackingMetadata());
@@ -1750,7 +1754,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   SimulateOnSyncStarting();
   processor()->OnUpdateReceived(CreateDummyModelTypeState(),
                                 CreateUpdateResponseDataListForPermanentNodes(),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   bookmark_model()->AddURL(bookmark_model()->bookmark_bar_node(), /*index=*/0,
                            u"foo", kUrl);
   ASSERT_TRUE(processor()->IsTrackingMetadata());
@@ -1848,7 +1852,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   SimulateOnSyncStarting();
   processor()->OnUpdateReceived(CreateDummyModelTypeState(),
                                 CreateUpdateResponseDataListForPermanentNodes(),
-                                /*gc_directive=*/absl::nullopt);
+                                /*gc_directive=*/std::nullopt);
   EXPECT_TRUE(processor()->IsTrackingMetadata());
 
   processor()->OnSyncStopping(syncer::CLEAR_METADATA);

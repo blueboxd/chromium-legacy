@@ -1519,6 +1519,9 @@ void CompositorFrameReporter::ReportScrollJankMetrics() const {
     if (global_trackers_.scroll_jank_dropped_frame_tracker) {
       global_trackers_.scroll_jank_dropped_frame_tracker->OnScrollStarted();
     }
+    if (global_trackers_.scroll_jank_ukm_reporter) {
+      global_trackers_.scroll_jank_ukm_reporter->EmitScrollJankUkm();
+    }
   }
 
   TRACE_EVENT("input,input.scrolling", "PresentedFrameInformation",
@@ -1540,13 +1543,16 @@ void CompositorFrameReporter::ReportScrollJankMetrics() const {
                                        last_coalesced_ts, end_timestamp,
                                        args_.interval);
   }
+  if (global_trackers_.scroll_jank_ukm_reporter) {
+    global_trackers_.scroll_jank_ukm_reporter->EmitPredictorJankUkm();
+  }
 }
 
 void CompositorFrameReporter::ReportEventLatencyTraceEvents() const {
   for (const auto& event_metrics : events_metrics_) {
     EventLatencyTracingRecorder::RecordEventLatencyTraceEvent(
-        event_metrics.get(), frame_termination_time_, &stage_history_,
-        processed_viz_breakdown_.get());
+        event_metrics.get(), frame_termination_time_, args_.interval,
+        &stage_history_, processed_viz_breakdown_.get());
   }
 }
 

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <string>
 
 #include "base/memory/raw_ptr.h"
@@ -20,7 +21,6 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/performance/performance_timeline_constants.h"
 #include "third_party/blink/public/common/responsiveness_metrics/user_interaction_latency.h"
@@ -116,7 +116,7 @@ class CONTENT_EXPORT RenderFrameObserver
   // the browser process (e.g. by typing a url) won't have a navigation type.
   virtual void DidStartNavigation(
       const GURL& url,
-      absl::optional<blink::WebNavigationType> navigation_type) {}
+      std::optional<blink::WebNavigationType> navigation_type) {}
 
   // Called when a navigation has just committed and |document_loader|
   // will start loading a new document in the RenderFrame.
@@ -212,13 +212,15 @@ class CONTENT_EXPORT RenderFrameObserver
   // user interaction can be built up from multiple input events (e.g. keydown
   // then keyup). Each of these events has an input to next frame latency. This
   // reports the timings of the max input-to-frame latency for each interaction.
-  // `max_event_start` is when input was received, and `max_event_end` is when
-  // the next frame was presented. See
+  // `max_event_start` is when input was received, `max_event_end` is when
+  // the next frame was presented, and `max_event_queued_main_thread` is when
+  // input was queued on main thread. See
   // https://web.dev/inp/#whats-in-an-interaction for more detailed motivation
   // and explanation.
   virtual void DidObserveUserInteraction(
       base::TimeTicks max_event_start,
       base::TimeTicks max_event_end,
+      base::TimeTicks max_event_queued_main_thread,
       blink::UserInteractionType interaction_type,
       uint64_t interaction_offset) {}
 
@@ -277,7 +279,8 @@ class CONTENT_EXPORT RenderFrameObserver
       const url::SchemeHostPort& final_response_url,
       int request_id,
       const network::mojom::URLResponseHead& response_head,
-      network::mojom::RequestDestination request_destination) {}
+      network::mojom::RequestDestination request_destination,
+      bool is_ad_resource) {}
   virtual void DidCompleteResponse(
       int request_id,
       const network::URLLoaderCompletionStatus& status) {}

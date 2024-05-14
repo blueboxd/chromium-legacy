@@ -18,7 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
+
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/components/onc/onc_signature.h"
@@ -369,7 +369,7 @@ namespace {
 
 std::string JoinStringRange(const std::vector<const char*>& strings,
                             const std::string& separator) {
-  std::vector<base::StringPiece> string_vector(strings.begin(), strings.end());
+  std::vector<std::string_view> string_vector(strings.begin(), strings.end());
   return base::JoinString(string_vector, separator);
 }
 
@@ -1087,6 +1087,7 @@ bool Validator::ValidateGlobalNetworkConfiguration(base::Value::Dict* result) {
       ::onc::global_network_config::kAllowTextMessages,
       ::onc::global_network_config::kAllowCellularSimLock,
       ::onc::global_network_config::kAllowCellularHotspot,
+      ::onc::global_network_config::kAllowAPNModification,
       ::onc::global_network_config::kDisableNetworkTypes,
       ::onc::global_network_config::kAllowOnlyPolicyCellularNetworks,
       ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect,

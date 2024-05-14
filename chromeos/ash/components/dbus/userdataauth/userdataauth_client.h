@@ -75,6 +75,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       chromeos::DBusMethodCallback<::user_data_auth::AddAuthFactorReply>;
   using UpdateAuthFactorCallback =
       chromeos::DBusMethodCallback<::user_data_auth::UpdateAuthFactorReply>;
+  using UpdateAuthFactorMetadataCallback = chromeos::DBusMethodCallback<
+      ::user_data_auth::UpdateAuthFactorMetadataReply>;
   using RemoveAuthFactorCallback =
       chromeos::DBusMethodCallback<::user_data_auth::RemoveAuthFactorReply>;
   using ListAuthFactorsCallback =
@@ -110,6 +112,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
 
   using GetArcDiskFeaturesCallback =
       chromeos::DBusMethodCallback<::user_data_auth::GetArcDiskFeaturesReply>;
+
+  using GetRecoverableKeyStoresCallback = chromeos::DBusMethodCallback<
+      ::user_data_auth::GetRecoverableKeyStoresReply>;
 
   // Not copyable or movable.
   UserDataAuthClient(const UserDataAuthClient&) = delete;
@@ -262,6 +267,13 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       const ::user_data_auth::UpdateAuthFactorRequest& request,
       UpdateAuthFactorCallback callback) = 0;
 
+  // This call will be used in the case of a user wanting
+  // to update an AuthFactor's metadata. (E.g. Changing the user specified
+  // name).
+  virtual void UpdateAuthFactorMetadata(
+      const ::user_data_auth::UpdateAuthFactorMetadataRequest& request,
+      UpdateAuthFactorMetadataCallback callback) = 0;
+
   // This is called when a user wants to remove an
   // AuthFactor.
   virtual void RemoveAuthFactor(
@@ -308,6 +320,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
   virtual void GetArcDiskFeatures(
       const ::user_data_auth::GetArcDiskFeaturesRequest& request,
       GetArcDiskFeaturesCallback callback) = 0;
+
+  // Retrieve LSKF-wrapped key material for upload to a remote recovery service.
+  virtual void GetRecoverableKeyStores(
+      const ::user_data_auth::GetRecoverableKeyStoresRequest& request,
+      GetRecoverableKeyStoresCallback callback) = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

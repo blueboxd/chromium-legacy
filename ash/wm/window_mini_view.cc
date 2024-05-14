@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "ash/shell.h"
-#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
@@ -62,9 +63,8 @@ gfx::RoundedCornersF GetRoundedCornersForPreviewView(
                                 raw_value.lower_left());
   }
 
-  return gfx::RoundedCornersF(
-      0, 0, WindowMiniView::kWindowMiniViewCornerRadius / scale,
-      WindowMiniView::kWindowMiniViewCornerRadius / scale);
+  return gfx::RoundedCornersF(0, 0, kWindowMiniViewCornerRadius / scale,
+                              kWindowMiniViewCornerRadius / scale);
 }
 
 }  // namespace
@@ -96,7 +96,7 @@ void WindowMiniViewBase::UpdateFocusState(bool focus) {
 
 WindowMiniViewBase::WindowMiniViewBase() = default;
 
-BEGIN_METADATA(WindowMiniViewBase, views::View)
+BEGIN_METADATA(WindowMiniViewBase)
 END_METADATA
 
 WindowMiniView::~WindowMiniView() = default;
@@ -128,7 +128,7 @@ void WindowMiniView::SetBackdropVisibility(bool visible) {
         0.f, 0.f, kWindowMiniViewCornerRadius, kWindowMiniViewCornerRadius));
     layer->SetIsFastRoundedCorner(true);
     backdrop_view_->SetCanProcessEventsWithinSubtree(false);
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 
   backdrop_view_->SetVisible(visible);
@@ -145,6 +145,9 @@ void WindowMiniView::RefreshPreviewRoundedCorners(bool show) {
   layer->SetRoundedCornerRadius(GetRoundedCornersForPreviewView(
       source_window_, backdrop_view_, preview_view_->GetBoundsInScreen(),
       layer->transform().To2dScale().x(), show, preview_view_rounded_corners_));
+  if (!chromeos::features::IsRoundedWindowsEnabled()) {
+    layer->SetIsFastRoundedCorner(true);
+  }
 }
 
 void WindowMiniView::RefreshHeaderViewRoundedCorners() {
@@ -152,9 +155,18 @@ void WindowMiniView::RefreshHeaderViewRoundedCorners() {
     return;
   }
 
+  const auto header_rounded_corners =
+      header_view_->GetHeaderRoundedCorners(source_window_);
   if (header_view_rounded_corners_.has_value()) {
+    if (header_rounded_corners == header_view_rounded_corners_.value()) {
+      return;
+    }
     header_view_->SetHeaderViewRoundedCornerRadius(
         header_view_rounded_corners_.value());
+  } else if (header_rounded_corners ==
+             gfx::RoundedCornersF(kWindowMiniViewHeaderCornerRadius,
+                                  kWindowMiniViewHeaderCornerRadius, 0, 0)) {
+    return;
   }
 
   header_view_->RefreshHeaderViewRoundedCorners();
@@ -201,7 +213,23 @@ void WindowMiniView::SetShowPreview(bool show) {
       AddChildView(std::make_unique<WindowPreviewView>(source_window_));
   preview_view_->SetPaintToLayer();
   preview_view_->layer()->SetFillsBoundsOpaquely(false);
-  Layout();
+
+  // TODO(crbug.com/1522471): Consider redesigning `WindowCycleItemView` to
+  // cancel Layer rounded corners.
+  //
+  // The derived class `WindowCycleItemView` of `WindowMiniView` will create
+  // `backdrop_view_` in the Layout method so that we can enter
+  // `WindowMiniView::RefreshPreviewRoundedCorners` in the first layout to
+  // cancel the rounded corners for the Layer of the view. This is a very subtle
+  // logic. If this DeprecatedLayoutImmediately() call is not here, we will lose
+  // the opportunity to adjust the Layer fillet. Maybe we should refactor here.
+  DeprecatedLayoutImmediately();
+
+  // The preferred size of `WindowMiniView` is tied to the presence or absence
+  // of `preview_view_`. Although we have performed Layout above, this will not
+  // invalidate the cache in `LayoutManagerBase`. We need to actively call cache
+  // invalidation.
+  PreferredSizeChanged();
 }
 
 int WindowMiniView::TryRemovingChildItem(aura::Window* destroying_window) {
@@ -225,7 +253,7 @@ gfx::RoundedCornersF WindowMiniView::GetRoundedCorners() const {
 
 gfx::Rect WindowMiniView::GetHeaderBounds() const {
   gfx::Rect header_bounds = GetContentsBounds();
-  header_bounds.set_height(kHeaderHeightDp);
+  header_bounds.set_height(kWindowMiniViewHeaderHeight);
   return header_bounds;
 }
 
@@ -243,11 +271,11 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
 
 gfx::Rect WindowMiniView::GetContentAreaBounds() const {
   gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(gfx::Insets::TLBR(kHeaderHeightDp, 0, 0, 0));
+  bounds.Inset(gfx::Insets::TLBR(kWindowMiniViewHeaderHeight, 0, 0, 0));
   return bounds;
 }
 
-void WindowMiniView::Layout() {
+void WindowMiniView::Layout(PassKey) {
   const gfx::Rect content_area_bounds = GetContentAreaBounds();
   if (backdrop_view_) {
     backdrop_view_->SetBoundsRect(content_area_bounds);
@@ -260,7 +288,7 @@ void WindowMiniView::Layout() {
   }
 
   header_view_->SetBoundsRect(GetHeaderBounds());
-  views::View::Layout();
+  LayoutSuperclass<views::View>(this);
 }
 
 void WindowMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -332,16 +360,16 @@ WindowMiniView::GenerateFocusRingPath() {
                                  ? 0
                                  : kFocusRingCornerRadius;
     return std::make_unique<views::RoundRectHighlightPathGenerator>(
-        gfx::Insets(kFocusRingHaloInset),
+        gfx::Insets(kWindowMiniViewFocusRingHaloInset),
         gfx::RoundedCornersF(upper_left, upper_right, lower_right, lower_left));
   }
 
   return std::make_unique<views::RoundRectHighlightPathGenerator>(
-      gfx::Insets(kFocusRingHaloInset),
+      gfx::Insets(kWindowMiniViewFocusRingHaloInset),
       gfx::RoundedCornersF(kFocusRingCornerRadius));
 }
 
-BEGIN_METADATA(WindowMiniView, WindowMiniViewBase)
+BEGIN_METADATA(WindowMiniView)
 END_METADATA
 
 }  // namespace ash

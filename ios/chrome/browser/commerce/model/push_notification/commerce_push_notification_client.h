@@ -5,18 +5,15 @@
 #ifndef IOS_CHROME_BROWSER_COMMERCE_MODEL_PUSH_NOTIFICATION_COMMERCE_PUSH_NOTIFICATION_CLIENT_H_
 #define IOS_CHROME_BROWSER_COMMERCE_MODEL_PUSH_NOTIFICATION_COMMERCE_PUSH_NOTIFICATION_CLIENT_H_
 
+#import "components/optimization_guide/proto/push_notification.pb.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
-#import "ios/chrome/browser/optimization_guide/model/optimization_guide_push_notification_client.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client.h"
-#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 
 #import <Foundation/Foundation.h>
 #import <UserNotifications/UserNotifications.h>
 
 class CommercePushNotificationClientTest;
-
-class Browser;
 
 namespace base {
 class RunLoop;
@@ -30,8 +27,7 @@ namespace commerce {
 class ShoppingService;
 }  // namespace commerce
 
-class CommercePushNotificationClient
-    : public OptimizationGuidePushNotificationClient {
+class CommercePushNotificationClient : public PushNotificationClient {
  public:
   CommercePushNotificationClient();
   ~CommercePushNotificationClient() override;
@@ -42,18 +38,17 @@ class CommercePushNotificationClient
   UIBackgroundFetchResult HandleNotificationReception(
       NSDictionary<NSString*, id>* notification) override;
   NSArray<UNNotificationCategory*>* RegisterActionableNotifications() override;
-  void OnSceneActiveForegroundBrowserReady() override;
+
+  // Convert escaped serialized payload from push notification into
+  // optimization_guide::proto::HintNotificationPayload.
+  static std::unique_ptr<optimization_guide::proto::HintNotificationPayload>
+  ParseHintNotificationPayload(NSString* serialized_payload_escaped);
 
  private:
   friend class ::CommercePushNotificationClientTest;
 
   commerce::ShoppingService* GetShoppingService();
   bookmarks::BookmarkModel* GetBookmarkModel();
-  // Returns the first active browser found with scene level
-  // SceneActivationLevelForegroundActive.
-  Browser* GetSceneLevelForegroundActiveBrowser();
-
-  std::vector<const std::string> urls_delayed_for_loading_;
 
   // Handle the interaction from the user be it tapping the notification or
   // long pressing and then presing 'Visit Site' or 'Untrack Price'.

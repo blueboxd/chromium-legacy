@@ -6,8 +6,8 @@
  * @fileoverview
  * 'os-settings-menu' shows a menu with a hardcoded set of pages and subpages.
  */
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
@@ -15,13 +15,13 @@ import '../settings_shared.css.js';
 import '../os_settings_icons.html.js';
 import './menu_item.js';
 
-import {getDeviceName} from 'chrome://resources/ash/common/bluetooth/bluetooth_utils.js';
+import {getDeviceNameUnsafe} from 'chrome://resources/ash/common/bluetooth/bluetooth_utils.js';
 import {getBluetoothConfig} from 'chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, PairedBluetoothDeviceProperties, SystemPropertiesObserverReceiver as BluetoothPropertiesObserverReceiver} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {CrosNetworkConfigInterface, FilterType, NO_LIMIT} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
@@ -664,7 +664,7 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
 
     if (connectedDevices.length === 1) {
       const device = castExists(connectedDevices[0]);
-      this.bluetoothMenuItemDescription_ = getDeviceName(device);
+      this.bluetoothMenuItemDescription_ = getDeviceNameUnsafe(device);
       return;
     }
 
@@ -696,10 +696,21 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
     this.isDeviceCellularCapable_ = !!cellularDeviceState;
   }
 
+  private async isInstantHotspotAvailable_(): Promise<boolean> {
+    const {result: deviceStateList} =
+        await this.networkConfig_.getDeviceStateList();
+    const tetherDeviceState = deviceStateList.find(
+        deviceState => deviceState.type === NetworkType.kTether);
+
+    return !!tetherDeviceState;
+  }
+
   /**
    * Updates the "Internet" menu item description to one of the followings:
    * - If there are networks connected, show the name of one connected network
    *   with the priority: Ethernet, Wi-Fi, mobile(Cellular, Tether) and VPN.
+   * - If there is no networks connected but instant hotspot is available, show
+   * "Instant hotspot available".
    * - If there is no networks connected and mobile data is not supported, show
    * "Wi-Fi".
    * - If there is no networks connected but mobile data is supported, show
@@ -727,8 +738,13 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
       return;
     }
 
-    // TODO(b/310253896): Check if there are available instant hotspot, if
-    // there're, show "Instant hotspot available".
+    const tetherNetworkState = networkStateList.find(
+        networkState => networkState.type === NetworkType.kTether);
+    if (tetherNetworkState && await this.isInstantHotspotAvailable_()) {
+      this.internetMenuItemDescription_ =
+          this.i18n('internetMenuItemDescriptionInstantHotspotAvailable');
+      return;
+    }
 
     if (this.isDeviceCellularCapable_) {
       this.internetMenuItemDescription_ =

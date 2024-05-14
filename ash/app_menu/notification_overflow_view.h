@@ -45,7 +45,7 @@ class APP_MENU_EXPORT NotificationOverflowView : public views::View {
   void RemoveIcon(const std::string& notification_id);
 
   // views::View overrides:
-  void Layout() override;
+  void Layout(PassKey) override;
   gfx::Size CalculatePreferredSize() const override;
 
   // Whether this has notifications to show.
@@ -57,15 +57,15 @@ class APP_MENU_EXPORT NotificationOverflowView : public views::View {
 
   // The horizontal separator that is placed between the displayed
   // NotificationItemView and the overflow icons. Owned by the views hierarchy.
-  raw_ptr<views::MenuSeparator, ExperimentalAsh> separator_;
+  raw_ptr<views::MenuSeparator> separator_;
 
   // The list of overflow icons. Listed in right to left ordering.
-  std::vector<NotificationOverflowImageView*> image_views_;
+  std::vector<raw_ptr<NotificationOverflowImageView, VectorExperimental>>
+      image_views_;
 
   // The overflow icon shown when there are more than |kMaxOverflowIcons|
   // notifications.
-  raw_ptr<message_center::ProportionalImageView, ExperimentalAsh>
-      overflow_icon_ = nullptr;
+  raw_ptr<message_center::ProportionalImageView> overflow_icon_ = nullptr;
 };
 
 }  // namespace ash

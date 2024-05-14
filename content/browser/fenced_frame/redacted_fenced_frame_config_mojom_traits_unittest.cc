@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config_mojom_traits.h"
+
 #include <functional>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -16,9 +19,7 @@
 #include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
-#include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config_mojom_traits.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame_config.mojom.h"
 #include "url/origin.h"
 
@@ -73,8 +74,8 @@ template <typename ClassName,
           typename RedactedToRedactedCompare>
 void TestPropertyForEntityIsDefinedIsOpaque(
     ClassName config,
-    absl::optional<FencedFrameProperty<TestType>> ClassName::*property,
-    const absl::optional<
+    std::optional<FencedFrameProperty<TestType>> ClassName::*property,
+    const std::optional<
         blink::FencedFrame::RedactedFencedFrameProperty<RedactedTestType>>& (
         RedactedClassName::*redacted_property)() const,
     Entity entity,
@@ -138,107 +139,109 @@ void TestPropertyForEntityIsDefinedIsOpaque(
   }
 }
 
-// This helper function generates several test cases for a given property:
-// * An empty config (`property` has no value)
-// * A config with `dummy_value` for `property`, opaque to embedder and
-//   transparent to content.
-// * A config with `dummy_value` for `property`, transparent to embedder and
-//   opaque to content.
-//
-// Template Arguments:
-// `ClassName`: `FencedFrameConfig` or `FencedFrameProperties`
-//              Which base class to use for this test.
-// `RedactedClassName`: `RedactedFencedFrameConfig` or
-//                       `RedactedFencedFrameProperties`
-//                       The redacted version of `ClassName`.
-// `TestType`: The type of the value being tested.
-// `RedactedTestType`: The type of the redacted value being tested. Sometimes
-//                     the type of variable being stored in the non-redacted and
-//                     its redacted equivalent can differ.
-// `UnredactedToRedactedCompare`: The shape of the function that will compare
-//                                an unredacted config value to a redacted
-//                                config value.
-// `RedactedToRedactedCompare`: The shape of the function that will compare
-//                              two redacted config values.
-//
-// Arguments:
-// `property`: A pointer to the name of the field to test (e.g. `mapped_url_`)
-// `redacted_property`: The redacted equivalent of the `property` field.
-// `dummy_value`: A value that can be emplaced into `property`.
-// `unredacted_redacted_equality_fn`: A comparator function that has the
-//     function signature is_eq(`type`, Redacted`type`). A return value of
-//     `true` means equal; `false` means not equal.
-// `redacted_redacted_equality_fn`: A comparator function that has the function
-//     signature is_eq(Redacted`type`, Redacted`type`). A return value of `true`
-//     means equal; `false` means not equal.
-template <typename ClassName,
-          typename RedactedClassName,
-          typename TestType,
-          typename RedactedTestType,
-          typename UnredactedToRedactedCompare,
-          typename RedactedToRedactedCompare>
-void TestProperty(
-    absl::optional<FencedFrameProperty<TestType>> ClassName::*property,
-    const absl::optional<
-        blink::FencedFrame::RedactedFencedFrameProperty<RedactedTestType>>& (
-        RedactedClassName::*redacted_property)() const,
-    TestType dummy_value,
-    UnredactedToRedactedCompare unredacted_redacted_equality_fn,
-    RedactedToRedactedCompare redacted_redacted_equality_fn) {
-  // Test an empty config
-  ClassName config;
-  if constexpr (std::is_same<FencedFrameConfig, ClassName>::value) {
-    config.urn_uuid_.emplace(GenerateUrnUuid());
+class FencedFrameConfigMojomTraitsTest : public RenderViewHostTestHarness {
+ public:
+  // This helper function generates several test cases for a given property:
+  // * An empty config (`property` has no value)
+  // * A config with `dummy_value` for `property`, opaque to embedder and
+  //   transparent to content.
+  // * A config with `dummy_value` for `property`, transparent to embedder and
+  //   opaque to content.
+  //
+  // Template Arguments:
+  // `ClassName`: `FencedFrameConfig` or `FencedFrameProperties`
+  //              Which base class to use for this test.
+  // `RedactedClassName`: `RedactedFencedFrameConfig` or
+  //                       `RedactedFencedFrameProperties`
+  //                       The redacted version of `ClassName`.
+  // `TestType`: The type of the value being tested.
+  // `RedactedTestType`: The type of the redacted value being tested. Sometimes
+  //                     the type of variable being stored in the non-redacted
+  //                     and its redacted equivalent can differ.
+  // `UnredactedToRedactedCompare`: The shape of the function that will compare
+  //                                an unredacted config value to a redacted
+  //                                config value.
+  // `RedactedToRedactedCompare`: The shape of the function that will compare
+  //                              two redacted config values.
+  //
+  // Arguments:
+  // `property`: A pointer to the name of the field to test (e.g. `mapped_url_`)
+  // `redacted_property`: The redacted equivalent of the `property` field.
+  // `dummy_value`: A value that can be emplaced into `property`.
+  // `unredacted_redacted_equality_fn`: A comparator function that has the
+  //     function signature is_eq(`type`, Redacted`type`). A return value of
+  //     `true` means equal; `false` means not equal.
+  // `redacted_redacted_equality_fn`: A comparator function that has the
+  // function
+  //     signature is_eq(Redacted`type`, Redacted`type`). A return value of
+  //     `true` means equal; `false` means not equal.
+  template <typename ClassName,
+            typename RedactedClassName,
+            typename TestType,
+            typename RedactedTestType,
+            typename UnredactedToRedactedCompare,
+            typename RedactedToRedactedCompare>
+  void TestProperty(
+      std::optional<FencedFrameProperty<TestType>> ClassName::*property,
+      const std::optional<
+          blink::FencedFrame::RedactedFencedFrameProperty<RedactedTestType>>& (
+          RedactedClassName::*redacted_property)() const,
+      TestType dummy_value,
+      UnredactedToRedactedCompare unredacted_redacted_equality_fn,
+      RedactedToRedactedCompare redacted_redacted_equality_fn) {
+    // Test an empty config
+    ClassName config;
+    if constexpr (std::is_same<FencedFrameConfig, ClassName>::value) {
+      config.urn_uuid_.emplace(GenerateUrnUuid());
+    }
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kEmbedder, false, false,
+        unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kSameOriginContent, false,
+        false, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kCrossOriginContent, false,
+        false, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+
+    // Test when `property` is opaque to embedder and transparent to content.
+    (config.*property)
+        .emplace(dummy_value, VisibilityToEmbedder::kOpaque,
+                 VisibilityToContent::kTransparent);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kEmbedder, true, true,
+        unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kSameOriginContent, true,
+        false, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kCrossOriginContent, true,
+        true, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+
+    // Test when `property` is transparent to embedder and opaque to content.
+    (config.*property)
+        .emplace(dummy_value, VisibilityToEmbedder::kTransparent,
+                 VisibilityToContent::kOpaque);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kEmbedder, true, false,
+        unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kSameOriginContent, true,
+        true, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
+    TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName,
+                                           TestType, RedactedTestType>(
+        config, property, redacted_property, Entity::kCrossOriginContent, true,
+        true, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
   }
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kEmbedder, false, false,
-      unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kSameOriginContent, false,
-      false, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kCrossOriginContent, false,
-      false, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-
-  // Test when `property` is opaque to embedder and transparent to content.
-  (config.*property)
-      .emplace(dummy_value, VisibilityToEmbedder::kOpaque,
-               VisibilityToContent::kTransparent);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kEmbedder, true, true,
-      unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kSameOriginContent, true,
-      false, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kCrossOriginContent, true,
-      true, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-
-  // Test when `property` is transparent to embedder and opaque to content.
-  (config.*property)
-      .emplace(dummy_value, VisibilityToEmbedder::kTransparent,
-               VisibilityToContent::kOpaque);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kEmbedder, true, false,
-      unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kSameOriginContent, true,
-      true, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-  TestPropertyForEntityIsDefinedIsOpaque<ClassName, RedactedClassName, TestType,
-                                         RedactedTestType>(
-      config, property, redacted_property, Entity::kCrossOriginContent, true,
-      true, unredacted_redacted_equality_fn, redacted_redacted_equality_fn);
-}
-
-class FencedFrameConfigMojomTraitsTest : public RenderViewHostTestHarness {};
+};
 
 TEST_F(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsInternalUrnTest) {
   GURL test_url("test_url");
@@ -301,7 +304,7 @@ TEST_F(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsModeTest) {
 
       RedactedFencedFrameProperties input_properties =
           browser_properties.RedactFor(entity);
-      ASSERT_TRUE(browser_properties.mode_ == input_properties.mode());
+      ASSERT_TRUE(browser_properties.mode() == input_properties.mode());
 
       RedactedFencedFrameProperties output_properties;
       mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameProperties>(
@@ -324,20 +327,20 @@ TEST_F(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsNullInternalUrnTest) {
 
 // C++23: Can replace AndThen(opt, acc) with opt.and_then(acc).
 template <typename Opt, typename Acc>
-absl::optional<GURL> AndThen(const Opt& opt, Acc acc) {
-  return opt ? std::invoke(acc, *opt) : absl::nullopt;
+std::optional<GURL> AndThen(const Opt& opt, Acc acc) {
+  return opt ? std::invoke(acc, *opt) : std::nullopt;
 }
 
 // Projections for [un]redacted fenced frame configs to allow comparisons. These
 // only compare the `mapped_url` field for convenience. (We don't need an
 // equality operator for configs outside of tests, so it would be wasteful to
 // declare it as default in the class declaration.)
-absl::optional<GURL> Project(const FencedFrameConfig& config) {
-  return AndThen(config.mapped_url_, [](const FencedFrameProperty<GURL>& url) {
+std::optional<GURL> Project(const FencedFrameConfig& config) {
+  return AndThen(config.mapped_url(), [](const FencedFrameProperty<GURL>& url) {
     return url.GetValueForEntity(Entity::kEmbedder);
   });
 }
-absl::optional<GURL> Project(const RedactedFencedFrameConfig& config) {
+std::optional<GURL> Project(const RedactedFencedFrameConfig& config) {
   return AndThen(config.mapped_url(),
                  &blink::FencedFrame::RedactedFencedFrameProperty<
                      GURL>::potentially_opaque_value);
@@ -496,12 +499,52 @@ TEST_F(FencedFrameConfigMojomTraitsTest,
       /*private_aggregation_manager=*/nullptr,
       /*main_frame_origin=*/url::Origin(),
       /*winner_origin=*/url::Origin(),
-      /*winner_aggregation_coordinator_origin=*/absl::nullopt);
+      /*winner_aggregation_coordinator_origin=*/std::nullopt);
   input_properties = properties.RedactFor(FencedFrameEntity::kEmbedder);
   EXPECT_TRUE(input_properties.has_fenced_frame_reporting());
   mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameProperties>(
       input_properties, output_properties);
   EXPECT_TRUE(output_properties.has_fenced_frame_reporting());
+}
+
+// Test `can_disable_untrusted_network`, which only appears in
+// FencedFrameProperties, and does not use the redacted mechanism used by other
+// fields.
+TEST_F(FencedFrameConfigMojomTraitsTest,
+       PropertiesCanDisableUntrustedNetworkTest) {
+  FencedFrameProperties properties;
+  RedactedFencedFrameProperties input_properties;
+  RedactedFencedFrameProperties output_properties;
+
+  properties.can_disable_untrusted_network_ = true;
+  input_properties =
+      properties.RedactFor(FencedFrameEntity::kSameOriginContent);
+  EXPECT_TRUE(input_properties.can_disable_untrusted_network());
+  mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameProperties>(
+      input_properties, output_properties);
+  EXPECT_TRUE(output_properties.can_disable_untrusted_network());
+  // `can_disable_untrusted_network` is always redacted to false for
+  // cross-origin contexts.
+  input_properties =
+      properties.RedactFor(FencedFrameEntity::kCrossOriginContent);
+  EXPECT_FALSE(input_properties.can_disable_untrusted_network());
+  mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameProperties>(
+      input_properties, output_properties);
+  EXPECT_FALSE(output_properties.can_disable_untrusted_network());
+
+  properties.can_disable_untrusted_network_ = false;
+  input_properties =
+      properties.RedactFor(FencedFrameEntity::kSameOriginContent);
+  EXPECT_FALSE(input_properties.can_disable_untrusted_network());
+  mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameProperties>(
+      input_properties, output_properties);
+  EXPECT_FALSE(output_properties.can_disable_untrusted_network());
+  input_properties =
+      properties.RedactFor(FencedFrameEntity::kCrossOriginContent);
+  EXPECT_FALSE(input_properties.can_disable_untrusted_network());
+  mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameProperties>(
+      input_properties, output_properties);
+  EXPECT_FALSE(output_properties.can_disable_untrusted_network());
 }
 
 }  // namespace content

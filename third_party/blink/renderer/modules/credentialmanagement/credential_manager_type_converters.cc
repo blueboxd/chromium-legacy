@@ -10,6 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
+#include "third_party/blink/public/mojom/webid/digital_identity_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
@@ -73,12 +74,11 @@ using blink::mojom::blink::DigitalCredentialProvider;
 using blink::mojom::blink::DigitalCredentialProviderPtr;
 using blink::mojom::blink::DigitalCredentialSelector;
 using blink::mojom::blink::DigitalCredentialSelectorPtr;
+using blink::mojom::blink::Hint;
 using blink::mojom::blink::IdentityCredentialDisconnectOptions;
 using blink::mojom::blink::IdentityCredentialDisconnectOptionsPtr;
-using blink::mojom::blink::IdentityProvider;
 using blink::mojom::blink::IdentityProviderConfig;
 using blink::mojom::blink::IdentityProviderConfigPtr;
-using blink::mojom::blink::IdentityProviderPtr;
 using blink::mojom::blink::IdentityProviderRequestOptions;
 using blink::mojom::blink::IdentityProviderRequestOptionsPtr;
 using blink::mojom::blink::IdentityUserInfo;
@@ -311,8 +311,8 @@ PublicKeyCredentialType TypeConverter<PublicKeyCredentialType, String>::Convert(
 }
 
 // static
-absl::optional<AuthenticatorTransport>
-TypeConverter<absl::optional<AuthenticatorTransport>, String>::Convert(
+std::optional<AuthenticatorTransport>
+TypeConverter<std::optional<AuthenticatorTransport>, String>::Convert(
     const String& transport) {
   if (transport == "usb")
     return AuthenticatorTransport::USB;
@@ -325,7 +325,7 @@ TypeConverter<absl::optional<AuthenticatorTransport>, String>::Convert(
     return AuthenticatorTransport::HYBRID;
   if (transport == "internal")
     return AuthenticatorTransport::INTERNAL;
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // static
@@ -346,8 +346,8 @@ String TypeConverter<String, AuthenticatorTransport>::Convert(
 }
 
 // static
-absl::optional<blink::mojom::blink::ResidentKeyRequirement>
-TypeConverter<absl::optional<blink::mojom::blink::ResidentKeyRequirement>,
+std::optional<blink::mojom::blink::ResidentKeyRequirement>
+TypeConverter<std::optional<blink::mojom::blink::ResidentKeyRequirement>,
               String>::Convert(const String& requirement) {
   if (requirement == "discouraged")
     return ResidentKeyRequirement::DISCOURAGED;
@@ -359,12 +359,12 @@ TypeConverter<absl::optional<blink::mojom::blink::ResidentKeyRequirement>,
   // AuthenticatorSelection.resident_key is defined as DOMString expressing a
   // ResidentKeyRequirement and unknown values must be treated as if the
   // property were unset.
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // static
-absl::optional<UserVerificationRequirement>
-TypeConverter<absl::optional<UserVerificationRequirement>, String>::Convert(
+std::optional<UserVerificationRequirement>
+TypeConverter<std::optional<UserVerificationRequirement>, String>::Convert(
     const String& requirement) {
   if (requirement == "required")
     return UserVerificationRequirement::REQUIRED;
@@ -372,12 +372,12 @@ TypeConverter<absl::optional<UserVerificationRequirement>, String>::Convert(
     return UserVerificationRequirement::PREFERRED;
   if (requirement == "discouraged")
     return UserVerificationRequirement::DISCOURAGED;
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // static
-absl::optional<AttestationConveyancePreference>
-TypeConverter<absl::optional<AttestationConveyancePreference>, String>::Convert(
+std::optional<AttestationConveyancePreference>
+TypeConverter<std::optional<AttestationConveyancePreference>, String>::Convert(
     const String& preference) {
   if (preference == "none")
     return AttestationConveyancePreference::NONE;
@@ -387,26 +387,26 @@ TypeConverter<absl::optional<AttestationConveyancePreference>, String>::Convert(
     return AttestationConveyancePreference::DIRECT;
   if (preference == "enterprise")
     return AttestationConveyancePreference::ENTERPRISE;
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // static
-absl::optional<AuthenticatorAttachment> TypeConverter<
-    absl::optional<AuthenticatorAttachment>,
-    absl::optional<String>>::Convert(const absl::optional<String>& attachment) {
+std::optional<AuthenticatorAttachment> TypeConverter<
+    std::optional<AuthenticatorAttachment>,
+    std::optional<String>>::Convert(const std::optional<String>& attachment) {
   if (!attachment.has_value())
     return AuthenticatorAttachment::NO_PREFERENCE;
   if (attachment.value() == "platform")
     return AuthenticatorAttachment::PLATFORM;
   if (attachment.value() == "cross-platform")
     return AuthenticatorAttachment::CROSS_PLATFORM;
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // static
 LargeBlobSupport
-TypeConverter<LargeBlobSupport, absl::optional<String>>::Convert(
-    const absl::optional<String>& large_blob_support) {
+TypeConverter<LargeBlobSupport, std::optional<String>>::Convert(
+    const std::optional<String>& large_blob_support) {
   if (large_blob_support) {
     if (*large_blob_support == "required")
       return LargeBlobSupport::REQUIRED;
@@ -429,17 +429,17 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
   mojo_criteria->authenticator_attachment =
       AuthenticatorAttachment::NO_PREFERENCE;
   if (criteria.hasAuthenticatorAttachment()) {
-    absl::optional<String> attachment = criteria.authenticatorAttachment();
+    std::optional<String> attachment = criteria.authenticatorAttachment();
     auto maybe_attachment =
-        ConvertTo<absl::optional<AuthenticatorAttachment>>(attachment);
+        ConvertTo<std::optional<AuthenticatorAttachment>>(attachment);
     if (maybe_attachment) {
       mojo_criteria->authenticator_attachment = *maybe_attachment;
     }
   }
 
-  absl::optional<ResidentKeyRequirement> resident_key;
+  std::optional<ResidentKeyRequirement> resident_key;
   if (criteria.hasResidentKey()) {
-    resident_key = ConvertTo<absl::optional<ResidentKeyRequirement>>(
+    resident_key = ConvertTo<std::optional<ResidentKeyRequirement>>(
         criteria.residentKey());
   }
   if (resident_key) {
@@ -452,8 +452,8 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
 
   mojo_criteria->user_verification = UserVerificationRequirement::PREFERRED;
   if (criteria.hasUserVerification()) {
-    absl::optional<UserVerificationRequirement> user_verification =
-        ConvertTo<absl::optional<UserVerificationRequirement>>(
+    std::optional<UserVerificationRequirement> user_verification =
+        ConvertTo<std::optional<UserVerificationRequirement>>(
             criteria.userVerification());
     if (user_verification) {
       mojo_criteria->user_verification = *user_verification;
@@ -508,7 +508,7 @@ TypeConverter<PublicKeyCredentialDescriptorPtr,
   if (descriptor.hasTransports() && !descriptor.transports().empty()) {
     for (const auto& transport : descriptor.transports()) {
       auto maybe_transport(
-          ConvertTo<absl::optional<AuthenticatorTransport>>(transport));
+          ConvertTo<std::optional<AuthenticatorTransport>>(transport));
       if (maybe_transport) {
         mojo_descriptor->transports.push_back(*maybe_transport);
       }
@@ -590,10 +590,12 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
         AuthenticatorSelectionCriteria::From(*options.authenticatorSelection());
   }
 
+  mojo_options->hints = ConvertTo<Vector<Hint>>(options.hints());
+
   mojo_options->attestation = AttestationConveyancePreference::NONE;
   if (options.hasAttestation()) {
-    absl::optional<AttestationConveyancePreference> attestation =
-        ConvertTo<absl::optional<AttestationConveyancePreference>>(
+    std::optional<AttestationConveyancePreference> attestation =
+        ConvertTo<std::optional<AttestationConveyancePreference>>(
             options.attestation());
     if (attestation) {
       mojo_options->attestation = *attestation;
@@ -632,7 +634,7 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
       mojo_options->cred_props = true;
     }
     if (extensions->hasLargeBlob()) {
-      absl::optional<WTF::String> support;
+      std::optional<WTF::String> support;
       if (extensions->largeBlob()->hasSupport()) {
         support = extensions->largeBlob()->support();
       }
@@ -656,7 +658,7 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     }
     if (extensions->hasSupplementalPubKeys()) {
       auto supplemental_pub_keys =
-          ConvertTo<absl::optional<SupplementalPubKeysRequestPtr>>(
+          ConvertTo<std::optional<SupplementalPubKeysRequestPtr>>(
               *extensions->supplementalPubKeys());
       if (supplemental_pub_keys) {
         mojo_options->supplemental_pub_keys = std::move(*supplemental_pub_keys);
@@ -746,13 +748,15 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
 
   mojo_options->user_verification = UserVerificationRequirement::PREFERRED;
   if (options.hasUserVerification()) {
-    absl::optional<UserVerificationRequirement> user_verification =
-        ConvertTo<absl::optional<UserVerificationRequirement>>(
+    std::optional<UserVerificationRequirement> user_verification =
+        ConvertTo<std::optional<UserVerificationRequirement>>(
             options.userVerification());
     if (user_verification) {
       mojo_options->user_verification = *user_verification;
     }
   }
+
+  mojo_options->hints = ConvertTo<Vector<Hint>>(options.hints());
 
   if (options.hasExtensions()) {
     mojo_options->extensions =
@@ -815,7 +819,7 @@ TypeConverter<AuthenticationExtensionsClientInputsPtr,
   }
   if (inputs.hasSupplementalPubKeys()) {
     auto supplemental_pub_keys =
-        ConvertTo<absl::optional<SupplementalPubKeysRequestPtr>>(
+        ConvertTo<std::optional<SupplementalPubKeysRequestPtr>>(
             *inputs.supplementalPubKeys());
     if (supplemental_pub_keys) {
       mojo_inputs->supplemental_pub_keys = std::move(*supplemental_pub_keys);
@@ -857,11 +861,11 @@ TypeConverter<IdentityProviderRequestOptionsPtr,
     Convert(const blink::IdentityProviderRequestOptions& options) {
   auto mojo_options = IdentityProviderRequestOptions::New();
   mojo_options->config = IdentityProviderConfig::New();
-  if (options.hasRegistered() &&
-      blink::RuntimeEnabledFeatures::FedCmIdPRegistrationEnabled()) {
-    mojo_options->config->use_registered_config_urls = options.registered();
+  CHECK(options.hasConfigURL());
+  if (blink::RuntimeEnabledFeatures::FedCmIdPRegistrationEnabled() &&
+      options.configURL() == "any") {
+    mojo_options->config->use_registered_config_urls = true;
   } else {
-    CHECK(options.hasConfigURL());
     mojo_options->config->config_url = blink::KURL(options.configURL());
   }
   mojo_options->config->client_id = options.clientId();
@@ -893,67 +897,55 @@ TypeConverter<IdentityProviderRequestOptionsPtr,
 }
 
 // static
-IdentityProviderPtr
-TypeConverter<IdentityProviderPtr, blink::IdentityProviderRequestOptions>::
-    Convert(const blink::IdentityProviderRequestOptions& provider) {
-  if (provider.hasHolder() &&
-      blink::RuntimeEnabledFeatures::WebIdentityDigitalCredentialsEnabled() &&
-      // TODO(https://crbug.com/1416939): make sure the Digital Credentials API
-      // works well with the Multiple IdP API.
-      !blink::RuntimeEnabledFeatures::FedCmMultipleIdentityProvidersEnabled()) {
-    auto mojo_provider = DigitalCredentialProvider::New();
-    if (provider.holder()->hasParams()) {
-      HashMap<String, String> params;
-      for (const auto& pair : provider.holder()->params()) {
-        params.Set(pair.first, pair.second);
-      }
-      mojo_provider->params = std::move(params);
+DigitalCredentialProviderPtr
+TypeConverter<DigitalCredentialProviderPtr, blink::DigitalCredentialProvider>::
+    Convert(const blink::DigitalCredentialProvider& provider) {
+  auto mojo_provider = DigitalCredentialProvider::New();
+  if (provider.hasParams()) {
+    HashMap<String, String> params;
+    for (const auto& pair : provider.params()) {
+      params.Set(pair.first, pair.second);
     }
-    if (provider.holder()->hasSelector()) {
-      mojo_provider->selector = DigitalCredentialSelector::New();
-      if (provider.holder()->selector()->hasFormat()) {
-        mojo_provider->selector->format =
-            provider.holder()->selector()->format();
-      }
-      if (provider.holder()->selector()->hasDoctype()) {
-        mojo_provider->selector->doctype =
-            provider.holder()->selector()->doctype();
-      }
-      if (provider.holder()->selector()->hasFields()) {
-        WTF::Vector<DigitalCredentialFieldRequirementPtr> fields;
-        for (auto element : provider.holder()->selector()->fields()) {
-          auto requested_element = DigitalCredentialFieldRequirement::New();
-          if (element->IsString()) {
-            requested_element->name = element->GetAsString();
-          } else {
-            requested_element->name =
-                element->GetAsDigitalCredentialFieldRequirement()->name();
-            if (element->GetAsDigitalCredentialFieldRequirement()
-                    ->hasEquals()) {
-              requested_element->equals =
-                  element->GetAsDigitalCredentialFieldRequirement()->equals();
-            }
-          }
-
-          fields.push_back(std::move(requested_element));
-        }
-        mojo_provider->selector->fields = std::move(fields);
-      }
-    }
-    if (provider.holder()->hasProtocol()) {
-      mojo_provider->protocol = provider.holder()->protocol();
-    }
-    if (provider.holder()->hasRequest()) {
-      mojo_provider->request = provider.holder()->request();
-    }
-    if (provider.holder()->hasPublicKey()) {
-      mojo_provider->publicKey = provider.holder()->publicKey();
-    }
-    return IdentityProvider::NewHolder(std::move(mojo_provider));
-  } else {
-    auto config = IdentityProviderRequestOptions::From(provider);
-    return IdentityProvider::NewFederated(std::move(config));
+    mojo_provider->params = std::move(params);
   }
+  if (provider.hasSelector()) {
+    mojo_provider->selector = DigitalCredentialSelector::New();
+    if (provider.selector()->hasFormat()) {
+      mojo_provider->selector->format = provider.selector()->format();
+    }
+    if (provider.selector()->hasDoctype()) {
+      mojo_provider->selector->doctype = provider.selector()->doctype();
+    }
+    if (provider.selector()->hasFields()) {
+      WTF::Vector<DigitalCredentialFieldRequirementPtr> fields;
+      for (auto element : provider.selector()->fields()) {
+        auto requested_element = DigitalCredentialFieldRequirement::New();
+        if (element->IsString()) {
+          requested_element->name = element->GetAsString();
+        } else {
+          requested_element->name =
+              element->GetAsDigitalCredentialFieldRequirement()->name();
+          if (element->GetAsDigitalCredentialFieldRequirement()->hasEquals()) {
+            requested_element->equals =
+                element->GetAsDigitalCredentialFieldRequirement()->equals();
+          }
+        }
+
+        fields.push_back(std::move(requested_element));
+      }
+      mojo_provider->selector->fields = std::move(fields);
+    }
+  }
+  if (provider.hasProtocol()) {
+    mojo_provider->protocol = provider.protocol();
+  }
+  if (provider.hasRequest()) {
+    mojo_provider->request = provider.request();
+  }
+  if (provider.hasPublicKey()) {
+    mojo_provider->publicKey = provider.publicKey();
+  }
+  return mojo_provider;
 }
 
 // static
@@ -997,8 +989,8 @@ TypeConverter<IdentityUserInfoPtr, blink::IdentityUserInfo>::Convert(
 }
 
 // static
-absl::optional<SupplementalPubKeysRequestPtr>
-TypeConverter<absl::optional<SupplementalPubKeysRequestPtr>,
+std::optional<SupplementalPubKeysRequestPtr>
+TypeConverter<std::optional<SupplementalPubKeysRequestPtr>,
               blink::AuthenticationExtensionsSupplementalPubKeysInputs>::
     Convert(const blink::AuthenticationExtensionsSupplementalPubKeysInputs&
                 supplemental_pub_keys) {
@@ -1013,13 +1005,13 @@ TypeConverter<absl::optional<SupplementalPubKeysRequestPtr>,
   }
 
   if (!device_scope_requested && !provider_scope_requested) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   auto ret = SupplementalPubKeysRequest::New();
   ret->device_scope_requested = device_scope_requested;
   ret->provider_scope_requested = provider_scope_requested;
-  ret->attestation = ConvertTo<absl::optional<AttestationConveyancePreference>>(
+  ret->attestation = ConvertTo<std::optional<AttestationConveyancePreference>>(
                          supplemental_pub_keys.attestation())
                          .value_or(AttestationConveyancePreference::NONE);
   ret->attestation_formats = supplemental_pub_keys.attestationFormats();
@@ -1076,6 +1068,24 @@ TypeConverter<IdentityCredentialDisconnectOptionsPtr,
 
   mojo_disconnect_options->account_hint = options.accountHint();
   return mojo_disconnect_options;
+}
+
+Vector<Hint> TypeConverter<Vector<Hint>, Vector<String>>::Convert(
+    const Vector<String>& hints) {
+  Vector<Hint> ret;
+
+  for (const String& hint : hints) {
+    if (hint == "security-key") {
+      ret.push_back(Hint::SECURITY_KEY);
+    } else if (hint == "client-device") {
+      ret.push_back(Hint::CLIENT_DEVICE);
+    } else if (hint == "hybrid") {
+      ret.push_back(Hint::HYBRID);
+    }
+    // Unrecognised values are ignored.
+  }
+
+  return ret;
 }
 
 }  // namespace mojo

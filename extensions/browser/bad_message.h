@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_BAD_MESSAGE_H_
 
 namespace content {
-class BrowserMessageFilter;
 class RenderProcessHost;
 }
 
@@ -88,12 +87,6 @@ void ReceivedBadMessage(content::RenderProcessHost* host,
 // Same as ReceivedBadMessage above, but takes a render process id. Non-existent
 // render process ids are ignored.
 void ReceivedBadMessage(int render_process_id, BadMessageReason reason);
-
-// Called when a browser message filter receives a bad IPC message from a
-// renderer or other child process. Logs the event, records a histogram metric
-// for the |reason|, and terminates the process for |filter|.
-void ReceivedBadMessage(content::BrowserMessageFilter* filter,
-                        BadMessageReason reason);
 
 }  // namespace extensions::bad_message
 

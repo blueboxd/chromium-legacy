@@ -31,7 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TO_LENGTH_CONVERSION_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TO_LENGTH_CONVERSION_DATA_H_
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <optional>
+
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_length_resolver.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -223,19 +224,19 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
 
     void Trace(Visitor*) const;
 
-    absl::optional<double> Width() const;
-    absl::optional<double> Height() const;
+    std::optional<double> Width() const;
+    std::optional<double> Height() const;
 
    private:
-    void CacheSizeIfNeeded(PhysicalAxes, absl::optional<double>& cache) const;
+    void CacheSizeIfNeeded(PhysicalAxes, std::optional<double>& cache) const;
 
     Member<Element> context_element_;
     mutable PhysicalAxes cached_physical_axes_{kPhysicalAxisNone};
-    mutable absl::optional<double> cached_width_;
-    mutable absl::optional<double> cached_height_;
+    mutable std::optional<double> cached_width_;
+    mutable std::optional<double> cached_height_;
   };
 
-  using Flags = uint8_t;
+  using Flags = uint16_t;
 
   // Flags represent the units seen in a conversion. They are used for targeted
   // invalidation, e.g. when root font-size changes, only elements dependent on
@@ -258,6 +259,8 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
     kContainerRelative = 1u << 6,
     // calc() includes tree scoped reference to an anchor
     kAnchorRelative = 1u << 7,
+    // vi, vb, cqi, cqb, etc
+    kLogicalDirectionRelative = 1u << 8,
     // Adjust the Flags type above if adding more bits below.
   };
 

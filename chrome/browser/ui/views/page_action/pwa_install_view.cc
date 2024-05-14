@@ -40,8 +40,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/metrics/structured/event_logging_features.h"
-// TODO(crbug/4925196): enable gn check once it learn about conditional includes
+// TODO(crbug.com/1125897): Enable gn check once it handles conditional includes
 #include "components/metrics/structured/structured_events.h"  // nogncheck
+#include "components/metrics/structured/structured_metrics_client.h"  // nogncheck
 #endif
 
 namespace {
@@ -187,9 +188,9 @@ void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
 
 #if BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(metrics::structured::kAppDiscoveryLogging)) {
-    cros_events::AppDiscovery_Browser_OmniboxInstallIconClicked()
-        .SetIPHShown(install_icon_clicked_after_iph_shown_)
-        .Record();
+    metrics::structured::StructuredMetricsClient::Record(
+        std::move(cros_events::AppDiscovery_Browser_OmniboxInstallIconClicked()
+                      .SetIPHShown(install_icon_clicked_after_iph_shown_)));
   }
 #endif
 
@@ -237,5 +238,5 @@ bool PwaInstallView::ShouldShowIph(content::WebContents* web_contents,
               .IsBlockedByGuardrails(app_id);
 }
 
-BEGIN_METADATA(PwaInstallView, PageActionIconView)
+BEGIN_METADATA(PwaInstallView)
 END_METADATA

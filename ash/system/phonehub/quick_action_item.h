@@ -61,15 +61,14 @@ class ASH_EXPORT QuickActionItem : public views::View {
   // views::View:
   bool HasFocus() const override;
   void RequestFocus() override;
-  const char* GetClassName() const override;
 
   FeaturePodIconButton* icon_button() const { return icon_button_; }
 
  private:
   // Owned by views hierarchy.
-  raw_ptr<FeaturePodIconButton, ExperimentalAsh> icon_button_ = nullptr;
-  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
-  raw_ptr<views::Label, ExperimentalAsh> sub_label_ = nullptr;
+  raw_ptr<FeaturePodIconButton> icon_button_ = nullptr;
+  raw_ptr<views::Label> label_ = nullptr;
+  raw_ptr<views::Label> sub_label_ = nullptr;
 
   // Enabled color of the sub label.
   SkColor sub_label_color_;

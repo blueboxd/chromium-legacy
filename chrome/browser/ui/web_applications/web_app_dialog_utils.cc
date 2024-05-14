@@ -37,8 +37,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/metrics/structured/event_logging_features.h"
-// TODO(crbug/4925196): enable gn check once it learn about conditional includes
+// TODO(crbug.com/1125897): Enable gn check once it handles conditional includes
 #include "components/metrics/structured/structured_events.h"  // nogncheck
+#include "components/metrics/structured/structured_metrics_client.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -55,18 +56,44 @@ namespace cros_events = metrics::structured::events::v2::cr_os_events;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+// Gets the first icon larger than `kIconSize` from `manifest_icons` and returns
+// the url. If none exist, returns the url of the largest icon. Returns empty
+// GURL if vector is empty.
+// TODO(crbug.com/1488697): This function assumes manifest_icons is sorted,
+// which it may not be. Icon purpose also needs to be considered.
+const GURL& GetIconUrl(const std::vector<apps::IconInfo>& manifest_icons) {
+  if (manifest_icons.empty()) {
+    return GURL::EmptyGURL();
+  }
+
+  const GURL* icon_url = &GURL::EmptyGURL();
+  for (const auto& icon_info : manifest_icons) {
+    icon_url = &icon_info.url;
+    if (icon_info.square_size_px > ash::app_install::kIconSize) {
+      break;
+    }
+  }
+
+  return *icon_url;
+}
+
 void OnManifestFetchedShowCrosDialog(
     base::WeakPtr<ash::app_install::AppInstallDialog> dialog_handle,
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback web_app_acceptance_callback) {
   web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
-  ash::app_install::ChromeOsAppInstallDialogParams params(
-      *web_app_info,
-      webapps::AppBannerManager::FromWebContents(initiator_web_contents)
-          ->screenshots());
+
+  ash::app_install::mojom::DialogArgsPtr args =
+      ash::app_install::mojom::DialogArgs::New();
+  args->url = web_app_info->start_url.GetWithEmptyPath();
+  args->name = base::UTF16ToUTF8(web_app_info->title);
+  args->description = base::UTF16ToUTF8(web_app_info->description);
+  args->icon_url = GetIconUrl(web_app_info->manifest_icons);
+
   dialog_handle->Show(
-      initiator_web_contents->GetNativeView(), std::move(params),
+      initiator_web_contents->GetNativeView(), std::move(args),
+      web_app::GenerateAppIdFromManifestId(web_app_info->manifest_id),
       base::BindOnce(
           [](std::unique_ptr<WebAppInstallInfo> web_app_info,
              WebAppInstallationAcceptanceCallback web_app_acceptance_callback,
@@ -82,7 +109,8 @@ void OnWebAppInstalledFromCrosDialog(
     WebAppInstalledCallback installed_callback,
     const webapps::AppId& app_id,
     webapps::InstallResultCode code) {
-  dialog_handle->SetInstallSuccess(webapps::IsSuccess(code));
+  dialog_handle->SetInstallComplete(webapps::IsSuccess(code) ? &app_id
+                                                             : nullptr);
 
   // If we receive an error code, there's a chance the dialog was never shown,
   // so we need to clean it up to avoid a memory leak.
@@ -112,9 +140,9 @@ void OnWebAppInstallShowInstallDialog(
           install_source == webapps::WebappInstallSource::MENU_BROWSER_TAB) {
         webapps::AppId app_id =
             web_app::GenerateAppIdFromManifestId(web_app_info->manifest_id);
-        cros_events::AppDiscovery_Browser_ClickInstallAppFromMenu()
-            .SetAppId(app_id)
-            .Record();
+        metrics::structured::StructuredMetricsClient::Record(std::move(
+            cros_events::AppDiscovery_Browser_ClickInstallAppFromMenu()
+                .SetAppId(app_id)));
       }
 #endif
       if (webapps::AppBannerManager::FromWebContents(initiator_web_contents)
@@ -139,9 +167,9 @@ void OnWebAppInstallShowInstallDialog(
               metrics::structured::kAppDiscoveryLogging)) {
         webapps::AppId app_id =
             web_app::GenerateAppIdFromManifestId(web_app_info->manifest_id);
-        cros_events::AppDiscovery_Browser_CreateShortcut()
-            .SetAppId(app_id)
-            .Record();
+        metrics::structured::StructuredMetricsClient::Record(std::move(
+            cros_events::AppDiscovery_Browser_CreateShortcut().SetAppId(
+                app_id)));
       }
 #endif
 
@@ -231,7 +259,7 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
   // Lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::FeatureList::IsEnabled(
-          chromeos::features::kCrosWebAppInstallDialog)) {
+          chromeos::features::kCrosOmniboxInstallDialog)) {
     base::WeakPtr<ash::app_install::AppInstallDialog> dialog_handle =
         ash::app_install::AppInstallDialog::CreateDialog();
     provider->scheduler().FetchManifestAndInstall(
@@ -283,7 +311,7 @@ bool CreateWebAppFromManifest(content::WebContents* web_contents,
   // Lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::FeatureList::IsEnabled(
-          chromeos::features::kCrosWebAppInstallDialog)) {
+          chromeos::features::kCrosOmniboxInstallDialog)) {
     base::WeakPtr<ash::app_install::AppInstallDialog> dialog_handle =
         ash::app_install::AppInstallDialog::CreateDialog();
     provider->scheduler().FetchManifestAndInstall(

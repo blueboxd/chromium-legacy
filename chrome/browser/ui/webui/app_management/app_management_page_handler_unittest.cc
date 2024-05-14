@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -37,10 +35,11 @@
 #include "chrome/browser/ash/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ui/webui/app_management/app_management_page_handler_chromeos.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #else
-#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/webui/app_management/web_app_settings_page_handler.h"
 #include "chrome/common/chrome_features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -49,13 +48,13 @@ using ::testing::ElementsAre;
 
 namespace apps {
 namespace {
-class TestDelegate : public AppManagementPageHandler::Delegate {
+class TestDelegate : public AppManagementPageHandlerBase::Delegate {
  public:
   TestDelegate() = default;
   TestDelegate(const TestDelegate&) = delete;
   TestDelegate& operator=(const TestDelegate&) = delete;
 
-  // AppManagementPageHandler::Delegate:
+  // AppManagementPageHandlerBase::Delegate:
 
   ~TestDelegate() override = default;
 
@@ -78,10 +77,14 @@ class AppManagementPageHandlerTestBase
 
     mojo::PendingReceiver<app_management::mojom::Page> page;
     mojo::Remote<app_management::mojom::PageHandler> handler;
-    handler_ = std::make_unique<AppManagementPageHandler>(
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    handler_ = std::make_unique<AppManagementPageHandlerChromeOs>(
         handler.BindNewPipeAndPassReceiver(),
         page.InitWithNewPipeAndPassRemote(), profile(), *delegate_);
-#if !BUILDFLAG(IS_CHROMEOS)
+#else
+    handler_ = std::make_unique<WebAppSettingsPageHandler>(
+        handler.BindNewPipeAndPassReceiver(),
+        page.InitWithNewPipeAndPassRemote(), profile(), *delegate_);
     auto features_and_params = apps::test::GetFeaturesToEnableLinkCapturingUX(
         /*override_captures_by_default=*/GetParam());
     features_and_params.push_back(
@@ -97,7 +100,7 @@ class AppManagementPageHandlerTestBase
 
   bool LinkCapturingEnabledByDefault() { return GetParam(); }
 
-  AppManagementPageHandler* handler() { return handler_.get(); }
+  AppManagementPageHandlerBase* handler() { return handler_.get(); }
 
  protected:
   void AwaitWebAppCommandsComplete() {
@@ -123,7 +126,7 @@ class AppManagementPageHandlerTestBase
  private:
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   std::unique_ptr<TestDelegate> delegate_;
-  std::unique_ptr<AppManagementPageHandler> handler_;
+  std::unique_ptr<AppManagementPageHandlerBase> handler_;
 #if !BUILDFLAG(IS_CHROMEOS)
   base::test::ScopedFeatureList scoped_feature_list_;
 #endif  // !BUILDFLAG(IS_CHROMEOS)

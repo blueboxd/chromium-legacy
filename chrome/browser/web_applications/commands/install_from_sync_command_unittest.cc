@@ -5,11 +5,13 @@
 #include "chrome/browser/web_applications/commands/install_from_sync_command.h"
 
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <utility>
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gmock_move_support.h"
@@ -37,11 +39,13 @@
 #include "components/webapps/common/web_app_id.h"
 #include "components/webapps/common/web_page_metadata.mojom-forward.h"
 #include "components/webapps/common/web_page_metadata.mojom.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/test/test_utils.h"
+#include "content/public/test/web_contents_observer_test_utils.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -108,7 +112,7 @@ class InstallFromSyncTest : public WebAppTest {
     bool callback_triggered = false;
     webapps::AppId installed_app_id;
     webapps::InstallResultCode install_code;
-    absl::optional<webapps::InstallResultCode> install_code_before_fallback;
+    std::optional<webapps::InstallResultCode> install_code_before_fallback;
   };
 
   InstallFromSyncCommand::Params CreateParams(webapps::AppId app_id,
@@ -116,7 +120,7 @@ class InstallFromSyncTest : public WebAppTest {
                                               GURL start_url) {
     return InstallFromSyncCommand::Params(
         app_id, manifest_id, start_url, kFallbackTitle,
-        start_url.GetWithoutFilename(), /*theme_color=*/absl::nullopt,
+        start_url.GetWithoutFilename(), /*theme_color=*/std::nullopt,
         mojom::UserDisplayMode::kStandalone, /*icons=*/
         {apps::IconInfo(kFallbackIconUrl, kIconSize)});
   }
@@ -459,9 +463,15 @@ TEST_F(InstallFromSyncTest, TwoInstalls) {
           }));
   command_manager().ScheduleCommand(std::move(command));
   loop1.Run();
-  EXPECT_TRUE(command_manager().has_web_contents_for_testing());
+  EXPECT_TRUE(command_manager().web_contents_for_testing());
   loop2.Run();
-  EXPECT_FALSE(command_manager().has_web_contents_for_testing());
+  content::WebContents* web_contents =
+      command_manager().web_contents_for_testing();
+  EXPECT_TRUE(web_contents);
+  // Wait for web contents to be destroyed.
+  content::WebContentsDestroyedWatcher web_contents_obserser(web_contents);
+  web_contents_obserser.Wait();
+  EXPECT_FALSE(command_manager().web_contents_for_testing());
   EXPECT_TRUE(registrar().IsInstalled(app_id1));
   EXPECT_TRUE(registrar().IsInstalled(app_id2));
   std::vector<Event> expected;

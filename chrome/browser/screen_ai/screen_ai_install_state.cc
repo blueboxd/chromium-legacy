@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/check_is_test.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
@@ -21,18 +20,16 @@
 #include "components/prefs/pref_service.h"
 #include "components/services/screen_ai/public/cpp/utilities.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/accessibility/accessibility_features.h"
 
 #if BUILDFLAG(IS_LINUX)
 #include "base/cpu.h"
-#endif
-
-#if BUILDFLAG(IS_WIN)
-#include "base/native_library.h"
+#include "base/files/file_util.h"
 #endif
 
 namespace {
 const int kScreenAICleanUpDelayInDays = 30;
-const char kMinExpectedVersion[] = "121.1";
+const char kMinExpectedVersion[] = "123.1";
 
 bool IsDeviceCompatible() {
   // Check if the CPU has the required instruction set to run the Screen AI
@@ -43,6 +40,22 @@ bool IsDeviceCompatible() {
   }
 #endif
   return true;
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class LibraryVerificationResult {
+  kOk = 0,
+  kVersionInvalid = 1,
+  kVersionLow = 2,
+  kPathUnexpected = 3,
+  kDeprecatedLoadFailed = 4,
+  kMaxValue = kDeprecatedLoadFailed,
+};
+
+void RecordLibraryVerificationResult(LibraryVerificationResult result) {
+  base::UmaHistogramEnumeration(
+      "Accessibility.ScreenAI.LibraryVerificationResult", result);
 }
 
 }  // namespace
@@ -65,13 +78,24 @@ ScreenAIInstallState* ScreenAIInstallState::GetInstance() {
 }
 
 // static
-bool ScreenAIInstallState::VerifyLibraryVersion(const std::string& version) {
-  if (version >= kMinExpectedVersion) {
-    return true;
+bool ScreenAIInstallState::VerifyLibraryVersion(const base::Version& version) {
+  base::Version min_version(kMinExpectedVersion);
+  CHECK(min_version.IsValid());
+
+  if (!version.IsValid()) {
+    VLOG(0) << "Cannot verify library version.";
+    RecordLibraryVerificationResult(LibraryVerificationResult::kVersionInvalid);
+    return false;
   }
-  VLOG(0) << "Screen AI library version is expected to be at least "
-          << kMinExpectedVersion << ", but it is: " << version;
-  return false;
+
+  if (version < min_version) {
+    VLOG(0) << "Version is expected to be at least " << kMinExpectedVersion
+            << ", but it is: " << version;
+    RecordLibraryVerificationResult(LibraryVerificationResult::kVersionLow);
+    return false;
+  }
+
+  return true;
 }
 
 // static
@@ -79,31 +103,17 @@ bool ScreenAIInstallState::VerifyLibraryAvailablity(
     const base::FilePath& install_dir) {
   // Check the file iterator heuristic to find the library in the sandbox
   // returns the same directory as `install_dir`.
+  // TODO(b/41489907): Convert path unexpected case to DumpWithoutCrash to
+  // investigate paths and update the UMA description.
   base::FilePath binary_path = screen_ai::GetLatestComponentBinaryPath();
   if (binary_path.DirName() != install_dir) {
-    VLOG(0) << "Screen AI library is installed in an unexpected folder.";
+    RecordLibraryVerificationResult(LibraryVerificationResult::kPathUnexpected);
+    VLOG(0) << "Library is installed in an unexpected folder.";
     return false;
   }
 
-#if !BUILDFLAG(IS_WIN)
+  RecordLibraryVerificationResult(LibraryVerificationResult::kOk);
   return true;
-#else
-  // Sometimes the library cannot be loaded due to an installation error or OS
-  // limitations.
-  base::NativeLibraryLoadError lib_error;
-  base::NativeLibrary library =
-      base::LoadNativeLibrary(binary_path, &lib_error);
-  bool available = (library != nullptr);
-  base::UmaHistogramBoolean("Accessibility.ScreenAI.LibraryAvailableOnVerify",
-                            available);
-  base::UmaHistogramSparse("Accessibility.ScreenAI.LibraryAccessResultOnVerify",
-                           lib_error.code);
-  if (available) {
-    base::UnloadNativeLibrary(library);
-  }
-
-  return available;
-#endif
 }
 
 ScreenAIInstallState::ScreenAIInstallState() {
@@ -152,7 +162,7 @@ void ScreenAIInstallState::RecordComponentInstallationResult(bool install,
 
 void ScreenAIInstallState::AddObserver(
     ScreenAIInstallState::Observer* observer) {
-  observers_.push_back(observer);
+  observers_.AddObserver(observer);
   observer->StateChanged(state_);
 
   // Adding an observer indicates that we need the component.
@@ -161,6 +171,12 @@ void ScreenAIInstallState::AddObserver(
 }
 
 void ScreenAIInstallState::DownloadComponent() {
+  if (!features::IsScreenAIOCREnabled() &&
+      !features::IsScreenAIMainContentExtractionEnabled()) {
+    SetState(State::kDownloadFailed);
+    return;
+  }
+
   if (MayTryDownload()) {
     DownloadComponentInternal();
   }
@@ -168,10 +184,7 @@ void ScreenAIInstallState::DownloadComponent() {
 
 void ScreenAIInstallState::RemoveObserver(
     ScreenAIInstallState::Observer* observer) {
-  auto pos = base::ranges::find(observers_, observer);
-  if (pos != observers_.end()) {
-    observers_.erase(pos);
-  }
+  observers_.RemoveObserver(observer);
 }
 
 void ScreenAIInstallState::SetComponentFolder(
@@ -185,33 +198,30 @@ void ScreenAIInstallState::SetComponentFolder(
   // session will continue using that and the new one will be used after next
   // Chrome restart. Otherwise the new component will be used when a service
   // request arrives as its path is stored in |component_binary_path_|.
-  if (state_ != State::kReady && state_ != State::kDownloaded) {
+  if (state_ != State::kDownloaded) {
     SetState(State::kDownloaded);
   }
 }
 
 void ScreenAIInstallState::SetState(State state) {
   if (state == state_) {
-    // Failed and ready state can be repeated as they come from different
-    // profiles. Downloading can be repeated in ChromeOS tests that call
+    // `kDownloadFailed` state can be repeated as download can be retriggered.
+    // `kDownloading` can be repeated in ChromeOS tests that call
     // LoginManagerTest::AddUser() and reset UserSessionInitializer.
-    // TODO(crbug.com/1278249): While the case is highly unexpected, add more
-    // control logic if state is changed from failed to ready or vice versa.
-    DCHECK(state == State::kReady || state == State::kFailed ||
-           state == State::kDownloading);
+    DCHECK(state == State::kDownloadFailed || state == State::kDownloading);
     return;
   }
 
   state_ = state;
-  for (ScreenAIInstallState::Observer* observer : observers_) {
-    observer->StateChanged(state_);
+  for (ScreenAIInstallState::Observer& observer : observers_) {
+    observer.StateChanged(state_);
   }
 }
 
 void ScreenAIInstallState::SetDownloadProgress(double progress) {
   DCHECK_EQ(state_, State::kDownloading);
-  for (ScreenAIInstallState::Observer* observer : observers_) {
-    observer->DownloadProgressChanged(progress);
+  for (ScreenAIInstallState::Observer& observer : observers_) {
+    observer.DownloadProgressChanged(progress);
   }
 }
 
@@ -219,19 +229,14 @@ bool ScreenAIInstallState::IsComponentAvailable() {
   return !get_component_binary_path().empty();
 }
 
-void ScreenAIInstallState::SetComponentReadyForTesting() {
-  state_ = State::kReady;
-}
-
 bool ScreenAIInstallState::MayTryDownload() {
   switch (state_) {
     case State::kNotDownloaded:
-    case State::kFailed:
+    case State::kDownloadFailed:
       return true;
 
     case State::kDownloading:
     case State::kDownloaded:
-    case State::kReady:
       return false;
   }
 }
@@ -243,6 +248,9 @@ void ScreenAIInstallState::ResetForTesting() {
 
 void ScreenAIInstallState::SetStateForTesting(State state) {
   state_ = state;
+  for (ScreenAIInstallState::Observer& observer : observers_) {
+    observer.StateChanged(state_);
+  }
 }
 
 }  // namespace screen_ai

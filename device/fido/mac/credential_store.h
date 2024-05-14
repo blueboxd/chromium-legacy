@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -21,7 +22,6 @@
 #include "device/fido/platform_credential_store.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_user_entity.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(__OBJC__)
 @class LAContext;
@@ -63,6 +63,11 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) Credential {
 
 // TouchIdCredentialStore allows operations on Touch ID platform authenticator
 // credentials stored in the macOS keychain.
+//
+// The Touch ID authenticator creates keychain items in the "iOS-style"
+// keychain, which scopes item access based on the application-identifier or
+// keychain-access-group entitlements, and therefore requires code signing with
+// a real Apple developer ID.
 class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
     : public device::fido::PlatformCredentialStore {
  public:
@@ -84,10 +89,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
 #endif  // __OBJC__
 
   // CreateCredential inserts a new credential into the keychain. It returns
-  // the new credential and its public key, or absl::nullopt if an error
+  // the new credential and its public key, or std::nullopt if an error
   // occurred.
   API_AVAILABLE(macosx(10.12.2))
-  absl::optional<std::pair<Credential, base::apple::ScopedCFTypeRef<SecKeyRef>>>
+  std::optional<std::pair<Credential, base::apple::ScopedCFTypeRef<SecKeyRef>>>
   CreateCredential(const std::string& rp_id,
                    const PublicKeyCredentialUserEntity& user,
                    Discoverable discoverable) const;
@@ -95,7 +100,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
   // CreateCredentialLegacyCredentialForTesting inserts a credential for an old
   // `CredentialMetadata::Version`. Such credentials can't be created anymore,
   // but they still exist and we need to be able to exercise them.
-  absl::optional<std::pair<Credential, base::apple::ScopedCFTypeRef<SecKeyRef>>>
+  std::optional<std::pair<Credential, base::apple::ScopedCFTypeRef<SecKeyRef>>>
   CreateCredentialLegacyCredentialForTesting(
       CredentialMetadata::Version version,
       const std::string& rp_id,
@@ -109,7 +114,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
   // The returned credentials may be discoverable or non-discoverable. If any
   // unexpected keychain API error occurs, absl::nullopt is returned instead.
   API_AVAILABLE(macosx(10.12.2))
-  absl::optional<std::list<Credential>>
+  std::optional<std::list<Credential>>
   FindCredentialsFromCredentialDescriptorList(
       const std::string& rp_id,
       const std::vector<PublicKeyCredentialDescriptor>& descriptors) const;
@@ -118,7 +123,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
   // for the given |rp_id|. If |rp_id| is not specified, all resident
   // credentials are returned. nullopt is returned if an error occurred.
   API_AVAILABLE(macosx(10.12.2))
-  absl::optional<std::list<Credential>> FindResidentCredentials(
+  std::optional<std::list<Credential>> FindResidentCredentials(
       const absl::optional<std::string>& rp_id) const;
 
   // UnsealMetadata returns the CredentialMetadata for the given credential's
@@ -162,7 +167,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
 
  private:
   API_AVAILABLE(macosx(10.12.2))
-  absl::optional<std::list<Credential>> FindCredentialsImpl(
+  std::optional<std::list<Credential>> FindCredentialsImpl(
       const absl::optional<std::string>& rp_id,
       const std::set<std::vector<uint8_t>>& credential_ids) const;
 

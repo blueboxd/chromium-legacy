@@ -15,9 +15,9 @@
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_prefs.h"
 #import "components/unified_consent/pref_names.h"
-#import "ios/chrome/browser/policy/policy_app_interface.h"
-#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_app_interface.h"
+#import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller_constants.h"
@@ -51,9 +51,11 @@ using chrome_test_util::RecentTabsDestinationButton;
 
 namespace {
 
-const char kURLOfTestPage[] = "http://testPage";
+const char kPageURL[] = "/test-page.html";
+const char kPageURL2[] = "/test-page2.html";
 const char kHTMLOfTestPage[] =
     "<head><title>TestPageTitle</title></head><body>hello</body>";
+const char kPage2Content[] = "Page 2!";
 NSString* const kTitleOfTestPage = @"TestPageTitle";
 
 // Timeout in seconds to wait for asynchronous sync operations.
@@ -73,7 +75,7 @@ void SignOut() {
   [SigninEarlGrey signOut];
   [ChromeEarlGrey waitForSyncEngineInitialized:NO
                                    syncTimeout:kSyncOperationTimeout];
-  [ChromeEarlGrey clearSyncServerData];
+  [ChromeEarlGrey clearFakeSyncServerData];
 }
 
 // Makes sure at least one tab is opened and opens the recent tab panel.
@@ -105,8 +107,24 @@ id<GREYMatcher> TitleOfTestPage() {
       grey_sufficientlyVisible(), nil);
 }
 
-GURL TestPageURL() {
-  return web::test::HttpServer::MakeUrl(kURLOfTestPage);
+std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url == kPageURL) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content(kHTMLOfTestPage);
+    return std::move(http_response);
+  }
+  if (request.relative_url == kPageURL2) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content(std::string("<body>") + kPage2Content +
+                               "</body>");
+    return std::move(http_response);
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -158,10 +176,9 @@ GURL TestPageURL() {
 - (void)setUp {
   [super setUp];
   [ChromeEarlGrey clearBrowsingHistory];
-  web::test::SetUpSimpleHttpServer(std::map<GURL, std::string>{{
-      TestPageURL(),
-      std::string(kHTMLOfTestPage),
-  }});
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   [RecentTabsAppInterface clearCollapsedListViewSectionStates];
 }
 
@@ -171,9 +188,51 @@ GURL TestPageURL() {
   [PolicyAppInterface clearPolicies];
 }
 
-// Tests reopening a closed tab from a regular tab.
-- (void)testOpenCloseTabFromRegular {
-  const GURL testPageURL = TestPageURL();
+// Tests reopening a closed tab from a regular tab with history.
+- (void)testOpenCloseTabFromRegularWithHistory {
+  const GURL testPageURL = self.testServer->GetURL(kPageURL);
+
+  // Open the test page in a new tab.
+  [ChromeEarlGrey loadURL:testPageURL];
+  [ChromeEarlGrey waitForWebStateContainingText:"hello"];
+
+  // Open the Recent Tabs panel, check that the test page is not
+  // present.
+  OpenRecentTabsPanel();
+  [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
+      assertWithMatcher:grey_nil()];
+  [self closeRecentTabs];
+
+  // Close the tab containing the test page and wait for the stack view to
+  // appear.
+  [ChromeEarlGrey closeCurrentTab];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  // Load a URL to avoid being on NTP with no URL.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage2Content];
+
+  // Open the Recent Tabs panel and check that the test page is present.
+  OpenRecentTabsPanel();
+  [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
+      assertWithMatcher:grey_notNil()];
+
+  // Tap on the entry for the test page in the Recent Tabs panel and check that
+  // a tab containing the test page was opened.
+  [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(
+                            testPageURL.GetContent())];
+
+  [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests reopening a closed tab from a regular tab with no history.
+- (void)testOpenCloseTabFromRegularNoHistory {
+  const GURL testPageURL = self.testServer->GetURL(kPageURL);
 
   // Open the test page in a new tab.
   [ChromeEarlGrey loadURL:testPageURL];
@@ -206,7 +265,7 @@ GURL TestPageURL() {
       assertWithMatcher:chrome_test_util::OmniboxText(
                             testPageURL.GetContent())];
 
-  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that tapping "Show Full History" open the history.
@@ -900,7 +959,6 @@ GURL TestPageURL() {
 // Tests that the distant session is correctly displayed and tapping on a
 // distant tab correctly open it.
 - (void)testOtherDevicesWithOneDistantSession {
-  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   SignInAndSync();
 
   NSString* sessionName = @"Desktop";
@@ -956,7 +1014,6 @@ GURL TestPageURL() {
 
 // Tests that all the distant sessions are correctly displayed.
 - (void)testOtherDevicesWithMultipleDistantSessions {
-  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   SignInAndSync();
 
   NSArray<NSString*>* sessionNames =
@@ -1005,7 +1062,7 @@ GURL TestPageURL() {
   OpenRecentTabsPanel();
   [self longPressTestURLTab];
 
-  GURL testURL = TestPageURL();
+  const GURL testURL = self.testServer->GetURL(kPageURL);
   [ChromeEarlGrey
       verifyCopyLinkActionWithText:[NSString
                                        stringWithUTF8String:testURL.spec()
@@ -1041,7 +1098,7 @@ GURL TestPageURL() {
   OpenRecentTabsPanel();
   [self longPressTestURLTab];
 
-  const GURL testPageURL = web::test::HttpServer::MakeUrl(kURLOfTestPage);
+  const GURL testPageURL = self.testServer->GetURL(kPageURL);
   [ChromeEarlGrey verifyShareActionWithURL:testPageURL
                                  pageTitle:kTitleOfTestPage];
 }
@@ -1051,7 +1108,7 @@ GURL TestPageURL() {
 // Opens a new tab and closes it, to make sure it appears as a recently closed
 // tab.
 - (void)loadTestURL {
-  const GURL testPageURL = web::test::HttpServer::MakeUrl(kURLOfTestPage);
+  const GURL testPageURL = self.testServer->GetURL(kPageURL);
 
   // Open the test page in a new tab.
   [ChromeEarlGrey loadURL:testPageURL];

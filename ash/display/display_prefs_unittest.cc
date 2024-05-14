@@ -23,6 +23,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
@@ -142,10 +143,21 @@ class DisplayPrefsTest : public AshTestBase {
   void LoggedInAsGuest() { SimulateGuestLogin(); }
 
   void LoggedInAsPublicAccount() {
-    SimulateUserLogin("pa@test.com", user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    SimulateUserLogin("pa@test.com", user_manager::UserType::kPublicAccount);
   }
 
   void LoadDisplayPreferences() { display_prefs()->LoadDisplayPreferences(); }
+
+  display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                                const gfx::Rect& bounds) {
+    display::ManagedDisplayInfo info = display::CreateDisplayInfo(id, bounds);
+    // Each display should have at least one native mode.
+    display::ManagedDisplayMode mode(bounds.size(), /*refresh_rate=*/60.f,
+                                     /*is_interlaced=*/true,
+                                     /*native=*/true);
+    info.SetManagedDisplayModes({mode});
+    return info;
+  }
 
   // Do not use the implementation of display_prefs.cc directly to avoid
   // notifying the update to the system.
@@ -1219,9 +1231,9 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
   const int64_t first_display_id = 210000001;
   const int64_t second_display_id = 220000002;
   display::ManagedDisplayInfo first_display_info =
-      display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 600, 500));
+      CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 600, 500));
   display::ManagedDisplayInfo second_display_info =
-      display::CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 600, 500));
+      CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 600, 500));
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.emplace_back(first_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
@@ -1416,14 +1428,14 @@ TEST_F(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
   const int64_t second_display_masked_id =
       display::GetDisplayIdWithoutOutputIndex(second_display_id);
   display::ManagedDisplayInfo first_display_info =
-      display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 600, 500));
+      CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 600, 500));
   display::ManagedDisplayInfo second_display_info =
-      display::CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 600, 500));
+      CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 600, 500));
   std::vector<display::ManagedDisplayInfo> display_info_list;
 
   // There's no external display now.
-  display_info_list.push_back(display::CreateDisplayInfo(
-      internal_display_id, gfx::Rect(0, 0, 200, 100)));
+  display_info_list.push_back(
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 200, 100)));
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
   // Add first display id to the external display mirror info.
@@ -1509,13 +1521,12 @@ TEST_F(DisplayPrefsTest, ExternalDisplayConnectedBeforeLoadingPrefs) {
           .SetFirstDisplayAsInternalDisplay();
   constexpr int64_t external_display_id = 210000001;
   display::ManagedDisplayInfo external_display_info =
-      display::CreateDisplayInfo(external_display_id,
-                                 gfx::Rect(1, 1, 600, 500));
+      CreateDisplayInfo(external_display_id, gfx::Rect(1, 1, 600, 500));
 
   // Both internal and external displays connect before the prefs are loaded.
   std::vector<display::ManagedDisplayInfo> display_info_list;
-  display_info_list.push_back(display::CreateDisplayInfo(
-      internal_display_id, gfx::Rect(0, 0, 200, 100)));
+  display_info_list.push_back(
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 200, 100)));
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
@@ -1552,12 +1563,12 @@ TEST_F(DisplayPrefsTest, DisplayMixedMirrorMode) {
   constexpr int64_t first_display_id = 210000001;
   constexpr int64_t second_display_id = 220000002;
   std::vector<display::ManagedDisplayInfo> display_info_list;
-  display_info_list.push_back(display::CreateDisplayInfo(
-      internal_display_id, gfx::Rect(0, 0, 200, 100)));
   display_info_list.push_back(
-      display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 600, 500)));
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 200, 100)));
   display_info_list.push_back(
-      display::CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 600, 500)));
+      CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 600, 500)));
+  display_info_list.push_back(
+      CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 600, 500)));
 
   // Store mixed mirror mode parameters which specify mirroring from the
   // internal display to the first external display.
@@ -1637,7 +1648,7 @@ TEST_F(DisplayPrefsTest, SaveTabletModeWithSingleDisplay) {
   LoggedInAsUser();
 
   // Turn on tablet mode.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(display::Screen::GetScreen()->InTabletMode());
 
@@ -1659,7 +1670,7 @@ TEST_F(DisplayPrefsTest, SaveTabletModeWithSingleDisplay) {
               Optional(static_cast<int>(display::Display::ROTATE_90)));
 
   // Turn off tablet mode.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  ash::TabletModeControllerTestApi().LeaveTabletMode();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(display::Screen::GetScreen()->InTabletMode());
   // Zoom should stay at the new value.
@@ -1730,7 +1741,7 @@ TEST_F(DisplayPrefsTest, SaveTabletModeWithMixedExternalDisplays) {
   LoggedInAsUser();
 
   // Turn on tablet mode and make display changes.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(display::Screen::GetScreen()->InTabletMode());
   EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
@@ -1804,7 +1815,7 @@ TEST_F(DisplayPrefsTest, SaveTabletModeWithMixedExternalDisplays) {
               Optional(static_cast<int>(display::Display::ROTATE_0)));
 
   // Turn off tablet mode.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  ash::TabletModeControllerTestApi().LeaveTabletMode();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(display::Screen::GetScreen()->InTabletMode());
   EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
@@ -1849,6 +1860,17 @@ TEST_F(DisplayPrefsTest, SaveTabletModeWithMixedExternalDisplays) {
               Optional(DoubleEq(1.2f)));
   EXPECT_THAT(properties->FindInt("rotation"),
               Optional(static_cast<int>(display::Display::ROTATE_0)));
+}
+
+TEST_F(DisplayPrefsTest, IsDisplayAvailableInPref) {
+  int64_t id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+
+  // Display is not available in prefs before adding the display.
+  EXPECT_FALSE(display_prefs()->IsDisplayAvailableInPref(id));
+
+  // Display is available in prefs after adding the display.
+  UpdateDisplay("300x200");
+  EXPECT_TRUE(display_prefs()->IsDisplayAvailableInPref(id));
 }
 
 }  // namespace ash

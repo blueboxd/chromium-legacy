@@ -14,27 +14,6 @@ ChromeVoxDesktopAutomationHandlerTest = class extends ChromeVoxE2ETest {
   async setUpDeferred() {
     await super.setUpDeferred();
 
-    await Promise.all([
-      // Alphabetical based on file path.
-      importModule(
-          'AutoScrollHandler', '/chromevox/background/auto_scroll_handler.js'),
-      importModule(
-          'ChromeVoxState', '/chromevox/background/chromevox_state.js'),
-      importModule(
-          'DesktopAutomationHandler',
-          '/chromevox/background/event/desktop_automation_handler.js'),
-      importModule(
-          'DesktopAutomationInterface',
-          '/chromevox/background/event/desktop_automation_interface.js'),
-      importModule('Output', '/chromevox/background/output/output.js'),
-      importModule(
-          'CustomAutomationEvent',
-          '/chromevox/common/custom_automation_event.js'),
-      importModule('AutomationUtil', '/common/automation_util.js'),
-      importModule('EventGenerator', '/common/event_generator.js'),
-      importModule('KeyCode', '/common/key_code.js'),
-    ]);
-
     await ChromeVoxState.ready();
     this.handler_ = DesktopAutomationInterface.instance;
 
@@ -196,6 +175,34 @@ AX_TEST_F(
           .call(() => this.handler_.onSelection(selectFirst))
           .expectSpeech('First')
           .expectSpeech(/foxtrot/);
+      await mockFeedback.replay();
+    });
+
+// Ensures that selection events from IME candidate doesn't break ChromeVox's
+// range.
+AX_TEST_F(
+    'ChromeVoxDesktopAutomationHandlerTest', 'ImeCandidate_keepRange',
+    async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site =
+          `<button>First</button><button>Second</button><button>Third</button>`;
+      const root = await this.runWithLoadedTree(site);
+      const candidates = root.findAll({role: RoleType.BUTTON});
+      const first = candidates[0];
+      const third = candidates[2];
+      assertNotNullNorUndefined(first);
+      assertNotNullNorUndefined(third);
+      // Fake role to imitate IME candidates.
+      Object.defineProperty(third, 'role', {get: () => RoleType.IME_CANDIDATE});
+      const selectEvent = new CustomAutomationEvent(EventType.SELECTION, third);
+
+      mockFeedback.call(() => first.focus())
+          .expectSpeech('First')
+          .call(() => this.handler_.onSelection(selectEvent))
+          .expectSpeech('Third')
+          .expectSpeech(/tango/)
+          .call(doCmd('nextObject'))
+          .expectSpeech('Second');
       await mockFeedback.replay();
     });
 

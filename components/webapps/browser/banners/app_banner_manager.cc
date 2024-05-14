@@ -5,6 +5,7 @@
 #include "components/webapps/browser/banners/app_banner_manager.h"
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -38,7 +39,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/installation/installation.mojom.h"
@@ -238,10 +238,10 @@ void AppBannerManager::SendBannerAccepted() {
 }
 
 void AppBannerManager::SendBannerDismissed() {
-  if (event_.is_bound())
+  if (event_.is_bound()) {
     event_->BannerDismissed();
-
-  SendBannerPromptRequest();
+    SendBannerPromptRequest();
+  }
 }
 
 void AppBannerManager::AddObserver(Observer* observer) {
@@ -391,7 +391,9 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   if (content::HasWebUIScheme(validated_url_) &&
       (validated_url_.host() ==
        password_manager::kChromeUIPasswordManagerHost)) {
-    if (IsWebAppConsideredInstalled()) {
+    if (WebappsClient::Get()->IsWebAppConsideredFullyInstalled(
+            web_contents()->GetBrowserContext(), manifest_->start_url,
+            manifest_id_)) {
       TrackDisplayEvent(DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
       SetInstallableWebAppCheckResult(
           InstallableWebAppCheckResult::kNo_AlreadyInstalled);
@@ -455,7 +457,11 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
-  if (IsWebAppConsideredInstalled() && !ShouldAllowWebAppReplacementInstall()) {
+  WebappsClient* client = WebappsClient::Get();
+  if (client->IsWebAppConsideredFullyInstalled(
+          web_contents()->GetBrowserContext(), manifest().start_url,
+          manifest_id_) &&
+      !ShouldAllowWebAppReplacementInstall()) {
     TrackDisplayEvent(DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
     SetInstallableWebAppCheckResult(
         InstallableWebAppCheckResult::kNo_AlreadyInstalled);
@@ -527,7 +533,6 @@ void AppBannerManager::ResetCurrentPageData() {
   validated_url_ = GURL();
   UpdateState(State::INACTIVE);
   SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kUnknown);
-  install_path_tracker_.Reset();
   screenshots_.clear();
 }
 
@@ -622,15 +627,6 @@ void AppBannerManager::RecheckInstallabilityForLoadedPage() {
 
   UpdateState(State::INACTIVE);
   RequestAppBanner();
-}
-
-void AppBannerManager::TrackInstallPath(bool bottom_sheet,
-                                        WebappInstallSource install_source) {
-  install_path_tracker_.TrackInstallPath(bottom_sheet, install_source);
-}
-
-void AppBannerManager::TrackIphWasShown() {
-  install_path_tracker_.TrackIphWasShown();
 }
 
 void AppBannerManager::Stop(InstallableStatusCode code) {
@@ -751,6 +747,7 @@ void AppBannerManager::MediaStoppedPlaying(
 
 void AppBannerManager::WebContentsDestroyed() {
   Terminate();
+  manager_ = nullptr;
 }
 
 void AppBannerManager::OnEngagementEvent(

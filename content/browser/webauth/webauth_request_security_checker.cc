@@ -4,6 +4,8 @@
 
 #include "content/browser/webauth/webauth_request_security_checker.h"
 
+#include <optional>
+
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,7 +27,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "url/gurl.h"
@@ -280,19 +282,44 @@ WebAuthRequestSecurityChecker::ValidateAncestorOrigins(
 
   // MakeCredential requests do not have an associated permissions policy, but
   // are prohibited in cross-origin subframes.
-  if (!*is_cross_origin && type == RequestType::kMakeCredential) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebAuthAllowCreateInCrossOriginFrame) &&
+      !*is_cross_origin && type == RequestType::kMakeCredential) {
     return blink::mojom::AuthenticatorStatus::SUCCESS;
   }
 
   // Requests in cross-origin iframes are permitted if enabled via permissions
   // policy and for SPC requests.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebAuthAllowCreateInCrossOriginFrame) &&
+      type == RequestType::kMakeCredential &&
+      render_frame_host_->IsFeatureEnabled(
+          blink::mojom::PermissionsPolicyFeature::
+              kPublicKeyCredentialsCreate)) {
+    return blink::mojom::AuthenticatorStatus::SUCCESS;
+  }
   if (type == RequestType::kGetAssertion &&
       render_frame_host_->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kPublicKeyCredentialsGet)) {
     return blink::mojom::AuthenticatorStatus::SUCCESS;
   }
-  if ((type == RequestType::kMakePaymentCredential ||
-       type == RequestType::kGetPaymentCredentialAssertion) &&
+  // For credential creation, SPC credentials (i.e., credentials with the
+  // "payment" extension) may use either the 'publickey-credentials-create' or
+  // 'payment' permissions policy.
+  if (type == RequestType::kMakePaymentCredential) {
+    if (render_frame_host_->IsFeatureEnabled(
+            blink::mojom::PermissionsPolicyFeature::kPayment)) {
+      return blink::mojom::AuthenticatorStatus::SUCCESS;
+    } else if (base::FeatureList::IsEnabled(
+                   blink::features::kWebAuthAllowCreateInCrossOriginFrame) &&
+               render_frame_host_->IsFeatureEnabled(
+                   blink::mojom::PermissionsPolicyFeature::
+                       kPublicKeyCredentialsCreate)) {
+      return blink::mojom::AuthenticatorStatus::SUCCESS;
+    }
+  }
+
+  if (type == RequestType::kGetPaymentCredentialAssertion &&
       render_frame_host_->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kPayment)) {
     return blink::mojom::AuthenticatorStatus::SUCCESS;

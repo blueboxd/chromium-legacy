@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase_vector.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -40,7 +41,7 @@ const char* kBlockedEventsByTriggerProperty[] = {"Content Protection"};
 struct DrmDisplayParams {
   scoped_refptr<DrmDevice> drm;
   std::unique_ptr<HardwareDisplayControllerInfo> display_info;
-  raw_ptr<display::DisplaySnapshot, ExperimentalAsh> snapshot;
+  raw_ptr<display::DisplaySnapshot> snapshot;
 };
 
 class DisplayComparator {
@@ -165,12 +166,11 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
     // Make sure that the display infos we got have valid connector IDs.
     // If not, we need to remove the display info from the list. This removes
     // any zombie connectors.
-    display_infos.erase(
-        std::remove_if(display_infos.begin(), display_infos.end(),
-                       [&valid_connector_ids](const auto& display_info) {
-                         return !base::Contains(
-                                 valid_connector_ids, display_info->connector()->connector_id);}),
-                                 display_infos.end());
+    base::EraseIf(
+        display_infos, [&valid_connector_ids](const auto& display_info) {
+          return !base::Contains(valid_connector_ids,
+                                 display_info->connector()->connector_id);
+        });
 
     for (auto& display_info : display_infos) {
       display_snapshots.emplace_back(CreateDisplaySnapshot(
@@ -415,18 +415,7 @@ void DrmGpuDisplayManager::SetColorTemperatureAdjustment(
     LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
     return;
   }
-  // TODO(https://crbug.com/1505062): Use this parameter.
-}
-
-void DrmGpuDisplayManager::SetColorCalibration(
-    int64_t display_id,
-    const display::ColorCalibration& calibration) {
-  DrmDisplay* display = FindDisplay(display_id);
-  if (!display) {
-    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
-    return;
-  }
-  // TODO(https://crbug.com/1505062): Use this parameter.
+  display->SetColorTemperatureAdjustment(cta);
 }
 
 void DrmGpuDisplayManager::SetGammaAdjustment(
@@ -437,19 +426,7 @@ void DrmGpuDisplayManager::SetGammaAdjustment(
     LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
     return;
   }
-  // TODO(https://crbug.com/1505062): Use this parameter.
-}
-
-void DrmGpuDisplayManager::SetColorMatrix(
-    int64_t display_id,
-    const std::vector<float>& color_matrix) {
-  DrmDisplay* display = FindDisplay(display_id);
-  if (!display) {
-    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
-    return;
-  }
-
-  display->SetColorMatrix(color_matrix);
+  display->SetGammaAdjustment(adjustment);
 }
 
 void DrmGpuDisplayManager::SetBackgroundColor(int64_t display_id,
@@ -463,18 +440,6 @@ void DrmGpuDisplayManager::SetBackgroundColor(int64_t display_id,
   display->SetBackgroundColor(background_color);
 }
 
-void DrmGpuDisplayManager::SetGammaCorrection(
-    int64_t display_id,
-    const display::GammaCurve& degamma,
-    const display::GammaCurve& gamma) {
-  DrmDisplay* display = FindDisplay(display_id);
-  if (!display) {
-    LOG(WARNING) << __func__ << ": there is no display with ID " << display_id;
-    return;
-  }
-  display->SetGammaCorrection(degamma, gamma);
-}
-
 bool DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
@@ -483,17 +448,6 @@ bool DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
   }
 
   return display->SetPrivacyScreen(enabled);
-}
-
-void DrmGpuDisplayManager::SetColorSpace(int64_t crtc_id,
-                                         const gfx::ColorSpace& color_space) {
-  for (const auto& display : displays_) {
-    if (display->crtc() == crtc_id) {
-      display->SetColorSpace(color_space);
-      return;
-    }
-  }
-  LOG(WARNING) << __func__ << ": there is no display with CRTC ID " << crtc_id;
 }
 
 DrmDisplay* DrmGpuDisplayManager::FindDisplay(int64_t display_id) {

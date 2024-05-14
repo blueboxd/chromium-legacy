@@ -149,7 +149,7 @@ void ModelTypeController::LoadModels(
   CHECK_EQ(NOT_RUNNING, state_);
 
   auto it = delegate_map_.find(configure_context.sync_mode);
-  DCHECK(it != delegate_map_.end()) << ModelTypeToDebugString(type());
+  CHECK(it != delegate_map_.end()) << ModelTypeToDebugString(type());
   delegate_ = it->second.get();
   CHECK(delegate_);
 
@@ -277,6 +277,14 @@ void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {
   if (delegate_) {
     delegate_->RecordMemoryUsageAndCountsHistograms();
   }
+}
+
+void ModelTypeController::ReportBridgeErrorForTest() {
+  DCHECK(CalledOnValidThread());
+
+  // Tests are supposed to call this method when `delegate_` exists.
+  CHECK(delegate_);
+  delegate_->ReportBridgeErrorForTest();  // IN-TEST
 }
 
 ModelTypeControllerDelegate* ModelTypeController::GetDelegateForTesting(

@@ -17,14 +17,7 @@ GEN('#include "ash/constants/ash_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
-this.OSFeedbackBrowserTest = class extends PolymerTest {
-  /** @override */
-  get featureList() {
-    return {
-      enabled: ['ash::features::kOsFeedbackJelly', 'chromeos::features::kJelly']
-    };
-  }
-};
+this.OSFeedbackBrowserTest = class extends PolymerTest {};
 
 // Test suites for OS Feedback. To disable a test suite add 'DISABLED_All' as
 // the case name.
@@ -32,14 +25,9 @@ this.OSFeedbackBrowserTest = class extends PolymerTest {
 // TODO(crbug.com/1401615): Flaky.
 const tests = [
   ['ConfirmationPage', 'confirmation_page_test.js', 'DISABLED_All'],
-  [
-    'FakeHelpContentProvider', 'fake_help_content_provider_test.js',
-    'DISABLED_All'
-  ],
-  ['MojoInterfaceProvider', 'mojo_interface_provider_test.js', 'DISABLED_All'],
   ['FeedbackFlow', 'feedback_flow_test.js', 'DISABLED_All'],
   ['FileAttachment', 'file_attachment_test.js', 'DISABLED_All'],
-  ['HelpContent', 'help_content_test.js', 'DISABLED_All'],
+  ['HelpContent', 'help_content_test.js'],
   ['SearchPage', 'search_page_test.js', 'DISABLED_All'],
   ['ShareDataPage', 'share_data_page_test.js', 'DISABLED_All'],
 ];

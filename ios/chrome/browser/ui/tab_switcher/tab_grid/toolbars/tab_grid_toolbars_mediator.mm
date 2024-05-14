@@ -4,19 +4,17 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_mediator.h"
 
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_buttons_delegate.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_bottom_toolbar.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_grid_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_top_toolbar.h"
 
 @implementation TabGridToolbarsMediator {
   // Configuration that provides all buttons to display.
   TabGridToolbarsConfiguration* _configuration;
   TabGridToolbarsConfiguration* _previousConfiguration;
-  id<TabGridToolbarsButtonsDelegate> _buttonsDelegate;
-
-  TabGridMode _currentMode;
+  id<TabGridToolbarsGridDelegate> _buttonsDelegate;
 
   // YES if buttons are disabled.
   BOOL _isDisabled;
@@ -26,10 +24,17 @@
 
 - (void)setToolbarConfiguration:(TabGridToolbarsConfiguration*)configuration {
   if (_isDisabled) {
+    // Handle page change during drag and drop.
+    _previousConfiguration = configuration;
     return;
   }
 
   _configuration = configuration;
+
+  self.topToolbarConsumer.page = configuration.page;
+  self.topToolbarConsumer.mode = configuration.mode;
+  self.bottomToolbarConsumer.page = configuration.page;
+  self.bottomToolbarConsumer.mode = configuration.mode;
 
   // TODO(crbug.com/1457146): Add all buttons management.
   [self configureSelectionModeButtons];
@@ -55,17 +60,10 @@
   [self.topToolbarConsumer setSearchButtonEnabled:_configuration.searchButton];
 }
 
-- (void)setToolbarsButtonsDelegate:
-    (id<TabGridToolbarsButtonsDelegate>)delegate {
+- (void)setToolbarsButtonsDelegate:(id<TabGridToolbarsGridDelegate>)delegate {
   _buttonsDelegate = delegate;
   self.topToolbarConsumer.buttonsDelegate = delegate;
   self.bottomToolbarConsumer.buttonsDelegate = delegate;
-}
-
-- (void)setToolbarsMode:(TabGridMode)mode {
-  _currentMode = mode;
-  self.bottomToolbarConsumer.mode = mode;
-  self.topToolbarConsumer.mode = mode;
 }
 
 - (void)setButtonsEnabled:(BOOL)enabled {
@@ -81,8 +79,9 @@
     [self setToolbarConfiguration:_previousConfiguration];
   } else {
     _previousConfiguration = _configuration;
-    [self setToolbarConfiguration:[TabGridToolbarsConfiguration
-                                      disabledConfiguration]];
+    [self setToolbarConfiguration:
+              [TabGridToolbarsConfiguration
+                  disabledConfigurationForPage:TabGridPageRegularTabs]];
     // Set the disabled boolean after modifiying the toolbar configuration
     // because the configuration setup is skipped when disabled.
     _isDisabled = YES;
@@ -143,7 +142,7 @@
   if (shouldEnableEditButton) {
     ActionFactory* actionFactory = [[ActionFactory alloc]
         initWithScenario:kMenuScenarioHistogramTabGridEdit];
-    __weak id<TabGridToolbarsButtonsDelegate> weakButtonDelegate =
+    __weak id<TabGridToolbarsGridDelegate> weakButtonDelegate =
         _buttonsDelegate;
     NSMutableArray<UIMenuElement*>* menuElements =
         [@[ [actionFactory actionToCloseAllTabsWithBlock:^{

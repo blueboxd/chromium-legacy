@@ -5,6 +5,7 @@
 #include "content/browser/first_party_sets/first_party_sets_handler_impl_instance.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,19 +22,18 @@
 #include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "content/browser/first_party_sets/first_party_sets_handler_impl.h"
 #include "content/browser/first_party_sets/first_party_sets_loader.h"
+#include "content/browser/first_party_sets/first_party_sets_overrides_policy.h"
 #include "content/browser/first_party_sets/first_party_sets_site_data_remover.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "net/base/features.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
 #include "net/first_party_sets/global_first_party_sets.h"
 #include "net/first_party_sets/local_set_declaration.h"
 #include "net/first_party_sets/sets_mutation.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 class SchemefulSite;
@@ -133,7 +133,7 @@ void FirstPartySetsHandlerImplInstance::GetContextConfigForPolicy(
   }
   if (global_sets_.has_value()) {
     std::move(callback).Run(
-        GetContextConfigForPolicyInternal(*policy, absl::nullopt));
+        GetContextConfigForPolicyInternal(*policy, std::nullopt));
     return;
   }
   // Add to the deque of callbacks that will be processed once the list
@@ -171,7 +171,7 @@ FirstPartySetsHandlerImplInstance::FirstPartySetsHandlerImplInstance(
 FirstPartySetsHandlerImplInstance::~FirstPartySetsHandlerImplInstance() =
     default;
 
-absl::optional<net::GlobalFirstPartySets>
+std::optional<net::GlobalFirstPartySets>
 FirstPartySetsHandlerImplInstance::GetSets(
     base::OnceCallback<void(net::GlobalFirstPartySets)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -187,7 +187,7 @@ FirstPartySetsHandlerImplInstance::GetSets(
             .Then(std::move(callback)));
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void FirstPartySetsHandlerImplInstance::Init(
@@ -226,14 +226,13 @@ void FirstPartySetsHandlerImplInstance::SetPublicFirstPartySets(
 
 void FirstPartySetsHandlerImplInstance::GetPersistedSetsForTesting(
     const std::string& browser_context_id,
-    base::OnceCallback<
-        void(absl::optional<std::pair<net::GlobalFirstPartySets,
-                                      net::FirstPartySetsContextConfig>>)>
-        callback) {
+    base::OnceCallback<void(
+        std::optional<std::pair<net::GlobalFirstPartySets,
+                                net::FirstPartySetsContextConfig>>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!browser_context_id.empty());
   if (db_helper_.is_null()) {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
     return;
   }
   db_helper_
@@ -245,11 +244,11 @@ void FirstPartySetsHandlerImplInstance::GetPersistedSetsForTesting(
 
 void FirstPartySetsHandlerImplInstance::HasBrowserContextClearedForTesting(
     const std::string& browser_context_id,
-    base::OnceCallback<void(absl::optional<bool>)> callback) {
+    base::OnceCallback<void(std::optional<bool>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!browser_context_id.empty());
   if (db_helper_.is_null()) {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
     return;
   }
   db_helper_
@@ -320,14 +319,13 @@ void FirstPartySetsHandlerImplInstance::InvokePendingQueries() {
   on_sets_ready_callbacks_.reset();
 }
 
-absl::optional<net::FirstPartySetEntry>
+std::optional<net::FirstPartySetEntry>
 FirstPartySetsHandlerImplInstance::FindEntry(
     const net::SchemefulSite& site,
     const net::FirstPartySetsContextConfig& config) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::FeatureList::IsEnabled(features::kFirstPartySets) ||
-      !global_sets_.has_value()) {
-    return absl::nullopt;
+  if (!global_sets_.has_value()) {
+    return std::nullopt;
   }
   return global_sets_->FindEntry(site, config);
 }
@@ -347,7 +345,7 @@ void FirstPartySetsHandlerImplInstance::ClearSiteDataOnChangedSetsForContext(
                             net::FirstPartySetsCacheFilter)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!enabled_ || !features::kFirstPartySetsClearSiteDataOnChangedSets.Get()) {
+  if (!enabled_) {
     std::move(callback).Run(std::move(context_config),
                             net::FirstPartySetsCacheFilter());
     return;
@@ -378,7 +376,7 @@ void FirstPartySetsHandlerImplInstance::
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(global_sets_.has_value());
   CHECK(!browser_context_id.empty());
-  CHECK(enabled_ && features::kFirstPartySetsClearSiteDataOnChangedSets.Get());
+  CHECK(enabled_);
 
   if (db_helper_.is_null()) {
     VLOG(1) << "Invalid First-Party Sets database. Failed to clear site data "
@@ -496,7 +494,7 @@ void FirstPartySetsHandlerImplInstance::ComputeFirstPartySetMetadata(
 
 void FirstPartySetsHandlerImplInstance::ComputeFirstPartySetMetadataInternal(
     const net::SchemefulSite& site,
-    const absl::optional<net::SchemefulSite>& top_frame_site,
+    const std::optional<net::SchemefulSite>& top_frame_site,
     const net::FirstPartySetsContextConfig& config,
     const base::ElapsedTimer& timer,
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const {
@@ -514,7 +512,7 @@ void FirstPartySetsHandlerImplInstance::ComputeFirstPartySetMetadataInternal(
 net::FirstPartySetsContextConfig
 FirstPartySetsHandlerImplInstance::GetContextConfigForPolicyInternal(
     const base::Value::Dict& policy,
-    const absl::optional<base::ElapsedTimer>& timer) const {
+    const std::optional<base::ElapsedTimer>& timer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(global_sets_.has_value());
 
@@ -531,7 +529,12 @@ FirstPartySetsHandlerImplInstance::GetContextConfigForPolicyInternal(
   auto [parsed, warnings] =
       FirstPartySetParser::ParseSetsFromEnterprisePolicy(policy);
 
-  return global_sets_->ComputeConfig(parsed.value_or(net::SetsMutation()));
+  if (!parsed.has_value()) {
+    return global_sets_->ComputeConfig(net::SetsMutation());
+  }
+
+  FirstPartySetsOverridesPolicy& policy_result = parsed.value();
+  return global_sets_->ComputeConfig(std::move(policy_result.mutation()));
 }
 
 bool FirstPartySetsHandlerImplInstance::ForEachEffectiveSetEntry(

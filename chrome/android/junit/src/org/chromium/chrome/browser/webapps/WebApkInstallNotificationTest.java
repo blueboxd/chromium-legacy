@@ -28,12 +28,12 @@ import org.robolectric.shadows.ShadowNotificationManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.webapps.WebApkInstallResult;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -74,7 +74,6 @@ public class WebApkInstallNotificationTest {
                             MANIFEST_URL, SHORT_NAME, URL, mIcon, /* isIconMaskable= */ false);
                 });
 
-        String notificationId = WebApkInstallService.getInstallNotificationTag(MANIFEST_URL);
         Notification notification = mShadowNotificationManager.getAllNotifications().get(0);
 
         Assert.assertNotNull(notification);
@@ -123,10 +122,7 @@ public class WebApkInstallNotificationTest {
     }
 
     @Test
-    @EnableFeatures({
-        ChromeFeatureList.WEB_APK_INSTALL_FAILURE_NOTIFICATION,
-        ChromeFeatureList.WEB_APK_INSTALL_RETRY
-    })
+    @EnableFeatures({ChromeFeatureList.WEB_APK_INSTALL_FAILURE_NOTIFICATION})
     public void testFailureNotification() {
         WebApkInstallService.showInstallFailedNotification(
                 MANIFEST_URL,
@@ -134,8 +130,7 @@ public class WebApkInstallNotificationTest {
                 URL,
                 mIcon,
                 /* isIconMaskable= */ false,
-                WebApkInstallResult.FAILURE,
-                null);
+                WebApkInstallResult.FAILURE);
 
         Notification notification = mShadowNotificationManager.getAllNotifications().get(0);
 
@@ -166,55 +161,5 @@ public class WebApkInstallNotificationTest {
         Assert.assertEquals(
                 mContext.getString(R.string.webapk_install_failed_action_open), actions[0].title);
         Assert.assertNotNull(actions[0].actionIntent);
-    }
-
-    @Test
-    @EnableFeatures({
-        ChromeFeatureList.WEB_APK_INSTALL_FAILURE_NOTIFICATION,
-        ChromeFeatureList.WEB_APK_INSTALL_RETRY
-    })
-    public void testFailureNotificationWithRetryAction() {
-        byte[] serializedProto = new byte[] {1, 2};
-        WebApkInstallService.showInstallFailedNotification(
-                MANIFEST_URL,
-                SHORT_NAME,
-                URL,
-                mIcon,
-                /* isIconMaskable= */ false,
-                WebApkInstallResult.FAILURE,
-                serializedProto);
-
-        Notification notification = mShadowNotificationManager.getAllNotifications().get(0);
-
-        Assert.assertNotNull(notification);
-        Assert.assertEquals(
-                mContext.getString(R.string.notification_webapk_install_failed, SHORT_NAME),
-                notification.extras.getString(Notification.EXTRA_TITLE));
-        Assert.assertEquals(
-                ChromeChannelDefinitions.ChannelId.WEBAPPS, notification.getChannelId());
-        Assert.assertEquals(
-                mContext.getString(
-                        R.string.notification_webapk_install_failed_contents_general, SHORT_NAME),
-                notification.extras.getString(Notification.EXTRA_TEXT));
-
-        Bitmap largeIcon =
-                ((BitmapDrawable) notification.getLargeIcon().loadDrawable(mContext)).getBitmap();
-        Assert.assertTrue(mIcon.sameAs(largeIcon));
-        Bitmap expectedSmallIcon =
-                BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_chrome);
-        Bitmap smallIcon =
-                ((BitmapDrawable) notification.getSmallIcon().loadDrawable(mContext)).getBitmap();
-        Assert.assertTrue(expectedSmallIcon.sameAs(smallIcon));
-
-        Assert.assertNotNull(notification.contentIntent);
-
-        Action[] actions = notification.actions;
-        Assert.assertEquals(2, actions.length);
-        Assert.assertEquals(
-                mContext.getString(R.string.webapk_install_failed_action_retry), actions[0].title);
-        Assert.assertNotNull(actions[0].actionIntent);
-        Assert.assertEquals(
-                mContext.getString(R.string.webapk_install_failed_action_open), actions[1].title);
-        Assert.assertNotNull(actions[1].actionIntent);
     }
 }

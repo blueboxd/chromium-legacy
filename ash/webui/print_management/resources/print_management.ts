@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/icons.html.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
-import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/icons.html.js';
+import 'chrome://resources/ash/common/cr_elements/policy/cr_policy_indicator.js';
+import 'chrome://resources/ash/common/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
@@ -19,7 +19,7 @@ import './strings.m.js';
 import {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -185,19 +185,7 @@ export class PrintManagementElement extends PrintManagementElementBase
     this.startObservingPrintJobs();
     this.fetchDeletePrintJobHistoryPolicy();
 
-    if (loadTimeData.getBoolean('isJellyEnabledForPrintManagement')) {
-      // TODO(b/276493795): After the Jelly experiment is launched, replace
-      // `cros_styles.css` with `theme/colors.css` directly in `index.html`.
-      // Also add `theme/typography.css` to `index.html`.
-      document.querySelector('link[href*=\'cros_styles.css\']')
-          ?.setAttribute('href', 'chrome://theme/colors.css?sets=legacy,sys');
-      const typographyLink = document.createElement('link');
-      typographyLink.href = 'chrome://theme/typography.css';
-      typographyLink.rel = 'stylesheet';
-      document.head.appendChild(typographyLink);
-      document.body.classList.add('jelly-enabled');
-      ColorChangeUpdater.forDocument().start();
-    }
+    ColorChangeUpdater.forDocument().start();
   }
 
   override disconnectedCallback(): void {

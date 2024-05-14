@@ -18,6 +18,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "net/base/features.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/url_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
@@ -572,8 +573,8 @@ void HttpServerProperties::SetMaxServerConfigsStoredInProperties(
 }
 
 void HttpServerProperties::SetBrokenAlternativeServicesDelayParams(
-    absl::optional<base::TimeDelta> initial_delay,
-    absl::optional<bool> exponential_backoff_on_initial_delay) {
+    std::optional<base::TimeDelta> initial_delay,
+    std::optional<bool> exponential_backoff_on_initial_delay) {
   broken_alternative_services_.SetDelayParams(
       initial_delay, exponential_backoff_on_initial_delay);
 }

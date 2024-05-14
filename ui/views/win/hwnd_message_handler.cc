@@ -84,7 +84,8 @@ namespace {
 // completed.
 class MoveLoopMouseWatcher {
  public:
-  MoveLoopMouseWatcher(HWNDMessageHandler* host, bool hide_on_escape);
+  MoveLoopMouseWatcher(base::WeakPtr<HWNDMessageHandler> host,
+                       bool hide_on_escape);
 
   MoveLoopMouseWatcher(const MoveLoopMouseWatcher&) = delete;
   MoveLoopMouseWatcher& operator=(const MoveLoopMouseWatcher&) = delete;
@@ -109,7 +110,7 @@ class MoveLoopMouseWatcher {
   void Unhook();
 
   // HWNDMessageHandler that created us.
-  raw_ptr<HWNDMessageHandler, AcrossTasksDanglingUntriaged> host_;
+  base::WeakPtr<HWNDMessageHandler> host_;
 
   // Should the window be hidden when escape is pressed?
   const bool hide_on_escape_;
@@ -125,9 +126,10 @@ class MoveLoopMouseWatcher {
 // static
 MoveLoopMouseWatcher* MoveLoopMouseWatcher::instance_ = nullptr;
 
-MoveLoopMouseWatcher::MoveLoopMouseWatcher(HWNDMessageHandler* host,
-                                           bool hide_on_escape)
-    : host_(host), hide_on_escape_(hide_on_escape) {
+MoveLoopMouseWatcher::MoveLoopMouseWatcher(
+    base::WeakPtr<HWNDMessageHandler> host,
+    bool hide_on_escape)
+    : host_(std::move(host)), hide_on_escape_(hide_on_escape) {
   // Only one instance can be active at a time.
   if (instance_)
     instance_->Unhook();
@@ -153,8 +155,9 @@ MoveLoopMouseWatcher::~MoveLoopMouseWatcher() {
 
 // static
 void MoveLoopMouseWatcher::UnhookForHost(HWNDMessageHandler* host) {
-  if (instance_ && instance_->host_ == host)
+  if (instance_ && instance_->host_.get() == host) {
     instance_->Unhook();
+  }
 }
 
 void MoveLoopMouseWatcher::Unhook() {
@@ -793,7 +796,8 @@ bool HWNDMessageHandler::IsHeadless() const {
 bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
                                      bool hide_on_escape) {
   ReleaseCapture();
-  MoveLoopMouseWatcher watcher(this, hide_on_escape);
+  MoveLoopMouseWatcher watcher(msg_handler_weak_factory_.GetWeakPtr(),
+                               hide_on_escape);
   // In Aura, we handle touch events asynchronously. So we need to allow nested
   // tasks while in windows move loop.
   base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop allow;
@@ -3191,7 +3195,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
                     {CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)}};
   ui::MouseEvent event(msg);
   if (IsSynthesizedMouseMessage(message, message_time, l_param))
-    event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
+    event.SetFlags(event.flags() | ui::EF_FROM_TOUCH);
 
   if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture() && track_mouse) {
     // Windows only fires WM_MOUSELEAVE events if the application begins
@@ -3500,7 +3504,7 @@ void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
   ui::TouchEvent event(event_type, point, time_stamp,
                        ui::PointerDetails(ui::EventPointerType::kTouch, id));
 
-  event.set_flags(ui::GetModifiersFromKeyState());
+  event.SetFlags(ui::GetModifiersFromKeyState());
 
   event.latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp);
@@ -3659,7 +3663,7 @@ void HWNDMessageHandler::SizeWindowToAspectRatio(UINT param,
   min_window_size = delegate_->DIPToScreenSize(min_window_size);
   max_window_size = delegate_->DIPToScreenSize(max_window_size);
 
-  absl::optional<gfx::Size> max_size_param;
+  std::optional<gfx::Size> max_size_param;
   if (!max_window_size.IsEmpty())
     max_size_param = max_window_size;
 

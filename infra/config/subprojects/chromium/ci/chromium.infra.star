@@ -4,6 +4,7 @@
 """Definitions of builders in the chromium.infra builder group."""
 
 load("//lib/branches.star", "branches")
+load("//lib/builder_health_indicators.star", "health_spec")
 load("//lib/builders.star", "os", "sheriff_rotations")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -14,6 +15,7 @@ ci.defaults.set(
     cores = 8,
     os = os.LINUX_DEFAULT,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
+    health_spec = health_spec.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
 )
@@ -54,6 +56,7 @@ packager_builder(
         category = "packager|3pp|linux",
         short_name = "amd64",
     ),
+    execution_timeout = 4 * time.hour,
     notifies = ["chromium-infra"],
     properties = {
         "$build/chromium_3pp": {
@@ -146,12 +149,22 @@ packager_builder(
     properties = {
         "$build/avd_packager": {
             "avd_configs": [
+                # google_apis system images
+                "tools/android/avd/proto/creation/android_28_google_apis_x86.textpb",
+                "tools/android/avd/proto/creation/android_29_google_apis_x86.textpb",
+                "tools/android/avd/proto/creation/android_30_google_apis_x86.textpb",
+                "tools/android/avd/proto/creation/android_31_google_apis_x64.textpb",
+                "tools/android/avd/proto/creation/android_32_google_apis_x64_foldable.textpb",
+                "tools/android/avd/proto/creation/android_33_google_apis_x64.textpb",
+                "tools/android/avd/proto/creation/android_34_google_apis_x64.textpb",
+
+                # google_atd system images
                 "tools/android/avd/proto/creation/android_30_google_atd_x86.textpb",
                 "tools/android/avd/proto/creation/android_30_google_atd_x64.textpb",
                 "tools/android/avd/proto/creation/android_31_google_atd_x64.textpb",
                 "tools/android/avd/proto/creation/android_32_google_atd_x64_foldable.textpb",
                 "tools/android/avd/proto/creation/android_33_google_atd_x64.textpb",
-                "tools/android/avd/proto/creation/android_34_google_apis_x64.textpb",
+
                 # TODO(hypan): Using more specific names for the configs below.
                 "tools/android/avd/proto/creation/generic_android19.textpb",
                 "tools/android/avd/proto/creation/generic_android22.textpb",
@@ -160,12 +173,6 @@ packager_builder(
                 "tools/android/avd/proto/creation/generic_android25.textpb",
                 "tools/android/avd/proto/creation/generic_android26.textpb",
                 "tools/android/avd/proto/creation/generic_android27.textpb",
-                "tools/android/avd/proto/creation/generic_android28.textpb",
-                "tools/android/avd/proto/creation/generic_android29.textpb",
-                "tools/android/avd/proto/creation/generic_android30.textpb",
-                "tools/android/avd/proto/creation/generic_android31.textpb",
-                "tools/android/avd/proto/creation/generic_android32_foldable.textpb",
-                "tools/android/avd/proto/creation/generic_android33.textpb",
             ],
             "gclient_config": "chromium",
             "gclient_apply_config": ["android"],

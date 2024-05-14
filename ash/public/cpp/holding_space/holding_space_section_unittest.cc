@@ -7,6 +7,7 @@
 #include <set>
 
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,15 +15,6 @@ namespace ash {
 namespace {
 
 // Helpers ---------------------------------------------------------------------
-
-std::set<HoldingSpaceItem::Type> GetHoldingSpaceItemTypes() {
-  std::set<HoldingSpaceItem::Type> types;
-  for (size_t i = 0u;
-       i <= static_cast<size_t>(HoldingSpaceItem::Type::kMaxValue); ++i) {
-    types.emplace(static_cast<HoldingSpaceItem::Type>(i));
-  }
-  return types;
-}
 
 std::set<HoldingSpaceSectionId> GetHoldingSpaceSectionIds() {
   std::set<HoldingSpaceSectionId> section_ids;
@@ -51,6 +43,7 @@ void ExpectSection(const HoldingSpaceSection* section,
                       HoldingSpaceItem::Type::kLacrosDownload,
                       HoldingSpaceItem::Type::kNearbyShare,
                       HoldingSpaceItem::Type::kPhoneHubCameraRoll,
+                      HoldingSpaceItem::Type::kPhotoshopWeb,
                       HoldingSpaceItem::Type::kPrintedPdf,
                       HoldingSpaceItem::Type::kScan));
       EXPECT_EQ(section->max_item_count, 50u);
@@ -102,7 +95,7 @@ TEST_F(HoldingSpaceSectionTest, GetHoldingSpaceSectionById) {
 
 // Verifies that every `HoldingSpaceItem::Type` maps to an expected section.
 TEST_F(HoldingSpaceSectionTest, GetHoldingSpaceSectionByType) {
-  for (const auto& type : GetHoldingSpaceItemTypes()) {
+  for (const auto type : holding_space_util::GetAllItemTypes()) {
     SCOPED_TRACE(testing::Message() << "Type: " << static_cast<size_t>(type));
     std::optional<HoldingSpaceSectionId> id;
     switch (type) {
@@ -117,6 +110,7 @@ TEST_F(HoldingSpaceSectionTest, GetHoldingSpaceSectionByType) {
       case HoldingSpaceItem::Type::kLacrosDownload:
       case HoldingSpaceItem::Type::kNearbyShare:
       case HoldingSpaceItem::Type::kPhoneHubCameraRoll:
+      case HoldingSpaceItem::Type::kPhotoshopWeb:
       case HoldingSpaceItem::Type::kPrintedPdf:
       case HoldingSpaceItem::Type::kScan:
         id = HoldingSpaceSectionId::kDownloads;

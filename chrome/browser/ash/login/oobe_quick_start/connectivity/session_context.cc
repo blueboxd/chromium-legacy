@@ -27,11 +27,18 @@ constexpr char kPrepareForUpdateAdvertisingIdKey[] = "advertising_id";
 constexpr char kPrepareForUpdateSecondarySharedSecretKey[] =
     "secondary_shared_secret";
 
+bool IsResumeAfterUpdate() {
+  const base::Value::Dict& maybe_info =
+      g_browser_process->local_state()->GetDict(
+          prefs::kResumeQuickStartAfterRebootInfo);
+  return maybe_info.FindString(kPrepareForUpdateSessionIdKey) &&
+         maybe_info.FindString(kPrepareForUpdateAdvertisingIdKey);
+}
+
 }  // namespace
 
 SessionContext::SessionContext() {
-  is_resume_after_update_ = g_browser_process->local_state()->GetBoolean(
-      prefs::kShouldResumeQuickStartAfterReboot);
+  is_resume_after_update_ = IsResumeAfterUpdate();
   QS_LOG(INFO)
       << "Going to fetch/generate session context. is_resume_after_update_: "
       << is_resume_after_update_;
@@ -39,13 +46,7 @@ SessionContext::SessionContext() {
   if (is_resume_after_update_) {
     FetchPersistedSessionContext();
   } else {
-    // The session_id_ should be in range (INT32_MAX, INT64_MAX].
-    int64_t min = static_cast<int64_t>(INT32_MAX) + 1;
-    int64_t range = INT64_MAX - INT32_MAX;
-    session_id_ = min + base::RandGenerator(range);
-    advertising_id_ = AdvertisingId();
-    crypto::RandBytes(shared_secret_);
-    crypto::RandBytes(secondary_shared_secret_);
+    PopulateRandomSessionContext();
   }
 }
 
@@ -67,6 +68,11 @@ SessionContext& SessionContext::operator=(const SessionContext& other) =
 
 SessionContext::~SessionContext() = default;
 
+void SessionContext::ResetSession() {
+  is_resume_after_update_ = false;
+  PopulateRandomSessionContext();
+}
+
 base::Value::Dict SessionContext::GetPrepareForUpdateInfo() {
   base::Value::Dict prepare_for_update_info;
   prepare_for_update_info.Set(kPrepareForUpdateSessionIdKey,
@@ -75,22 +81,28 @@ base::Value::Dict SessionContext::GetPrepareForUpdateInfo() {
                               advertising_id_.ToString());
   std::string secondary_shared_secret_bytes(secondary_shared_secret_.begin(),
                                             secondary_shared_secret_.end());
-  std::string secondary_shared_secret_base64;
   // The secondary_shared_secret_bytes string likely contains non-UTF-8
   // characters, which are disallowed in pref values. Base64Encode the string
   // for compatibility with prefs.
-  base::Base64Encode(secondary_shared_secret_bytes,
-                     &secondary_shared_secret_base64);
-  prepare_for_update_info.Set(kPrepareForUpdateSecondarySharedSecretKey,
-                              secondary_shared_secret_base64);
+  prepare_for_update_info.Set(
+      kPrepareForUpdateSecondarySharedSecretKey,
+      base::Base64Encode(secondary_shared_secret_bytes));
 
   return prepare_for_update_info;
 }
 
+void SessionContext::PopulateRandomSessionContext() {
+  // The session_id_ should be in range (INT32_MAX, INT64_MAX].
+  int64_t min = static_cast<int64_t>(INT32_MAX) + 1;
+  int64_t range = INT64_MAX - INT32_MAX;
+  session_id_ = min + base::RandGenerator(range);
+  advertising_id_ = AdvertisingId();
+  crypto::RandBytes(shared_secret_);
+  crypto::RandBytes(secondary_shared_secret_);
+}
+
 void SessionContext::FetchPersistedSessionContext() {
   PrefService* prefs = g_browser_process->local_state();
-  CHECK(prefs->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
-  prefs->ClearPref(prefs::kShouldResumeQuickStartAfterReboot);
   const base::Value::Dict& session_info =
       prefs->GetDict(prefs::kResumeQuickStartAfterRebootInfo);
 

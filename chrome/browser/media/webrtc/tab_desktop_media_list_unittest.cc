@@ -47,8 +47,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using content::WebContents;
@@ -335,7 +336,8 @@ class TabDesktopMediaListTest : public testing::Test,
   // Must be listed before |list_|, so it's destroyed last.
   MockObserver observer_;
   std::unique_ptr<TabDesktopMediaList> list_;
-  std::vector<WebContents*> manually_added_web_contents_;
+  std::vector<raw_ptr<WebContents, VectorExperimental>>
+      manually_added_web_contents_;
   std::vector<std::unique_ptr<TestAppWindow>> manually_added_app_windows_;
 
   content::BrowserTaskEnvironment task_environment_;
@@ -344,7 +346,8 @@ class TabDesktopMediaListTest : public testing::Test,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  ash::ScopedTestUserManager test_user_manager_;
+  user_manager::ScopedUserManager test_user_manager_{
+      ash::ChromeUserManagerImpl::CreateChromeUserManager()};
 #endif
 };
 

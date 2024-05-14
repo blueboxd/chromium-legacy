@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
 import org.chromium.chrome.browser.layouts.CompositorModelChangeProcessor;
@@ -61,7 +62,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
-import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.bottom.ScrollingBottomViewSceneLayer;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarOverlayCoordinator;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -330,19 +330,38 @@ public class LayoutManagerImpl
         mContext = host.getContext();
 
         // Overlays are ordered back (closest to the web content) to front.
-        Class[] overlayOrder =
-                new Class[] {
-                    HistoryNavigationCoordinator.getSceneOverlayClass(),
-                    TopToolbarOverlayCoordinator.class,
-                    // StripLayoutHelperManager should be updated before
-                    // ScrollingBottomViewSceneLayer Since ScrollingBottomViewSceneLayer change
-                    // the container size, it causes relocation tab strip scene layer.
-                    StripLayoutHelperManager.class,
-                    ScrollingBottomViewSceneLayer.class,
-                    StatusIndicatorCoordinator.getSceneOverlayClass(),
-                    ContextualSearchPanel.class,
-                    ReadAloudMiniPlayerSceneLayer.class
-                };
+        Class[] overlayOrder;
+        if (ChromeFeatureList.sDynamicTopChrome.isEnabled()) {
+            // When DynamicTopChrome is enabled, place the tab strip behind the toolbar scene layer
+            // as during transition, the toolbar will move up and cover the tab strip.
+            overlayOrder =
+                    new Class[] {
+                        HistoryNavigationCoordinator.getSceneOverlayClass(),
+                        // StripLayoutHelperManager should be updated before
+                        // ScrollingBottomViewSceneLayer Since ScrollingBottomViewSceneLayer change
+                        // the container size, it causes relocation tab strip scene layer.
+                        StripLayoutHelperManager.class,
+                        TopToolbarOverlayCoordinator.class,
+                        ScrollingBottomViewSceneLayer.class,
+                        StatusIndicatorCoordinator.getSceneOverlayClass(),
+                        ContextualSearchPanel.class,
+                        ReadAloudMiniPlayerSceneLayer.class
+                    };
+        } else {
+            overlayOrder =
+                    new Class[] {
+                        HistoryNavigationCoordinator.getSceneOverlayClass(),
+                        TopToolbarOverlayCoordinator.class,
+                        // StripLayoutHelperManager should be updated before
+                        // ScrollingBottomViewSceneLayer Since ScrollingBottomViewSceneLayer change
+                        // the container size, it causes relocation tab strip scene layer.
+                        StripLayoutHelperManager.class,
+                        ScrollingBottomViewSceneLayer.class,
+                        StatusIndicatorCoordinator.getSceneOverlayClass(),
+                        ContextualSearchPanel.class,
+                        ReadAloudMiniPlayerSceneLayer.class
+                    };
+        }
 
         for (int i = 0; i < overlayOrder.length; i++) mOverlayOrderMap.put(overlayOrder[i], i);
 
@@ -543,7 +562,7 @@ public class LayoutManagerImpl
         // TODO(mdjones): Remove the time related params from this method. The new animation system
         // has its own timer.
         boolean areAnimatorsComplete = mAnimationHandler.pushUpdate();
-        if (layout != null && ToolbarFeatures.shouldDelayTransitionsForAnimation()) {
+        if (layout != null) {
             areAnimatorsComplete &= !layout.isRunningAnimations();
         }
 

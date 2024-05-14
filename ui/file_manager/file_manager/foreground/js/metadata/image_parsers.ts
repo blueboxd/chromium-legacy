@@ -4,7 +4,7 @@
 
 import {ByteOrder, ByteReader} from './byte_reader.js';
 import {ParserMetadata} from './metadata_item.js';
-import {ImageParser, MetadataParser, MetadataParserLogger} from './metadata_parser.js';
+import {ImageParser, MetadataParser, type MetadataParserLogger} from './metadata_parser.js';
 
 /**
  * Base class for image metadata parsers that only need to look at a short
@@ -33,15 +33,14 @@ export abstract class SimpleImageParser extends ImageParser {
       file: File, metadata: ParserMetadata,
       callback: (metadata: ParserMetadata) => void,
       errorCallback: (error: string) => void) {
-    const self = this;
-    MetadataParser.readFileBytes(file, 0, this.headerSize, (_file, br) => {
-      try {
-        self.parseHeader(metadata, br);
-        callback(metadata);
-      } catch (e) {
-        errorCallback(e!.toString());
-      }
-    }, errorCallback);
+    MetadataParser.readFileBytes(file, 0, this.headerSize)
+        .then(byteReader => {
+          this.parseHeader(metadata, byteReader);
+          callback(metadata);
+        })
+        .catch((e: unknown) => {
+          errorCallback(e!.toString());
+        });
   }
 
   /**
@@ -64,13 +63,13 @@ export class PngParser extends SimpleImageParser {
     br.setByteOrder(ByteOrder.BIG_ENDIAN);
 
     const signature = br.readString(8);
-    if (signature != '\x89PNG\x0D\x0A\x1A\x0A') {
+    if (signature !== '\x89PNG\x0D\x0A\x1A\x0A') {
       throw new Error('Invalid PNG signature: ' + signature);
     }
 
     br.seek(12);
     const ihdr = br.readString(4);
-    if (ihdr != 'IHDR') {
+    if (ihdr !== 'IHDR') {
       throw new Error('Missing IHDR chunk');
     }
 
@@ -91,7 +90,7 @@ export class BmpParser extends SimpleImageParser {
     br.setByteOrder(ByteOrder.LITTLE_ENDIAN);
 
     const signature = br.readString(2);
-    if (signature != 'BM') {
+    if (signature !== 'BM') {
       throw new Error('Invalid BMP signature: ' + signature);
     }
 
@@ -134,13 +133,13 @@ export class WebpParser extends SimpleImageParser {
     br.setByteOrder(ByteOrder.LITTLE_ENDIAN);
 
     const riffSignature = br.readString(4);
-    if (riffSignature != 'RIFF') {
+    if (riffSignature !== 'RIFF') {
       throw new Error('Invalid RIFF signature: ' + riffSignature);
     }
 
     br.seek(8);
     const webpSignature = br.readString(4);
-    if (webpSignature != 'WEBP') {
+    if (webpSignature !== 'WEBP') {
       throw new Error('Invalid WEBP signature: ' + webpSignature);
     }
 
@@ -150,7 +149,7 @@ export class WebpParser extends SimpleImageParser {
       case 'VP8 ':
         br.seek(23);
         const lossySignature = br.readScalar(2) | (br.readScalar(1) << 16);
-        if (lossySignature != 0x2a019d) {
+        if (lossySignature !== 0x2a019d) {
           throw new Error(
               'Invalid VP8 lossy bitstream signature: ' + lossySignature);
         }
@@ -165,7 +164,7 @@ export class WebpParser extends SimpleImageParser {
       case 'VP8L':
         br.seek(20);
         const losslessSignature = br.readScalar(1);
-        if (losslessSignature != 0x2f) {
+        if (losslessSignature !== 0x2f) {
           throw new Error(
               'Invalid VP8 lossless bitstream signature: ' + losslessSignature);
         }

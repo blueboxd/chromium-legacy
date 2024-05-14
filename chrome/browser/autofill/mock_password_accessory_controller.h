@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_AUTOFILL_MOCK_PASSWORD_ACCESSORY_CONTROLLER_H_
 
 #include <map>
+#include <optional>
 
+#include "chrome/browser/keyboard_accessory/android/accessory_sheet_data.h"
+#include "chrome/browser/keyboard_accessory/android/accessory_sheet_enums.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller.h"
-#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
-#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,7 +47,7 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
               RegisterFillingSourceObserver,
               (FillingSourceObserver),
               (override));
-  MOCK_METHOD(absl::optional<autofill::AccessorySheetData>,
+  MOCK_METHOD(std::optional<autofill::AccessorySheetData>,
               GetSheetData,
               (),
               (const, override));

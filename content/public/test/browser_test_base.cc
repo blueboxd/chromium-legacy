@@ -129,7 +129,7 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/files/scoped_file.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"  // nogncheck
-#include "chromeos/lacros/lacros_test_helper.h"
+#include "chromeos/startup/browser_params_proxy.h"
 #include "chromeos/startup/startup_switches.h"  // nogncheck
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 #endif
@@ -173,7 +173,7 @@ void SignalHandler(int signal) {
     std::string message("BrowserTestBase received signal: ");
     message += strsignal(signal);
     message += ". Backtrace:\n";
-    logging::RawLog(logging::LOG_ERROR, message.c_str());
+    logging::RawLog(logging::LOGGING_ERROR, message.c_str());
     auto stack_trace = base::debug::StackTrace();
     stack_trace.OutputToStream(&std::cerr);
 #if BUILDFLAG(IS_ANDROID)
@@ -455,16 +455,14 @@ void BrowserTestBase::SetUp() {
   // For more details, please see:
   // //chrome/browser/ash/crosapi/test_mojo_connection_manager.h.
   {
-    // TODO(crbug.com/1127581): Switch to use |kLacrosMojoSocketForTesting| in
-    // //ash/constants/ash_switches.h.
-    // Please refer to the CL comments for why it can't be done now:
-    // http://crrev.com/c/2402580/2/content/public/test/browser_test_base.cc
-    std::string socket_path =
-        command_line->GetSwitchValueASCII("lacros-mojo-socket-for-testing");
-    if (socket_path.empty()) {
-      disable_crosapi_ =
-          std::make_unique<chromeos::ScopedDisableCrosapiForTesting>();
-    } else {
+    if (!chromeos::BrowserParamsProxy::Get()->IsCrosapiDisabledForTesting()) {
+      // TODO(crbug.com/1127581): Switch to use |kLacrosMojoSocketForTesting| in
+      // //ash/constants/ash_switches.h.
+      // Please refer to the CL comments for why it can't be done now:
+      // http://crrev.com/c/2402580/2/content/public/test/browser_test_base.cc
+      CHECK(command_line->HasSwitch("lacros-mojo-socket-for-testing"));
+      std::string socket_path =
+          command_line->GetSwitchValueASCII("lacros-mojo-socket-for-testing");
       auto channel = mojo::NamedPlatformChannel::ConnectToServer(socket_path);
       base::ScopedFD socket_fd = channel.TakePlatformHandle().TakeFD();
 
@@ -624,7 +622,7 @@ void BrowserTestBase::SetUp() {
   ASSERT_TRUE(delegate);
   ASSERT_TRUE(GetContentClientForTesting());
 
-  absl::optional<int> startup_error = delegate->BasicStartupComplete();
+  std::optional<int> startup_error = delegate->BasicStartupComplete();
   ASSERT_FALSE(startup_error.has_value());
 
   // We can only setup startup tracing after mojo is initialized above.
@@ -653,7 +651,7 @@ void BrowserTestBase::SetUp() {
     const bool has_thread_pool =
         GetContentClientForTesting()->browser()->CreateThreadPool("Browser");
 
-    absl::optional<int> pre_browser_main_exit_code = delegate->PreBrowserMain();
+    std::optional<int> pre_browser_main_exit_code = delegate->PreBrowserMain();
     ASSERT_FALSE(pre_browser_main_exit_code.has_value());
 
     BrowserTaskExecutor::Create();
@@ -664,7 +662,7 @@ void BrowserTestBase::SetUp() {
           variations::VariationsIdsProvider::Mode::kUseSignedInState);
     }
 
-    absl::optional<int> post_early_initialization_exit_code =
+    std::optional<int> post_early_initialization_exit_code =
         delegate->PostEarlyInitialization(invoked_in_browser);
     ASSERT_FALSE(post_early_initialization_exit_code.has_value());
 
@@ -846,7 +844,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   // set a ScopedRunLoopTimeout from their fixture's constructor (which
   // happens as part of setting up the test factory in gtest while
   // ProxyRunTestOnMainThreadLoop() happens later as part of SetUp()).
-  absl::optional<base::test::ScopedRunLoopTimeout> scoped_run_timeout;
+  std::optional<base::test::ScopedRunLoopTimeout> scoped_run_timeout;
   if (!base::test::ScopedRunLoopTimeout::ExistsForCurrentThread()) {
     // TODO(https://crbug.com/918724): determine whether the timeout can be
     // reduced from action_max_timeout() to action_timeout().
@@ -892,7 +890,6 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
       base::RunLoop flush_startup_tasks;
       flush_startup_tasks.RunUntilIdle();
       // Make sure there isn't an odd caller which reached |flush_startup_tasks|
-      // statically via base::RunLoop::QuitCurrent*Deprecated().
       DCHECK(!flush_startup_tasks.AnyQuitCalled());
     }
 

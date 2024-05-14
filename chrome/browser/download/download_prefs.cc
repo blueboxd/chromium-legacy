@@ -59,8 +59,8 @@
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/download/bubble/download_bubble_prefs.h"
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #endif
 
 using content::BrowserContext;
@@ -210,6 +210,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   prompt_for_download_android_.Init(prefs::kPromptForDownloadAndroid, prefs);
   RecordDownloadPromptStatus(
       static_cast<DownloadPromptStatus>(*prompt_for_download_android_));
+  if (base::FeatureList::IsEnabled(chrome::android::kOpenDownloadDialog)) {
+    auto_open_pdf_enabled_.Init(prefs::kAutoOpenPdfEnabled, prefs);
+  }
 #endif
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
   save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
@@ -217,8 +220,6 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   safebrowsing_for_trusted_sources_enabled_.Init(
       prefs::kSafeBrowsingForTrustedSourcesEnabled, prefs);
   download_restriction_.Init(prefs::kDownloadRestrictions, prefs);
-  prompt_for_duplicate_file_.Init(prefs::kDownloadDuplicateFilePromptEnabled,
-                                  prefs);
 
   pref_change_registrar_.Add(
       prefs::kDownloadExtensionsToOpenByPolicy,
@@ -294,11 +295,7 @@ void DownloadPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kDownloadBubblePartialViewEnabled, true);
   registry->RegisterIntegerPref(prefs::kDownloadBubblePartialViewImpressions,
                                 0);
-  registry->RegisterBooleanPref(
-      prefs::kDownloadBubbleIphSuppression, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kDownloadDuplicateFilePromptEnabled,
-                                true);
+
   registry->RegisterBooleanPref(prefs::kSafeBrowsingForTrustedSourcesEnabled,
                                 true);
 
@@ -321,6 +318,9 @@ void DownloadPrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   registry->RegisterBooleanPref(prefs::kShowMissingSdCardErrorAndroid, true);
+  if (base::FeatureList::IsEnabled(chrome::android::kOpenDownloadDialog)) {
+    registry->RegisterBooleanPref(prefs::kAutoOpenPdfEnabled, false);
+  }
 #endif
 }
 
@@ -515,6 +515,15 @@ void DownloadPrefs::SkipSanitizeDownloadTargetPathForTesting() {
   skip_sanitize_download_target_path_for_testing_ = true;
 }
 
+#if BUILDFLAG(IS_ANDROID)
+bool DownloadPrefs::IsAutoOpenPdfEnabled() {
+  if (!base::FeatureList::IsEnabled(chrome::android::kOpenDownloadDialog)) {
+    return false;
+  }
+  return *auto_open_pdf_enabled_;
+}
+#endif
+
 void DownloadPrefs::SaveAutoOpenState() {
   std::string extensions;
   for (auto it : auto_open_by_user_) {
@@ -700,16 +709,6 @@ void DownloadPrefs::UpdateAllowedURLsForOpenByPolicy() {
   }
 
   auto_open_allowed_by_urls_.swap(allowed_urls);
-}
-
-// TODO(chlily): Clean this up as this feature is no longer being pursued.
-bool DownloadPrefs::PromptForDuplicateFile() const {
-#if BUILDFLAG(IS_ANDROID)
-  return false;
-#else
-  return download::IsDownloadBubbleEnabled() &&
-         prompt_for_duplicate_file_.GetValue();
-#endif
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_price_tracking_mediator.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
@@ -77,6 +78,7 @@ const bookmarks::BookmarkNode* PrepareSubscription(
   bookmark_model->AddURL(default_folder, default_folder->children().size(),
                          base::UTF8ToUTF16(title), GURL(kTestUrl));
   shopping_service->SetSubscribeCallbackValue(true);
+  shopping_service->SetIsSubscribedCallbackValue(true);
   shopping_service->SetUnsubscribeCallbackValue(unsubscribe_callback);
   TrackBookmark(shopping_service, bookmark_model, product);
 
@@ -121,7 +123,7 @@ class PriceNotificationsPriceTrackingMediatorTest
         commerce::ShoppingServiceFactory::GetInstance(),
         base::BindRepeating(
             [](web::BrowserState*) -> std::unique_ptr<KeyedService> {
-              return std::make_unique<commerce::MockShoppingService>();
+              return commerce::MockShoppingService::Build();
             }));
     std::unique_ptr<TestChromeBrowserState> test_chrome_browser_state =
         builder.Build();
@@ -155,6 +157,7 @@ class PriceNotificationsPriceTrackingMediatorTest
     shopping_service_ = static_cast<commerce::MockShoppingService*>(
         commerce::ShoppingServiceFactory::GetForBrowserState(
             test_chrome_browser_state.get()));
+    shopping_service_->SetupPermissiveMock();
     shopping_service_->SetBookmarkModelUsedForSync(
         GetBookmarkModelUsedForSync());
     test_manager_ = std::make_unique<TestChromeBrowserStateManager>(
@@ -178,8 +181,8 @@ class PriceNotificationsPriceTrackingMediatorTest
 
   bookmarks::BookmarkModel* GetBookmarkModelUsedForSync() {
     return ShouldEnablekReplaceSyncPromosWithSignInPromos()
-               ? account_bookmark_model_
-               : local_or_syncable_bookmark_model_;
+               ? account_bookmark_model_.get()
+               : local_or_syncable_bookmark_model_.get();
   }
 
  protected:
@@ -189,10 +192,10 @@ class PriceNotificationsPriceTrackingMediatorTest
   PriceNotificationsPriceTrackingMediator* mediator_;
   std::unique_ptr<ios::ChromeBrowserStateManager> test_manager_;
   std::unique_ptr<web::FakeWebState> web_state_;
-  commerce::MockShoppingService* shopping_service_;
-  bookmarks::BookmarkModel* local_or_syncable_bookmark_model_;
-  bookmarks::BookmarkModel* account_bookmark_model_;
-  BrowserList* browser_list_;
+  raw_ptr<commerce::MockShoppingService> shopping_service_;
+  raw_ptr<bookmarks::BookmarkModel> local_or_syncable_bookmark_model_;
+  raw_ptr<bookmarks::BookmarkModel> account_bookmark_model_;
+  raw_ptr<BrowserList> browser_list_;
   std::unique_ptr<image_fetcher::ImageDataFetcher> image_fetcher_;
   std::unique_ptr<PushNotificationService> push_notification_service_;
   TestPriceNotificationsConsumer* consumer_ =

@@ -185,6 +185,8 @@ Response PermissionDescriptorToPermissionType(
     *permission_type = PermissionType::STORAGE_ACCESS_GRANT;
   } else if (name == "top-level-storage-access") {
     *permission_type = PermissionType::TOP_LEVEL_STORAGE_ACCESS;
+  } else if (name == "captured-surface-control") {
+    *permission_type = PermissionType::CAPTURED_SURFACE_CONTROL;
   } else {
     return Response::InvalidParams("Invalid PermissionDescriptor name: " +
                                    name);
@@ -255,6 +257,9 @@ Response FromProtocolPermissionType(
   } else if (type ==
              protocol::Browser::PermissionTypeEnum::TopLevelStorageAccess) {
     *out_type = PermissionType::TOP_LEVEL_STORAGE_ACCESS;
+  } else if (type ==
+             protocol::Browser::PermissionTypeEnum::CapturedSurfaceControl) {
+    *out_type = PermissionType::CAPTURED_SURFACE_CONTROL;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }
@@ -337,7 +342,7 @@ Response BrowserHandler::SetPermission(
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
 
-  absl::optional<url::Origin> overridden_origin;
+  std::optional<url::Origin> overridden_origin;
   if (origin.has_value()) {
     overridden_origin = url::Origin::Create(GURL(origin.value()));
     if (overridden_origin->opaque())
@@ -378,7 +383,7 @@ Response BrowserHandler::GrantPermissions(
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  absl::optional<url::Origin> overridden_origin;
+  std::optional<url::Origin> overridden_origin;
   if (origin.has_value()) {
     overridden_origin = url::Origin::Create(GURL(origin.value()));
     if (overridden_origin->opaque())

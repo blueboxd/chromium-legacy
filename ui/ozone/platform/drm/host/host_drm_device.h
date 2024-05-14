@@ -80,17 +80,9 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void GpuSetColorTemperatureAdjustment(
       int64_t display_id,
       const display::ColorTemperatureAdjustment& cta) override;
-  void GpuSetColorCalibration(
-      int64_t display_id,
-      const display::ColorCalibration& calibration) override;
   void GpuSetGammaAdjustment(
       int64_t display_id,
       const display::GammaAdjustment& adjustment) override;
-  bool GpuSetColorMatrix(int64_t display_id,
-                         const std::vector<float>& color_matrix) override;
-  bool GpuSetGammaCorrection(int64_t display_id,
-                             const display::GammaCurve& degamma,
-                             const display::GammaCurve& gamma) override;
   void GpuSetPrivacyScreen(int64_t display_id,
                            bool enabled,
                            display::SetPrivacyScreenCallback callback) override;
@@ -126,9 +118,8 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   // Mojo implementation of the DrmDevice. Will be bound on the "main" thread.
   mojo::Remote<ui::ozone::mojom::DrmDevice> drm_device_;
 
-  raw_ptr<DrmDisplayHostManager, ExperimentalAsh>
-      display_manager_;                               // Not owned.
-  const raw_ptr<DrmCursor, ExperimentalAsh> cursor_;  // Not owned.
+  raw_ptr<DrmDisplayHostManager> display_manager_;  // Not owned.
+  const raw_ptr<DrmCursor> cursor_;                 // Not owned.
 
   std::unique_ptr<HostCursorProxy> cursor_proxy_;
 

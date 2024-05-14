@@ -49,6 +49,7 @@ class MockSegmentationPlatformService : public SegmentationPlatformService {
   MOCK_METHOD(void, EnableMetrics, (bool));
   MOCK_METHOD(void, GetServiceStatus, ());
   MOCK_METHOD(bool, IsPlatformInitialized, ());
+  MOCK_METHOD(DatabaseClient*, GetDatabaseClient, ());
 };
 
 MATCHER_P(IsInputContextWithArgs,
@@ -64,8 +65,7 @@ MATCHER_P(IsInputContextWithArgs,
 
 MATCHER(TrainingLabelEmpty, "no training labels present") {
   return testing::ExplainMatchResult(
-      testing::Field(&TrainingLabels::output_metric,
-                     testing::Eq(absl::nullopt)),
+      testing::Field(&TrainingLabels::output_metric, testing::Eq(std::nullopt)),
       arg, result_listener);
 }
 

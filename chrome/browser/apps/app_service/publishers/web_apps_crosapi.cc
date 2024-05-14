@@ -101,7 +101,7 @@ void WebAppsCrosapi::LaunchAppWithIntent(const std::string& app_id,
                                          WindowInfoPtr window_info,
                                          LaunchCallback callback) {
   if (!LogIfNotConnected(FROM_HERE)) {
-    std::move(callback).Run(LaunchResult(State::FAILED));
+    std::move(callback).Run(LaunchResult(State::kFailed));
     return;
   }
 
@@ -113,7 +113,7 @@ void WebAppsCrosapi::LaunchAppWithIntent(const std::string& app_id,
       apps_util::ConvertAppServiceToCrosapiIntent(intent, proxy_->profile());
   controller_->Launch(std::move(params), base::DoNothing());
   // TODO(crbug/1261263): handle the case where launch fails.
-  std::move(callback).Run(LaunchResult(State::SUCCESS));
+  std::move(callback).Run(LaunchResult(State::kSuccess));
 }
 
 void WebAppsCrosapi::LaunchAppWithParams(AppLaunchParams&& params,
@@ -310,8 +310,9 @@ void WebAppsCrosapi::ExecuteContextMenuCommand(const std::string& app_id,
 }
 
 void WebAppsCrosapi::OnApps(std::vector<AppPtr> deltas) {
-  if (!web_app::IsWebAppsCrosapiEnabled())
+  if (!web_app::IsWebAppsCrosapiEnabled()) {
     return;
+  }
 
   on_initial_apps_received_ = true;
 

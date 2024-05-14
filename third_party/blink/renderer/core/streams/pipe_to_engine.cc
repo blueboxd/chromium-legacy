@@ -241,9 +241,7 @@ bool PipeToEngine::CheckInitialState() {
 void PipeToEngine::AbortAlgorithm(AbortSignal* signal) {
   // a. Let abortAlgorithm be the following steps:
   //    i. Let error be signal's abort reason.
-  v8::Local<v8::Value> error =
-      ToV8(signal->reason(script_state_), script_state_->GetContext()->Global(),
-           script_state_->GetIsolate());
+  v8::Local<v8::Value> error = signal->reason(script_state_).V8Value();
 
   // Steps ii. to iv. are implemented in AbortAlgorithmAction.
 
@@ -295,7 +293,7 @@ v8::Local<v8::Value> PipeToEngine::HandleNextEvent(v8::Local<v8::Value>) {
     return Undefined();
   }
 
-  absl::optional<double> desired_size = writer_->GetDesiredSizeInternal();
+  std::optional<double> desired_size = writer_->GetDesiredSizeInternal();
   if (!desired_size.has_value()) {
     // This can happen if abort() is queued but not yet started when
     // pipeTo() is called. In that case [[storedError]] is not set yet, and

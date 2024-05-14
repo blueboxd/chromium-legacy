@@ -25,7 +25,6 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
-import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.init.ActivityProfileProvider;
@@ -62,6 +61,7 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity
             "Extra.FreChromeLaunchIntentExtras";
     static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
     static final String SHOW_SYNC_CONSENT_PAGE = "ShowSyncConsent";
+    static final String SHOW_HISTORY_SYNC_PAGE = "ShowHistorySync";
 
     public static final boolean DEFAULT_METRICS_AND_CRASH_REPORTING = true;
 
@@ -126,19 +126,7 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity
     @Override
     protected void onPreCreate() {
         super.onPreCreate();
-        if (BackPressManager.isSecondaryActivityEnabled()) {
-            BackPressHelper.create(
-                    this, getOnBackPressedDispatcher(), this, getSecondaryActivity());
-        } else {
-            BackPressHelper.create(
-                    this,
-                    getOnBackPressedDispatcher(),
-                    () -> {
-                        handleBackPress();
-                        return true;
-                    },
-                    getSecondaryActivity());
-        }
+        BackPressHelper.create(this, getOnBackPressedDispatcher(), this, getSecondaryActivity());
     }
 
     // Activity:

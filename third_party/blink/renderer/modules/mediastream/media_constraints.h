@@ -239,6 +239,7 @@ struct MediaTrackConstraintSetPlatform {
   LongConstraint sample_rate;
   LongConstraint sample_size;
   BooleanConstraint echo_cancellation;
+  BooleanConstraint voice_isolation;
   StringConstraint echo_cancellation_type;
   DoubleConstraint latency;
   LongConstraint channel_count;
@@ -256,6 +257,8 @@ struct MediaTrackConstraintSetPlatform {
 
   // W3C Media Capture Extensions
   BooleanConstraint background_blur;
+  BooleanConstraint eye_gaze_correction;
+  BooleanConstraint face_framing;
 
   // Constraints not exposed in Blink at the moment, only through
   // the legacy name interface.

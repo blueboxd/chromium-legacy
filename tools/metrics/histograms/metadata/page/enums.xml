@@ -31,6 +31,33 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Received activation"/>
 </enum>
 
+<enum name="CookieReadStatus">
+  <int value="0" label="kNone"/>
+  <int value="1" label="kNotOnboardedAllowed"/>
+  <int value="2" label="kNotOnboardedBlocked"/>
+  <int value="3" label="kNotOnboardedAllowedAd"/>
+  <int value="4" label="kNotOnboardedBlockedAd"/>
+  <int value="5" label="kAllowed"/>
+  <int value="6" label="kAllowedAd"/>
+  <int value="7" label="kAllowedOther"/>
+  <int value="8" label="kAllowedOtherAd"/>
+  <int value="9" label="kAllowedHeuristics"/>
+  <int value="10" label="kAllowedHeuristicsAd"/>
+  <int value="11" label="kAllowedMetadataGrant"/>
+  <int value="12" label="kAllowedMetadataGrantAd"/>
+  <int value="13" label="kAllowedTrial"/>
+  <int value="14" label="kAllowedTrialAd"/>
+  <int value="15" label="kAllowedTopLevelTrial"/>
+  <int value="16" label="kAllowedTopLevelTrialAd"/>
+  <int value="17" label="kBlocked"/>
+  <int value="18" label="kBlockedAd"/>
+  <int value="19" label="kBlockedOtherAd"/>
+  <int value="20" label="kBlockedSkippedHeuristicsAd"/>
+  <int value="21" label="kBlockedSkippedMetadataGrantAd"/>
+  <int value="22" label="kBlockedSkippedTrialAd"/>
+  <int value="23" label="kBlockedSkippedTopLevelTrialAd"/>
+</enum>
+
 <enum name="CrossOriginAdStatus">
   <int value="0" label="Ad Origin indeterminable"/>
   <int value="1" label="Main Frame Origin same as Ad"/>
@@ -150,7 +177,7 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Cookie Controls"/>
   <int value="3" label="File System Access"/>
   <int value="4" label="Find"/>
-  <int value="5" label="High Efficiency"/>
+  <int value="5" label="Memory Saver"/>
   <int value="6" label="Intent Picker"/>
   <int value="7" label="Local Card Migration"/>
   <int value="8" label="Manage Passwords"/>
@@ -188,13 +215,6 @@ chromium-metrics-reviews@google.com.
 <enum name="PageLoadPrerenderEvent">
   <int value="0" label="Prerendered Main Frame Navigation"/>
   <int value="1" label="Prerender Activation Navigation"/>
-</enum>
-
-<enum name="PageLoadPrerenderForegroundCheckResult">
-  <int value="0" label="Activated in background"/>
-  <int value="1" label="No event time"/>
-  <int value="2" label="Backgrounded before the event"/>
-  <int value="3" label="Passed the check"/>
 </enum>
 
 <enum name="PageLoadPrerenderObserverEvent">
@@ -293,8 +313,7 @@ chromium-metrics-reviews@google.com.
 <enum name="ThirdPartyCookieAllowMechanism">
   <int value="0" label="No allow mechanism apply (Not recorded)"/>
   <int value="1"
-      label="Allow by explicit cookie content setting (e.g. Enterprise
-             Policy: CookiesAllowedForUrls, UserBypass)"/>
+      label="Allow by explicit cookie content setting (e.g. UserBypass)"/>
   <int value="2"
       label="Allow by global 3p cookie setting setting (e.g. Enterprise
              Policy: BlockThirdPartyCookies, UX, Default allow)"/>
@@ -305,6 +324,8 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="Allow by 3PCD heuristics"/>
   <int value="6" label="Allow by Storage access API"/>
   <int value="7" label="Allow by top-level Storage access API"/>
+  <int value="8" label="Allow by opting into CORS protections"/>
+  <int value="9" label="Allow by Enterprise Policy: CookiesAllowedForUrls"/>
 </enum>
 
 </enums>

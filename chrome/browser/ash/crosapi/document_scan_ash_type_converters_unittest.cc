@@ -464,6 +464,7 @@ TEST(DocumentScanAshTypeConvertersTest, GetScannerListResponse_UsbScanner) {
   scanner->set_secure(true);
   scanner->add_image_format("image/png");
   scanner->add_image_format("image/jpeg");
+  scanner->set_protocol_type("backend");
 
   auto output = crosapi::mojom::GetScannerListResponse::From(input);
   EXPECT_EQ(output->result, crosapi::mojom::ScannerOperationResult::kSuccess);
@@ -479,6 +480,7 @@ TEST(DocumentScanAshTypeConvertersTest, GetScannerListResponse_UsbScanner) {
   EXPECT_TRUE(scanner_out->secure);
   EXPECT_THAT(scanner_out->image_formats,
               UnorderedElementsAre("image/png", "image/jpeg"));
+  EXPECT_EQ(scanner_out->protocol_type, "backend");
 }
 
 TEST(DocumentScanAshTypeConvertersTest, GetScannerListResponse_NetworkScanner) {
@@ -494,6 +496,7 @@ TEST(DocumentScanAshTypeConvertersTest, GetScannerListResponse_NetworkScanner) {
   scanner->set_secure(false);
   scanner->add_image_format("image/png");
   scanner->add_image_format("image/jpeg");
+  scanner->set_protocol_type("backend");
 
   auto output = crosapi::mojom::GetScannerListResponse::From(input);
   EXPECT_EQ(output->result, crosapi::mojom::ScannerOperationResult::kNoMemory);
@@ -509,6 +512,7 @@ TEST(DocumentScanAshTypeConvertersTest, GetScannerListResponse_NetworkScanner) {
   EXPECT_FALSE(scanner_out->secure);
   EXPECT_THAT(scanner_out->image_formats,
               UnorderedElementsAre("image/png", "image/jpeg"));
+  EXPECT_EQ(scanner_out->protocol_type, "backend");
 }
 
 TEST(DocumentScanAshTypeConvertersTest,
@@ -813,7 +817,7 @@ TEST(DocumentScanAshTypeConvertersTest, GetOptionGroupsResponse_EmptyObject) {
   auto output = crosapi::mojom::GetOptionGroupsResponse::From(input);
   EXPECT_TRUE(output->scanner_handle.empty());
   EXPECT_EQ(output->result, crosapi::mojom::ScannerOperationResult::kUnknown);
-  EXPECT_FALSE(output->options.has_value());
+  EXPECT_FALSE(output->groups.has_value());
 }
 
 TEST(DocumentScanAshTypeConvertersTest, GetOptionGroupsResponse_Success) {
@@ -832,12 +836,12 @@ TEST(DocumentScanAshTypeConvertersTest, GetOptionGroupsResponse_Success) {
   auto output = crosapi::mojom::GetOptionGroupsResponse::From(input);
   EXPECT_EQ(output->scanner_handle, "scanner-handle");
   EXPECT_EQ(output->result, crosapi::mojom::ScannerOperationResult::kSuccess);
-  EXPECT_TRUE(output->options.has_value());
-  ASSERT_EQ(output->options.value().size(), 2U);
-  const auto& actual1 = output->options.value()[0];
+  EXPECT_TRUE(output->groups.has_value());
+  ASSERT_EQ(output->groups.value().size(), 2U);
+  const auto& actual1 = output->groups.value()[0];
   EXPECT_EQ(actual1->title, "group1");
   EXPECT_THAT(actual1->members, ElementsAre("group1-val1", "group1-val2"));
-  const auto& actual2 = output->options.value()[1];
+  const auto& actual2 = output->groups.value()[1];
   EXPECT_EQ(actual2->title, "group2");
   EXPECT_THAT(actual2->members, ElementsAre("group2-val1"));
 }

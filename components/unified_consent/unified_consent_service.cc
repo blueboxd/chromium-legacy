@@ -6,7 +6,6 @@
 
 #include "base/check_op.h"
 #include "build/build_config.h"
-#include "components/compose/buildflags.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -33,7 +32,7 @@ UnifiedConsentService::SyncState UnifiedConsentService::GetSyncState(
     return SyncState::kSignedInWithoutHistory;
   }
 
-  absl::optional<syncer::PassphraseType> passphrase_type =
+  std::optional<syncer::PassphraseType> passphrase_type =
       sync_service->GetUserSettings()->GetPassphraseType();
 
   if (!passphrase_type.has_value()) {
@@ -193,10 +192,6 @@ void UnifiedConsentService::RegisterPrefs(
       static_cast<int>(MigrationState::kNotInitialized));
 #endif
   registry->RegisterBooleanPref(prefs::kPageContentCollectionEnabled, false);
-
-#if BUILDFLAG(ENABLE_COMPOSE)
-  registry->RegisterBooleanPref(prefs::kAutofillAssistanceEnabled, false);
-#endif
 }
 
 void UnifiedConsentService::SetUrlKeyedAnonymizedDataCollectionEnabled(
@@ -218,7 +213,7 @@ void UnifiedConsentService::Shutdown() {
 
 void UnifiedConsentService::OnPrimaryAccountChanged(
     const signin::PrimaryAccountChangeEvent& event) {
-  // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+  // TODO(crbug.com/40066949): Simplify once kSync becomes unreachable or is
   // deleted from the codebase. See ConsentLevel::kSync documentation for
   // details.
   if (event.GetEventTypeFor(signin::ConsentLevel::kSync) ==

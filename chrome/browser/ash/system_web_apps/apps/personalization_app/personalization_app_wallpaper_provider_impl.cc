@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_wallpaper_provider_impl.h"
 
 #include <stdint.h>
+
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -16,7 +17,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/controls/contextual_tooltip.h"
 #include "ash/public/cpp/image_util.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/wallpaper/google_photos_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_variant.h"
@@ -25,6 +25,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/wallpaper/wallpaper_constants.h"
+#include "ash/wallpaper/wallpaper_utils/sea_pen_metadata_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_online_variant_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
@@ -34,6 +35,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/json/json_reader.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/unguessable_token.h"
@@ -62,6 +64,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -430,15 +433,7 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
               info->layout, info->type, key,
               /*description_title=*/std::string(),
               /*description_content=*/std::string()));
-      // Do not show file extension in user-visible selected details text.
-      const std::string file_name = base::FilePath(info->user_file_path)
-                                        .BaseName()
-                                        .RemoveExtension()
-                                        .value();
-      std::vector<std::string> attribution = {file_name};
-      NotifyAttributionChanged(
-          ash::personalization_app::mojom::CurrentAttribution::New(
-              std::move(attribution), key));
+      FindSeaPenWallpaperAttribution(base::FilePath(info->user_file_path));
       return;
     }
     case ash::WallpaperType::kCount:
@@ -777,7 +772,7 @@ void PersonalizationAppWallpaperProviderImpl::UpdateDailyRefreshWallpaper(
 
 void PersonalizationAppWallpaperProviderImpl::IsInTabletMode(
     IsInTabletModeCallback callback) {
-  std::move(callback).Run(ash::TabletMode::IsInTabletMode());
+  std::move(callback).Run(display::Screen::GetScreen()->InTabletMode());
 }
 
 void PersonalizationAppWallpaperProviderImpl::ConfirmPreviewWallpaper() {
@@ -1093,6 +1088,62 @@ void PersonalizationAppWallpaperProviderImpl::FindImageMetadataInCollection(
   // resetting the previous fetcher last because the current method is bound
   // to a callback owned by the previous fetcher.
   wallpaper_attribution_info_fetcher_ = std::move(fetcher);
+}
+
+void PersonalizationAppWallpaperProviderImpl::FindSeaPenWallpaperAttribution(
+    const base::FilePath& user_file_path) {
+  auto* wallpaper_controller = WallpaperController::Get();
+  DCHECK(wallpaper_controller);
+
+  wallpaper_controller->GetSeaPenMetadata(
+      GetAccountId(profile_), user_file_path,
+      base::BindOnce(&PersonalizationAppWallpaperProviderImpl::
+                         SendSeaPenWallpaperAttribution,
+                     weak_ptr_factory_.GetWeakPtr(), user_file_path));
+}
+
+void PersonalizationAppWallpaperProviderImpl::SendSeaPenWallpaperAttribution(
+    const base::FilePath& user_file_path,
+    std::optional<base::Value::Dict> sea_pen_metadata) {
+  DVLOG(3) << __func__ << "file_path: " << user_file_path << " metadata: "
+           << (sea_pen_metadata.has_value() ? sea_pen_metadata->DebugString()
+                                            : "null");
+  if (!sea_pen_metadata.has_value()) {
+    LOG(ERROR) << __func__ << " unknown attribution data";
+    NotifyAttributionChanged(
+        ash::personalization_app::mojom::CurrentAttribution::New(
+            std::vector<std::string>(), user_file_path.value()));
+    return;
+  }
+
+  std::vector<std::string> attribution;
+
+  auto* freeform_query =
+      sea_pen_metadata->FindString(ash::kSeaPenFreeformQueryKey);
+  if (freeform_query) {
+    // The Sea Pen wallpaper was generated from a freeform query.
+    attribution.push_back(*freeform_query);
+    NotifyAttributionChanged(
+        ash::personalization_app::mojom::CurrentAttribution::New(
+            attribution, user_file_path.value()));
+    return;
+  }
+
+  // Otherwise, it should be generated from a template query, get the user
+  // visible query and add into `attributions`.
+  auto* user_visible_query_text =
+      sea_pen_metadata->FindString(ash::kSeaPenUserVisibleQueryTextKey);
+  if (user_visible_query_text) {
+    attribution.push_back(*user_visible_query_text);
+  }
+  auto* user_visible_query_template =
+      sea_pen_metadata->FindString(ash::kSeaPenUserVisibleQueryTemplateKey);
+  if (user_visible_query_template) {
+    attribution.push_back(*user_visible_query_template);
+  }
+  NotifyAttributionChanged(
+      ash::personalization_app::mojom::CurrentAttribution::New(
+          attribution, user_file_path.value()));
 }
 
 void PersonalizationAppWallpaperProviderImpl::SendGooglePhotosAttribution(

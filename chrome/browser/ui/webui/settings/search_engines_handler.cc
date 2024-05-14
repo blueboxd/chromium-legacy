@@ -11,11 +11,13 @@
 #include "base/functional/bind.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
@@ -25,6 +27,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
 #include "components/search_engines/search_engine_choice_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
@@ -233,13 +236,21 @@ base::Value::Dict SearchEnginesHandler::CreateDictionaryForEngine(
   // The icons that are used for search engines in the EEA region are bundled
   // with Chrome. We use the favicon service for countries outside the EEA
   // region to guarantee having icons for all search engines.
+  search_engines::SearchEngineChoiceService* search_engine_choice_service =
+      search_engines::SearchEngineChoiceServiceFactory::GetForProfile(profile);
   const bool is_eea_region = search_engines::IsEeaChoiceCountry(
-      search_engines::GetSearchEngineChoiceCountryId(profile_->GetPrefs()));
+      search_engine_choice_service->GetCountryId());
   if (is_search_engine_choice_settings_ui && is_eea_region &&
       template_url->prepopulate_id() != 0) {
-    const std::u16string icon_path = GetGeneratedIconPath(
-        template_url->keyword(), /*parent_directory_path=*/u"images/");
-    dict.Set("iconPath", icon_path);
+    std::string_view icon_path =
+        GetSearchEngineGeneratedIconPath(template_url->keyword());
+    if (!icon_path.empty()) {
+      // The search engine icon path are 24px, but displayed at 16px, or 32px on
+      // HiDPI screens. Use the 2x version (48px) for a large enough icon.
+      // Note that this icon path is used in `site-favicon` which does not
+      // support `image-set`.
+      dict.Set("iconPath", base::StrCat({icon_path, "@2x"}));
+    }
   }
 
   dict.Set("modelIndex", base::checked_cast<int>(index));
@@ -252,8 +263,10 @@ base::Value::Dict SearchEnginesHandler::CreateDictionaryForEngine(
   dict.Set("canBeDeactivated", list_controller_.CanDeactivate(template_url));
   dict.Set("shouldConfirmDeletion",
            list_controller_.ShouldConfirmDeletion(template_url));
+  dict.Set("isManaged", list_controller_.IsManaged(template_url));
   TemplateURL::Type type = template_url->type();
   dict.Set("isOmniboxExtension", type == TemplateURL::OMNIBOX_API_EXTENSION);
+  dict.Set("isPrepopulated", template_url->prepopulate_id() > 0);
   if (type == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION ||
       type == TemplateURL::OMNIBOX_API_EXTENSION) {
     const extensions::Extension* extension =
@@ -290,24 +303,13 @@ void SearchEnginesHandler::HandleSetDefaultSearchEngine(
     return;
   }
 
-  list_controller_.MakeDefaultTemplateURL(index);
-
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-  Profile& profile = CHECK_DEREF(Profile::FromWebUI(web_ui()));
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(&profile);
   search_engines::ChoiceMadeLocation choice_made_location =
       static_cast<search_engines::ChoiceMadeLocation>(args[1].GetInt());
-
   CHECK(choice_made_location ==
             search_engines::ChoiceMadeLocation::kSearchSettings ||
         choice_made_location ==
             search_engines::ChoiceMadeLocation::kSearchEngineSettings);
-  // `RecordChoiceMade` should always be called after setting the default
-  // search engine.
-  search_engines::RecordChoiceMade(profile.GetPrefs(), choice_made_location,
-                                   template_url_service);
-#endif
+  list_controller_.MakeDefaultTemplateURL(index, choice_made_location);
 
   base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));
 }

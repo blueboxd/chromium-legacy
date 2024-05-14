@@ -2,27 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import type {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
+import type {CrToggleElement} from 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import type {Switch} from 'chrome://resources/cros_components/switch/switch.js';
 import {assertInstanceof} from 'chrome://resources/js/assert.js';
 
+import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {queryRequiredElement} from '../../common/js/dom_utils.js';
 import {isNonModifiable} from '../../common/js/entry_utils.js';
 import {isCrosComponentsEnabled} from '../../common/js/flags.js';
 import {str, strf} from '../../common/js/translations.js';
 import {canBulkPinningCloudPanelShow} from '../../common/js/util.js';
 import {RootType} from '../../common/js/volume_manager_types.js';
-import {State} from '../../externs/ts/state.js';
-import {Store} from '../../externs/ts/store.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
-import {getStore} from '../../state/store.js';
+import {type State} from '../../state/state.js';
+import {getStore, type Store} from '../../state/store.js';
 import {XfCloudPanel} from '../../widgets/xf_cloud_panel.js';
 
-import {constants} from './constants.js';
+import {ICON_TYPES} from './constants.js';
 import type {DirectoryChangeEvent} from './directory_model.js';
 import {DirectoryModel} from './directory_model.js';
 import {EventType, FileSelectionHandler} from './file_selection.js';
-import {A11yAnnounce} from './ui/a11y_announce.js';
+import type {A11yAnnounce} from './ui/a11y_announce.js';
 import {Command} from './ui/command.js';
 import {FileListSelectionModel} from './ui/file_list_selection_model.js';
 import {ListContainer} from './ui/list_container.js';
@@ -58,7 +57,7 @@ export class ToolbarController {
   private readonly cloudButtonIcon_: HTMLElement;
   // Commands
   private readonly deleteCommand_: Command;
-  private readonly moveToTrashCommand: Command;
+  readonly moveToTrashCommand: Command;
   private readonly restoreFromTrashCommand_: Command;
   private readonly refreshCommand_: Command;
   private readonly newFolderCommand_: Command;
@@ -231,19 +230,19 @@ export class ToolbarController {
     this.updateRefreshCommand_();
 
     // Update the label "x files selected." on the header.
-    let text: string = '';
+    let text = '';
     if (selection.totalCount === 0) {
       text = '';
     } else if (selection.totalCount === 1) {
-      if (selection.directoryCount == 0) {
+      if (selection.directoryCount === 0) {
         text = str('ONE_FILE_SELECTED');
-      } else if (selection.fileCount == 0) {
+      } else if (selection.fileCount === 0) {
         text = str('ONE_DIRECTORY_SELECTED');
       }
     } else {
-      if (selection.directoryCount == 0) {
+      if (selection.directoryCount === 0) {
         text = strf('MANY_FILES_SELECTED', selection.fileCount);
-      } else if (selection.fileCount == 0) {
+      } else if (selection.fileCount === 0) {
         text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
       } else {
         text = strf('MANY_ENTRIES_SELECTED', selection.totalCount);
@@ -269,7 +268,7 @@ export class ToolbarController {
     }
 
     // Update visibility of the restore-from-trash button.
-    this.restoreFromTrashButton_.hidden = (selection.totalCount == 0) ||
+    this.restoreFromTrashButton_.hidden = (selection.totalCount === 0) ||
         this.directoryModel_.getCurrentRootType() !== RootType.TRASH;
 
     this.togglePinnedCommand_.canExecuteChange(this.listContainer_.currentList);
@@ -284,7 +283,7 @@ export class ToolbarController {
       const bodyClassList =
           this.filesSelectedLabel_.ownerDocument.body.classList;
       bodyClassList.toggle('selecting', selection.totalCount > 0);
-      if (bodyClassList.contains('check-select') !=
+      if (bodyClassList.contains('check-select') !==
           (this.directoryModel_.getFileListSelection() as
            FileListSelectionModel)
               .getCheckSelectMode()) {
@@ -415,52 +414,48 @@ export class ToolbarController {
       isNetworkMetered: boolean) {
     if (isNetworkMetered) {
       this.cloudButton_.ariaLabel = str('BULK_PINNING_BUTTON_LABEL_PAUSED');
-      this.cloudButtonIcon_.setAttribute('type', constants.ICON_TYPES.CLOUD);
-      this.cloudStatusIcon_.setAttribute(
-          'type', constants.ICON_TYPES.CLOUD_PAUSED);
+      this.cloudButtonIcon_.setAttribute('type', ICON_TYPES.CLOUD);
+      this.cloudStatusIcon_.setAttribute('type', ICON_TYPES.CLOUD_PAUSED);
       this.cloudStatusIcon_.removeAttribute('size');
       return;
     }
 
     switch (progress?.stage) {
       case chrome.fileManagerPrivate.BulkPinStage.SYNCING:
-        this.cloudButtonIcon_.setAttribute('type', constants.ICON_TYPES.CLOUD);
+        this.cloudButtonIcon_.setAttribute('type', ICON_TYPES.CLOUD);
         if (progress.bytesToPin === 0 ||
             progress.pinnedBytes / progress.bytesToPin === 1) {
           this.cloudButton_.ariaLabel = str('BULK_PINNING_FILE_SYNC_ON');
-          this.cloudStatusIcon_.setAttribute(
-              'type', constants.ICON_TYPES.BLANK);
+          this.cloudStatusIcon_.setAttribute('type', ICON_TYPES.BLANK);
         } else {
           this.cloudButton_.ariaLabel =
               str('BULK_PINNING_BUTTON_LABEL_SYNCING');
-          this.cloudStatusIcon_.setAttribute(
-              'type', constants.ICON_TYPES.CLOUD_SYNC);
+          this.cloudStatusIcon_.setAttribute('type', ICON_TYPES.CLOUD_SYNC);
         }
         break;
       case chrome.fileManagerPrivate.BulkPinStage.NOT_ENOUGH_SPACE:
         this.cloudButton_.ariaLabel = str('BULK_PINNING_BUTTON_LABEL_ISSUE');
-        this.cloudButtonIcon_.setAttribute('type', constants.ICON_TYPES.CLOUD);
-        this.cloudStatusIcon_.setAttribute(
-            'type', constants.ICON_TYPES.CLOUD_ERROR);
+        this.cloudButtonIcon_.setAttribute('type', ICON_TYPES.CLOUD);
+        this.cloudStatusIcon_.setAttribute('type', ICON_TYPES.CLOUD_ERROR);
         break;
       case chrome.fileManagerPrivate.BulkPinStage.PAUSED_OFFLINE:
         this.cloudButton_.ariaLabel = str('BULK_PINNING_BUTTON_LABEL_OFFLINE');
         this.cloudButtonIcon_.setAttribute(
-            'type', constants.ICON_TYPES.BULK_PINNING_OFFLINE);
+            'type', ICON_TYPES.BULK_PINNING_OFFLINE);
         this.cloudStatusIcon_.removeAttribute('type');
         this.cloudStatusIcon_.removeAttribute('size');
         break;
       case chrome.fileManagerPrivate.BulkPinStage.PAUSED_BATTERY_SAVER:
         this.cloudButton_.ariaLabel = str('BULK_PINNING_BUTTON_LABEL_PAUSED');
         this.cloudButtonIcon_.setAttribute(
-            'type', constants.ICON_TYPES.BULK_PINNING_BATTERY_SAVER);
+            'type', ICON_TYPES.BULK_PINNING_BATTERY_SAVER);
         this.cloudStatusIcon_.removeAttribute('type');
         this.cloudStatusIcon_.removeAttribute('size');
         break;
       default:
         this.cloudButton_.ariaLabel = str('BULK_PINNING_FILE_SYNC_ON');
-        this.cloudButtonIcon_.setAttribute('type', constants.ICON_TYPES.CLOUD);
-        this.cloudStatusIcon_.setAttribute('type', constants.ICON_TYPES.BLANK);
+        this.cloudButtonIcon_.setAttribute('type', ICON_TYPES.CLOUD);
+        this.cloudStatusIcon_.setAttribute('type', ICON_TYPES.BLANK);
         this.cloudStatusIcon_.removeAttribute('size');
         break;
     }

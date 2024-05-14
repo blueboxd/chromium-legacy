@@ -10,8 +10,8 @@
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
-#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/favicon/model/favicon_loader.h"
+#import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
@@ -156,7 +157,8 @@ using password_manager::WarningType;
                                        GetForBrowserState(browserState)
                      faviconLoader:faviconLoader
                        syncService:SyncServiceFactory::GetForBrowserState(
-                                       browserState)];
+                                       browserState)
+                       prefService:browserState->GetPrefs()];
   self.mediator.tracker =
       feature_engagement::TrackerFactory::GetForBrowserState(browserState);
 
@@ -181,7 +183,7 @@ using password_manager::WarningType;
   passwordsViewController.browsingDataHandler =
       HandlerForProtocol(dispatcher, BrowsingDataCommands);
   passwordsViewController.settingsHandler =
-      HandlerForProtocol(dispatcher, ApplicationSettingsCommands);
+      HandlerForProtocol(dispatcher, SettingsCommands);
   passwordsViewController.snackbarHandler =
       HandlerForProtocol(dispatcher, SnackbarCommands);
 
@@ -193,23 +195,16 @@ using password_manager::WarningType;
 
   self.mediator.consumer = self.passwordsViewController;
 
-  BOOL startBlockedForReauth =
-      password_manager::features::IsAuthOnEntryEnabled() ||
-      password_manager::features::IsAuthOnEntryV2Enabled();
   // Disable animation when content will be blocked for reauth to prevent
   // flickering in navigation bar.
   [self.baseNavigationController pushViewController:self.passwordsViewController
-                                           animated:!startBlockedForReauth];
+                                           animated:NO];
 
   _visitsRecorder = [[IOSPasswordManagerVisitsRecorder alloc]
       initWithPasswordManagerSurface:password_manager::PasswordManagerSurface::
                                          kPasswordList];
 
-  if (startBlockedForReauth) {
-    [self startReauthCoordinatorWithAuthOnStart:YES];
-  } else {
-    [_visitsRecorder maybeRecordVisitMetric];
-  }
+  [self startReauthCoordinatorWithAuthOnStart:YES];
 
   // Start a password check.
   [self checkSavedPasswords];
@@ -505,6 +500,15 @@ using password_manager::WarningType;
     [_reauthCoordinator stop];
     _reauthCoordinator.delegate = nil;
     _reauthCoordinator = nil;
+  }
+
+  // Make sure that the Password Manager's toolbar is in the correct state once
+  // the reauthentication view controller is dismissed. This is a fix for
+  // crbug.com/1503081 that works well in pratice, but isn't perfect due to
+  // possible race conditions.
+  if (_baseNavigationController.topViewController ==
+      self.passwordsViewController) {
+    [self.passwordsViewController updateUIForEditState];
   }
 }
 

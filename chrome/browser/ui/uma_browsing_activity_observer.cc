@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/check_is_test.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -112,7 +111,7 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   int customized_tab_group_count = 0;
   int pinned_tab_count = 0;
 
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     // Record how many tabs each window has open.
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerWindow",
                                 browser->tab_strip_model()->count(), 1, 200,
@@ -197,9 +196,10 @@ UMABrowsingActivityObserver::TabHelper::~TabHelper() = default;
 
 void UMABrowsingActivityObserver::TabHelper::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  // This is null in unit tests.
+  // This is null in unit tests. Crash reports suggest it's possible for it to
+  // be null in production. See https://crbug.com/1510023 and
+  // https://crbug.com/1523758
   if (!g_uma_browsing_activity_observer_instance) {
-    CHECK_IS_TEST();
     return;
   }
 

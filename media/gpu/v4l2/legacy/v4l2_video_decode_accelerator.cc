@@ -27,7 +27,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
-#include "media/base/scopedfd_helper.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/fourcc.h"
@@ -747,8 +746,8 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     }
 
     iter->output_frame = VideoFrame::WrapExternalDmabufs(
-        *layout, gfx::Rect(visible_size_), visible_size_,
-        DuplicateFDs(duped_fds), base::TimeDelta());
+        *layout, gfx::Rect(visible_size_), visible_size_, std::move(duped_fds),
+        base::TimeDelta());
   }
 
   if (iter->texture_id != 0) {
@@ -1437,7 +1436,7 @@ bool V4L2VideoDecodeAccelerator::DequeueResolutionChangeEvent() {
   DCHECK_NE(decoder_state_, kUninitialized);
   DVLOGF(3);
 
-  while (absl::optional<struct v4l2_event> event = device_->DequeueEvent()) {
+  while (std::optional<struct v4l2_event> event = device_->DequeueEvent()) {
     if (event->type == V4L2_EVENT_SOURCE_CHANGE) {
       if (event->u.src_change.changes & V4L2_EVENT_SRC_CH_RESOLUTION) {
         VLOGF(2) << "got resolution change event.";
@@ -2568,7 +2567,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
   child_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect, client_,
-                     buffer_count, pixel_format, 1, egl_image_size_,
+                     buffer_count, pixel_format, egl_image_size_,
                      gfx::Rect(visible_size_), device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding

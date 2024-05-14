@@ -39,9 +39,9 @@ enum class Policy {
 // FilesPolicyDialog is a window modal dialog used to show detailed overview of
 // warnings and files blocked by data protection policies.
 class FilesPolicyDialog : public PolicyDialogBase {
- public:
-  METADATA_HEADER(FilesPolicyDialog);
+  METADATA_HEADER(FilesPolicyDialog, PolicyDialogBase)
 
+ public:
   // Reasons for which a file can be blocked either because of an Enterprise
   // Connectors or DLP policy.
   // Please keep in sync with the `available_reasons` array below!
@@ -126,6 +126,10 @@ class FilesPolicyDialog : public PolicyDialogBase {
     // Overrides the default learn more URL.
     void SetLearnMoreURL(const std::optional<GURL>& url);
 
+    // Returns an accessible learn more link name, if available. An empty string
+    // otherwise.
+    std::u16string GetAccessibleLearnMoreLinkName() const;
+
     // Returns whether at least one of the default values (e.g., message, learn
     // more URL, etc...) has been overridden with a custom value.
     bool HasCustomDetails() const;
@@ -148,6 +152,10 @@ class FilesPolicyDialog : public PolicyDialogBase {
 
     // Whether `learn_more_url_` is a custom url.
     bool is_custom_learn_more_url_ = false;
+
+    // Learn more link name providing more info for users using a ChromeVox
+    // reader.
+    std::u16string accessible_learn_more_link_name_;
 
     // Default, admin defined learn more URL, or none of them.
     std::optional<GURL> learn_more_url_;

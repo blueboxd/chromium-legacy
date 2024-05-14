@@ -42,25 +42,27 @@ void PopupRowContentView::UpdateStyle(bool selected) {
     SetBackground(nullptr);
   }
 
-  // Set style for each label in this cell depending on its current selection
-  // state.
-  for (views::Label* label : tracked_labels_) {
-    label->SetAutoColorReadabilityEnabled(false);
+  if (!ShouldApplyNewAutofillPopupStyle()) {
+    // Set style for each label in this cell depending on its current selection
+    // state.
+    for (views::Label* label : tracked_labels_) {
+      label->SetAutoColorReadabilityEnabled(false);
 
-    // If the current suggestion is selected or the label is disabled,
-    // override the style. Otherwise, use the color that corresponds to the
-    // actual style of the label.
-    int style = label->GetEnabled() ? (selected ? views::style::STYLE_SELECTED
-                                                : label->GetTextStyle())
-                                    : views::style::STYLE_DISABLED;
-    label->SetEnabledColorId(views::TypographyProvider::Get().GetColorId(
-        label->GetTextContext(), style));
+      // If the current suggestion is selected or the label is disabled,
+      // override the style. Otherwise, use the color that corresponds to the
+      // actual style of the label.
+      int style = label->GetEnabled() ? (selected ? views::style::STYLE_SELECTED
+                                                  : label->GetTextStyle())
+                                      : views::style::STYLE_DISABLED;
+      label->SetEnabledColorId(views::TypographyProvider::Get().GetColorId(
+          label->GetTextContext(), style));
+    }
   }
 
   SchedulePaint();
 }
 
-BEGIN_METADATA(PopupRowContentView, views::View)
+BEGIN_METADATA(PopupRowContentView)
 END_METADATA
 
 }  // namespace autofill

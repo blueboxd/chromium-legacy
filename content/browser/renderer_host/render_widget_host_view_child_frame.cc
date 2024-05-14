@@ -35,7 +35,6 @@
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom.h"
-#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/display/display_util.h"
@@ -115,7 +114,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnector(
     SetParentFrameSinkId(viz::FrameSinkId());
 
     // Unlocks the mouse if this RenderWidgetHostView holds the lock.
-    UnlockMouse();
+    UnlockPointer();
     DetachFromTouchSelectionClientManagerIfNecessary();
   }
   frame_connector_ = frame_connector;
@@ -326,10 +325,10 @@ void RenderWidgetHostViewChildFrame::UpdateBackgroundColor() {
   }
 }
 
-absl::optional<DisplayFeature>
+std::optional<DisplayFeature>
 RenderWidgetHostViewChildFrame::GetDisplayFeature() {
   NOTREACHED();
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void RenderWidgetHostViewChildFrame::SetDisplayFeatureForTesting(
@@ -385,7 +384,7 @@ void RenderWidgetHostViewChildFrame::SendInitialPropertiesIfNeeded() {
   if (initial_properties_sent_ || !frame_connector_)
     return;
   UpdateViewportIntersection(frame_connector_->intersection_state(),
-                             absl::nullopt);
+                             std::nullopt);
   SetIsInert();
   UpdateInheritedEffectiveTouchAction();
   UpdateRenderThrottlingStatus();
@@ -492,7 +491,7 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
 
 void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     const blink::mojom::ViewportIntersectionState& intersection_state,
-    const absl::optional<blink::VisualProperties>& visual_properties) {
+    const std::optional<blink::VisualProperties>& visual_properties) {
   if (host()) {
     host()->SetIntersectsViewport(
         !intersection_state.viewport_intersection.IsEmpty());
@@ -548,8 +547,7 @@ void RenderWidgetHostViewChildFrame::StopFlingingIfNecessary(
 
 void RenderWidgetHostViewChildFrame::GestureEventAck(
     const blink::WebGestureEvent& event,
-    blink::mojom::InputEventResultState ack_result,
-    blink::mojom::ScrollResultDataPtr scroll_result_data) {
+    blink::mojom::InputEventResultState ack_result) {
   // Stop flinging if a GSU event with momentum phase is sent to the renderer
   // but not consumed.
   StopFlingingIfNecessary(event, ack_result);
@@ -560,9 +558,7 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     return;
 
   if (event.IsTouchpadZoomEvent())
-    ProcessTouchpadZoomEventAckInRoot(
-        event, ack_result,
-        scroll_result_data ? scroll_result_data.Clone() : nullptr);
+    ProcessTouchpadZoomEventAckInRoot(event, ack_result);
 
   // GestureScrollBegin is a blocking event; It is forwarded for bubbling if
   // its ack is not consumed. For the rest of the scroll events
@@ -586,18 +582,15 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     }
   }
 
-  frame_connector_->DidAckGestureEvent(event, ack_result,
-                                       std::move(scroll_result_data));
+  frame_connector_->DidAckGestureEvent(event, ack_result);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessTouchpadZoomEventAckInRoot(
     const blink::WebGestureEvent& event,
-    blink::mojom::InputEventResultState ack_result,
-    blink::mojom::ScrollResultDataPtr scroll_result_data) {
+    blink::mojom::InputEventResultState ack_result) {
   DCHECK(event.IsTouchpadZoomEvent());
 
-  frame_connector_->ForwardAckedTouchpadZoomEvent(
-      event, ack_result, std::move(scroll_result_data));
+  frame_connector_->ForwardAckedTouchpadZoomEvent(event, ack_result);
 }
 
 void RenderWidgetHostViewChildFrame::ForwardTouchpadZoomEventIfNecessary(
@@ -662,31 +655,33 @@ void RenderWidgetHostViewChildFrame::DidStopFlinging() {
     selection_controller_client_->DidStopFlinging();
 }
 
-blink::mojom::PointerLockResult RenderWidgetHostViewChildFrame::LockMouse(
+blink::mojom::PointerLockResult RenderWidgetHostViewChildFrame::LockPointer(
     bool request_unadjusted_movement) {
   if (frame_connector_)
-    return frame_connector_->LockMouse(request_unadjusted_movement);
+    return frame_connector_->LockPointer(request_unadjusted_movement);
   return blink::mojom::PointerLockResult::kWrongDocument;
 }
 
-blink::mojom::PointerLockResult RenderWidgetHostViewChildFrame::ChangeMouseLock(
+blink::mojom::PointerLockResult
+RenderWidgetHostViewChildFrame::ChangePointerLock(
     bool request_unadjusted_movement) {
   if (frame_connector_)
-    return frame_connector_->ChangeMouseLock(request_unadjusted_movement);
+    return frame_connector_->ChangePointerLock(request_unadjusted_movement);
   return blink::mojom::PointerLockResult::kWrongDocument;
 }
 
-void RenderWidgetHostViewChildFrame::UnlockMouse() {
-  if (host()->delegate() && host()->delegate()->HasMouseLock(host()) &&
-      frame_connector_)
-    frame_connector_->UnlockMouse();
+void RenderWidgetHostViewChildFrame::UnlockPointer() {
+  if (host()->delegate() && host()->delegate()->HasPointerLock(host()) &&
+      frame_connector_) {
+    frame_connector_->UnlockPointer();
+  }
 }
 
-bool RenderWidgetHostViewChildFrame::IsMouseLocked() {
+bool RenderWidgetHostViewChildFrame::IsPointerLocked() {
   if (!host()->delegate())
     return false;
 
-  return host()->delegate()->HasMouseLock(host());
+  return host()->delegate()->HasPointerLock(host());
 }
 
 const viz::FrameSinkId& RenderWidgetHostViewChildFrame::GetFrameSinkId() const {
@@ -706,7 +701,7 @@ void RenderWidgetHostViewChildFrame::NotifyHitTestRegionUpdated(
     selection_controller_client_->OnHitTestRegionUpdated();
   }
 
-  absl::optional<gfx::RectF> screen_rect =
+  std::optional<gfx::RectF> screen_rect =
       region.transform.InverseMapRect(gfx::RectF(region.rect));
   if (!screen_rect) {
     last_stable_screen_rect_ = gfx::RectF();
@@ -874,6 +869,11 @@ void RenderWidgetHostViewChildFrame::ShowSharePicker(
     const std::string& url,
     const std::vector<std::string>& file_paths,
     blink::mojom::ShareService::ShareCallback callback) {}
+
+uint64_t RenderWidgetHostViewChildFrame::GetNSViewId() const {
+  return 0;
+}
+
 #endif  // BUILDFLAG(IS_MAC)
 
 void RenderWidgetHostViewChildFrame::CopyFromSurface(

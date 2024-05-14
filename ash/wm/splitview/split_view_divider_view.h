@@ -19,9 +19,9 @@ class SplitViewDividerHandlerView;
 // A view that acts as the contents view of the split view divider widget.
 class SplitViewDividerView : public views::View,
                              public views::ViewTargeterDelegate {
- public:
-  METADATA_HEADER(SplitViewDividerView);
+  METADATA_HEADER(SplitViewDividerView, views::View)
 
+ public:
   explicit SplitViewDividerView(SplitViewController* controller,
                                 SplitViewDivider* divider);
   SplitViewDividerView(const SplitViewDividerView&) = delete;
@@ -32,7 +32,7 @@ class SplitViewDividerView : public views::View,
   void SetDividerBarVisible(bool visible);
 
   // views::View:
-  void Layout() override;
+  void Layout(PassKey) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -50,11 +50,9 @@ class SplitViewDividerView : public views::View,
   void OnResizeStatusChanged();
 
   // TODO(b/314018158): Replace with `LayoutDividerController`.
-  raw_ptr<SplitViewController, DanglingUntriaged | ExperimentalAsh>
-      split_view_controller_;
-  raw_ptr<SplitViewDividerHandlerView, ExperimentalAsh> divider_handler_view_ =
-      nullptr;
-  raw_ptr<SplitViewDivider, DanglingUntriaged | ExperimentalAsh> divider_;
+  raw_ptr<SplitViewController, DanglingUntriaged> split_view_controller_;
+  raw_ptr<SplitViewDividerHandlerView> divider_handler_view_ = nullptr;
+  raw_ptr<SplitViewDivider, DanglingUntriaged> divider_;
 
   // Securely updates the cursor.
   CursorSetter cursor_setter_;

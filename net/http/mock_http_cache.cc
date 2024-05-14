@@ -765,8 +765,7 @@ bool MockHttpCache::WriteResponseInfo(disk_cache::Entry* disk_entry,
 
   TestCompletionCallback cb;
   int len = static_cast<int>(pickle.size());
-  scoped_refptr<WrappedIOBuffer> data = base::MakeRefCounted<WrappedIOBuffer>(
-      reinterpret_cast<const char*>(pickle.data()), len);
+  auto data = base::MakeRefCounted<WrappedIOBuffer>(pickle);
 
   int rv = disk_entry->WriteData(0, 0, data.get(), len, cb.callback(), true);
   rv = cb.GetResult(rv);
@@ -817,32 +816,32 @@ void MockHttpCache::SetTestMode(int test_mode) {
 }
 
 bool MockHttpCache::IsWriterPresent(const std::string& key) {
-  HttpCache::ActiveEntry* entry = http_cache_.GetActiveEntry(key);
+  auto entry = http_cache_.GetActiveEntry(key);
   return entry && entry->HasWriters() && !entry->writers()->IsEmpty();
 }
 
 bool MockHttpCache::IsHeadersTransactionPresent(const std::string& key) {
-  HttpCache::ActiveEntry* entry = http_cache_.GetActiveEntry(key);
+  auto entry = http_cache_.GetActiveEntry(key);
   return entry && entry->headers_transaction();
 }
 
 int MockHttpCache::GetCountReaders(const std::string& key) {
-  HttpCache::ActiveEntry* entry = http_cache_.GetActiveEntry(key);
+  auto entry = http_cache_.GetActiveEntry(key);
   return entry ? entry->readers().size() : 0;
 }
 
 int MockHttpCache::GetCountAddToEntryQueue(const std::string& key) {
-  HttpCache::ActiveEntry* entry = http_cache_.GetActiveEntry(key);
+  auto entry = http_cache_.GetActiveEntry(key);
   return entry ? entry->add_to_entry_queue().size() : 0;
 }
 
 int MockHttpCache::GetCountDoneHeadersQueue(const std::string& key) {
-  HttpCache::ActiveEntry* entry = http_cache_.GetActiveEntry(key);
+  auto entry = http_cache_.GetActiveEntry(key);
   return entry ? entry->done_headers_queue().size() : 0;
 }
 
 int MockHttpCache::GetCountWriterTransactions(const std::string& key) {
-  HttpCache::ActiveEntry* entry = http_cache_.GetActiveEntry(key);
+  auto entry = http_cache_.GetActiveEntry(key);
   return entry && entry->writers() ? entry->writers()->GetTransactionsCount()
                                    : 0;
 }

@@ -62,7 +62,7 @@ class TableViewTestHelper {
 
   size_t visible_col_count() { return table_->visible_columns().size(); }
 
-  absl::optional<size_t> GetActiveVisibleColumnIndex() {
+  std::optional<size_t> GetActiveVisibleColumnIndex() {
     return table_->GetActiveVisibleColumnIndex();
   }
 
@@ -221,7 +221,7 @@ class TestTableModel2 : public ui::TableModel {
  private:
   raw_ptr<ui::TableModelObserver> observer_ = nullptr;
 
-  absl::optional<std::u16string> tooltip_;
+  std::optional<std::u16string> tooltip_;
 
   // The data.
   std::vector<std::vector<int>> rows_;
@@ -466,10 +466,10 @@ class TableViewTest : public ViewsTestBase,
     // Run the tests using both default and non-default TableView construction.
     if (use_default_construction()) {
       table = std::make_unique<TableView>();
-      table->Init(model_.get(), columns, TEXT_ONLY, false);
+      table->Init(model_.get(), columns, TableType::kTextOnly, false);
     } else {
-      table =
-          std::make_unique<TableView>(model_.get(), columns, TEXT_ONLY, false);
+      table = std::make_unique<TableView>(model_.get(), columns,
+                                          TableType::kTextOnly, false);
     }
     table_ = table.get();
     auto scroll_view = TableView::CreateScrollViewWithTable(std::move(table));
@@ -1615,7 +1615,7 @@ TEST_P(TableViewTest, KeyUpDown) {
 
   EXPECT_EQ("2 3 4 0 1", GetViewToModelAsString(table_));
 
-  table_->Select(absl::nullopt);
+  table_->Select(std::nullopt);
   EXPECT_EQ("active=<none> anchor=<none> selection=", SelectionStateAsString());
 
   observer.GetChangedCountAndClear();
@@ -2417,7 +2417,7 @@ class TableViewPaintIconBoundsTest : public ViewsTestBase {
     columns[1].sortable = true;
 
     std::unique_ptr<TableView> table = std::make_unique<TableView>(
-        model_.get(), columns, ICON_AND_TEXT, false);
+        model_.get(), columns, TableType::kTextOnly, false);
     table_ = table.get();
     auto scroll_view = TableView::CreateScrollViewWithTable(std::move(table));
     scroll_view->SetBounds(0, 0, 1000, 1000);

@@ -8,8 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -52,7 +54,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/origin_trials/origin_trials_settings.mojom-forward.h"
@@ -153,18 +154,22 @@ class CONTENT_EXPORT RenderThreadImpl
   // RenderThread implementation:
   IPC::SyncChannel* GetChannel() override;
   std::string GetLocale() override;
+
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;
   void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
   void AttachTaskRunnerToRoute(
       int32_t routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RemoveRoute(int32_t routing_id) override;
+  void AddFilter(IPC::MessageFilter* filter) override;
+  void RemoveFilter(IPC::MessageFilter* filter) override;
+#endif
+
   bool GenerateFrameRoutingID(int32_t& routing_id,
                               blink::LocalFrameToken& frame_token,
                               base::UnguessableToken& devtools_frame_token,
                               blink::DocumentToken& document_token) override;
-  void AddFilter(IPC::MessageFilter* filter) override;
-  void RemoveFilter(IPC::MessageFilter* filter) override;
   void AddObserver(RenderThreadObserver* observer) override;
   void RemoveObserver(RenderThreadObserver* observer) override;
   int PostTaskToAllWebWorkers(base::RepeatingClosure closure) override;
@@ -262,8 +267,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return vc_manager_.get();
   }
 
-  mojom::RenderMessageFilter* render_message_filter();
-
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   gpu::GpuChannelHost* GetGpuChannel();
@@ -290,9 +293,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<viz::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
-
-  scoped_refptr<viz::ContextProviderCommandBuffer>
-  PepperVideoDecodeContextProvider();
 
   // For producing custom V8 histograms. Custom histograms are produced if all
   // `blink::WebView`s share the same host, and the host is in the pre-specified
@@ -378,7 +378,9 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnChannelError() override;
 
   // ChildThread
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
   bool OnControlMessageReceived(const IPC::Message& msg) override;
+#endif
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
 
@@ -426,6 +428,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void PurgeResourceCache(PurgeResourceCacheCallback callback) override;
   void SetProcessState(mojom::RenderProcessBackgroundState background_state,
                        mojom::RenderProcessVisibleState visible_state) override;
+  void SetBatterySaverMode(bool battery_saver_mode_enabled) override;
   void SetIsLockedToSite() override;
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   void WriteClangProfilingProfile(
@@ -458,6 +461,11 @@ class CONTENT_EXPORT RenderThreadImpl
       bool enable_video_decode_accelerator,
       bool enable_video_encode_accelerator);
 
+  mojom::RenderMessageFilter* render_message_filter();
+  void RequestNewItemsForFrameRoutingCache();
+  void PopulateFrameRoutingCacheWithItems(
+      std::vector<mojom::FrameRoutingInfoPtr> infos);
+
   scoped_refptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_memory_allocator_;
 
@@ -475,8 +483,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Used to keep track of the renderer's backgrounded and visibility state.
   // Updated via an IPC from the browser process. If nullopt, the browser
   // process has yet to send an update and the state is unknown.
-  absl::optional<mojom::RenderProcessBackgroundState> background_state_;
-  absl::optional<mojom::RenderProcessVisibleState> visible_state_;
+  std::optional<mojom::RenderProcessBackgroundState> background_state_;
+  std::optional<mojom::RenderProcessVisibleState> visible_state_;
 
   blink::WebString user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;
@@ -518,9 +526,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<viz::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
-  scoped_refptr<viz::ContextProviderCommandBuffer>
-      pepper_video_decode_contexts_;
-
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
   scoped_refptr<viz::RasterContextProvider>
@@ -553,7 +558,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojo::AssociatedReceiver<mojom::Renderer> renderer_receiver_{this};
 
-  mojo::AssociatedRemote<mojom::RenderMessageFilter> render_message_filter_;
+  mojo::Remote<mojom::RenderMessageFilter> render_message_filter_;
 
   std::set<std::unique_ptr<AgentSchedulingGroup>, base::UniquePtrComparator>
       agent_scheduling_groups_;
@@ -573,6 +578,17 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Tracks the time the run loop started for this thread.
   base::TimeTicks run_loop_start_time_;
+
+  // A small cache of pending frame routing IDs/tokens so we do not need to make
+  // a synchronous IPC call to retrieve one most of the time. If the cache is
+  // empty a synchronous IPC call will be made. Once the cache only has two
+  // items an asynchronous request to populate it will also be made.
+  std::deque<mojom::FrameRoutingInfoPtr> cached_frame_routing_;
+
+  // Keep track of it we have requested items or not as we do not want to fire
+  // off only one asynchronous request.
+  bool cached_items_requested_ = false;
+  bool use_cached_routing_table_ = false;
 
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_{this};
 };

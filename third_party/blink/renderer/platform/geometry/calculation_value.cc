@@ -44,11 +44,10 @@ CalculationValue::~CalculationValue() {
     data_.value.~PixelsAndPercent();
 }
 
-float CalculationValue::Evaluate(
-    float max_value,
-    const Length::AnchorEvaluator* anchor_evaluator) const {
+float CalculationValue::Evaluate(float max_value,
+                                 const Length::EvaluationInput& input) const {
   float value = ClampTo<float>(
-      is_expression_ ? data_.expression->Evaluate(max_value, anchor_evaluator)
+      is_expression_ ? data_.expression->Evaluate(max_value, input)
                      : Pixels() + Percent() / 100 * max_value);
   return (IsNonNegative() && value < 0) ? 0 : value;
 }
@@ -125,11 +124,10 @@ CalculationValue::SubtractFromOneHundredPercent() const {
 
 scoped_refptr<const CalculationValue> CalculationValue::Add(
     const CalculationValue& other) const {
-  CHECK_EQ(GetValueRange(), other.GetValueRange());
   auto result_expression = CalculationExpressionOperationNode::CreateSimplified(
       {GetOrCreateExpression(), other.GetOrCreateExpression()},
       CalculationOperator::kAdd);
-  return CreateSimplified(result_expression, GetValueRange());
+  return CreateSimplified(result_expression, Length::ValueRange::kAll);
 }
 
 scoped_refptr<const CalculationValue> CalculationValue::Zoom(
@@ -146,8 +144,8 @@ bool CalculationValue::HasAnchorQueries() const {
   return IsExpression() && data_.expression->HasAnchorQueries();
 }
 
-bool CalculationValue::HasAutoAnchorPositioning() const {
-  return IsExpression() && data_.expression->HasAutoAnchorPositioning();
+bool CalculationValue::HasContentOrIntrinsicSize() const {
+  return IsExpression() && data_.expression->HasContentOrIntrinsicSize();
 }
 
 }  // namespace blink

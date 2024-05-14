@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class DOMException;
+
 class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
  public:
   MockMediaStreamVideoSource();
@@ -40,7 +42,7 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
           const base::Token&,
           uint32_t,
           base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>));
-  MOCK_METHOD0(GetNextSubCaptureTargetVersion, absl::optional<uint32_t>());
+  MOCK_METHOD0(GetNextSubCaptureTargetVersion, std::optional<uint32_t>());
   MOCK_METHOD(uint32_t, GetSubCaptureTargetVersion, (), (const, override));
 
   // Simulate that the underlying source start successfully.
@@ -85,34 +87,16 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
   }
 
 #if !BUILDFLAG(IS_ANDROID)
-  void SendWheel(
-      CapturedWheelAction* action,
-      base::OnceCallback<void(bool, const String&)> callback) override;
+  MOCK_METHOD(
+      void,
+      SendWheel,
+      (double, double, int, int, base::OnceCallback<void(DOMException*)>),
+      (override));
 
-  struct SendWheelResult {
-    SendWheelResult(bool success, String error)
-        : success(success), error(std::move(error)) {}
-    bool success;
-    String error;
-  };
-
-  void SetSendWheelResult(const SendWheelResult& result) {
-    send_wheel_result_ = result;
-  }
-
-  void GetZoomLevel(base::OnceCallback<void(absl::optional<int>, const String&)>
-                        callback) override;
-
-  struct GetZoomLevelResult {
-    GetZoomLevelResult(absl::optional<int> zoom_level, String error)
-        : zoom_level(zoom_level), error(std::move(error)) {}
-    absl::optional<int> zoom_level;
-    String error;
-  };
-
-  void SetGetZoomLevelResult(const GetZoomLevelResult& result) {
-    get_zoom_level_result_ = result;
-  }
+  MOCK_METHOD(void,
+              SetZoomLevel,
+              (int, base::OnceCallback<void(DOMException*)>),
+              (override));
 #endif  // !BUILDFLAG(IS_ANDROID)
 
   void EnableStopForRestart() { can_stop_for_restart_ = true; }
@@ -141,7 +125,7 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
       VideoCaptureSubCaptureTargetVersionCB sub_capture_target_version_callback,
       VideoCaptureNotifyFrameDroppedCB frame_dropped_callback) override;
   void StopSourceImpl() override;
-  absl::optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
+  std::optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
   void StopSourceForRestartImpl() override;
   void RestartSourceImpl(const media::VideoCaptureFormat& new_format) override;
 
@@ -158,10 +142,6 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
   EncodedVideoFrameCB encoded_frame_callback_;
   VideoCaptureSubCaptureTargetVersionCB sub_capture_target_version_callback_;
   VideoCaptureNotifyFrameDroppedCB frame_dropped_callback_;
-#if !BUILDFLAG(IS_ANDROID)
-  absl::optional<SendWheelResult> send_wheel_result_;
-  absl::optional<GetZoomLevelResult> get_zoom_level_result_;
-#endif  // !BUILDFLAG(IS_ANDROID)
 
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 };

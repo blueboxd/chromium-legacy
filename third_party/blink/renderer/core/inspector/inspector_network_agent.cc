@@ -123,8 +123,8 @@ namespace {
 constexpr int kDefaultTotalBufferSize = 10 * 1000 * 1000;    // 10 MB
 constexpr int kDefaultResourceBufferSize = 5 * 1000 * 1000;  // 5 MB
 #else
-constexpr int kDefaultTotalBufferSize = 100 * 1000 * 1000;    // 100 MB
-constexpr int kDefaultResourceBufferSize = 10 * 1000 * 1000;  // 10 MB
+constexpr int kDefaultTotalBufferSize = 200 * 1000 * 1000;    // 200 MB
+constexpr int kDefaultResourceBufferSize = 20 * 1000 * 1000;  // 20 MB
 #endif
 
 // Pattern may contain stars ('*') which match to any (possibly empty) string.
@@ -440,7 +440,7 @@ Maybe<String> BuildBlockedReason(const ResourceError& error) {
     return Maybe<String>();
   }
 
-  absl::optional<ResourceRequestBlockedReason> resource_request_blocked_reason =
+  std::optional<ResourceRequestBlockedReason> resource_request_blocked_reason =
       error.GetResourceRequestBlockedReason();
   if (resource_request_blocked_reason)
     return BuildBlockedReason(*resource_request_blocked_reason);
@@ -700,7 +700,7 @@ void SetNetworkStateOverride(bool offline,
   // have per-frame override instead.
   if (offline || latency || download_throughput || upload_throughput) {
     GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-        !offline, type, absl::nullopt, latency,
+        !offline, type, std::nullopt, latency,
         download_throughput / (1024 * 1024 / 8));
   } else {
     GetNetworkStateNotifier().ClearOverride();
@@ -718,9 +718,9 @@ String IPAddressToString(const net::IPAddress& address) {
 
 namespace ContentEncodingEnum = protocol::Network::ContentEncodingEnum;
 
-absl::optional<String> AcceptedEncodingFromProtocol(
+std::optional<String> AcceptedEncodingFromProtocol(
     const protocol::Network::ContentEncoding& encoding) {
-  absl::optional<String> result;
+  std::optional<String> result;
   if (ContentEncodingEnum::Gzip == encoding ||
       ContentEncodingEnum::Br == encoding ||
       ContentEncodingEnum::Deflate == encoding ||
@@ -1027,12 +1027,18 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
       break;
   }
 
-  // Use mime type from cached resource in case the one in response is empty
-  // or the response is a 304 Not Modified.
+  // Use mime type and charset from cached resource in case the one in response
+  // is empty or the response is a 304 Not Modified.
   String mime_type = response.MimeType();
-  if (cached_resource &&
-      (mime_type.empty() || response.HttpStatusCode() == 304))
-    mime_type = cached_resource->GetResponse().MimeType();
+  String charset = response.TextEncodingName();
+  if (cached_resource) {
+    if (mime_type.empty() || response.HttpStatusCode() == 304) {
+      mime_type = cached_resource->GetResponse().MimeType();
+    }
+    if (charset.empty() || response.HttpStatusCode() == 304) {
+      charset = cached_resource->GetResponse().TextEncodingName();
+    }
+  }
 
   if (is_empty)
     *is_empty = !status && mime_type.empty() && !headers_map.size();
@@ -1044,6 +1050,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
           .setStatusText(status_text)
           .setHeaders(BuildObjectForHeaders(headers_map))
           .setMimeType(mime_type)
+          .setCharset(charset)
           .setConnectionReused(response.ConnectionReused())
           .setConnectionId(response.ConnectionID())
           .setEncodedDataLength(encoded_data_length)
@@ -1110,7 +1117,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
         AlternateProtocolUsageToString(response.AlternateProtocolUsage()));
   }
 
-  const absl::optional<net::SSLInfo>& ssl_info = response.GetSSLInfo();
+  const std::optional<net::SSLInfo>& ssl_info = response.GetSSLInfo();
   if (ssl_info.has_value()) {
     response_object->setSecurityDetails(BuildSecurityDetails(*ssl_info));
   }
@@ -1297,7 +1304,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
                                       pending_xhr_replay_data_.Get());
     pending_xhr_replay_data_.Clear();
   }
-  pending_request_type_ = absl::nullopt;
+  pending_request_type_ = std::nullopt;
 }
 
 void InspectorNetworkAgent::WillSendNavigationRequest(
@@ -1487,7 +1494,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   resources_data_->SetResourceType(request_id, type);
   resources_data_->ResponseReceived(request_id, frame_id, response);
 
-  const absl::optional<net::SSLInfo>& ssl_info = response.GetSSLInfo();
+  const std::optional<net::SSLInfo>& ssl_info = response.GetSSLInfo();
   if (ssl_info.has_value() && ssl_info->cert) {
     resources_data_->SetCertificate(request_id, ssl_info->cert);
   }
@@ -1660,6 +1667,8 @@ void InspectorNetworkAgent::DidFailLoading(
     return;
   }
 
+  resources_data_->ClearData(request_id);
+
   bool canceled = error.IsCancellation();
 
   protocol::Maybe<String> blocked_reason = BuildBlockedReason(error);
@@ -1820,12 +1829,17 @@ InspectorNetworkAgent::BuildInitiatorObject(
       .build();
 }
 
+void InspectorNetworkAgent::WillCreateP2PSocketUdp(
+    std::optional<base::UnguessableToken>* devtools_token) {
+  *devtools_token = devtools_token_;
+}
+
 void InspectorNetworkAgent::WillCreateWebSocket(
     ExecutionContext* execution_context,
     uint64_t identifier,
     const KURL& request_url,
     const String&,
-    absl::optional<base::UnguessableToken>* devtools_token) {
+    std::optional<base::UnguessableToken>* devtools_token) {
   *devtools_token = devtools_token_;
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
@@ -2160,7 +2174,7 @@ protocol::Response InspectorNetworkAgent::setAcceptedEncodings(
         encodings) {
   HashSet<String> accepted_encodings;
   for (const protocol::Network::ContentEncoding& encoding : *encodings) {
-    absl::optional<String> value = AcceptedEncodingFromProtocol(encoding);
+    std::optional<String> value = AcceptedEncodingFromProtocol(encoding);
     if (!value) {
       return protocol::Response::InvalidParams("Unknown encoding type: " +
                                                encoding.Utf8());

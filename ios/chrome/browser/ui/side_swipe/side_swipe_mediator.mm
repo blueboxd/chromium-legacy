@@ -9,7 +9,10 @@
 
 #import "base/feature_list.h"
 #import "base/ios/block_types.h"
+#import "base/memory/raw_ptr.h"
 #import "base/scoped_observation.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -43,11 +46,15 @@ enum class SwipeType { NONE, CHANGE_TAB, CHANGE_PAGE };
 // Swipe starting distance from edge.
 const CGFloat kSwipeEdge = 20;
 
+// The distance between touches for a swipe between tabs to begin.
+const CGFloat kPanGestureRecognizerThreshold = 25;
+
 // Distance between sections of iPad side swipe.
 const CGFloat kIpadTabSwipeDistance = 100;
 
 // Number of tabs to keep in the grey image cache.
 const NSUInteger kIpadGreySwipeTabCount = 8;
+
 }  // namespace
 
 @interface SideSwipeMediator () <CRWWebStateObserver,
@@ -97,7 +104,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   std::unique_ptr<AnimatedScopedFullscreenDisabler> _animatedFullscreenDisabler;
 
   // Used to add or remove the snapshot's gray cache.
-  SnapshotBrowserAgent* _snapshotBrowserAgent;
+  raw_ptr<SnapshotBrowserAgent> _snapshotBrowserAgent;
 }
 
 // The current active WebState.
@@ -138,7 +145,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 @synthesize inSwipe = _inSwipe;
 @synthesize swipeDelegate = _swipeDelegate;
 @synthesize toolbarInteractionHandler = _toolbarInteractionHandler;
-@synthesize snapshotDelegate = _snapshotDelegate;
 @synthesize tabStripDelegate = _tabStripDelegate;
 
 - (instancetype)
@@ -194,7 +200,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       [[SideSwipeGestureRecognizer alloc] initWithTarget:self
                                                   action:@selector(handlePan:)];
   [_panGestureRecognizer setMaximumNumberOfTouches:1];
-  [_panGestureRecognizer setSwipeThreshold:48];
+  [_panGestureRecognizer setSwipeThreshold:kPanGestureRecognizerThreshold];
   [_panGestureRecognizer setDelegate:self];
   [view addGestureRecognizer:_panGestureRecognizer];
 }
@@ -426,6 +432,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     } else {
       web_navigation_util::GoForward(webState);
     }
+    CHECK(self.engagementTracker);
+    self.engagementTracker->NotifyEvent(
+        feature_engagement::events::kIOSSwipeBackForwardUsed);
   }
   __weak SideSwipeMediator* weakSelf = self;
   // Checking -IsLoading() is likely incorrect, but to narrow the scope of

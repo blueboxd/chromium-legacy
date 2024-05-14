@@ -107,12 +107,13 @@ void GetUnavailableBrowserAppNames(
     apps::AppServiceProxy* app_service_proxy,
     std::vector<std::u16string>& out_app_names) {
   for (const auto& [id, restore_data] : launch_list) {
-    if (restore_data->app_type_browser.value_or(false) &&
-        restore_data->app_name.has_value()) {
-      std::string app_id =
-          app_restore::GetAppIdFromAppName(restore_data->app_name.value());
+    if (restore_data->browser_extra_info.app_type_browser.value_or(false) &&
+        restore_data->browser_extra_info.app_name.has_value()) {
+      std::string app_id = app_restore::GetAppIdFromAppName(
+          restore_data->browser_extra_info.app_name.value());
       if (!IsAppAvailable(app_id, app_service_proxy)) {
-        out_app_names.push_back(restore_data->title.value_or(u""));
+        out_app_names.push_back(
+            restore_data->window_info.app_title.value_or(u""));
       }
     }
   }
@@ -149,7 +150,8 @@ std::vector<std::u16string> GetUnavailableAppNames(
       // need the title of the first window.
       auto it = launch_list.begin();
       app_restore::AppRestoreData* app_restore_data = it->second.get();
-      app_names.push_back(app_restore_data->title.value_or(u""));
+      app_names.push_back(
+          app_restore_data->window_info.app_title.value_or(u""));
     }
   }
   return app_names;
@@ -287,7 +289,7 @@ void ChromeSavedDeskDelegate::GetAppLaunchDataForSavedDesk(
 
   if (const std::string* app_name =
           window->GetProperty(app_restore::kBrowserAppNameKey)) {
-    app_launch_info->app_name = *app_name;
+    app_launch_info->browser_extra_info.app_name = *app_name;
   }
 
   // Read all other relevant app launching information from `app_restore_data`
@@ -295,7 +297,6 @@ void ChromeSavedDeskDelegate::GetAppLaunchDataForSavedDesk(
   const app_restore::AppRestoreData* app_restore_data =
       full_restore_data->GetAppRestoreData(app_id, window_id);
   if (app_restore_data) {
-    app_launch_info->app_type_browser = app_restore_data->app_type_browser;
     app_launch_info->event_flag = app_restore_data->event_flag;
     app_launch_info->container = app_restore_data->container;
     app_launch_info->disposition = app_restore_data->disposition;
@@ -304,6 +305,8 @@ void ChromeSavedDeskDelegate::GetAppLaunchDataForSavedDesk(
     if (app_restore_data->intent) {
       app_launch_info->intent = app_restore_data->intent->Clone();
     }
+    app_launch_info->browser_extra_info.app_type_browser =
+        app_restore_data->browser_extra_info.app_type_browser;
   }
 
   if (app_id != app_constants::kChromeAppId &&
@@ -322,19 +325,21 @@ void ChromeSavedDeskDelegate::GetAppLaunchDataForSavedDesk(
 
   auto* tab_strip_model = GetTabstripModelForWindowIfAny(window);
   if (tab_strip_model) {
-    app_launch_info->urls = GetURLsIfApplicable(tab_strip_model);
-    app_launch_info->active_tab_index = tab_strip_model->active_index();
+    app_launch_info->browser_extra_info.urls =
+        GetURLsIfApplicable(tab_strip_model);
+    app_launch_info->browser_extra_info.active_tab_index =
+        tab_strip_model->active_index();
     int index_of_first_non_pinned_tab =
         tab_strip_model->IndexOfFirstNonPinnedTab();
     // Only set this field if there are pinned tabs. `IndexOfFirstNonPinnedTab`
     // returns 0 if there are no pinned tabs.
     if (index_of_first_non_pinned_tab > 0 &&
         index_of_first_non_pinned_tab <= tab_strip_model->count()) {
-      app_launch_info->first_non_pinned_tab_index =
+      app_launch_info->browser_extra_info.first_non_pinned_tab_index =
           index_of_first_non_pinned_tab;
     }
     if (tab_strip_model->SupportsTabGroups()) {
-      app_launch_info->tab_group_infos =
+      app_launch_info->browser_extra_info.tab_group_infos =
           chrome_desks_util::ConvertTabGroupsToTabGroupInfos(
               tab_strip_model->group_model());
     }
@@ -431,11 +436,10 @@ void ChromeSavedDeskDelegate::GetIconForAppId(
     return;
   }
 
-  app_service_proxy->LoadIcon(
-      app_service_proxy->AppRegistryCache().GetAppType(app_id), app_id,
-      apps::IconType::kStandard, desired_icon_size,
-      /*allow_placeholder_icon=*/false,
-      AppIconResultToImageSkia(std::move(callback)));
+  app_service_proxy->LoadIcon(app_id, apps::IconType::kStandard,
+                              desired_icon_size,
+                              /*allow_placeholder_icon=*/false,
+                              AppIconResultToImageSkia(std::move(callback)));
 }
 
 bool ChromeSavedDeskDelegate::IsAppAvailable(const std::string& app_id) const {
@@ -499,14 +503,20 @@ void ChromeSavedDeskDelegate::OnLacrosChromeInfoReturned(
     return;
   }
 
-  app_launch_info->tab_group_infos =
-      state->groups.value_or(std::vector<tab_groups::TabGroupInfo>());
-  app_launch_info->urls = state->urls;
-  app_launch_info->active_tab_index = state->active_index;
-  app_launch_info->first_non_pinned_tab_index = state->first_non_pinned_index;
+  app_launch_info->browser_extra_info.urls = state->urls;
+  app_launch_info->browser_extra_info.active_tab_index = state->active_index;
+  app_launch_info->browser_extra_info.first_non_pinned_tab_index =
+      state->first_non_pinned_index;
   if (state->browser_app_name.has_value()) {
-    app_launch_info->app_name = state->browser_app_name.value();
-    app_launch_info->app_type_browser = true;
+    app_launch_info->browser_extra_info.app_type_browser = true;
+    app_launch_info->browser_extra_info.app_name =
+        state->browser_app_name.value();
+  }
+  app_launch_info->browser_extra_info.tab_group_infos =
+      state->groups.value_or(std::vector<tab_groups::TabGroupInfo>());
+  if (state->lacros_profile_id != 0) {
+    app_launch_info->browser_extra_info.lacros_profile_id =
+        state->lacros_profile_id;
   }
 
   std::move(callback).Run(std::move(app_launch_info));

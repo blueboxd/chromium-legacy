@@ -5,9 +5,9 @@
 #include "chrome/browser/ash/printing/ipp_client_info_calculator.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/test/scoped_chromeos_version_info.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/core/device_attributes_fake.h"
@@ -49,7 +49,7 @@ class IppClientInfoCalculatorTest : public testing::Test {
         std::move(fake_device_attibutes), "42");
   }
 
-  void SetClientNameTemplatePolicy(base::StringPiece value) {
+  void SetClientNameTemplatePolicy(std::string_view value) {
     testing_cros_settings_.device_settings()->Set(
         kDevicePrintingClientNameTemplate, base::Value(value));
   }
@@ -70,8 +70,7 @@ class IppClientInfoCalculatorTest : public testing::Test {
   base::test::ScopedChromeOSVersionInfo cros_version_info_{kLsbRelease,
                                                            base::Time()};
   ScopedTestingCrosSettings testing_cros_settings_;
-  raw_ptr<policy::FakeDeviceAttributes, DanglingUntriaged | ExperimentalAsh>
-      device_attributes_;
+  raw_ptr<policy::FakeDeviceAttributes, DanglingUntriaged> device_attributes_;
   std::unique_ptr<IppClientInfoCalculator> client_info_calculator_;
 };
 

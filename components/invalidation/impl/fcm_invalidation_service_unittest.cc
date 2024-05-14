@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
@@ -27,6 +28,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "fcm_sync_network_channel.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,6 +37,8 @@
 using instance_id::InstanceID;
 using instance_id::InstanceIDDriver;
 using testing::_;
+using testing::IsEmpty;
+using testing::UnorderedElementsAre;
 
 namespace invalidation {
 
@@ -56,18 +60,6 @@ class TestFCMSyncNetworkChannel : public FCMSyncNetworkChannel {
  public:
   void StartListening() override {}
   void StopListening() override {}
-};
-
-// TODO: Make FCMInvalidationListener class abstract and explicitly make all the
-// methods virtual. Provide FCMInvalidationListenerImpl and
-// FakeFCMInvalidationListener classes that will inherit from
-// FCMInvalidationListener. The reason for such a change is that
-// FCMInvalidationService relies of FCMInvalidationListener class.
-class FakeFCMInvalidationListener : public FCMInvalidationListener {
- public:
-  explicit FakeFCMInvalidationListener(
-      std::unique_ptr<FCMSyncNetworkChannel> network_channel)
-      : FCMInvalidationListener(std::move(network_channel)) {}
 };
 
 const char kApplicationName[] = "com.google.chrome.fcm.invalidations";
@@ -147,6 +139,7 @@ class FCMInvalidationServiceTest : public testing::Test {
         prefs::kInvalidationClientIDCache);
     InvalidatorRegistrarWithMemory::RegisterProfilePrefs(
         pref_service_.registry());
+    PerUserTopicSubscriptionManager::RegisterPrefs(pref_service_.registry());
   }
 
   void CreateInvalidationService() {
@@ -157,6 +150,9 @@ class FCMInvalidationServiceTest : public testing::Test {
   void CreateUninitializedInvalidationService() {
     gcm_driver_ = std::make_unique<gcm::FakeGCMDriver>();
 
+    identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com",
+                                                   signin::ConsentLevel::kSync);
+    identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
     identity_provider_ = std::make_unique<ProfileIdentityProvider>(
         identity_test_env_.identity_manager());
 
@@ -176,30 +172,44 @@ class FCMInvalidationServiceTest : public testing::Test {
         identity_provider_.get(),
         base::BindRepeating(&FCMNetworkHandler::Create, gcm_driver_.get(),
                             mock_instance_id_driver_.get()),
+        base::BindRepeating(
+            [](raw_ptr<FCMInvalidationListener>& stored_listener,
+               std::unique_ptr<FCMSyncNetworkChannel> channel) {
+              auto listener = std::make_unique<FCMInvalidationListener>(
+                  std::make_unique<TestFCMSyncNetworkChannel>());
+              stored_listener = listener.get();
+
+              return listener;
+            },
+            std::ref(listener_)),
         base::BindRepeating(&PerUserTopicSubscriptionManager::Create,
                             identity_provider_.get(), &pref_service_,
                             &url_loader_factory_),
         mock_instance_id_driver_.get(), &pref_service_, kSenderId);
   }
 
-  void InitializeInvalidationService() {
-    auto fake_listener = std::make_unique<FakeFCMInvalidationListener>(
-        std::make_unique<TestFCMSyncNetworkChannel>());
-    fake_listener_ = fake_listener.get();
-    invalidation_service_->InitForTest(std::move(fake_listener));
+  bool IsInvalidationServiceStarted() {
+    return invalidation_service_->IsStarted();
   }
+
+  void InitializeInvalidationService() { invalidation_service_->Init(); }
 
   FCMInvalidationService* GetInvalidationService() {
     return invalidation_service_.get();
   }
 
   void TriggerOnInvalidatorStateChange(InvalidatorState state) {
-    fake_listener_->EmitStateChangeForTest(state);
+    listener_->EmitStateChangeForTest(state);
+  }
+
+  template <class... TopicType>
+  void TriggerSuccessfullySubscribed(TopicType... topics) {
+    (listener_->EmitSuccessfullySubscribedForTest(topics), ...);
   }
 
   template <class... Inv>
   void TriggerOnIncomingInvalidation(Inv... inv) {
-    (fake_listener_->EmitSavedInvalidationForTest(inv), ...);
+    (listener_->EmitSavedInvalidationForTest(inv), ...);
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -215,8 +225,7 @@ class FCMInvalidationServiceTest : public testing::Test {
   // The service has to be below the provider since the service keeps
   // a non-owned pointer to the provider.
   std::unique_ptr<FCMInvalidationService> invalidation_service_;
-  raw_ptr<FCMInvalidationListener, DanglingUntriaged>
-      fake_listener_;  // Owned by the service.
+  raw_ptr<FCMInvalidationListener> listener_;  // Owned by the service.
 };
 
 // Initialize the invalidator, register a handler, register some IDs for that
@@ -236,6 +245,8 @@ TEST_F(FCMInvalidationServiceTest, Basic) {
   const auto inv3 = Invalidation(topic3, 3, "3");
 
   // Should be ignored since no IDs are registered to |handler|.
+  TriggerSuccessfullySubscribed(topic1, topic2, topic3);
+  EXPECT_THAT(handler.GetSuccessfullySubscribed(), IsEmpty());
   TriggerOnIncomingInvalidation(inv1, inv2, inv3);
   EXPECT_EQ(0, handler.GetInvalidationCount());
 
@@ -247,22 +258,30 @@ TEST_F(FCMInvalidationServiceTest, Basic) {
   TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
 
+  TriggerSuccessfullySubscribed(topic1, topic2, topic3);
+  EXPECT_THAT(handler.GetSuccessfullySubscribed(),
+              UnorderedElementsAre(topic1, topic2));
+
   TriggerOnIncomingInvalidation(inv1, inv2, inv3);
   EXPECT_EQ(2, handler.GetInvalidationCount());
   EXPECT_EQ(ExpectedInvalidations(inv1, inv2),
             handler.GetReceivedInvalidations());
-  handler.ClearReceivedInvalidations();
+  handler.Clear();
 
   topics.erase(topic1);
   topics.insert(topic3);
   EXPECT_TRUE(invalidator->UpdateInterestedTopics(&handler, topics));
 
   // Removed Topics should not be notified, newly-added ones should.
+  TriggerSuccessfullySubscribed(topic1, topic2, topic3);
+  EXPECT_THAT(handler.GetSuccessfullySubscribed(),
+              UnorderedElementsAre(topic2, topic3));
+
   TriggerOnIncomingInvalidation(inv1, inv2, inv3);
   EXPECT_EQ(2, handler.GetInvalidationCount());
   EXPECT_EQ(ExpectedInvalidations(inv2, inv3),
             handler.GetReceivedInvalidations());
-  handler.ClearReceivedInvalidations();
+  handler.Clear();
 
   TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler.GetInvalidatorState());
@@ -273,6 +292,9 @@ TEST_F(FCMInvalidationServiceTest, Basic) {
   invalidator->RemoveObserver(&handler);
 
   // Should be ignored since |handler| isn't registered anymore.
+  TriggerSuccessfullySubscribed(topic1, topic2, topic3);
+  EXPECT_THAT(handler.GetSuccessfullySubscribed(), IsEmpty());
+
   TriggerOnIncomingInvalidation(inv1, inv2, inv3);
   EXPECT_EQ(0, handler.GetInvalidationCount());
 }
@@ -324,6 +346,14 @@ TEST_F(FCMInvalidationServiceTest, MultipleHandlers) {
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler2.GetInvalidatorState());
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler3.GetInvalidatorState());
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler4.GetInvalidatorState());
+
+  TriggerSuccessfullySubscribed(topic1, topic2, topic3, topic4);
+  EXPECT_THAT(handler1.GetSuccessfullySubscribed(),
+              UnorderedElementsAre(topic1, topic2));
+  EXPECT_THAT(handler2.GetSuccessfullySubscribed(),
+              UnorderedElementsAre(topic3));
+  EXPECT_THAT(handler3.GetSuccessfullySubscribed(), IsEmpty());
+  EXPECT_THAT(handler4.GetSuccessfullySubscribed(), IsEmpty());
 
   {
     const auto inv1 = Invalidation(topic1, 1, "1");
@@ -412,6 +442,11 @@ TEST_F(FCMInvalidationServiceTest, EmptySetUnregisters) {
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler1.GetInvalidatorState());
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler2.GetInvalidatorState());
 
+  TriggerSuccessfullySubscribed(topic1, topic2, topic3);
+  EXPECT_THAT(handler1.GetSuccessfullySubscribed(), IsEmpty());
+  EXPECT_THAT(handler2.GetSuccessfullySubscribed(),
+              UnorderedElementsAre(topic3));
+
   {
     const auto inv1 = Invalidation(topic1, 1, "1");
     const auto inv2 = Invalidation(topic2, 2, "2");
@@ -493,6 +528,10 @@ TEST_F(FCMInvalidationServiceTest, ClearsInstanceIDOnSignout) {
   // Sync-the-transport was running). This should trigger deleting the
   // InstanceID.
   EXPECT_CALL(*mock_instance_id_, DeleteIDImpl(_));
+  // Invalidation service owns the invalidation listener, and destroys it
+  // OnActiveAccountLogout.
+  // Resetting listener_ here, otherwise it causes dangling raw_ptr.
+  listener_ = nullptr;
   invalidation_service->OnActiveAccountLogout();
 
   // Also the cached InstanceID (aka ClientID) in the invalidation service
@@ -515,6 +554,31 @@ TEST_F(FCMInvalidationServiceTest, ObserverBasics) {
   EXPECT_TRUE(invalidation_service->HasObserver(&handler));
   invalidation_service->RemoveObserver(&handler);
   EXPECT_FALSE(invalidation_service->HasObserver(&handler));
+}
+
+TEST_F(FCMInvalidationServiceTest, StartsIfNotDisabledWithSwitch) {
+  // Create the invalidation service, but do not initialize it yet.
+  CreateUninitializedInvalidationService();
+  ASSERT_FALSE(IsInvalidationServiceStarted());
+
+  // Initialize the service.
+  InitializeInvalidationService();
+
+  EXPECT_TRUE(IsInvalidationServiceStarted());
+}
+
+TEST_F(FCMInvalidationServiceTest, DoesNotStartIfDisabledWithSwitch) {
+  // Set --disable-fcm-invalidations flag to disable invalidations.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "--disable-fcm-invalidations");
+  // Create the invalidation service, but do not initialize it yet.
+  CreateUninitializedInvalidationService();
+  ASSERT_FALSE(IsInvalidationServiceStarted());
+
+  // Initialize the service.
+  InitializeInvalidationService();
+
+  EXPECT_FALSE(IsInvalidationServiceStarted());
 }
 
 }  // namespace invalidation

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -65,10 +66,11 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 using content::NavigationEntry;
@@ -135,14 +137,14 @@ bool IsFileUrl(const GURL& url) {
 
 ExtensionTabUtil::ScrubTabBehaviorType GetScrubTabBehaviorImpl(
     const Extension* extension,
-    Feature::Context context,
+    mojom::ContextType context,
     const GURL& url,
     int tab_id) {
-  if (context == Feature::Context::WEBUI_CONTEXT) {
+  if (context == mojom::ContextType::kWebUi) {
     return ExtensionTabUtil::kDontScrubTab;
   }
 
-  if (context == Feature::Context::WEBUI_UNTRUSTED_CONTEXT) {
+  if (context == mojom::ContextType::kUntrustedWebUi) {
     return ExtensionTabUtil::kScrubTabFully;
   }
 
@@ -337,7 +339,7 @@ base::expected<base::Value::Dict, std::string> ExtensionTabUtil::OpenTab(
           navigate_params.navigated_or_inserted_contents);
 
   if (tab_strip) {
-    absl::optional<tab_groups::TabGroupId> group =
+    std::optional<tab_groups::TabGroupId> group =
         tab_strip->GetTabGroupForTab(new_index);
     if (group.has_value()) {
       if (tab_groups_util::IsGroupSaved(group.value(), tab_strip)) {
@@ -381,7 +383,7 @@ Browser* ExtensionTabUtil::GetBrowserInProfileWithId(
       also_match_incognito_profile
           ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
           : nullptr;
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if ((browser->profile() == profile ||
          browser->profile() == incognito_profile) &&
         ExtensionTabUtil::GetWindowId(browser) == window_id &&
@@ -404,7 +406,7 @@ int ExtensionTabUtil::GetWindowId(const Browser* browser) {
 
 int ExtensionTabUtil::GetWindowIdOfTabStripModel(
     const TabStripModel* tab_strip_model) {
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser->tab_strip_model() == tab_strip_model)
       return GetWindowId(browser);
   }
@@ -455,13 +457,13 @@ api::tabs::Tab ExtensionTabUtil::CreateTabObject(
 
   tab_object.group_id = -1;
   if (tab_strip) {
-    absl::optional<tab_groups::TabGroupId> group =
+    std::optional<tab_groups::TabGroupId> group =
         tab_strip->GetTabGroupForTab(tab_index);
     if (group.has_value()) {
       tab_object.group_id = tab_groups_util::GetGroupId(group.value());
     }
 
-    absl::optional<base::Time> last_accessed =
+    std::optional<base::Time> last_accessed =
         tab_strip->GetLastAccessed(tab_index);
 
     if (last_accessed.has_value()) {
@@ -526,7 +528,7 @@ api::tabs::Tab ExtensionTabUtil::CreateTabObject(
 
 base::Value::List ExtensionTabUtil::CreateTabList(const Browser* browser,
                                                   const Extension* extension,
-                                                  Feature::Context context) {
+                                                  mojom::ContextType context) {
   base::Value::List tab_list;
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
@@ -546,7 +548,7 @@ base::Value::Dict ExtensionTabUtil::CreateWindowValueForExtension(
     const Browser& browser,
     const Extension* extension,
     PopulateTabBehavior populate_tab_behavior,
-    Feature::Context context) {
+    mojom::ContextType context) {
   base::Value::Dict dict;
 
   dict.Set(tabs_constants::kIdKey, browser.session_id().id());
@@ -616,7 +618,7 @@ api::tabs::MutedInfo ExtensionTabUtil::CreateMutedInfo(
 // static
 ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
     const Extension* extension,
-    Feature::Context context,
+    mojom::ContextType context,
     content::WebContents* contents) {
   int tab_id = GetTabId(contents);
   ScrubTabBehavior behavior;
@@ -635,7 +637,7 @@ ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
 // static
 ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
     const Extension* extension,
-    Feature::Context context,
+    mojom::ContextType context,
     const GURL& url) {
   ScrubTabBehaviorType type =
       GetScrubTabBehaviorImpl(extension, context, url, api::tabs::TAB_ID_NONE);
@@ -686,7 +688,7 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
   DCHECK(tab_strip_model);
   DCHECK(tab_index);
 
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     int index = tab_strip->GetIndexOfWebContents(web_contents);
     if (index != -1) {
@@ -739,7 +741,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
           ? (profile ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
                      : nullptr)
           : nullptr;
-  for (auto* target_browser : *BrowserList::GetInstance()) {
+  for (Browser* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
         target_browser->profile() == incognito_profile) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
@@ -760,6 +762,66 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
       }
     }
   }
+
+  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab)) {
+    // Prerendering tab is not visible and it cannot be in `TabStripModel`, if
+    // the tab id exists as a prerendering tab, and the API will returns
+    // `api::tabs::TAB_INDEX_NONE` for `tab_index` and a valid `WebContents`.
+    for (auto rph_iterator = content::RenderProcessHost::AllHostsIterator();
+         !rph_iterator.IsAtEnd(); rph_iterator.Advance()) {
+      content::RenderProcessHost* rph = rph_iterator.GetCurrentValue();
+
+      // Ignore renderers that aren't ready.
+      if (!rph->IsInitializedAndNotDead()) {
+        continue;
+      }
+      // Ignore renderers that aren't from a valid profile. This is either the
+      // same profile or the incognito profile if `include_incognito` is true.
+      Profile* process_profile =
+          Profile::FromBrowserContext(rph->GetBrowserContext());
+      if (process_profile != profile &&
+          !(include_incognito && profile->IsSameOrParent(process_profile))) {
+        continue;
+      }
+
+      rph->ForEachRenderFrameHost([&contents, &tab_index, &tab_strip,
+                                   tab_id](content::RenderFrameHost* rfh) {
+        CHECK(rfh);
+        WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
+        CHECK(web_contents);
+        if (sessions::SessionTabHelper::IdForTab(web_contents).id() != tab_id) {
+          return;
+        }
+        // We only consider prerendered frames in this loop. Otherwise, we could
+        // end up returning a tab for a different web contents that shouldn't be
+        // exposed to extensions.
+        if (!web_contents->IsPrerenderedFrame(rfh->GetFrameTreeNodeId())) {
+          return;
+        }
+
+        // TODO(https://crbug.com/1350676): tab_strip and tab_index are tied to
+        // a specific window, and related APIs return WINDOW_ID_NONE for
+        // prerendering-into-a-new-tab tabs as a tentaive solution. So these
+        // values are set to be invalid here.
+        if (tab_strip) {
+          *tab_strip = nullptr;
+        }
+
+        if (tab_index) {
+          *tab_index = api::tabs::TAB_INDEX_NONE;
+        }
+
+        if (contents) {
+          *contents = web_contents;
+        }
+      });
+
+      if (contents && *contents) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 
@@ -784,7 +846,7 @@ ExtensionTabUtil::GetAllActiveWebContentsForContext(
       include_incognito
           ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
           : nullptr;
-  for (auto* target_browser : *BrowserList::GetInstance()) {
+  for (Browser* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
         target_browser->profile() == incognito_profile) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
@@ -1069,9 +1131,10 @@ void ExtensionTabUtil::ClearBackForwardCache() {
 
 // static
 bool ExtensionTabUtil::IsTabStripEditable() {
-  for (auto* browser : *BrowserList::GetInstance())
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser && !browser->window()->IsTabStripEditable())
       return false;
+  }
   return true;
 }
 
@@ -1112,7 +1175,7 @@ bool ExtensionTabUtil::TabIsInSavedTabGroup(content::WebContents* contents,
 
   // If the tab is not in a group, then its not going to be in a saved group.
   int index = tab_strip_model->GetIndexOfWebContents(contents);
-  absl::optional<tab_groups::TabGroupId> tab_group_id =
+  std::optional<tab_groups::TabGroupId> tab_group_id =
       tab_strip_model->GetTabGroupForTab(index);
   if (!tab_group_id.has_value()) {
     return false;

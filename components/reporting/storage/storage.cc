@@ -108,7 +108,7 @@ class Storage::QueueUploaderInterface : public UploaderInterface {
       StatusOr<std::unique_ptr<UploaderInterface>> uploader_result) {
     if (!uploader_result.has_value()) {
       std::move(start_uploader_cb)
-          .Run(base::unexpected(uploader_result.error()));
+          .Run(base::unexpected(std::move(uploader_result).error()));
       return;
     }
     std::move(start_uploader_cb)
@@ -197,7 +197,7 @@ class Storage::KeyDelivery {
       StatusOr<std::unique_ptr<UploaderInterface>> uploader_result) {
     if (!uploader_result.has_value()) {
       std::move(start_uploader_cb)
-          .Run(base::unexpected(uploader_result.error()));
+          .Run(base::unexpected(std::move(uploader_result).error()));
       return;
     }
     std::move(start_uploader_cb)
@@ -414,7 +414,7 @@ class Storage::KeyInStorage {
   // Enumerates found key files and locates one with the highest index and
   // valid key. Returns pair of file name and loaded signed key proto.
   // Called once, during initialization.
-  absl::optional<std::pair<base::FilePath, SignedEncryptionInfo>>
+  std::optional<std::pair<base::FilePath, SignedEncryptionInfo>>
   LocateValidKeyAndParse(
       const base::flat_map<uint64_t, base::FilePath>& found_key_files) {
     // Try to unserialize the key from each found file (latest first).
@@ -463,7 +463,7 @@ class Storage::KeyInStorage {
     }
 
     // Not found, return error.
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Index of the file to serialize the signed key to.

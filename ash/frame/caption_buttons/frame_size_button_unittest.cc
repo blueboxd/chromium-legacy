@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -78,7 +79,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
  private:
   // Overridden from views::View:
-  void Layout() override {
+  void Layout(PassKey) override {
     // Right align the caption button container.
     gfx::Size preferred_size = caption_button_container_->GetPreferredSize();
     caption_button_container_->SetBounds(width() - preferred_size.width(), 0,
@@ -119,8 +120,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   }
 
   // Not owned.
-  raw_ptr<FrameCaptionButtonContainerView, ExperimentalAsh>
-      caption_button_container_;
+  raw_ptr<FrameCaptionButtonContainerView> caption_button_container_;
 };
 
 class FrameSizeButtonTest : public AshTestBase {
@@ -194,16 +194,12 @@ class FrameSizeButtonTest : public AshTestBase {
 
  private:
   // Not owned.
-  raw_ptr<WindowState, DanglingUntriaged | ExperimentalAsh> window_state_;
-  raw_ptr<views::Widget, DanglingUntriaged | ExperimentalAsh> widget_;
-  raw_ptr<views::FrameCaptionButton, DanglingUntriaged | ExperimentalAsh>
-      minimize_button_;
-  raw_ptr<views::FrameCaptionButton, DanglingUntriaged | ExperimentalAsh>
-      size_button_;
-  raw_ptr<views::FrameCaptionButton, DanglingUntriaged | ExperimentalAsh>
-      close_button_;
-  raw_ptr<TestWidgetDelegate, DanglingUntriaged | ExperimentalAsh>
-      widget_delegate_;
+  raw_ptr<WindowState, DanglingUntriaged> window_state_;
+  raw_ptr<views::Widget, DanglingUntriaged> widget_;
+  raw_ptr<views::FrameCaptionButton, DanglingUntriaged> minimize_button_;
+  raw_ptr<views::FrameCaptionButton, DanglingUntriaged> size_button_;
+  raw_ptr<views::FrameCaptionButton, DanglingUntriaged> close_button_;
+  raw_ptr<TestWidgetDelegate, DanglingUntriaged> widget_delegate_;
   bool resizable_ = true;
 };
 
@@ -731,6 +727,14 @@ TEST_F(MultitaskMenuTest, HalfButtonRTL) {
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state()->GetStateType());
   EXPECT_EQ(gfx::Rect(400, 552), GetWidget()->GetWindowBoundsInScreen());
 
+  // Overview may start due to faster split screen when the window is snapped.
+  // Escape overview if it is active, otherwise the key event will be handled in
+  // `OverviewSession` to exit overview, see `OverviewSession::OnKeyEvent()` for
+  // more details. Pressing the Alt key below won't reverse the multi-task menu.
+  if (IsInOverviewSession()) {
+    PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  }
+
   // Reverse the menu. Test that the left button still snaps to primary.
   ShowMultitaskMenu();
   PressAndReleaseKey(ui::VKEY_MENU, ui::EF_ALT_DOWN);
@@ -1010,6 +1014,15 @@ TEST_F(MultitaskMenuTest, ReversePartialButton) {
   EXPECT_EQ(std::floor(work_area_bounds_in_screen.width() *
                        chromeos::kOneThirdSnapRatio),
             GetWidget()->GetWindowBoundsInScreen().width());
+
+  // Overview may start due to faster split screen when the window is
+  // snapped. Escape overview if it is active, otherwise the key event will be
+  // handled in `OverviewSession` to exit overview, see
+  // `OverviewSession::OnKeyEvent()` for more details. Pressing the Alt key
+  // below won't reverse the multi-task menu.
+  if (IsInOverviewSession()) {
+    PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  }
 
   // Reverse the menu. Test that the right button snaps to 2/3.
   ShowMultitaskMenu();

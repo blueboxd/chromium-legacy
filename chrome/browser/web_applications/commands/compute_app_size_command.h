@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
@@ -23,30 +24,26 @@
 namespace web_app {
 
 class AppLock;
-class AppLockDescription;
-class LockDescription;
-enum class Result;
+
+struct ComputedAppSize {
+  uint64_t app_size_in_bytes = 0;
+  uint64_t data_size_in_bytes = 0;
+};
 
 // ComputeAppSizeCommand calculates the app and data size of a given app
-class ComputeAppSizeCommand : public WebAppCommandTemplate<AppLock> {
+class ComputeAppSizeCommand
+    : public WebAppCommand<AppLock, std::optional<ComputedAppSize>> {
  public:
-  struct Size {
-    uint64_t app_size_in_bytes = 0;
-    uint64_t data_size_in_bytes = 0;
-  };
-
   ComputeAppSizeCommand(
       const webapps::AppId& app_id,
       Profile* profile,
-      base::OnceCallback<void(absl::optional<Size>)> callback);
+      base::OnceCallback<void(std::optional<ComputedAppSize>)> callback);
 
   ~ComputeAppSizeCommand() override;
 
-  // WebAppCommandTemplate<AppLock>:
+ protected:
+  // WebAppCommand:
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
-  const LockDescription& lock_description() const override;
-  base::Value ToDebugValue() const override;
-  void OnShutdown() override;
 
  private:
   void OnGetIconSize(uint64_t size);
@@ -63,15 +60,13 @@ class ComputeAppSizeCommand : public WebAppCommandTemplate<AppLock> {
 
   scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper_;
 
-  AppLockDescription lock_description_;
   std::unique_ptr<AppLock> lock_;
 
   const webapps::AppId app_id_;
   const raw_ptr<Profile> profile_;
-  base::OnceCallback<void(absl::optional<Size>)> callback_;
   url::Origin origin_;
 
-  Size size_;
+  ComputedAppSize size_;
 
   base::WeakPtrFactory<ComputeAppSizeCommand> weak_factory_{this};
 };

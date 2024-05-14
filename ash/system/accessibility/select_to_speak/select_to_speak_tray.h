@@ -25,9 +25,9 @@ class Shelf;
 class ASH_EXPORT SelectToSpeakTray : public TrayBackgroundView,
                                      public AccessibilityObserver,
                                      public SessionObserver {
- public:
-  METADATA_HEADER(SelectToSpeakTray);
+  METADATA_HEADER(SelectToSpeakTray, TrayBackgroundView)
 
+ public:
   SelectToSpeakTray(Shelf* shelf, TrayBackgroundViewCatalogName catalog_name);
   SelectToSpeakTray(const SelectToSpeakTray&) = delete;
   SelectToSpeakTray& operator=(const SelectToSpeakTray&) = delete;
@@ -65,7 +65,7 @@ class ASH_EXPORT SelectToSpeakTray : public TrayBackgroundView,
   void UpdateIconOnColorChanges();
 
   // Owned by TrayContainer for its lifetime.
-  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
+  raw_ptr<views::ImageView> icon_ = nullptr;
 
   ScopedSessionObserver session_observer_{this};
 };

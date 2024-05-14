@@ -20,6 +20,8 @@ class LayoutBox;
 class LayoutObject;
 class Node;
 
+#define CHECK_SKIPPED_UPDATE_ON_SCROLL() DCHECK_IS_ON()
+
 // Computes the intersection between an ancestor (root) node and a
 // descendant (target) element, with overflow and CSS clipping applied.
 // Optionally also checks whether the target is occluded or has visual
@@ -45,12 +47,13 @@ class CORE_EXPORT IntersectionGeometry {
     // Applies to boxes. If true, OverflowClipRect() is used if necessary
     // instead of BorderBoundingBox().
     kUseOverflowClipEdge = 1 << 5,
+    kRespectFilters = 1 << 6,
 
     // These flags will be computed
-    kShouldUseCachedRects = 1 << 6,
-    kRootIsImplicit = 1 << 7,
-    kDidComputeGeometry = 1 << 8,
-    kIsVisible = 1 << 9
+    kShouldUseCachedRects = 1 << 7,
+    kRootIsImplicit = 1 << 8,
+    kDidComputeGeometry = 1 << 9,
+    kIsVisible = 1 << 10
   };
 
   struct RootGeometry {
@@ -63,7 +66,7 @@ class CORE_EXPORT IntersectionGeometry {
     float zoom = 1.0f;
     // The root object's content rect in the root object's own coordinate system
     gfx::RectF local_root_rect;
-    gfx::Transform root_to_document_transform;
+    gfx::Transform root_to_view_transform;
   };
 
   struct CachedRects {
@@ -84,6 +87,22 @@ class CORE_EXPORT IntersectionGeometry {
     bool pre_margin_target_rect_is_empty = false;
     // Invalidation flag
     bool valid = false;
+
+#if CHECK_SKIPPED_UPDATE_ON_SCROLL()
+    // These are here just for debugging crbug.com/1519303.
+    gfx::Vector2dF computed_min_scroll_delta_to_update;
+    gfx::RectF local_root_rect;
+    gfx::RectF root_rect;
+    gfx::RectF target_rect;
+    gfx::RectF intersection_rect;
+    gfx::RectF unclipped_intersection_rect;
+    gfx::Transform target_to_view_transform;
+    gfx::Transform root_to_view_transform;
+    int relationship = 0;
+    bool root_scrolls_target = false;
+
+    String ToString() const;
+#endif
   };
 
   static const LayoutObject* GetTargetLayoutObject(
@@ -102,7 +121,7 @@ class CORE_EXPORT IntersectionGeometry {
                        const Vector<Length>& target_margin,
                        const Vector<Length>& scroll_margin,
                        unsigned flags,
-                       absl::optional<RootGeometry>& root_geometry,
+                       std::optional<RootGeometry>& root_geometry,
                        CachedRects* cached_rects = nullptr);
 
   IntersectionGeometry(const IntersectionGeometry&) = default;
@@ -139,6 +158,7 @@ class CORE_EXPORT IntersectionGeometry {
  private:
   bool RootIsImplicit() const { return flags_ & kRootIsImplicit; }
   bool ShouldUseCachedRects() const { return flags_ & kShouldUseCachedRects; }
+  bool ShouldRespectFilters() const { return flags_ & kRespectFilters; }
   bool IsForFrameViewportIntersection() const {
     return flags_ & kForFrameViewportIntersection;
   }
@@ -168,7 +188,14 @@ class CORE_EXPORT IntersectionGeometry {
       kScrollableByRootOnly,
     };
     Relationship relationship = kInvalid;
-    // This is used only when relationship is kScrollable*.
+    // Whether `root` scrolls `target` directly or indirectly. This is false if
+    // - `root` is not a scroll container,
+    // - `root` doesn't have any scrollable overflow, or
+    // - `root` is the LayoutView and `target` is contained by a fixed-position
+    //   element that is fixed to the viewport.
+    bool root_scrolls_target = false;
+    // This is used only when relationship is kHasIntermediateClippers or
+    // kScrollableByRootOnly.
     bool has_filter = false;
     // This is collected only if has_scroll_margin is true.
     HeapVector<Member<const LayoutBox>, 2> intermediate_scrollers;
@@ -199,12 +226,14 @@ class CORE_EXPORT IntersectionGeometry {
                   const Vector<Length>& scroll_margin,
                   CachedRects* cached_rects);
   bool ApplyClip(const LayoutObject* target,
+                 const LayoutBox* local_ancestor,
                  const LayoutObject* root,
                  const gfx::RectF& root_rect,
                  gfx::RectF& unclipped_intersection_rect,
                  gfx::RectF& intersection_rect,
                  const Vector<Length>& scroll_margin,
                  bool ignore_local_clip_path,
+                 bool root_scrolls_target,
                  CachedRects* cached_rects);
 
   unsigned FirstThresholdGreaterThan(float ratio,
@@ -212,8 +241,8 @@ class CORE_EXPORT IntersectionGeometry {
 
   gfx::Vector2dF ComputeMinScrollDeltaToUpdate(
       const RootAndTarget& root_and_target,
-      const gfx::Transform& target_to_document_transform,
-      const gfx::Transform& root_to_document_transform,
+      const gfx::Transform& target_to_view_transform,
+      const gfx::Transform& root_to_view_transform,
       const Vector<float>& thresholds,
       const Vector<Length>& scroll_margin) const;
 

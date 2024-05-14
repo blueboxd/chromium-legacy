@@ -140,6 +140,7 @@ FilesPolicyWarnDialog::FilesPolicyWarnDialog(
   if (dialog_info_.GetLearnMoreURL().has_value()) {
     files_dialog_utils::AddLearnMoreLink(
         l10n_util::GetStringUTF16(IDS_LEARN_MORE),
+        dialog_info.GetAccessibleLearnMoreLinkName(),
         dialog_info_.GetLearnMoreURL().value(), upper_panel_);
   }
   MaybeAddConfidentialRows();
@@ -337,6 +338,10 @@ void FilesPolicyWarnDialog::MaybeAddJustificationPanel() {
   justification_field_->SetID(
       PolicyDialogBase::kEnterpriseConnectorsJustificationTextareaId);
   justification_field_->SetAccessibleName(justification_label_text);
+  justification_field_->SetAccessibleDescription(l10n_util::GetStringFUTF16(
+      IDS_POLICY_DLP_FILES_JUSTIFICATION_TEXTAREA_ACCESSIBLE_DESCRIPTION,
+      base::NumberToString16(0),
+      base::NumberToString16(kMaxBypassJustificationLength)));
   justification_field_->SetController(this);
   justification_field_->SetBackgroundColor(SK_ColorTRANSPARENT);
   justification_field_->SetPreferredSize(
@@ -367,6 +372,10 @@ void FilesPolicyWarnDialog::ContentsChanged(
         IDS_DEEP_SCANNING_DIALOG_BYPASS_JUSTIFICATION_TEXT_LIMIT_LABEL,
         base::NumberToString16(new_contents.size()),
         base::NumberToString16(kMaxBypassJustificationLength)));
+    justification_field_->SetAccessibleDescription(l10n_util::GetStringFUTF16(
+        IDS_POLICY_DLP_FILES_JUSTIFICATION_TEXTAREA_ACCESSIBLE_DESCRIPTION,
+        base::NumberToString16(new_contents.size()),
+        base::NumberToString16(kMaxBypassJustificationLength)));
   }
 
   if (new_contents.size() == 0 ||
@@ -377,7 +386,7 @@ void FilesPolicyWarnDialog::ContentsChanged(
   }
 }
 
-BEGIN_METADATA(FilesPolicyWarnDialog, FilesPolicyDialog)
+BEGIN_METADATA(FilesPolicyWarnDialog)
 END_METADATA
 
 }  // namespace policy

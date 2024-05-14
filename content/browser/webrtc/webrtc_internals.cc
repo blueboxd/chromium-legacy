@@ -35,6 +35,7 @@
 #include "services/audio/public/cpp/debug_recording_session_factory.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 using base::ProcessId;
 using std::string;
@@ -175,8 +176,7 @@ void WebRTCInternals::OnPeerConnectionAdded(GlobalRenderFrameHostId frame_id,
                                             int lid,
                                             ProcessId pid,
                                             const string& url,
-                                            const string& rtc_configuration,
-                                            const string& constraints) {
+                                            const string& rtc_configuration) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(tommi): Consider changing this design so that webrtc-internals has
@@ -187,7 +187,6 @@ void WebRTCInternals::OnPeerConnectionAdded(GlobalRenderFrameHostId frame_id,
   dict.Set("lid", lid);
   dict.Set("pid", static_cast<int>(pid));
   dict.Set("rtcConfiguration", rtc_configuration);
-  dict.Set("constraints", constraints);
   dict.Set("url", url);
   dict.Set("isOpen", true);
   dict.Set("connected", false);
@@ -666,22 +665,22 @@ void WebRTCInternals::RenderProcessExited(
   host->RemoveObserver(this);
 }
 
-void WebRTCInternals::FileSelected(const base::FilePath& path,
+void WebRTCInternals::FileSelected(const ui::SelectedFileInfo& file,
                                    int /* unused_index */,
                                    void* /*unused_params */) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (selection_type_) {
     case SelectionType::kRtcEventLogs: {
-      event_log_recordings_file_path_ = path;
+      event_log_recordings_file_path_ = file.path();
       event_log_recordings_ = true;
       WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
       if (logger) {
-        logger->EnableLocalLogging(path);
+        logger->EnableLocalLogging(file.path());
       }
       break;
     }
     case SelectionType::kAudioDebugRecordings: {
-      audio_debug_recordings_file_path_ = path;
+      audio_debug_recordings_file_path_ = file.path();
       EnableAudioDebugRecordingsOnAllRenderProcessHosts();
       break;
     }
@@ -714,7 +713,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   for (int i = peer_connection_data().size() - 1; i >= 0; --i) {
     DCHECK(peer_connection_data()[i].is_dict());
 
-    absl::optional<int> this_rid, this_lid;
+    std::optional<int> this_rid, this_lid;
     this_rid = peer_connection_data()[i].GetDict().FindInt("rid");
     this_lid = peer_connection_data()[i].GetDict().FindInt("lid");
 
@@ -737,7 +736,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   for (int i = get_user_media_requests_.size() - 1; i >= 0; --i) {
     DCHECK(get_user_media_requests_[i].is_dict());
 
-    absl::optional<int> this_rid =
+    std::optional<int> this_rid =
         get_user_media_requests_[i].GetDict().FindInt("rid");
 
     if (this_rid.value_or(0) == render_process_id) {
@@ -772,7 +771,7 @@ void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
 
 void WebRTCInternals::MaybeClosePeerConnection(base::Value& record) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  absl::optional<bool> is_open = record.GetDict().FindBool("isOpen");
+  std::optional<bool> is_open = record.GetDict().FindBool("isOpen");
   DCHECK(is_open.has_value());
   if (!*is_open)
     return;

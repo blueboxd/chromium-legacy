@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -24,12 +24,12 @@
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
-#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_focus_cycler.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/wm_constants.h"
 #include "base/i18n/time_formatting.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -279,7 +279,7 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                                                 kSaveDeskCornerRadius);
 
   views::FocusRing* focus_ring =
-      StyleUtil::SetUpFocusRingForView(this, kFocusRingHaloInset);
+      StyleUtil::SetUpFocusRingForView(this, kWindowMiniViewFocusRingHaloInset);
   focus_ring->SetHasFocusPredicate(
       base::BindRepeating([](const views::View* view) {
         const auto* v = views::AsViewClass<SavedDeskItemView>(view);
@@ -413,8 +413,8 @@ void SavedDeskItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
           IDS_ASH_DESKS_TEMPLATES_LIBRARY_SAVED_DESK_GRID_ITEM_EXTRA_ACCESSIBLE_DESCRIPTION));
 }
 
-void SavedDeskItemView::Layout() {
-  views::View::Layout();
+void SavedDeskItemView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
 
   if (delete_button_) {
     const gfx::Size delete_button_size = delete_button_->GetPreferredSize();
@@ -513,7 +513,7 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
     for (auto& overview_grid : overview_session->grid_list()) {
       if (SavedDeskLibraryView* library_view =
               overview_grid->GetSavedDeskLibraryView()) {
-        for (auto* grid_view : library_view->grid_views()) {
+        for (ash::SavedDeskGridView* grid_view : library_view->grid_views()) {
           grid_view->SortEntries(/*order_first_uuid=*/{});
         }
       }
@@ -766,7 +766,7 @@ void SavedDeskItemView::OnFocusableViewBlurred() {
   views::FocusRing::Get(this)->SchedulePaint();
 }
 
-BEGIN_METADATA(SavedDeskItemView, views::Button)
+BEGIN_METADATA(SavedDeskItemView)
 END_METADATA
 
 }  // namespace ash

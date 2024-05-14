@@ -30,9 +30,9 @@ class Shelf;
 // status area contains more buttons than the maximum width. Tapping on this
 // button will show/hide the overflown tray buttons.
 class ASH_EXPORT StatusAreaOverflowButtonTray : public TrayBackgroundView {
- public:
-  METADATA_HEADER(StatusAreaOverflowButtonTray);
+  METADATA_HEADER(StatusAreaOverflowButtonTray, TrayBackgroundView)
 
+ public:
   explicit StatusAreaOverflowButtonTray(Shelf* shelf);
   StatusAreaOverflowButtonTray(const StatusAreaOverflowButtonTray&) = delete;
   StatusAreaOverflowButtonTray& operator=(const StatusAreaOverflowButtonTray&) =
@@ -86,7 +86,7 @@ class ASH_EXPORT StatusAreaOverflowButtonTray : public TrayBackgroundView {
   State state_ = CLICK_TO_EXPAND;
 
   // Owned by the views hierarchy.
-  const raw_ptr<IconView, ExperimentalAsh> icon_;
+  const raw_ptr<IconView> icon_;
 };
 
 }  // namespace ash

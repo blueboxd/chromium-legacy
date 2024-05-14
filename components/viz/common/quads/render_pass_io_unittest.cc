@@ -24,7 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/modules/skcms/skcms.h"
 
-namespace gl {
+namespace gfx {
 struct HDRMetadata;
 }
 
@@ -150,7 +150,7 @@ TEST(RenderPassIOTest, SharedQuadStateList) {
     EXPECT_EQ(gfx::Rect(), sqs0->visible_quad_layer_rect);
     EXPECT_FALSE(sqs0->mask_filter_info.HasRoundedCorners());
     EXPECT_FALSE(sqs0->mask_filter_info.HasGradientMask());
-    EXPECT_EQ(absl::nullopt, sqs0->clip_rect);
+    EXPECT_EQ(std::nullopt, sqs0->clip_rect);
     EXPECT_TRUE(sqs0->are_contents_opaque);
     EXPECT_EQ(1.0f, sqs0->opacity);
     EXPECT_EQ(SkBlendMode::kSrcOver, sqs0->blend_mode);
@@ -226,12 +226,11 @@ TEST(RenderPassIOTest, QuadList) {
       // 2. TextureDrawQuad with is_stream_video set to true.
       TextureDrawQuad* quad =
           render_pass0->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      float opacity[] = {1, 1, 1, 1};
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(10, 10, 300, 400), gfx::Rect(10, 10, 200, 400),
                    false, ResourceId(100), gfx::Size(600, 800), false,
                    gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f),
-                   SkColors::kTransparent, opacity, false, false, false,
+                   SkColors::kTransparent, false, false, false,
                    gfx::ProtectedVideoType::kHardwareProtected);
       quad->is_stream_video = true;
       ++sqs_index;
@@ -269,13 +268,15 @@ TEST(RenderPassIOTest, QuadList) {
       // 5. TextureDrawQuad
       TextureDrawQuad* quad =
           render_pass0->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      float vertex_opacity[4] = {1.f, 0.5f, 0.6f, 1.f};
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(0, 0, 100, 50), gfx::Rect(0, 0, 100, 50), false,
                    ResourceId(9u), gfx::Size(100, 50), false,
                    gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f),
-                   SkColors::kBlue, vertex_opacity, false, true, false,
+                   SkColors::kBlue, false, true, false,
                    gfx::ProtectedVideoType::kHardwareProtected);
+
+      float vertex_opacity[4] = {1.f, 0.5f, 0.6f, 1.f};
+      quad->set_vertex_opacity(vertex_opacity);
       ++sqs_index;
       ++quad_count;
     }
@@ -318,7 +319,7 @@ TEST(RenderPassIOTest, QuadList) {
           render_pass0->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(10, 10, 512, 256), gfx::Rect(12, 12, 500, 250),
-                   true, SurfaceRange(absl::nullopt, kSurfaceId1),
+                   true, SurfaceRange(std::nullopt, kSurfaceId1),
                    SkColors::kBlack, true, true, false);
       ++quad_count;
     }
@@ -350,7 +351,7 @@ TEST(RenderPassIOTest, CompositorRenderPassList) {
   std::string json_text;
   ASSERT_TRUE(base::ReadFileToString(json_path, &json_text));
 
-  absl::optional<base::Value> dict0 = base::JSONReader::Read(json_text);
+  std::optional<base::Value> dict0 = base::JSONReader::Read(json_text);
   EXPECT_TRUE(dict0.has_value());
   CompositorRenderPassList render_pass_list;
   EXPECT_TRUE(
@@ -389,7 +390,7 @@ TEST(RenderPassIOTest, CompositorFrameData) {
   std::string json_text;
   ASSERT_TRUE(base::ReadFileToString(json_path, &json_text));
 
-  absl::optional<base::Value> list0 = base::JSONReader::Read(json_text);
+  std::optional<base::Value> list0 = base::JSONReader::Read(json_text);
   EXPECT_TRUE(list0.has_value());
   std::vector<FrameData> frame_data_list;
   EXPECT_TRUE(FrameDataFromList(list0->GetList(), &frame_data_list));

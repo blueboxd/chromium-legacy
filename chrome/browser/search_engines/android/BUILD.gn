@@ -28,14 +28,12 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/search_engines/settings/SearchEngineSettings.java",
   ]
 
-  srcjar_deps = [
-    ":jni_headers",
-    "//components/search_engines:search_engine_type_java",
-  ]
+  srcjar_deps = [ ":jni_headers" ]
 
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//base/version_info/android:version_constants_java",
     "//build/android:build_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/omaha/android:java",
@@ -51,10 +49,11 @@ android_library("java") {
     "//components/browser_ui/widget/android:java",
     "//components/content_settings/android:content_settings_enums_java",
     "//components/embedder_support/android:util_java",
+    "//components/favicon/android:java",
     "//components/location/android:location_java",
     "//components/search_engines/android:java",
-    "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
+    "//net/android:net_java",
     "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_activity_activity_java",
     "//third_party/androidx:androidx_annotation_annotation_java",

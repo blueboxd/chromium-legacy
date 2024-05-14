@@ -40,7 +40,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
   ~AssistantOnboardingView() override;
 
   // views::View:
-  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void OnThemeChanged() override;
@@ -64,13 +63,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
   void UpdateGreeting();
   void UpdateSuggestions();
 
-  const raw_ptr<AssistantViewDelegate, ExperimentalAsh>
-      delegate_;  // Owned by AssistantController.
-  raw_ptr<views::Label, ExperimentalAsh> greeting_ =
-      nullptr;  // Owned by view hierarchy.
-  raw_ptr<views::Label, ExperimentalAsh> intro_ =
-      nullptr;  // Owned by view hierarchy.
-  raw_ptr<views::TableLayoutView, DanglingUntriaged | ExperimentalAsh> table_ =
+  const raw_ptr<AssistantViewDelegate>
+      delegate_;                              // Owned by AssistantController.
+  raw_ptr<views::Label> greeting_ = nullptr;  // Owned by view hierarchy.
+  raw_ptr<views::Label> intro_ = nullptr;     // Owned by view hierarchy.
+  raw_ptr<views::TableLayoutView, DanglingUntriaged> table_ =
       nullptr;  // Owned by view hierarchy.
 
   base::ScopedObservation<AssistantController, AssistantControllerObserver>

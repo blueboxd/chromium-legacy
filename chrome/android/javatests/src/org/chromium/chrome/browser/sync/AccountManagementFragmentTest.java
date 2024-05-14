@@ -11,6 +11,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.thatMatchesFirst;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -30,16 +31,23 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Batch;
+import org.chromium.base.FeatureList;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterProvider;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -48,12 +56,16 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.test.util.AccountCapabilitiesBuilder;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.util.Arrays;
+import java.util.List;
+
 /** Tests {@link AccountManagementFragment}. */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Batch(Batch.PER_CLASS)
 public class AccountManagementFragmentTest {
     private static final String CHILD_ACCOUNT_NAME =
             AccountManagerTestRule.generateChildEmail("account@gmail.com");
@@ -77,6 +89,33 @@ public class AccountManagementFragmentTest {
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(ChromeRenderTestRule.Component.SERVICES_SYNC)
                     .build();
+
+    public static class MigrateAccountManagementSettingsToCapabilitiesParams
+            implements ParameterProvider {
+
+        private static List<ParameterSet> sMigrateAccountManagementSettingsToCapabilities =
+                Arrays.asList(
+                        new ParameterSet()
+                                .value(true)
+                                .name("MigrateProfileIsChildFlagParamsEnabled"),
+                        new ParameterSet()
+                                .value(false)
+                                .name("MigrateProfileIsChildFlagParamsDisabled"));
+
+        @Override
+        public List<ParameterSet> getParameters() {
+            return sMigrateAccountManagementSettingsToCapabilities;
+        }
+    }
+
+    @ParameterAnnotations.UseMethodParameterBefore(
+            MigrateAccountManagementSettingsToCapabilitiesParams.class)
+    public void enableFlag(boolean isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled) {
+        FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
+        testValuesOverride.addFeatureFlagOverride(
+                ChromeFeatureList.MIGRATE_ACCOUNT_MANAGEMENT_SETTINGS_TO_CAPABILITIES,
+                isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled);
+    }
 
     @Before
     public void setUp() {
@@ -170,12 +209,19 @@ public class AccountManagementFragmentTest {
     @Test
     @MediumTest
     @Feature("RenderTest")
-    public void testAccountManagementViewForChildAccount() throws Exception {
-        mSigninTestRule.addAccountAndWaitForSeeding(CHILD_ACCOUNT_NAME);
-        final Profile profile =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        Profile::getLastUsedRegularProfile);
-        CriteriaHelper.pollUiThread(profile::isChild);
+    @ParameterAnnotations.UseMethodParameter(
+            MigrateAccountManagementSettingsToCapabilitiesParams.class)
+    public void testAccountManagementViewForChildAccount(
+            boolean isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled) throws Exception {
+        final AccountCapabilitiesBuilder accountCapabilitiesBuilder =
+                new AccountCapabilitiesBuilder();
+        CoreAccountInfo primarySupervisedAccount =
+                mSigninTestRule.addAccount(
+                        CHILD_ACCOUNT_NAME,
+                        accountCapabilitiesBuilder.setIsSubjectToParentalControls(true).build());
+        mSigninTestRule.waitForSeeding();
+        mSigninTestRule.waitForSignin(primarySupervisedAccount);
+
         mSettingsActivityTestRule.startSettingsActivity();
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -194,14 +240,20 @@ public class AccountManagementFragmentTest {
     @Test
     @MediumTest
     @Feature("RenderTest")
-    public void testAccountManagementViewForChildAccountWithSecondaryEduAccount() throws Exception {
-        mSigninTestRule.addAccount(CHILD_ACCOUNT_NAME);
+    @ParameterAnnotations.UseMethodParameter(
+            MigrateAccountManagementSettingsToCapabilitiesParams.class)
+    public void testAccountManagementViewForChildAccountWithSecondaryEduAccount(
+            boolean isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled) throws Exception {
+        final AccountCapabilitiesBuilder accountCapabilitiesBuilder =
+                new AccountCapabilitiesBuilder();
+        CoreAccountInfo primarySupervisedAccount =
+                mSigninTestRule.addAccount(
+                        CHILD_ACCOUNT_NAME,
+                        accountCapabilitiesBuilder.setIsSubjectToParentalControls(true).build());
         mSigninTestRule.addAccount("account@school.com");
         mSigninTestRule.waitForSeeding();
-        final Profile profile =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        Profile::getLastUsedRegularProfile);
-        CriteriaHelper.pollUiThread(profile::isChild);
+        mSigninTestRule.waitForSignin(primarySupervisedAccount);
+
         mSettingsActivityTestRule.startSettingsActivity();
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -243,5 +295,137 @@ public class AccountManagementFragmentTest {
         onView(withText(R.string.turn_off_sync_and_signout_title))
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
+    public void testIdentityErrorCardShownForSignedInUsers() {
+        FakeSyncServiceImpl fakeSyncService =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
+                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
+                            return fakeSyncServiceImpl;
+                        });
+        // Fake an identity error.
+        fakeSyncService.setRequiresClientUpgrade(true);
+        // Sign in and open settings.
+        mSigninTestRule.addTestAccountThenSignin();
+        mSettingsActivityTestRule.startSettingsActivity();
+
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        onView(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
+    public void testIdentityErrorCardNotShownIfFeatureDisabled() {
+        FakeSyncServiceImpl fakeSyncService =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
+                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
+                            return fakeSyncServiceImpl;
+                        });
+        // Fake an identity error.
+        fakeSyncService.setRequiresClientUpgrade(true);
+        // Sign in and open settings.
+        mSigninTestRule.addTestAccountThenSignin();
+        mSettingsActivityTestRule.startSettingsActivity();
+
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        onView(withId(R.id.identity_error_card)).check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
+    public void testIdentityErrorCardNotShownIfNoError() {
+        // Sign in and open settings.
+        mSigninTestRule.addTestAccountThenSignin();
+        mSettingsActivityTestRule.startSettingsActivity();
+
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        onView(withId(R.id.identity_error_card)).check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
+    public void testIdentityErrorCardNotShownForSyncingUsers() {
+        FakeSyncServiceImpl fakeSyncService =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
+                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
+                            return fakeSyncServiceImpl;
+                        });
+        // Fake an identity error.
+        fakeSyncService.setRequiresClientUpgrade(true);
+        // Sign in, enable sync and open settings.
+        mSigninTestRule.addTestAccountThenSigninAndEnableSync();
+        mSettingsActivityTestRule.startSettingsActivity();
+
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        onView(withId(R.id.identity_error_card)).check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
+    public void testIdentityErrorCardDynamicallyShownOnError() {
+        FakeSyncServiceImpl fakeSyncService =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
+                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
+                            return fakeSyncServiceImpl;
+                        });
+
+        // Sign in and open settings.
+        mSigninTestRule.addTestAccountThenSignin();
+        mSettingsActivityTestRule.startSettingsActivity();
+
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        // No error card exists right now.
+        onView(withId(R.id.identity_error_card)).check(doesNotExist());
+
+        // Fake an identity error.
+        fakeSyncService.setRequiresClientUpgrade(true);
+
+        // Error card is showing now.
+        onViewWaiting(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
+    public void testIdentityErrorCardDynamicallyHidden() {
+        FakeSyncServiceImpl fakeSyncService =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            FakeSyncServiceImpl fakeSyncServiceImpl = new FakeSyncServiceImpl();
+                            SyncServiceFactory.setInstanceForTesting(fakeSyncServiceImpl);
+                            return fakeSyncServiceImpl;
+                        });
+
+        // Fake an identity error.
+        fakeSyncService.setRequiresClientUpgrade(true);
+
+        // Sign in and open settings.
+        mSigninTestRule.addTestAccountThenSignin();
+        mSettingsActivityTestRule.startSettingsActivity();
+
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        // The error card exists right now.
+        onView(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+
+        // Clear the error.
+        fakeSyncService.setRequiresClientUpgrade(false);
+
+        // No error card exists anymore.
+        onView(withId(R.id.identity_error_card)).check(doesNotExist());
     }
 }

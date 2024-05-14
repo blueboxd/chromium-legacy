@@ -30,7 +30,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store/password_store_results_observer.h"
 #include "components/password_manager/core/browser/password_store/test_password_store.h"
@@ -96,9 +95,11 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
       const url::Origin& origin,
       ManagePasswordsState::CredentialsCallback callback) override;
   void OnPasswordAutofilled(
-      const std::vector<const password_manager::PasswordForm*>& password_forms,
+      const std::vector<raw_ptr<const password_manager::PasswordForm,
+                                VectorExperimental>>& password_forms,
       const url::Origin& origin,
-      const std::vector<const password_manager::PasswordForm*>*
+      const std::vector<
+          raw_ptr<const password_manager::PasswordForm, VectorExperimental>>*
           federated_matches) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -229,10 +230,11 @@ bool CustomManagePasswordsUIController::OnChooseCredentials(
 }
 
 void CustomManagePasswordsUIController::OnPasswordAutofilled(
-    const std::vector<const password_manager::PasswordForm*>& password_forms,
+    const std::vector<raw_ptr<const password_manager::PasswordForm,
+                              VectorExperimental>>& password_forms,
     const url::Origin& origin,
-    const std::vector<const password_manager::PasswordForm*>*
-        federated_matches) {
+    const std::vector<raw_ptr<const password_manager::PasswordForm,
+                              VectorExperimental>>* federated_matches) {
   ProcessStateExpectations(password_manager::ui::MANAGE_STATE);
   return ManagePasswordsUIController::OnPasswordAutofilled(
       password_forms, origin, federated_matches);
@@ -681,26 +683,15 @@ void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
                                         content::BrowserContext,
                                         password_manager::TestPasswordStore>));
 
-                if (base::FeatureList::IsEnabled(
-                        password_manager::features::
-                            kEnablePasswordsAccountStorage)) {
-                  AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
-                      context,
-                      base::BindRepeating(
-                          &password_manager::BuildPasswordStoreWithArgs<
-                              content::BrowserContext,
-                              password_manager::TestPasswordStore,
-                              password_manager::IsAccountStore>,
-                          password_manager::IsAccountStore(true)));
-                } else {
-                  AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
-                      context,
-                      base::BindRepeating(
-                          [](content::BrowserContext* context)
-                              -> scoped_refptr<RefcountedKeyedService> {
-                            return nullptr;
-                          }));
-                }
+                // It's fine to override unconditionally, GetForProfile() will
+                // still return null if account storage is disabled.
+                AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
+                    context, base::BindRepeating(
+                                 &password_manager::BuildPasswordStoreWithArgs<
+                                     content::BrowserContext,
+                                     password_manager::TestPasswordStore,
+                                     password_manager::IsAccountStore>,
+                                 password_manager::IsAccountStore(true)));
               }));
 }
 

@@ -302,7 +302,7 @@ std::u16string GetFailureNotificationTitle(const ShareTarget& share_target) {
   }
 }
 
-absl::optional<std::u16string> GetFailureNotificationMessage(
+std::optional<std::u16string> GetFailureNotificationMessage(
     TransferMetadata::Status status) {
   switch (status) {
     case TransferMetadata::Status::kTimedOut:
@@ -312,7 +312,7 @@ absl::optional<std::u16string> GetFailureNotificationMessage(
     case TransferMetadata::Status::kUnsupportedAttachmentType:
       return l10n_util::GetStringUTF16(IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE);
     default:
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 
@@ -349,11 +349,11 @@ std::u16string GetConnectionRequestNotificationMessage(
   return message;
 }
 
-absl::optional<std::u16string> GetReceivedNotificationTextMessage(
+std::optional<std::u16string> GetReceivedNotificationTextMessage(
     const ShareTarget& share_target) {
   size_t text_count = share_target.text_attachments.size();
   if (text_count < 1) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   const TextAttachment& attachment = share_target.text_attachments[0];
@@ -401,7 +401,7 @@ class ProgressNotificationDelegate : public NearbyNotificationDelegate {
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const absl::optional<int>& action_index) override {
+               const std::optional<int>& action_index) override {
     // Clicking on the notification is a noop.
     if (!action_index)
       return;
@@ -427,7 +427,7 @@ class ProgressNotificationDelegate : public NearbyNotificationDelegate {
   }
 
  private:
-  raw_ptr<NearbyNotificationManager, ExperimentalAsh> manager_;
+  raw_ptr<NearbyNotificationManager> manager_;
   bool awaiting_remote_acceptance_ = false;
 };
 
@@ -441,7 +441,7 @@ class ConnectionRequestNotificationDelegate
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const absl::optional<int>& action_index) override {
+               const std::optional<int>& action_index) override {
     // Clicking on the notification is a noop.
     if (!action_index)
       return;
@@ -464,7 +464,7 @@ class ConnectionRequestNotificationDelegate
   }
 
  private:
-  raw_ptr<NearbyNotificationManager, ExperimentalAsh> manager_;
+  raw_ptr<NearbyNotificationManager> manager_;
 };
 
 class ReceivedImageDecoder : public ImageDecoder::ImageRequest {
@@ -475,7 +475,7 @@ class ReceivedImageDecoder : public ImageDecoder::ImageRequest {
       : callback_(std::move(callback)) {}
   ~ReceivedImageDecoder() override = default;
 
-  void DecodeImage(const absl::optional<base::FilePath>& image_path) {
+  void DecodeImage(const std::optional<base::FilePath>& image_path) {
     if (!image_path) {
       OnDecodeImageFailed();
       return;
@@ -539,7 +539,7 @@ class SuccessNotificationDelegate : public NearbyNotificationDelegate {
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const absl::optional<int>& action_index) override {
+               const std::optional<int>& action_index) override {
     switch (type_) {
       case NearbyNotificationManager::ReceivedContentType::kText:
         if (action_index.has_value() && action_index.value() == 0) {
@@ -655,8 +655,8 @@ class SuccessNotificationDelegate : public NearbyNotificationDelegate {
     }
   }
 
-  raw_ptr<NearbyNotificationManager, ExperimentalAsh> manager_;
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<NearbyNotificationManager> manager_;
+  raw_ptr<Profile> profile_;
   ShareTarget share_target_;
   NearbyNotificationManager::ReceivedContentType type_;
   SkBitmap image_;
@@ -674,7 +674,7 @@ class NearbyDeviceTryingToShareNotificationDelegate
 
   // NearbyNotificationDelegate:
   void OnClick(const std::string& notification_id,
-               const absl::optional<int>& action_index) override {
+               const std::optional<int>& action_index) override {
     if (!action_index) {
       return;
     }
@@ -698,7 +698,7 @@ class NearbyDeviceTryingToShareNotificationDelegate
   }
 
  private:
-  raw_ptr<NearbyNotificationManager, ExperimentalAsh> manager_;
+  raw_ptr<NearbyNotificationManager> manager_;
 };
 
 class NearbyVisibilityReminderNotificationDelegate
@@ -711,7 +711,7 @@ class NearbyVisibilityReminderNotificationDelegate
   ~NearbyVisibilityReminderNotificationDelegate() override = default;
 
   void OnClick(const std::string& notification_id,
-               const absl::optional<int>& action_index) override {
+               const std::optional<int>& action_index) override {
     if (!action_index) {
       // Open settings when user click the notification.
       manager_->OnNearbyVisibilityReminderClicked();
@@ -736,7 +736,7 @@ class NearbyVisibilityReminderNotificationDelegate
   }
 
  private:
-  raw_ptr<NearbyNotificationManager, ExperimentalAsh> manager_;
+  raw_ptr<NearbyNotificationManager> manager_;
 };
 
 bool ShouldShowNearbyDeviceTryingToShareNotification(
@@ -773,7 +773,7 @@ void UpdateNearbyDeviceTryingToShareDismissedTime(PrefService* pref_service) {
 }
 
 bool ShouldClearNotification(
-    absl::optional<TransferMetadata::Status> last_status,
+    std::optional<TransferMetadata::Status> last_status,
     TransferMetadata::Status new_status) {
   if (!last_status)
     return true;
@@ -931,8 +931,8 @@ void NearbyNotificationManager::OnNearbyProcessStopped() {
         *share_target_,
         TransferMetadataBuilder().set_status(*last_transfer_status_).build());
   }
-  share_target_ = absl::nullopt;
-  last_transfer_status_ = absl::nullopt;
+  share_target_ = std::nullopt;
+  last_transfer_status_ = std::nullopt;
 }
 
 void NearbyNotificationManager::OnFastInitiationDevicesDetected() {
@@ -1130,7 +1130,7 @@ void NearbyNotificationManager::ShowIncomingSuccess(
     case ReceivedContentType::kText: {
       notification_actions.emplace_back(l10n_util::GetStringUTF16(
           IDS_NEARBY_NOTIFICATION_ACTION_COPY_TO_CLIPBOARD));
-      absl::optional<std::u16string> message =
+      std::optional<std::u16string> message =
           GetReceivedNotificationTextMessage(share_target);
       if (message) {
         notification.set_message(message.value());
@@ -1192,7 +1192,7 @@ void NearbyNotificationManager::ShowFailure(
       CreateNearbyNotification(notification_id);
   notification.set_title(GetFailureNotificationTitle(share_target));
 
-  absl::optional<std::u16string> message =
+  std::optional<std::u16string> message =
       GetFailureNotificationMessage(transfer_metadata.status());
   if (message) {
     notification.set_message(*message);

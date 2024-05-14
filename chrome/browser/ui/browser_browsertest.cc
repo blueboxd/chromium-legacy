@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -32,6 +33,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
@@ -73,7 +75,12 @@
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -92,6 +99,8 @@
 #include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
+#include "components/omnibox/browser/location_bar_model.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -133,6 +142,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -231,44 +242,6 @@ class TabClosingObserver : public TabStripModelObserver {
 
  private:
   int closing_count_ = 0;
-};
-
-class FullscreenOperationComplete {
- public:
-  explicit FullscreenOperationComplete(Browser* browser)
-      : browser_(browser), last_state_(IsFullscreened(browser)) {}
-
-  FullscreenOperationComplete(const FullscreenOperationComplete&) = delete;
-  FullscreenOperationComplete& operator=(const FullscreenOperationComplete&) =
-      delete;
-  ~FullscreenOperationComplete() = default;
-
-  void Wait() {
-    base::RunLoop outer_loop;
-    auto wait_for_state = base::BindRepeating(
-        [](base::RunLoop* outer_loop, Browser* browser, bool* last_state) {
-          if (IsFullscreened(browser) != *last_state) {
-            outer_loop->Quit();
-            *last_state = !(*last_state);
-          }
-        },
-        &outer_loop, browser_, &last_state_);
-
-    base::RepeatingTimer timer;
-    timer.Start(FROM_HERE, base::Milliseconds(1), std::move(wait_for_state));
-    outer_loop.Run();
-  }
-
- private:
-  static bool IsFullscreened(Browser* browser) {
-    FullscreenController* controller =
-        browser->exclusive_access_manager()->fullscreen_controller();
-    return controller->IsFullscreenForBrowser() ||
-           controller->IsTabFullscreen();
-  }
-
-  raw_ptr<Browser> browser_;
-  bool last_state_;
 };
 
 // Used by CloseWithAppMenuOpen. Posts a CloseWindowCallback and shows the app
@@ -371,7 +344,8 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
 
 }  // namespace
 
-class BrowserTest : public extensions::ExtensionBrowserTest {
+class BrowserTest : public extensions::ExtensionBrowserTest,
+                    public BrowserListObserver {
  protected:
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
@@ -413,6 +387,12 @@ class BrowserTest : public extensions::ExtensionBrowserTest {
     NOTREACHED();
     return nullptr;
   }
+
+  // BrowserListObserver:
+  MOCK_METHOD(void,
+              OnBrowserCloseCancelled,
+              (Browser * browser, BrowserClosingStatus reason),
+              (override));
 };
 
 // Launch the app on a page with no title, check that the app title was set
@@ -1021,83 +1001,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkInGroupedTabOpensInGroup) {
   EXPECT_EQ(group_id, model->GetTabGroupForTab(1));
 }
 
-// BeforeUnloadAtQuitWithTwoWindows is a regression test for
-// http://crbug.com/11842. It opens two windows, one of which has a
-// beforeunload handler and attempts to exit cleanly.
-class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
- public:
-  // This test is for testing a specific shutdown behavior. This mimics what
-  // happens in InProcessBrowserTest::RunTestOnMainThread and QuitBrowsers, but
-  // ensures that it happens through the single IDC_EXIT of the test.
-  void TearDownOnMainThread() override {
-    // Cycle both the MessageLoop and the Cocoa runloop twice to flush out any
-    // Chrome work that generates Cocoa work. Do this twice since there are two
-    // Browsers that must be closed.
-    CycleRunLoops();
-    CycleRunLoops();
-
-    // Run the application event loop to completion, which will cycle the
-    // native MessagePump on all platforms.
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-    base::RunLoop().Run();
-
-    // Take care of any remaining Cocoa work.
-    CycleRunLoops();
-
-    // At this point, quit should be for real now.
-    ASSERT_EQ(0u, chrome::GetTotalBrowserCount());
-  }
-
-  // A helper function that cycles the MessageLoop, and on Mac, the Cocoa run
-  // loop. It also drains the NSAutoreleasePool.
-  void CycleRunLoops() {
-    content::RunAllPendingInMessageLoop();
-#if BUILDFLAG(IS_MAC)
-    chrome::testing::NSRunLoopRunAllPending();
-    AutoreleasePool()->Recycle();
-#endif
-  }
-};
-
-// Disabled, http://crbug.com/159214 .
-IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
-                       DISABLED_IfThisTestTimesOutItIndicatesFAILURE) {
-  // In the first browser, set up a page that has a beforeunload handler.
-  GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::PrepContentsForBeforeUnloadTest(contents);
-
-  // Open a second browser window at about:blank.
-  chrome::NewEmptyWindow(browser()->profile());
-  Browser* second_window = BrowserList::GetInstance()->GetLastActive();
-  EXPECT_NE(second_window, browser());
-  ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(second_window, GURL(url::kAboutBlankURL)));
-
-  // Tell the application to quit. IDC_EXIT calls AttemptUserExit, which on
-  // everything but ChromeOS allows unload handlers to block exit. On that
-  // platform, though, it exits unconditionally. See the comment and bug ID
-  // in AttemptUserExit() in application_lifetime.cc.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  chrome::AttemptExit();
-#else
-  chrome::ExecuteCommand(second_window, IDC_EXIT);
-#endif
-
-  // The beforeunload handler will run at exit, ensure it does, and then accept
-  // it to allow shutdown to proceed.
-  AppModalDialogController* alert = ui_test_utils::WaitForAppModalDialog();
-  ASSERT_TRUE(alert);
-  EXPECT_TRUE(alert->is_before_unload_dialog());
-  alert->view()->AcceptAppModalDialog();
-
-  // But wait there's more! If this test times out, it likely means that the
-  // browser has not been able to quit correctly, indicating there's a
-  // regression of the bug noted above.
-}
-
 // Tests that other popup navigations that do not follow the steps at
 // http://www.google.com/chrome/intl/en/webmasters-faq.html#newtab will not
 // fork a new renderer process.
@@ -1334,7 +1237,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   // Find the new browsers.
   Browser* app_browser = nullptr;
   Browser* dev_tools_browser = nullptr;
-  for (auto* b : *BrowserList::GetInstance()) {
+  for (Browser* b : *BrowserList::GetInstance()) {
     if (b == browser()) {
       continue;
     } else if (b->app_name() == DevToolsWindow::kDevToolsApp) {
@@ -1448,7 +1351,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
                                     : chrome::startup::IsFirstRun::kNo;
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
   launch.Launch(browser()->profile(), chrome::startup::IsProcessStartup::kNo,
-                nullptr);
+                nullptr, /*restore_tabbed_browser=*/true);
 
   // The launch should have created a new browser.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
@@ -1525,7 +1428,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 
   // Find the new browser.
   Browser* new_browser = nullptr;
-  for (auto* b : *BrowserList::GetInstance()) {
+  for (Browser* b : *BrowserList::GetInstance()) {
     if (b != browser())
       new_browser = b;
   }
@@ -2738,16 +2641,22 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsDropFullscreen) {
   web_modal::WebContentsModalDialogManagerDelegate* browser_as_dialog_delegate =
       static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(browser());
 
-  FullscreenOperationComplete full_screen_complete_observer(browser());
   // Simulate the tab requesting fullscreen.
-  browser_as_wc_delegate->EnterFullscreenModeForTab(tab->GetPrimaryMainFrame(),
-                                                    {});
-  full_screen_complete_observer.Wait();
+  {
+    ui_test_utils::FullscreenWaiter waiter(browser(), {.tab_fullscreen = true});
+    browser_as_wc_delegate->EnterFullscreenModeForTab(
+        tab->GetPrimaryMainFrame(), {});
+    waiter.Wait();
+  }
   EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
 
   // The tab gets a modal dialog.
-  browser_as_dialog_delegate->SetWebContentsBlocked(tab, true);
-  full_screen_complete_observer.Wait();
+  {
+    ui_test_utils::FullscreenWaiter waiter(browser(),
+                                           {.tab_fullscreen = false});
+    browser_as_dialog_delegate->SetWebContentsBlocked(tab, true);
+    waiter.Wait();
+  }
 
   // The dialog should drop fullscreen.
   EXPECT_FALSE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
@@ -3162,6 +3071,42 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(back_observer.was_same_document());
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Tests that an extension that disables omnibox URL elision sets a pref and
+// unelides URLs appropriately. This is temporary migration code along the way
+// to deprecating this special extension.
+// TODO(crbug/324934130): remove after ~M125 or so.
+IN_PROC_BROWSER_TEST_F(BrowserTest, URLElisionExtensionSetsPref) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  // Smoke test: by default, the URL elision pref should be false, and when
+  // navigating to a URL, the URL should be elided.
+  ASSERT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      omnibox::kPreventUrlElisionsInOmnibox));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_EQ(base::ASCIIToUTF16(url.host() + ":" + url.port() + "/empty.html"),
+            browser()->location_bar_model()->GetURLForDisplay());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
+  const Extension* extension_app = GetExtension();
+  browser()->SetURLElisionExtensionIDForTesting(extension_app->id().c_str());
+
+  // After setting the test extension ID, a newly created browser should set the
+  // relevant pref to prevent URL elision.
+  Browser* new_browser = Browser::Create(
+      Browser::CreateParams(Browser::TYPE_NORMAL, browser()->profile(), true));
+  EXPECT_TRUE(new_browser->profile()->GetPrefs()->GetBoolean(
+      omnibox::kPreventUrlElisionsInOmnibox));
+
+  // When navigating to a URL, the URL should not be elided.
+  chrome::NewTab(new_browser);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(new_browser, url));
+  EXPECT_EQ(base::ASCIIToUTF16(url.spec()),
+            new_browser->location_bar_model()->GetURLForDisplay());
+}
+#endif  // !
+
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_F(BrowserTest, CreatePictureInPicture) {
   Browser* popup_browser = Browser::Create(Browser::CreateParams(
@@ -3169,3 +3114,58 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CreatePictureInPicture) {
   ASSERT_TRUE(popup_browser->is_type_picture_in_picture());
 }
 #endif  // !IS_CHROMEOS_LACROS
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+IN_PROC_BROWSER_TEST_F(BrowserTest, PreventCloseYieldsCancelledEvent) {
+  base::ScopedObservation<BrowserList, BrowserListObserver> observer(this);
+  observer.Observe(BrowserList::GetInstance());
+
+  base::test::TestFuture<void> policy_refresh_sync_future;
+  web_app::WebAppProvider::GetForWebApps(profile())
+      ->policy_manager()
+      .SetRefreshPolicySettingsCompletedCallbackForTesting(
+          policy_refresh_sync_future.GetCallback());
+
+  const absl::Cleanup policy_cleanup = [this]() {
+    // Clear policy values, otherwise we won't be able to gracefully close the
+    // browser test.
+    profile()->GetPrefs()->SetList(prefs::kWebAppSettings, base::Value::List());
+  };
+
+  // Set up policy values.
+  static constexpr char kCalculatorAppUrl[] = "https://calculator.apps.chrome/";
+  profile()->GetPrefs()->SetList(
+      prefs::kWebAppSettings,
+      base::Value::List().Append(
+          base::Value::Dict()
+              .Set(web_app::kManifestId, kCalculatorAppUrl)
+              .Set(web_app::kRunOnOsLogin, web_app::kRunWindowed)
+              .Set(web_app::kPreventClose, true)));
+  profile()->GetPrefs()->SetList(
+      prefs::kWebAppInstallForceList,
+      base::Value::List().Append(
+          base::Value::Dict()
+              .Set(web_app::kUrlKey, kCalculatorAppUrl)
+              .Set(web_app::kDefaultLaunchContainerKey,
+                   web_app::kDefaultLaunchContainerWindowValue)));
+  ASSERT_TRUE(policy_refresh_sync_future.Wait());
+
+  apps::AppUpdateWaiter waiter(
+      profile(), web_app::kCalculatorAppId,
+      base::BindRepeating([](const apps::AppUpdate& update) {
+        return update.AllowClose().has_value() && !update.AllowClose().value();
+      }));
+  waiter.Await();
+
+  Browser* const browser =
+      web_app::LaunchWebAppBrowser(profile(), web_app::kCalculatorAppId);
+  ASSERT_TRUE(browser);
+
+  EXPECT_EQ(BrowserClosingStatus::kDeniedByPolicy,
+            browser->HandleBeforeClose());
+  EXPECT_CALL(*this, OnBrowserCloseCancelled(
+                         browser, BrowserClosingStatus::kDeniedByPolicy))
+      .Times(1);
+  browser->OnWindowClosing();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

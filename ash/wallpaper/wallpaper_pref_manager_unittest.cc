@@ -5,6 +5,7 @@
 #include "ash/wallpaper/wallpaper_pref_manager.h"
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "ash/constants/ash_pref_names.h"
@@ -194,7 +195,7 @@ class WallpaperPrefManagerTestBase : public testing::Test {
     profile_helper_->RegisterPrefsForAccount(id);
   }
 
-  void StoreWallpaper(const AccountId& account_id, base::StringPiece location) {
+  void StoreWallpaper(const AccountId& account_id, std::string_view location) {
     WallpaperInfo info = InfoWithType(WallpaperType::kCustomized);
     info.location = std::string(location);
     ASSERT_TRUE(pref_manager_->SetUserWallpaperInfo(account_id, info));
@@ -204,8 +205,7 @@ class WallpaperPrefManagerTestBase : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
 
-  raw_ptr<TestProfileHelper, DanglingUntriaged | ExperimentalAsh>
-      profile_helper_;
+  raw_ptr<TestProfileHelper, DanglingUntriaged> profile_helper_;
 
   TestWallpaperControllerClient client_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;

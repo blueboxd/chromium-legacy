@@ -8,20 +8,20 @@
  * accounts settings (including add / remove accounts).
  */
 
-import 'chrome://resources/cr_components/localized_link/localized_link.js';
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
-import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
+import 'chrome://resources/ash/common/cr_elements/localized_link/localized_link.js';
+import 'chrome://resources/ash/common/cr_elements/cr_action_menu/cr_action_menu.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
+import 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/ash/common/cr_elements/policy/cr_policy_indicator.js';
+import 'chrome://resources/ash/common/cr_elements/policy/cr_tooltip_icon.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../settings_shared.css.js';
 
-import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import {CrDialogElement} from 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {assertInstanceof} from 'chrome://resources/js/assert.js';
 import {getImage} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -59,17 +59,12 @@ export class AdditionalAccountsSettingsCardElement extends
 
   static get properties() {
     return {
-      accounts_: {
+      accounts: {
         type: Array,
         value() {
           return [];
         },
       },
-
-      /**
-       * Primary / Device account.
-       */
-      deviceAccount_: Object,
 
       /**
        * The targeted account for menu operations.
@@ -129,10 +124,9 @@ export class AdditionalAccountsSettingsCardElement extends
     };
   }
 
-  private accounts_: Account[];
+  accounts: Account[];
   private actionMenuAccount_: Account|null;
   private browserProxy_: AccountManagerBrowserProxy;
-  private deviceAccount_: Account|null;
   private isArcAccountRestrictionsEnabled_: boolean;
   private isChildUser_: boolean;
   private isDeviceAccountManaged_: boolean;
@@ -144,35 +138,12 @@ export class AdditionalAccountsSettingsCardElement extends
     this.browserProxy_ = AccountManagerBrowserProxyImpl.getInstance();
   }
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-
-    this.addWebUiListener('accounts-changed', this.refreshAccounts_.bind(this));
-  }
-
-  override ready(): void {
-    super.ready();
-    this.refreshAccounts_();
-  }
-
   override currentRouteChanged(newRoute: Route): void {
     if (newRoute !== routes.OS_PEOPLE) {
       return;
     }
 
     this.attemptDeepLink();
-  }
-
-  private async refreshAccounts_(): Promise<void> {
-    const accounts = await this.browserProxy_.getAccounts();
-    this.set('accounts_', accounts);
-    const deviceAccount = accounts.find(account => account.isDeviceAccount);
-
-    if (!deviceAccount) {
-      console.error('Cannot find device account.');
-      return;
-    }
-    this.deviceAccount_ = deviceAccount;
   }
 
   /**
@@ -204,7 +175,7 @@ export class AdditionalAccountsSettingsCardElement extends
 
   private addAccount_(): void {
     recordSettingChange(
-        Setting.kAddAccount, {intValue: this.accounts_.length + 1});
+        Setting.kAddAccount, {intValue: this.accounts.length + 1});
     this.browserProxy_.addAccount();
   }
 
@@ -249,12 +220,11 @@ export class AdditionalAccountsSettingsCardElement extends
   }
 
   private shouldShowSecondaryAccountsList_(): boolean {
-    return this.accounts_.filter(account => !account.isDeviceAccount).length ===
-        0;
+    return this.getSecondaryAccounts_().length === 0;
   }
 
   private getSecondaryAccounts_(): Account[] {
-    return this.accounts_.filter(account => !account.isDeviceAccount);
+    return this.accounts.filter(account => !account.isDeviceAccount);
   }
 
   private getAddAccountLabel_(): string {

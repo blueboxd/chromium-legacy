@@ -4,15 +4,15 @@
 
 import {assert} from 'chrome://resources/js/assert.js';
 
+import type {VolumeManager} from '../../../background/js/volume_manager.js';
 import {isTrashEntry} from '../../../common/js/entry_utils.js';
 import {VolumeType} from '../../../common/js/volume_manager_types.js';
-import type {VolumeManager} from '../../../externs/volume_manager.js';
 
 import {ContentMetadataProvider} from './content_metadata_provider.js';
 import {DlpMetadataProvider} from './dlp_metadata_provider.js';
 import {ExternalMetadataProvider} from './external_metadata_provider.js';
 import {FileSystemMetadataProvider} from './file_system_metadata_provider.js';
-import {MetadataItem, MetadataKey} from './metadata_item.js';
+import {MetadataItem, type MetadataKey} from './metadata_item.js';
 import {MetadataProvider} from './metadata_provider.js';
 import {MetadataRequest} from './metadata_request.js';
 

@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-forward.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
@@ -174,19 +175,47 @@ void PhishingClassifierDelegate::CancelPendingClassification(
 }
 
 void PhishingClassifierDelegate::ClassificationDone(
-    const ClientPhishingRequest& verdict) {
+    const ClientPhishingRequest& verdict,
+    PhishingClassifier::Result phishing_classifier_result) {
   is_phishing_detection_running_ = false;
   if (callback_.is_null())
     return;
 
-  if (verdict.client_score() != PhishingClassifier::kInvalidScore) {
-    DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
-    std::move(callback_).Run(mojom::PhishingDetectorResult::SUCCESS,
-                             verdict.SerializeAsString());
-  } else {
-    std::move(callback_).Run(mojom::PhishingDetectorResult::INVALID_SCORE,
-                             verdict.SerializeAsString());
+  mojom::PhishingDetectorResult result = mojom::PhishingDetectorResult::SUCCESS;
+
+  if (verdict.client_score() == PhishingClassifier::kClassifierFailed) {
+    switch (phishing_classifier_result) {
+      case PhishingClassifier::Result::kInvalidScore:
+        result = mojom::PhishingDetectorResult::INVALID_SCORE;
+        break;
+      case PhishingClassifier::Result::kInvalidURLFormatRequest:
+        result = mojom::PhishingDetectorResult::INVALID_URL_FORMAT_REQUEST;
+        break;
+      case PhishingClassifier::Result::kInvalidDocumentLoader:
+        result = mojom::PhishingDetectorResult::INVALID_DOCUMENT_LOADER;
+        break;
+      case PhishingClassifier::Result::kURLFeatureExtractionFailed:
+        result = mojom::PhishingDetectorResult::URL_FEATURE_EXTRACTION_FAILED;
+        break;
+      case PhishingClassifier::Result::kDOMExtractionFailed:
+        result = mojom::PhishingDetectorResult::DOM_EXTRACTION_FAILED;
+        break;
+      case PhishingClassifier::Result::kTermExtractionFailed:
+        result = mojom::PhishingDetectorResult::TERM_EXTRACTION_FAILED;
+        break;
+      case PhishingClassifier::Result::kVisualExtractionFailed:
+        result = mojom::PhishingDetectorResult::VISUAL_EXTRACTION_FAILED;
+        break;
+      default:
+        NOTREACHED();
+    }
   }
+
+  if (result == mojom::PhishingDetectorResult::SUCCESS) {
+    DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
+  }
+
+  std::move(callback_).Run(result, verdict.SerializeAsString());
 }
 
 void PhishingClassifierDelegate::MaybeStartClassification() {
@@ -202,13 +231,26 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   // Note that if we determine that this particular navigation should not be
   // classified at all (as opposed to deferring it until we get an IPC or
   // the load completes), we discard the page text since it won't be needed.
-  if (!classifier_->is_ready() && !awaiting_retry_) {
-    awaiting_retry_ = true;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&PhishingClassifierDelegate::OnRetryTimeout,
-                       weak_factory_.GetWeakPtr()),
-        base::Seconds(kClientSideDetectionRetryLimitTime.Get()));
+  if (!classifier_->is_ready()) {
+    // We should only retry if a phishing detection has been requested, which
+    // is tracked by |is_phishing_detection_running_|.
+    if (base::FeatureList::IsEnabled(kClientSideDetectionRetryLimit) &&
+        is_phishing_detection_running_ && !awaiting_retry_) {
+      awaiting_retry_ = true;
+
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&PhishingClassifierDelegate::OnRetryTimeout,
+                         weak_factory_.GetWeakPtr()),
+          base::Seconds(kClientSideDetectionRetryLimitTime.Get()));
+    } else {
+      is_phishing_detection_running_ = false;
+      // Keep classifier_page_text_, in case a Scorer is set later.
+      if (!callback_.is_null()) {
+        std::move(callback_).Run(
+            mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY, "");
+      }
+    }
     return;
   }
 

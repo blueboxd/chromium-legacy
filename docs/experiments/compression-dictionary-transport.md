@@ -193,6 +193,22 @@ Developers can check the related HTTP request and response headers
 - [cbrbug.com/1479809](crbug.com/1479809): Can't use large (>8MB) dictionaries
   for Shared Zstd. Fixed in M118.
 
+## Changes in M123
+
+The following changes have been made to Chrome since M123 to keep up with the
+changes in specifications.
+
+- Changed Content-Encoding name "br-d" "zstd-d"
+- Changed match to use URLPattern
+- Added support for a server-provided dictionary id
+- Stop using "expires" value of "Use-As-Dictionary" header, and use the cache
+  expiration time calculated from the response's freshness instead.
+- Removed support for hash negotiation and force use of sha-256
+- Added the dictionary hash to the compressed response
+- Dictionary hashes changed to sf-binary
+- Use "Available-Dictionary" header instead of "Sec-Available-Dictionary"
+- Added support for match-dest option
+
 ## Demo sites
 
 There are a few demo sites that you can use to test the feature:

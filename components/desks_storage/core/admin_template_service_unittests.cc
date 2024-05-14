@@ -4,12 +4,15 @@
 
 #include "components/desks_storage/core/admin_template_service.h"
 
+#include <string_view>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/saved_desk_delegate.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/values_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "components/account_id/account_id.h"
@@ -25,7 +28,7 @@
 namespace desks_storage {
 
 namespace {
-base::Value ParsePolicyFromString(base::StringPiece policy) {
+base::Value ParsePolicyFromString(std::string_view policy) {
   auto parsed_json = base::JSONReader::ReadAndReturnValueWithError(policy);
 
   CHECK(parsed_json.has_value());
@@ -118,7 +121,8 @@ GetAdminTemplatePolicyTemplateWithOneTemplate() {
 // Verifies that the two vectors contain equal contents.
 void ExpectTemplateVectorsEqual(
     const std::vector<std::unique_ptr<ash::DeskTemplate>>& expected_templates,
-    const std::vector<const ash::DeskTemplate*>& got_templates) {
+    const std::vector<raw_ptr<const ash::DeskTemplate, VectorExperimental>>&
+        got_templates) {
   EXPECT_EQ(expected_templates.size(), got_templates.size());
 
   // We expect the order of the templates to be the same as the expected
@@ -308,7 +312,8 @@ TEST_F(AdminTemplateServiceTest, WaitsForAppsCacheBeforeParsingPolicy) {
       GetAdminService()->GetFullDeskModel()->GetAllEntries();
 
   EXPECT_EQ(all_entries_result.status, DeskModel::GetAllEntriesStatus::kOk);
-  std::vector<const ash::DeskTemplate*>& entries = all_entries_result.entries;
+  std::vector<raw_ptr<const ash::DeskTemplate, VectorExperimental>>& entries =
+      all_entries_result.entries;
 
   std::vector<std::unique_ptr<ash::DeskTemplate>> expected_templates =
       GetDefaultAdminTemplatePolicyTemplates();
@@ -339,7 +344,8 @@ TEST_F(AdminTemplateServiceTest,
       GetAdminService()->GetFullDeskModel()->GetAllEntries();
 
   EXPECT_EQ(all_entries_result.status, DeskModel::GetAllEntriesStatus::kOk);
-  std::vector<const ash::DeskTemplate*>& entries = all_entries_result.entries;
+  std::vector<raw_ptr<const ash::DeskTemplate, VectorExperimental>>& entries =
+      all_entries_result.entries;
 
   std::vector<std::unique_ptr<ash::DeskTemplate>> expected_templates =
       GetDefaultAdminTemplatePolicyTemplates();

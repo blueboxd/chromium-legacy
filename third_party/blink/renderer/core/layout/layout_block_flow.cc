@@ -62,8 +62,8 @@
 #include "third_party/blink/renderer/core/layout/table/layout_table.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/layout/unpositioned_float.h"
-#include "third_party/blink/renderer/core/paint/block_flow_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/inline_paint_context.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
@@ -207,7 +207,8 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
 
 static bool IsMergeableAnonymousBlock(const LayoutBlockFlow* block) {
   return block->IsAnonymousBlock() && !block->BeingDestroyed() &&
-         !block->IsRubyColumn() && !block->IsRubyBase();
+         !block->IsRubyColumn() && !block->IsRubyBase() &&
+         !block->IsViewTransitionRoot();
 }
 
 void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
@@ -262,8 +263,8 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
 
   LayoutObject* child = prev ? prev : next;
   auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
-  if (child && child_block_flow && !child->PreviousSibling() &&
-      !child->NextSibling()) {
+  if (child_block_flow && !child_block_flow->PreviousSibling() &&
+      !child_block_flow->NextSibling()) {
     // If the removal has knocked us down to containing only a single anonymous
     // box we can go ahead and pull the content right back up into our
     // box.
@@ -321,6 +322,11 @@ static bool AllowsCollapseAnonymousBlockChild(const LayoutBlockFlow& parent,
   // Ruby elements use anonymous wrappers for ruby columns and ruby bases by
   // design, so we don't remove them.
   if (child.IsRubyColumn() || child.IsRubyBase()) {
+    return false;
+  }
+  // The ViewTransitionRoot is also anonymous by design and shouldn't be
+  // elided.
+  if (child.IsViewTransitionRoot()) {
     return false;
   }
   if (IsA<LayoutMultiColumnFlowThread>(parent) &&
@@ -774,8 +780,33 @@ bool LayoutBlockFlow::ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom()
 void LayoutBlockFlow::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   NOT_DESTROYED();
-  BlockFlowPaintInvalidator(*this).InvalidateDisplayItemClients(
-      invalidation_reason);
+  LayoutBlock::InvalidateDisplayItemClients(invalidation_reason);
+
+  InlineCursor cursor(*this);
+  if (!cursor) {
+    return;
+  }
+
+  ObjectPaintInvalidator paint_invalidator(*this);
+  // Line boxes record hit test data (see BoxFragmentPainter::PaintLineBox)
+  // and should be invalidated if they change.
+  bool invalidate_all_lines =
+      HasEffectiveAllowedTouchAction() || InsideBlockingWheelEventHandler();
+
+  for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine()) {
+    // The first line LineBoxFragment paints the ::first-line background.
+    // Because it may be expensive to figure out if the first line is affected
+    // by any ::first-line selectors at all, we just invalidate
+    // unconditionally which is typically cheaper.
+    if (invalidate_all_lines || cursor.Current().UsesFirstLineStyle()) {
+      DCHECK(cursor.Current().GetDisplayItemClient());
+      paint_invalidator.InvalidateDisplayItemClient(
+          *cursor.Current().GetDisplayItemClient(), invalidation_reason);
+    }
+    if (!invalidate_all_lines) {
+      break;
+    }
+  }
 }
 
 }  // namespace blink

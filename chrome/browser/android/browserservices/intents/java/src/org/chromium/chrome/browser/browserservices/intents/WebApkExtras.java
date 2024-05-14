@@ -34,14 +34,18 @@ public class WebApkExtras {
     /** URL that the WebAPK should navigate to when launched from the homescreen. */
     public final String manifestStartUrl;
 
-    /** Id field of the Web Manifest. */
-    public final String manifestId;
+    /**
+     * Id field of the Web Manifest. Empty or null means this is from an older version of
+     * shell(<155) that did not set this value.
+     */
+    @Nullable public final String manifestId;
 
     /**
-     * Key of the WebAPK. It's either the Manifest URL or the Manifest Unique ID depending on the
-     * situation.
+     * Key of the WebAPK. The value should either be the same as the Manifest URL or the Manifest
+     * Unique ID, or empty depending on the situation. Empty or null means this is from an older
+     * version of shell (<155) that did not set this value.
      */
-    public final String appKey;
+    @Nullable public final String appKey;
 
     /** The source from where the WebAPK is installed. */
     public final @WebApkDistributor int distributor;
@@ -69,6 +73,9 @@ public class WebApkExtras {
 
     /** WebAPK's version code. */
     public final int webApkVersionCode;
+
+    /** WebAPK's last update timestamp. */
+    public final long lastUpdateTime;
 
     /** A class that stores information from shortcut items. */
     public static class ShortcutItem {
@@ -112,7 +119,8 @@ public class WebApkExtras {
                 /* isSplashProvidedByWebApk= */ false,
                 new ArrayList<>()
                 /* shortcutItems= */ ,
-                /* webApkVersionCode= */ 0);
+                /* webApkVersionCode= */ 0,
+                /* lastUpdateTime= */ 0);
     }
 
     public WebApkExtras(
@@ -129,7 +137,8 @@ public class WebApkExtras {
             @Nullable WebApkShareTarget shareTarget,
             boolean isSplashProvidedByWebApk,
             @NonNull List<ShortcutItem> shortcutItems,
-            int webApkVersionCode) {
+            int webApkVersionCode,
+            long lastUpdateTime) {
         this.webApkPackageName = webApkPackageName;
         this.splashIcon = splashIcon;
         this.isSplashIconMaskable = isSplashIconMaskable;
@@ -144,5 +153,6 @@ public class WebApkExtras {
         this.isSplashProvidedByWebApk = isSplashProvidedByWebApk;
         this.shortcutItems = shortcutItems;
         this.webApkVersionCode = webApkVersionCode;
+        this.lastUpdateTime = lastUpdateTime;
     }
 }

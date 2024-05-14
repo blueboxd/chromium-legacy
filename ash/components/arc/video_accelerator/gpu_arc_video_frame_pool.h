@@ -65,6 +65,7 @@ class GpuArcVideoFramePool : public mojom::VideoFramePool,
                      size_t max_num_frames,
                      NotifyLayoutChangedCb notify_layout_changed_cb,
                      ImportFrameCb import_frame_cb) override;
+  media::VideoFrame::StorageType GetFrameStorageType() const override;
 
   // Get the id associated with the specified |video_frame|.
   std::optional<int32_t> GetVideoFrameId(const media::VideoFrame* video_frame);
@@ -92,9 +93,6 @@ class GpuArcVideoFramePool : public mojom::VideoFramePool,
   mojo::AssociatedReceiver<mojom::VideoFramePool> video_frame_pool_receiver_;
   // The remote video frame pool mojo client.
   mojo::AssociatedRemote<mojom::VideoFramePoolClient> pool_client_;
-
-  // The DMABuf video frame pool used as a backend.
-  std::unique_ptr<media::VdaVideoFramePool> vda_video_frame_pool_;
 
   // callback used to notify the video frame pool of new video frame formats,
   // used when the pool requests new frames using RequestFrames().

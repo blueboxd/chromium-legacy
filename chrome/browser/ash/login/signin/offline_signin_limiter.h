@@ -32,6 +32,9 @@ class OfflineSigninLimiter : public KeyedService,
                              public base::PowerSuspendObserver,
                              public session_manager::SessionManagerObserver {
  public:
+  // `profile` and `clock` must remain valid until Shutdown() is called. If
+  // `clock` is NULL, the shared base::DefaultClock instance will be used.
+  OfflineSigninLimiter(Profile* profile, const base::Clock* clock);
   OfflineSigninLimiter(const OfflineSigninLimiter&) = delete;
   OfflineSigninLimiter& operator=(const OfflineSigninLimiter&) = delete;
   ~OfflineSigninLimiter() override;  // public for testing purpose only.
@@ -53,10 +56,6 @@ class OfflineSigninLimiter : public KeyedService,
  private:
   friend class OfflineSigninLimiterFactory;
   friend class OfflineSigninLimiterTest;
-
-  // `profile` and `clock` must remain valid until Shutdown() is called. If
-  // `clock` is NULL, the shared base::DefaultClock instance will be used.
-  OfflineSigninLimiter(Profile* profile, const base::Clock* clock);
 
   // Recalculates the amount of time remaining until online login should be
   // forced and sets the `offline_signin_limit_timer_` accordingly. If the limit
@@ -95,8 +94,8 @@ class OfflineSigninLimiter : public KeyedService,
   // Helper function to get user for the given profile_.
   const user_manager::User& GetUser();
 
-  raw_ptr<Profile, ExperimentalAsh> profile_;
-  raw_ptr<const base::Clock, ExperimentalAsh> clock_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<const base::Clock> clock_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

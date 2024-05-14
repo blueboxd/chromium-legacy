@@ -11,6 +11,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "base/base_export.h"
 
@@ -23,14 +24,6 @@ namespace base::mac {
 // Returns an sRGB color space.  The return value is a static value; do not
 // release it!
 BASE_EXPORT CGColorSpaceRef GetSRGBColorSpace();
-
-// Returns the generic RGB color space. The return value is a static value; do
-// not release it!
-BASE_EXPORT CGColorSpaceRef GetGenericRGBColorSpace();
-
-// Returns the color space being used by the main display.  The return value
-// is a static value; do not release it!
-BASE_EXPORT CGColorSpaceRef GetSystemColorSpace();
 
 // Adds the specified application to the set of Login Items with specified
 // "hide" flag. This has the same effect as adding/removing the application in
@@ -158,6 +151,10 @@ DEFINE_IS_OS_FUNCS(14, IGNORE_DEPLOYMENT_TARGET)
 #undef OLD_TEST_DEPLOYMENT_TARGET
 #undef TEST_DEPLOYMENT_TARGET
 #undef IGNORE_DEPLOYMENT_TARGET
+// Sets the tags on a given file or folder.
+BASE_EXPORT void SetFileTags(const FilePath& file_path,
+                             const std::vector<std::string>& file_tags);
+
 // The following two functions return the version of the macOS currently
 // running. MacOSVersion() returns the full trio of version numbers, packed into
 // one int (e.g. macOS 12.6.5 returns 12'06'05), and MacOSMajorVersion() returns

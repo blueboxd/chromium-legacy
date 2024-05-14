@@ -201,8 +201,10 @@ bool ShouldDisplayCredentialAsMuted(
     [_consumer setIsBlockedSite:YES];
   }
 
-  if ([self isUserEligibleForSendingPasswords]) {
-    [_consumer setupRightShareButton];
+  if ([self shouldDisplayShareButton]) {
+    [_consumer setupRightShareButton:
+                   _prefService->GetBoolean(
+                       password_manager::prefs::kPasswordSharingEnabled)];
   }
 }
 
@@ -505,7 +507,7 @@ bool ShouldDisplayCredentialAsMuted(
     password.shouldOfferToMoveToAccount =
         self.context == DetailsContext::kPasswordSettings &&
         password_manager::features_util::IsOptedInForAccountStorage(
-            _syncService) &&
+            _prefService, _syncService) &&
         ShouldShowLocalOnlyIcon(credential, _syncService);
     [passwords addObject:password];
   }
@@ -556,11 +558,9 @@ bool ShouldDisplayCredentialAsMuted(
 // Returns YES if all of the following conditions are met:
 // * User is syncing or signed in and opted in to account storage.
 // * Password sending feature is enabled.
-// * Password sharing pref is enabled.
-- (BOOL)isUserEligibleForSendingPasswords {
-  return password_manager::sync_util::GetAccountForSaving(_syncService) &&
-         _prefService->GetBoolean(
-             password_manager::prefs::kPasswordSharingEnabled) &&
+- (BOOL)shouldDisplayShareButton {
+  return password_manager::sync_util::GetAccountForSaving(_prefService,
+                                                          _syncService) &&
          base::FeatureList::IsEnabled(
              password_manager::features::kSendPasswords);
 }

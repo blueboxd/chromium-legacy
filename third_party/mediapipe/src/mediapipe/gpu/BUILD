@@ -196,6 +196,7 @@ cc_library(
         ":gpu_buffer_format",
         "//mediapipe/framework:executor",
         "//mediapipe/framework:mediapipe_profiling",
+        "//mediapipe/framework:port",
         "//mediapipe/framework:timestamp",
         "//mediapipe/framework/port:logging",
         "//mediapipe/framework/port:ret_check",
@@ -209,6 +210,7 @@ cc_library(
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
     ] + select({
         "//conditions:default": [],
@@ -439,6 +441,7 @@ cc_library(
         "//mediapipe/objc:CFHolder",
         "//mediapipe/objc:util",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/synchronization",
     ],
 )
@@ -511,11 +514,20 @@ cc_library(
         ],
     }),
     deps = [
+        ":gl_base_hdr",
+        ":gl_context",
         ":gl_texture_buffer",
+        ":gl_texture_view",
         ":gpu_buffer_format",
         ":gpu_buffer_storage",
         ":image_frame_view",
+        "//mediapipe/framework:port",
+        "//mediapipe/framework/formats:ahwb_view",
+        "//mediapipe/framework/formats:hardware_buffer",
         "//mediapipe/framework/formats:image_frame",
+        "//mediapipe/framework/port:ret_check",
+        "//third_party/GL:EGL_headers",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings:str_format",
     ],
 )
@@ -661,6 +673,9 @@ cc_library(
         "//mediapipe/framework/port:ret_check",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
     ] + select({
         "//conditions:default": [],
         "//mediapipe:apple": [
@@ -676,16 +691,10 @@ cc_library(
     hdrs = ["gl_texture_buffer_pool.h"],
     visibility = ["//visibility:public"],
     deps = [
-        ":gl_base",
         ":gl_texture_buffer",
-        ":gpu_buffer",
-        ":gpu_shared_data_header",
         ":multi_pool",
         ":reusable_pool",
-        "//mediapipe/framework:calculator_context",
-        "//mediapipe/framework:calculator_node",
-        "//mediapipe/framework/port:logging",
-        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/synchronization",
     ],
 )
@@ -695,7 +704,11 @@ cc_library(
     hdrs = ["reusable_pool.h"],
     deps = [
         ":multi_pool",
+        "//mediapipe/framework/port:ret_check",
+        "//mediapipe/framework/port:status",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/synchronization",
     ],
 )
@@ -703,7 +716,11 @@ cc_library(
 cc_library(
     name = "multi_pool",
     hdrs = ["multi_pool.h"],
-    deps = ["//mediapipe/util:resource_cache"],
+    deps = [
+        "//mediapipe/framework/port:status",
+        "//mediapipe/util:resource_cache",
+        "@com_google_absl//absl/status:statusor",
+    ],
 )
 
 cc_library(
@@ -740,6 +757,7 @@ cc_library(
         "//mediapipe/util:resource_cache",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/synchronization",
     ] + select({
         "//conditions:default": [
@@ -855,6 +873,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/synchronization",
     ] + select({
         "//conditions:default": [
@@ -1223,9 +1242,13 @@ mediapipe_cc_test(
     ],
     requires_full_emulation = True,
     deps = [
+        ":gl_texture_buffer",
+        ":gl_texture_util",
         ":gpu_buffer_format",
         ":gpu_buffer_storage_ahwb",
+        ":gpu_test_base",
         "//mediapipe/framework/port:gtest_main",
+        "//mediapipe/framework/tool:test_util",
     ],
 )
 

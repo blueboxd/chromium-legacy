@@ -34,7 +34,6 @@ class PulsingBlockView : public views::View {
   ~PulsingBlockView() override;
 
   // views::View:
-  const char* GetClassName() const override;
   void OnThemeChanged() override;
 
   // Returns true if the view has a layer animator attached and is currently
@@ -50,7 +49,7 @@ class PulsingBlockView : public views::View {
 
   base::OneShotTimer start_delay_timer_;
 
-  raw_ptr<views::View, ExperimentalAsh> background_color_view_ = nullptr;
+  raw_ptr<views::View> background_color_view_ = nullptr;
 
   const gfx::Size block_size_;
 };

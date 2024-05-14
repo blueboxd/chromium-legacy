@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_open_metrics.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/ash/office_fallback/office_fallback_ui.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/pref_names.h"
@@ -74,58 +76,23 @@ OfficeOpenExtensions GetOfficeOpenExtension(const storage::FileSystemURL& url) {
   return OfficeOpenExtensions::kOther;
 }
 
-void LogOneDriveMetricsAfterFallback(
-    ash::office_fallback::FallbackReason fallback_reason,
-    ash::cloud_upload::OfficeTaskResult task_result,
-    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics) {
-  switch (fallback_reason) {
-    case ash::office_fallback::FallbackReason::kOffline:
-      cloud_open_metrics->LogOneDriveOpenError(
-          ash::cloud_upload::OfficeOneDriveOpenErrors::kOffline);
-      break;
-    case ash::office_fallback::FallbackReason::kDriveDisabled:
-    case ash::office_fallback::FallbackReason::kNoDriveService:
-    case ash::office_fallback::FallbackReason::kDriveAuthenticationNotReady:
-    case ash::office_fallback::FallbackReason::kDriveFsInterfaceError:
-    case ash::office_fallback::FallbackReason::kMeteredConnection:
-      NOTREACHED();
-      break;
+std::optional<ash::office_fallback::FallbackReason>
+DriveAvailabilityToFallbackReason(
+    drive::util::DriveAvailability drive_availability) {
+  switch (drive_availability) {
+    case drive::util::DriveAvailability::
+        kNotAvailableWhenDisableDrivePreferenceSet:
+      return ash::office_fallback::FallbackReason::kDisableDrivePreferenceSet;
+    case drive::util::DriveAvailability::kNotAvailableForAccountType:
+      return ash::office_fallback::FallbackReason::kDriveDisabledForAccountType;
+    case drive::util::DriveAvailability::
+        kNotAvailableForUninitialisedLoginState:
+    case drive::util::DriveAvailability::kNotAvailableInIncognito:
+    case drive::util::DriveAvailability::kNotAvailableForTestImage:
+      return ash::office_fallback::FallbackReason::kDriveDisabled;
+    case drive::util::DriveAvailability::kAvailable:
+      return std::nullopt;
   }
-  cloud_open_metrics->LogTaskResult(task_result);
-}
-
-void LogGoogleDriveMetricsAfterFallback(
-    ash::office_fallback::FallbackReason fallback_reason,
-    ash::cloud_upload::OfficeTaskResult task_result,
-    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics) {
-  switch (fallback_reason) {
-    case ash::office_fallback::FallbackReason::kOffline:
-      cloud_open_metrics->LogGoogleDriveOpenError(
-          ash::cloud_upload::OfficeDriveOpenErrors::kOffline);
-      break;
-    case ash::office_fallback::FallbackReason::kDriveDisabled:
-      cloud_open_metrics->LogGoogleDriveOpenError(
-          ash::cloud_upload::OfficeDriveOpenErrors::kDriveDisabled);
-      break;
-    case ash::office_fallback::FallbackReason::kNoDriveService:
-      cloud_open_metrics->LogGoogleDriveOpenError(
-          ash::cloud_upload::OfficeDriveOpenErrors::kNoDriveService);
-      break;
-    case ash::office_fallback::FallbackReason::kDriveAuthenticationNotReady:
-      cloud_open_metrics->LogGoogleDriveOpenError(
-          ash::cloud_upload::OfficeDriveOpenErrors::
-              kDriveAuthenticationNotReady);
-      break;
-    case ash::office_fallback::FallbackReason::kDriveFsInterfaceError:
-      cloud_open_metrics->LogGoogleDriveOpenError(
-          ash::cloud_upload::OfficeDriveOpenErrors::kDriveFsInterface);
-      break;
-    case ash::office_fallback::FallbackReason::kMeteredConnection:
-      cloud_open_metrics->LogGoogleDriveOpenError(
-          ash::cloud_upload::OfficeDriveOpenErrors::kMeteredConnection);
-      break;
-  }
-  cloud_open_metrics->LogTaskResult(task_result);
 }
 
 std::optional<ash::office_fallback::FallbackReason>
@@ -143,6 +110,14 @@ DriveConnectionStatusToFallbackReason(
     case drive::util::ConnectionStatus::kConnected:
       return std::nullopt;
   }
+}
+
+bool AnyFileNeedsUploadToDrive(
+    Profile* profile,
+    const std::vector<storage::FileSystemURL>& file_urls) {
+  return !base::ranges::all_of(file_urls, [profile](const auto& url) {
+    return ash::cloud_upload::PathIsOnDriveFS(profile, url.path());
+  });
 }
 
 }  // namespace
@@ -185,23 +160,27 @@ bool ExecuteWebDriveOfficeTask(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_urls,
-    gfx::NativeWindow modal_parent,
     std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics) {
-  if (!drive::util::IsDriveEnabledForProfile(profile)) {
-    return GetUserFallbackChoice(
-        profile, task, file_urls, modal_parent,
-        ash::office_fallback::FallbackReason::kDriveDisabled,
-        std::move(cloud_open_metrics));
+  const drive::util::DriveAvailability drive_availability =
+      drive::util::CheckDriveEnabledAndDriveAvailabilityForProfile(profile);
+  std::optional<ash::office_fallback::FallbackReason> fallback_reason =
+      DriveAvailabilityToFallbackReason(drive_availability);
+  if (fallback_reason) {
+    return GetUserFallbackChoice(profile, task, file_urls,
+                                 fallback_reason.value(),
+                                 std::move(cloud_open_metrics));
   }
 
   const drive::util::ConnectionStatus drive_connection_status =
       drive::util::GetDriveConnectionStatus(profile);
-  const std::optional<ash::office_fallback::FallbackReason>
-      opt_fallback_reason =
-          DriveConnectionStatusToFallbackReason(drive_connection_status);
-  if (opt_fallback_reason) {
-    return GetUserFallbackChoice(profile, task, file_urls, modal_parent,
-                                 opt_fallback_reason.value(),
+  fallback_reason =
+      DriveConnectionStatusToFallbackReason(drive_connection_status);
+  if (fallback_reason &&
+      (fallback_reason !=
+           ash::office_fallback::FallbackReason::kMeteredConnection ||
+       AnyFileNeedsUploadToDrive(profile, file_urls))) {
+    return GetUserFallbackChoice(profile, task, file_urls,
+                                 fallback_reason.value(),
                                  std::move(cloud_open_metrics));
   }
 
@@ -210,31 +189,30 @@ bool ExecuteWebDriveOfficeTask(
   if (!integration_service || !integration_service->IsMounted() ||
       !integration_service->GetDriveFsInterface()) {
     return GetUserFallbackChoice(
-        profile, task, file_urls, modal_parent,
+        profile, task, file_urls,
         ash::office_fallback::FallbackReason::kDriveFsInterfaceError,
         std::move(cloud_open_metrics));
   }
 
   return ash::cloud_upload::CloudOpenTask::Execute(
       profile, file_urls, ash::cloud_upload::CloudProvider::kGoogleDrive,
-      modal_parent, std::move(cloud_open_metrics));
+      std::move(cloud_open_metrics));
 }
 
 bool ExecuteOpenInOfficeTask(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_urls,
-    gfx::NativeWindow modal_parent,
     std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics) {
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    return GetUserFallbackChoice(profile, task, file_urls, modal_parent,
+    return GetUserFallbackChoice(profile, task, file_urls,
                                  ash::office_fallback::FallbackReason::kOffline,
                                  std::move(cloud_open_metrics));
   }
 
   return ash::cloud_upload::CloudOpenTask::Execute(
       profile, file_urls, ash::cloud_upload::CloudProvider::kOneDrive,
-      modal_parent, std::move(cloud_open_metrics));
+      std::move(cloud_open_metrics));
 }
 
 void LaunchQuickOffice(Profile* profile,
@@ -244,7 +222,7 @@ void LaunchQuickOffice(Profile* profile,
       kActionIdQuickOffice);
 
   ExecuteFileTask(
-      profile, quick_office_task, file_urls, /* modal_parent */ nullptr,
+      profile, quick_office_task, file_urls,
       base::BindOnce(
           [](extensions::api::file_manager_private::TaskResult result,
              std::string error_message) {
@@ -259,15 +237,95 @@ void LaunchQuickOffice(Profile* profile,
   return;
 }
 
+void LogOneDriveMetricsAfterFallback(
+    ash::office_fallback::FallbackReason fallback_reason,
+    ash::cloud_upload::OfficeTaskResult task_result,
+    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics) {
+  switch (fallback_reason) {
+    case ash::office_fallback::FallbackReason::kOffline:
+      cloud_open_metrics->LogOneDriveOpenError(
+          ash::cloud_upload::OfficeOneDriveOpenErrors::kOffline);
+      break;
+    case ash::office_fallback::FallbackReason::kDriveDisabled:
+    case ash::office_fallback::FallbackReason::kNoDriveService:
+    case ash::office_fallback::FallbackReason::kDriveAuthenticationNotReady:
+    case ash::office_fallback::FallbackReason::kDriveFsInterfaceError:
+    case ash::office_fallback::FallbackReason::kMeteredConnection:
+    case ash::office_fallback::FallbackReason::kDisableDrivePreferenceSet:
+    case ash::office_fallback::FallbackReason::kDriveDisabledForAccountType:
+      NOTREACHED();
+      break;
+  }
+  cloud_open_metrics->LogTaskResult(task_result);
+}
+
+void LogGoogleDriveMetricsAfterFallback(
+    ash::office_fallback::FallbackReason fallback_reason,
+    ash::cloud_upload::OfficeTaskResult task_result,
+    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics) {
+  switch (fallback_reason) {
+    case ash::office_fallback::FallbackReason::kOffline:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::kOffline);
+      break;
+    case ash::office_fallback::FallbackReason::kDriveDisabled:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::kDriveDisabled);
+      break;
+    case ash::office_fallback::FallbackReason::kNoDriveService:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::kNoDriveService);
+      break;
+    case ash::office_fallback::FallbackReason::kDriveAuthenticationNotReady:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::
+              kDriveAuthenticationNotReady);
+      break;
+    case ash::office_fallback::FallbackReason::kDriveFsInterfaceError:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::kDriveFsInterface);
+      break;
+    case ash::office_fallback::FallbackReason::kMeteredConnection:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::kMeteredConnection);
+      break;
+    case ash::office_fallback::FallbackReason::kDisableDrivePreferenceSet:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::kDisableDrivePreferenceSet);
+      break;
+    case ash::office_fallback::FallbackReason::kDriveDisabledForAccountType:
+      cloud_open_metrics->LogGoogleDriveOpenError(
+          ash::cloud_upload::OfficeDriveOpenErrors::
+              kDriveDisabledForAccountType);
+      break;
+  }
+  cloud_open_metrics->LogTaskResult(task_result);
+}
+
 void OnDialogChoiceReceived(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_urls,
     ash::office_fallback::FallbackReason fallback_reason,
-    gfx::NativeWindow modal_parent,
     std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics,
-    const std::string& choice) {
-  if (choice == ash::office_fallback::kDialogChoiceQuickOffice) {
+    std::optional<const std::string> choice) {
+  if (!choice.has_value()) {
+    // The user's choice was unable to be retrieved.
+    if (IsWebDriveOfficeTask(task)) {
+      LogGoogleDriveMetricsAfterFallback(
+          fallback_reason,
+          ash::cloud_upload::OfficeTaskResult::kCannotGetFallbackChoice,
+          std::move(cloud_open_metrics));
+    } else if (IsOpenInOfficeTask(task)) {
+      LogOneDriveMetricsAfterFallback(
+          fallback_reason,
+          ash::cloud_upload::OfficeTaskResult::kCannotGetFallbackChoice,
+          std::move(cloud_open_metrics));
+    }
+    return;
+  }
+
+  if (choice.value() == ash::office_fallback::kDialogChoiceQuickOffice) {
     if (IsWebDriveOfficeTask(task)) {
       LogGoogleDriveMetricsAfterFallback(
           fallback_reason,
@@ -280,19 +338,19 @@ void OnDialogChoiceReceived(
           std::move(cloud_open_metrics));
     }
     LaunchQuickOffice(profile, file_urls);
-  } else if (choice == ash::office_fallback::kDialogChoiceTryAgain) {
+  } else if (choice.value() == ash::office_fallback::kDialogChoiceTryAgain) {
     // When retrying, the original open result is thrown away, so that
     // (likely the same) result codes from repeated retries are not counted.
     // Only the last open result is recorded: when the user either selects
     // QO or cancels.
     if (IsWebDriveOfficeTask(task)) {
-      ExecuteWebDriveOfficeTask(profile, task, file_urls, modal_parent,
+      ExecuteWebDriveOfficeTask(profile, task, file_urls,
                                 std::move(cloud_open_metrics));
     } else if (IsOpenInOfficeTask(task)) {
-      ExecuteOpenInOfficeTask(profile, task, file_urls, modal_parent,
+      ExecuteOpenInOfficeTask(profile, task, file_urls,
                               std::move(cloud_open_metrics));
     }
-  } else if (choice == ash::office_fallback::kDialogChoiceCancel) {
+  } else if (choice.value() == ash::office_fallback::kDialogChoiceCancel) {
     if (IsWebDriveOfficeTask(task)) {
       LogGoogleDriveMetricsAfterFallback(
           fallback_reason,
@@ -304,6 +362,8 @@ void OnDialogChoiceReceived(
           ash::cloud_upload::OfficeTaskResult::kCancelledAtFallback,
           std::move(cloud_open_metrics));
     }
+  } else {
+    LOG(ERROR) << "Empty user response";
   }
 }
 
@@ -311,22 +371,23 @@ bool GetUserFallbackChoice(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_urls,
-    gfx::NativeWindow modal_parent,
     ash::office_fallback::FallbackReason fallback_reason,
     std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics) {
-  // If QuickOffice is not installed, don't launch dialog.
-  if (!IsQuickOfficeInstalled(profile)) {
-    LOG(ERROR) << "Cannot fallback to QuickOffice when it is not installed";
-    return false;
-  }
   // TODO(b/242685536) Add support for multi-file
   // selection so the OfficeFallbackDialog can display multiple file names and
   // `OnDialogChoiceReceived()` can open multiple files.
   std::vector<storage::FileSystemURL> first_url{file_urls.front()};
 
-  ash::office_fallback::DialogChoiceCallback callback = base::BindOnce(
-      &OnDialogChoiceReceived, profile, task, first_url, fallback_reason,
-      modal_parent, std::move(cloud_open_metrics));
+  ash::office_fallback::DialogChoiceCallback callback =
+      base::BindOnce(&OnDialogChoiceReceived, profile, task, first_url,
+                     fallback_reason, std::move(cloud_open_metrics));
+
+  // If QuickOffice is not installed, don't launch dialog.
+  if (!IsQuickOfficeInstalled(profile)) {
+    LOG(ERROR) << "Cannot fallback to QuickOffice when it is not installed";
+    std::move(callback).Run(std::nullopt);
+    return false;
+  }
 
   const std::string parsed_action_id = ParseFilesAppActionId(task.action_id);
 

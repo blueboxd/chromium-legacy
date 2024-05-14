@@ -174,7 +174,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   }
 
  private:
-  const raw_ptr<TrayBackgroundView, ExperimentalAsh> tray_background_view_;
+  const raw_ptr<TrayBackgroundView> tray_background_view_;
   const gfx::Insets insets_;
 };
 
@@ -214,7 +214,7 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
   void Add(views::Widget* widget) { observations_.AddObservation(widget); }
 
  private:
-  raw_ptr<TrayBackgroundView, ExperimentalAsh> host_;
+  raw_ptr<TrayBackgroundView> host_;
   base::ScopedMultiSourceObservation<views::Widget, views::WidgetObserver>
       observations_{this};
 };
@@ -250,7 +250,7 @@ class TrayBackgroundView::TrayBackgroundViewSessionChangeHandler
         FROM_HERE, callback.Release());
   }
 
-  const raw_ptr<TrayBackgroundView, ExperimentalAsh> tray_;
+  const raw_ptr<TrayBackgroundView> tray_;
   ScopedSessionObserver session_observer_{this};
 };
 
@@ -719,7 +719,7 @@ void TrayBackgroundView::FadeInAnimation() {
 
   ui::AnimationThroughputReporter reporter(
       layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int smoothness) {
         DCHECK(0 <= smoothness && smoothness <= 100);
         base::UmaHistogramPercentage(kFadeInAnimationSmoothnessHistogramName,
                                      smoothness);
@@ -790,7 +790,7 @@ void TrayBackgroundView::BounceInAnimation() {
 
   ui::AnimationThroughputReporter reporter(
       layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int smoothness) {
         DCHECK(0 <= smoothness && smoothness <= 100);
         base::UmaHistogramPercentage(kBounceInAnimationSmoothnessHistogramName,
                                      smoothness);
@@ -866,7 +866,7 @@ void TrayBackgroundView::HideAnimation() {
 
   ui::AnimationThroughputReporter reporter(
       layer()->GetAnimator(),
-      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int smoothness) {
         DCHECK(0 <= smoothness && smoothness <= 100);
         base::UmaHistogramPercentage(kHideAnimationSmoothnessHistogramName,
                                      smoothness);
@@ -1091,7 +1091,14 @@ void TrayBackgroundView::AddRippleLayer() {
 void TrayBackgroundView::RemoveRippleLayer() {
   CHECK(!pulse_animation_cool_down_timer_.IsRunning());
   if (ripple_layer_) {
-    layer()->parent()->Remove(ripple_layer_.get());
+    // The `parent_layer` will be null during `StatusAreaWidgetDelegate`
+    // shutdown (ie. after display disconnect).
+    // `views::view::RemoveAllChildViews()` is called, which recursively orphans
+    // layers prior to destroying the view.
+    auto* parent_layer = layer()->parent();
+    if (parent_layer) {
+      parent_layer->Remove(ripple_layer_.get());
+    }
     ripple_layer_.reset();
   }
 }
@@ -1174,7 +1181,7 @@ void TrayBackgroundView::StartPulseAnimationCoolDownTimer() {
                      base::Unretained(this)));
 }
 
-BEGIN_METADATA(TrayBackgroundView, views::Button)
+BEGIN_METADATA(TrayBackgroundView)
 END_METADATA
 
 }  // namespace ash

@@ -24,9 +24,9 @@ namespace ash {
 // Bluetooth device battery for a device in the detailed Bluetooth page within
 // the quick settings.
 class ASH_EXPORT BluetoothDeviceListItemBatteryView : public views::View {
- public:
-  METADATA_HEADER(BluetoothDeviceListItemBatteryView);
+  METADATA_HEADER(BluetoothDeviceListItemBatteryView, views::View)
 
+ public:
   BluetoothDeviceListItemBatteryView();
   BluetoothDeviceListItemBatteryView(
       const BluetoothDeviceListItemBatteryView&) = delete;
@@ -48,8 +48,8 @@ class ASH_EXPORT BluetoothDeviceListItemBatteryView : public views::View {
 
   std::optional<uint8_t> last_shown_battery_percentage_;
 
-  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
+  raw_ptr<views::Label> label_ = nullptr;
+  raw_ptr<views::ImageView> icon_ = nullptr;
 };
 
 }  // namespace ash

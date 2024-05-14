@@ -27,7 +27,7 @@ class MEDIA_EXPORT HlsRenditionImpl : public HlsRendition {
                    GURL media_playlist_uri);
 
   // `HlsRendition` implementation
-  absl::optional<base::TimeDelta> GetDuration() override;
+  std::optional<base::TimeDelta> GetDuration() override;
   void CheckState(base::TimeDelta media_time,
                   double playback_rate,
                   ManifestDemuxer::DelayCallback time_remaining_cb) override;
@@ -114,6 +114,7 @@ class MEDIA_EXPORT HlsRenditionImpl : public HlsRendition {
   bool set_stream_end_ = false;
   bool is_stopped_for_shutdown_ = false;
   bool has_ever_played_ = false;
+  bool requires_init_segment_ = true;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

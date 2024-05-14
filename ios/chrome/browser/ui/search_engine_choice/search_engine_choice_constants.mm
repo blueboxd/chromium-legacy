@@ -8,7 +8,14 @@ const CGFloat kFakeOmniboxWidth = 256;
 const CGFloat kFakeOmniboxHeight = 48.;
 const CGFloat kFaviconImageViewSize = 24.;
 const CGFloat kFaviconImageViewRadius = 3.;
+const CGFloat kFakeOmniboxFieldLeadingInset = 48.;
 
+NSString* const kSearchEngineChoiceTitleAccessibilityIdentifier =
+    @"SearchEngineChoiceTitleAccessibilityIdentifier";
+NSString* const kFakeEmptyOmniboxAccessibilityIdentifier =
+    @"FakeEmptyOmniboxAccessibilityIdentifier";
+NSString* const kFakeOmniboxAccessibilityIdentifier =
+    @"FakeOmniboxAccessibilityIdentifier";
 NSString* const kSnippetSearchEngineIdentifierPrefix =
     @"SnippetSearchEngineIdentifierPrefix_";
 NSString* const kSetAsDefaultSearchEngineIdentifier =

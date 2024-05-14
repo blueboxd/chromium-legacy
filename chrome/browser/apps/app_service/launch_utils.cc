@@ -170,12 +170,14 @@ std::vector<base::FilePath> GetLaunchFilesFromCommandLine(
 #else
     GURL url(arg);
 #endif
-    if (url.is_valid() && !url.SchemeIsFile())
+    if (url.is_valid() && !url.SchemeIsFile()) {
       continue;
+    }
 
     base::FilePath path(arg);
-    if (path.empty())
+    if (path.empty()) {
       continue;
+    }
 
     launch_files.push_back(path);
   }
@@ -293,6 +295,7 @@ extensions::AppLaunchSource GetAppLaunchSource(LaunchSource launch_source) {
     case LaunchSource::kFromFullRestore:
     case LaunchSource::kFromSmartTextContextMenu:
     case LaunchSource::kFromDiscoverTabNotification:
+    case LaunchSource::kFromFirstRun:
       return extensions::AppLaunchSource::kSourceChromeInternal;
     case LaunchSource::kFromInstalledNotification:
       return extensions::AppLaunchSource::kSourceInstalledNotification;

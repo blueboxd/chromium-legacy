@@ -130,8 +130,8 @@ NSUInteger GetActiveIndex(SessionWindowIOS* session_window,
 
   // Update the `active_index` using the shared logic and the knowledge
   // of the removed items.
-  active_index =
-      order_controller.DetermineNewActiveIndex(active_index, removing_indexes);
+  active_index = removing_indexes.IndexAfterRemoval(
+      order_controller.DetermineNewActiveIndex(active_index, removing_indexes));
 
   return active_index != WebStateList::kInvalidIndex
              ? static_cast<NSUInteger>(active_index)
@@ -312,7 +312,7 @@ void SessionRestorationBrowserAgent::RestoreSession() {
                      directory:browser_->GetBrowserState()->GetStatePath()];
 
   RestoreSessionWindow(session_window);
-  base::UmaHistogramTimes("Session.WebStates.LoadingTimeOnMainThread",
+  base::UmaHistogramTimes(kSessionHistogramLoadingTime,
                           base::TimeTicks::Now() - start_time);
 }
 

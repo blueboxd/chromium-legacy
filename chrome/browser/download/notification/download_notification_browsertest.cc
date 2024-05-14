@@ -249,8 +249,8 @@ class SlowDownloadInterceptor {
     ASSERT_EQ(MOJO_RESULT_OK, result);
     ASSERT_EQ(data.size(), write_size);
     ASSERT_TRUE(consumer_handle.is_valid());
-    params->client->OnReceiveResponse(
-        std::move(head), std::move(consumer_handle), absl::nullopt);
+    params->client->OnReceiveResponse(std::move(head),
+                                      std::move(consumer_handle), std::nullopt);
   }
 
   const std::map<std::string, Handler> handlers_;
@@ -272,7 +272,7 @@ const char SlowDownloadInterceptor::kErrorDownloadUrl[] =
 // Utility method to retrieve a notification object by id. Warning: this will
 // check the last display service that was created. If there's a normal and an
 // incognito one, you may want to be explicit.
-absl::optional<message_center::Notification> GetNotification(
+std::optional<message_center::Notification> GetNotification(
     const std::string& id) {
   return NotificationDisplayServiceTester::Get()->GetNotification(id);
 }
@@ -413,10 +413,10 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     download_in_progress_observer.WaitForFinished();
 
     // Confirms that a download is started.
-    std::vector<download::DownloadItem*> downloads;
+    std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
     GetDownloadManager(browser)->GetAllDownloads(&downloads);
     EXPECT_EQ(1u, downloads.size());
-    download_item_ = downloads[0];
+    download_item_ = downloads[0].get();
     ASSERT_TRUE(download_item_);
 
     // Confirms that a notification is created.
@@ -446,7 +446,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
   }
 
   void VerifyDownloadState(download::DownloadItem::DownloadState state) {
-    std::vector<download::DownloadItem*> downloads;
+    std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
     GetDownloadManager(browser())->GetAllDownloads(&downloads);
     ASSERT_EQ(1u, downloads.size());
     EXPECT_EQ(state, downloads[0]->GetState());
@@ -472,7 +472,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
 
   download::DownloadItem* download_item() const { return download_item_; }
   std::string notification_id() const { return notification_id_; }
-  absl::optional<message_center::Notification> notification() const {
+  std::optional<message_center::Notification> notification() const {
     return GetNotification(notification_id_);
   }
   Browser* incognito_browser() const { return incognito_browser_; }
@@ -520,8 +520,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   // Try to open the downloaded item by clicking the notification.
   EXPECT_FALSE(GetDownloadManagerDelegate()->opened());
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
-                                  notification_id(), absl::nullopt,
-                                  absl::nullopt);
+                                  notification_id(), std::nullopt,
+                                  std::nullopt);
   EXPECT_TRUE(GetDownloadManagerDelegate()->opened());
 
   EXPECT_FALSE(GetNotification(notification_id()));
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   // Clicks the "keep" button.
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                   notification_id(), 1,  // 2nd button: "Keep"
-                                  absl::nullopt);
+                                  std::nullopt);
 
   // The notification is closed and re-shown.
   EXPECT_TRUE(notification());
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                   notification_id(),
                                   0,  // 1st button: "Discard"
-                                  absl::nullopt);
+                                  std::nullopt);
 
   EXPECT_FALSE(notification());
 
@@ -606,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   // Checks there is neither any download nor any notification.
   EXPECT_FALSE(notification());
   EXPECT_EQ(0u, GetDownloadNotifications().size());
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   EXPECT_EQ(0u, downloads.size());
 
@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   CloseNotification();
 
   // Confirms that a download is still in progress.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   content::DownloadManager* download_manager = GetDownloadManager(browser());
   download_manager->GetAllDownloads(&downloads);
   EXPECT_EQ(1u, downloads.size());
@@ -711,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
   EXPECT_FALSE(notification());
 
   // Confirms that the download item is removed.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   EXPECT_EQ(0u, downloads.size());
 }
@@ -732,7 +732,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_FALSE(notification_id1.empty());
 
   // Confirms that there is a download.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   download::DownloadItem* download1 = downloads[0];
@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   ASSERT_TRUE(GetNotification(second_notification_id));
 
   // Confirms that the second download is also started.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   EXPECT_EQ(2u, downloads.size());
   EXPECT_TRUE(first_download_item == downloads[0] ||
@@ -863,12 +863,12 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, CancelDownload) {
 
   // Cancels the notification by clicking the "cancel" button.
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
-                                  notification_id(), 1, absl::nullopt);
+                                  notification_id(), 1, std::nullopt);
   EXPECT_FALSE(notification());
   EXPECT_EQ(0u, GetDownloadNotifications().size());
 
   // Confirms that the download is cancelled.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   EXPECT_EQ(download::DownloadItem::CANCELLED, downloads[0]->GetState());
@@ -884,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(0u, GetDownloadNotifications().size());
 
   // Confirms that the download is cancelled.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   EXPECT_EQ(1u, downloads.size());
   EXPECT_EQ(download::DownloadItem::CANCELLED, downloads[0]->GetState());
@@ -925,8 +925,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_TRUE(incognito_display_service_->GetNotification(notification_id()));
   EXPECT_FALSE(GetIncognitoDownloadManagerDelegate()->opened());
   incognito_display_service_->SimulateClick(
-      NotificationHandler::Type::TRANSIENT, notification_id(), absl::nullopt,
-      absl::nullopt);
+      NotificationHandler::Type::TRANSIENT, notification_id(), std::nullopt,
+      std::nullopt);
   EXPECT_TRUE(GetIncognitoDownloadManagerDelegate()->opened());
   EXPECT_FALSE(GetDownloadManagerDelegate()->opened());
 
@@ -953,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_FALSE(notification_id1.empty());
 
   // Confirms that there is a download.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser())->GetAllDownloads(&downloads);
   EXPECT_EQ(0u, downloads.size());
   downloads.clear();
@@ -1130,7 +1130,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   WaitForDownloadNotificationForDisplayService(display_service1_.get());
 
   // Confirms that the download is started.
-  std::vector<download::DownloadItem*> downloads;
+  std::vector<raw_ptr<download::DownloadItem, VectorExperimental>> downloads;
   GetDownloadManager(browser1)->GetAllDownloads(&downloads);
   EXPECT_EQ(1u, downloads.size());
   download::DownloadItem* download1 = downloads[0];

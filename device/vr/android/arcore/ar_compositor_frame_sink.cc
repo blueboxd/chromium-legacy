@@ -163,7 +163,7 @@ void ArCompositorFrameSink::OnRootCompositorFrameSinkReady(
     // If the frame sink client doesn't have a valid SurfaceId at this point,
     // then the compositor hierarchy did not get set up, which means that we'll
     // be unable to composite DOM content.
-    absl::optional<viz::SurfaceId> dom_surface =
+    std::optional<viz::SurfaceId> dom_surface =
         xr_frame_sink_client_->GetDOMSurface();
     if (dom_surface && dom_surface->is_valid()) {
       should_composite_dom_overlay_ = true;
@@ -213,7 +213,7 @@ void ArCompositorFrameSink::SubmitFrame(WebXrFrame* xr_frame,
   DCHECK(xr_frame);
   sink_remote_->SubmitCompositorFrame(allocator_.GetCurrentLocalSurfaceId(),
                                       CreateFrame(xr_frame, frame_type),
-                                      absl::optional<viz::HitTestRegionList>(),
+                                      std::optional<viz::HitTestRegionList>(),
                                       /*trace_time=*/0);
 }
 
@@ -387,7 +387,7 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
           gfx::Transform(),
           /*quad_layer_rect=*/output_rect,
           /*visible_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
-          /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
+          /*clip_rect=*/std::nullopt, /*are_contents_opaque=*/false,
           /*opacity=*/1.f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0,
           /*layer_id=*/0u, /*fast_rounded_corner=*/false);
 
@@ -403,8 +403,6 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
 
   // Setup some variables for the SharedQuadState that are the same for the
   // Camera/Renderer
-  float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
-
   // Next add the Renderer Content
   if (frame_type == FrameType::kHasWebXrContent) {
     WebXrSharedBuffer* renderer_buffer = xr_frame->shared_buffer.get();
@@ -417,7 +415,7 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
         gfx::Transform(),
         /*quad_layer_rect=*/output_rect,
         /*visible_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
-        /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
+        /*clip_rect=*/std::nullopt, /*are_contents_opaque=*/false,
         /*opacity=*/1.f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0,
         /*layer_id=*/0u, /*fast_rounded_corner=*/false);
 
@@ -431,15 +429,14 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
         /*premultiplied_alpha=*/true,
         /*uv_top_left=*/xr_frame->bounds_left.origin(),
         /*uv_bottom_right=*/xr_frame->bounds_left.bottom_right(),
-        /*background_color=*/SkColors::kTransparent, opacity,
+        /*background_color=*/SkColors::kTransparent,
         /*y_flipped=*/true,
         /*nearest_neighbor=*/false,
         /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
     auto renderer_resource = viz::TransferableResource::MakeGpu(
-        renderer_buffer->mailbox_holder.mailbox,
-        renderer_buffer->mailbox_holder.texture_target,
-        renderer_buffer->mailbox_holder.sync_token, renderer_buffer->size,
+        renderer_buffer->shared_image, renderer_buffer->texture_target(),
+        renderer_buffer->sync_token, renderer_buffer->size,
         viz::SinglePlaneFormat::kRGBA_8888,
         /*is_overlay_candidate=*/false,
         viz::TransferableResource::ResourceSource::kAR);
@@ -459,7 +456,7 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
       gfx::Transform(),
       /*quad_layer_rect=*/output_rect,
       /*visible_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
-      /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/true,
+      /*clip_rect=*/std::nullopt, /*are_contents_opaque=*/true,
       /*opacity=*/1.f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0,
       /*layer_id=*/0u, /*fast_rounded_corner=*/false);
 
@@ -473,7 +470,7 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
                       /*premultiplied_alpha=*/true,
                       /*uv_top_left=*/gfx::PointF(0.f, 0.f),
                       /*uv_bottom_right=*/gfx::PointF(1.f, 1.f),
-                      /*background_color=*/SkColors::kTransparent, opacity,
+                      /*background_color=*/SkColors::kTransparent,
                       /*y_flipped=*/true,
                       /*nearest_neighbor=*/false,
                       /*secure_output_only=*/false,
@@ -481,9 +478,8 @@ viz::CompositorFrame ArCompositorFrameSink::CreateFrame(WebXrFrame* xr_frame,
 
   // Additionally append to the resource_list
   auto camera_resource = viz::TransferableResource::MakeGpu(
-      camera_buffer->mailbox_holder.mailbox,
-      camera_buffer->mailbox_holder.texture_target,
-      camera_buffer->mailbox_holder.sync_token, camera_buffer->size,
+      camera_buffer->shared_image, camera_buffer->texture_target(),
+      camera_buffer->sync_token, camera_buffer->size,
       viz::SinglePlaneFormat::kRGBA_8888,
       /*is_overlay_candidate=*/false,
       viz::TransferableResource::ResourceSource::kAR);

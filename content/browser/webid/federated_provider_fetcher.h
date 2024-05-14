@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEBID_FEDERATED_PROVIDER_FETCHER_H_
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/webid/fedcm_metrics.h"
 #include "content/browser/webid/idp_network_request_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 
 namespace content {
@@ -29,12 +29,12 @@ class CONTENT_EXPORT FederatedProviderFetcher {
     FetchError(const FetchError& info);
     FetchError(blink::mojom::FederatedAuthRequestResult result,
                FedCmRequestIdTokenStatus token_status,
-               absl::optional<std::string> additional_console_error_message);
+               std::optional<std::string> additional_console_error_message);
     ~FetchError();
 
     blink::mojom::FederatedAuthRequestResult result;
     FedCmRequestIdTokenStatus token_status;
-    absl::optional<std::string> additional_console_error_message;
+    std::optional<std::string> additional_console_error_message;
   };
 
   struct CONTENT_EXPORT FetchResult {
@@ -44,8 +44,8 @@ class CONTENT_EXPORT FederatedProviderFetcher {
     GURL identity_provider_config_url;
     IdpNetworkRequestManager::WellKnown wellknown;
     IdpNetworkRequestManager::Endpoints endpoints;
-    absl::optional<IdentityProviderMetadata> metadata;
-    absl::optional<FetchError> error;
+    std::optional<IdentityProviderMetadata> metadata;
+    std::optional<FetchError> error;
   };
 
   using RequesterCallback = base::OnceCallback<void(std::vector<FetchResult>)>;
@@ -62,6 +62,7 @@ class CONTENT_EXPORT FederatedProviderFetcher {
   // Starts fetch of config and well-known files. Start() should be called at
   // most once per FederatedProviderFetcher instance.
   void Start(const std::set<GURL>& identity_provider_config_urls,
+             blink::mojom::RpMode rp_mode,
              int icon_ideal_size,
              int icon_minimum_size,
              RequesterCallback callback);
@@ -86,9 +87,11 @@ class CONTENT_EXPORT FederatedProviderFetcher {
   void OnError(FetchResult& fetch_result,
                blink::mojom::FederatedAuthRequestResult result,
                content::FedCmRequestIdTokenStatus token_status,
-               absl::optional<std::string> additional_console_error_message);
+               std::optional<std::string> additional_console_error_message);
 
   void RunCallbackIfDone();
+
+  bool ShouldSkipWellKnownEnforcementForIdp(const GURL& idp_url);
 
   raw_ref<RenderFrameHost> render_frame_host_;
 

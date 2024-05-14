@@ -35,6 +35,18 @@ const zooms = [
 // Active zoom level, as index in |zooms|. By default 100 mcs per pixel.
 let zoomLevel = 5;
 
+// Graphics event types which are used in the model JSON data. These must match
+// the graphics event types in
+// chrome/browser/ash/arc/tracing/arc_tracing_graphics_model.h. To aid in
+// maintaining consistency, do not modify values once added - deprecation and
+// removal are allowed.
+const kExoSurfaceCommit = 206;
+const kExoSurfaceCommitJank = 207;
+const kChromeOSPresentationDone = 503;
+const kChromeOSSwapDone = 504;
+const kChromeOSPerceivedJank = 506;
+const kChromeOSSwapJank = 507;
+
 /**
  * Keep in sync with ArcTracingGraphicsModel::EventType
  * See chrome/browser/ash/arc/tracing/arc_tracing_graphics_model.h.
@@ -67,6 +79,8 @@ const eventAttributes = {
   // kBufferFillJank
   106: {color: '#ff0000', name: 'buffer filling jank', width: 1.0, radius: 4.0},
 
+  [kExoSurfaceCommitJank]: {name: 'commit jank', radius: 4.0},
+
   // kChromeBarrierOrder.
   300: {color: '#ff9933', name: 'barrier order'},
   // kChromeBarrierFlush
@@ -96,6 +110,14 @@ const eventAttributes = {
     color: '#ff0000',
     name: 'Chrome composition jank',
     width: 1.0,
+    radius: 4.0,
+  },
+  [kChromeOSPerceivedJank]: {
+    name: 'perceived jank',
+    radius: 4.0,
+  },
+  [kChromeOSSwapJank]: {
+    name: 'swap jank',
     radius: 4.0,
   },
 
@@ -688,8 +710,8 @@ class EventBands {
     let eventDetected = false;
     let attributes = opt_attributes;
     const autoDetectRange = !attributes ||
-        typeof attributes.minValue == 'undefined' ||
-        typeof attributes.maxValue == 'undefined';
+        typeof attributes.minValue === 'undefined' ||
+        typeof attributes.maxValue === 'undefined';
     for (let i = 0; i < sources.length; ++i) {
       const source = sources[i];
       let eventIndex = source.getFirstAfter(this.minTimestamp);
@@ -744,7 +766,7 @@ class EventBands {
     for (let i = 0; i < sources.length; ++i) {
       const source = sources[i];
       const eventIndices = eventIndicesForAll[i];
-      if (eventIndices.length == 0) {
+      if (eventIndices.length === 0) {
         continue;
       }
       // Determine type using first element.
@@ -756,7 +778,7 @@ class EventBands {
         const event = source.events[eventIndices[j]];
         const x = this.timestampToOffset(event[1]);
         const y = height * (maxValue - event[2]) * divider;
-        if (!smooth && j != 0) {
+        if (!smooth && j !== 0) {
           points.push([x, lastY]);
         }
         points.push([x, y]);
@@ -835,7 +857,7 @@ class EventBands {
     const input = document.createElement('input');
     input.onclick = handler;
     input.setAttribute('type', type);
-    if (type == 'button') {
+    if (type === 'button') {
       input.setAttribute('value', text);
     }
     if (checked) {
@@ -843,7 +865,7 @@ class EventBands {
     }
     this.title.addContolledItems(input);
     this.title.div.appendChild(input);
-    if (type == 'button') {
+    if (type === 'button') {
       return;
     }
     const label = document.createElement('label');
@@ -915,9 +937,18 @@ class EventBands {
    * @param {Events} events to add.
    * @param {string} renderType defines how to render events, can be underfined
    *                 for default or set to 'circle'.
+   * @param {string} color the color (fill color if rendered as a circle), or
+   *                 omitted to use the color defined in eventAttributes for
+   *                 each event type.
+   * @param {number} y for circles, the y position, as a fraction of this band's
+   *                 height, such as 0.5 for vertically-centered, or 0.95 for
+   *                 close to the bottom.
    */
-  addGlobal(events, renderType) {
+  addGlobal(events, renderType, color, y) {
     let eventIndex = -1;
+    if (typeof y === 'undefined') {
+      y = 0.5;
+    }
     while (true) {
       eventIndex = events.getNextEvent(eventIndex, 1 /* direction */);
       if (eventIndex < 0) {
@@ -926,13 +957,13 @@ class EventBands {
       const event = events.events[eventIndex];
       const attributes = events.getEventAttributes(eventIndex);
       const x = this.timestampToOffset(event[1]) + this.bandOffsetX;
-      if (renderType == 'circle') {
+      const evColor = color || attributes.color;
+      if (renderType === 'circle') {
         SVG.addCircle(
-            this.svg, x, this.height / 2, attributes.radius,
-            1 /* strokeWidth */, attributes.color, 'black' /* strokeColor */);
+            this.svg, x, this.height * y, attributes.radius,
+            1 /* strokeWidth */, evColor, 'black' /* strokeColor */);
       } else {
-        SVG.addLine(
-            this.svg, x, 0, x, this.height, attributes.color, attributes.width);
+        SVG.addLine(this.svg, x, 0, x, this.height, evColor, attributes.width);
       }
     }
     this.globalEvents.push(events);
@@ -1037,7 +1068,7 @@ class EventBands {
     // chart.
     yOffset =
         this.updateToolTipForGlobalEvents_(event, svg, eventTimestamp, yOffset);
-    if (yOffset == this.verticalGap) {
+    if (yOffset === this.verticalGap) {
       // Find band for this mouse event.
       for (let i = 0; i < this.bands.length; ++i) {
         if (this.bands[i].top <= eventY && this.bands[i].bottom > eventY) {
@@ -1109,7 +1140,7 @@ class EventBands {
     // events may stick close each other so let diplay up to 3 closest events.
     const distanceMcs = 3 * this.resolution;
     const globalEvents = this.findGlobalEvents_(eventTimestamp, distanceMcs);
-    if (globalEvents.length == 0) {
+    if (globalEvents.length === 0) {
       return yOffset;
     }
 
@@ -1494,7 +1525,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
       });
 
       // In case we have only one main thread add CPU info to process.
-      if (threads.length == 1 && threads[0].tid == pid) {
+      if (threads.length === 1 && threads[0].tid === pid) {
         bands.addBand(
             new Events(eventsPerTid[pid].events, 0, 1), cpuBandHeight, padding);
         bands.addBandSeparator(2 /* padding */);
@@ -1575,7 +1606,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
    * @param {number} timestampTo end time of thread activity.
    */
   addActivityTime_(eventsPerTid, tid, timestampFrom, timestampTo) {
-    if (tid == 0) {
+    if (tid === 0) {
       // Don't process idle thread.
       return;
     }
@@ -1691,7 +1722,7 @@ class Events {
     if (!nextEventTypes) {
       return false;
     }
-    if (nextEventTypes.length == 0) {
+    if (nextEventTypes.length === 0) {
       return true;
     }
     const nextIndex = this.getNextEvent(index, 1 /* direction */);
@@ -1708,7 +1739,7 @@ class Events {
    * @param {number} timestamp to search.
    */
   getClosest(timestamp) {
-    if (this.events.length == 0) {
+    if (this.events.length === 0) {
       return -1;
     }
     if (this.events[0][1] >= timestamp) {
@@ -1721,7 +1752,7 @@ class Events {
     // At this moment |firstBefore| and |firstAfter| points to any event.
     let firstBefore = 0;
     let firstAfter = this.events.length - 1;
-    while (firstBefore + 1 != firstAfter) {
+    while (firstBefore + 1 !== firstAfter) {
       const candidateIndex = Math.ceil((firstBefore + firstAfter) / 2);
       if (this.events[candidateIndex][1] < timestamp) {
         firstBefore = candidateIndex;

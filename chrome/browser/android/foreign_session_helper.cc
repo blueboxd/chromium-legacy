@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/recent_tabs/jni_headers/ForeignSessionHelper_jni.h"
@@ -102,7 +103,8 @@ void JNI_ForeignSessionHelper_CopyTabToJava(
   Java_ForeignSessionHelper_pushTab(
       env, j_window, url::GURLAndroid::FromNativeGURL(env, tab_url),
       ConvertUTF16ToJavaString(env, current_navigation.title()),
-      tab.timestamp.InMillisecondsSinceUnixEpoch(), tab.tab_id.id());
+      tab.timestamp.InMillisecondsSinceUnixEpoch(),
+      tab.last_active_time.InMillisecondsSinceUnixEpoch(), tab.tab_id.id());
 }
 
 void JNI_ForeignSessionHelper_CopyWindowToJava(
@@ -210,7 +212,7 @@ jboolean ForeignSessionHelper::GetForeignSessions(
     return false;
   }
 
-  std::vector<const SyncedSession*> sessions;
+  std::vector<raw_ptr<const SyncedSession, VectorExperimental>> sessions;
   if (!open_tabs->GetAllForeignSessions(&sessions)) {
     return false;
   }
@@ -262,7 +264,7 @@ jboolean ForeignSessionHelper::GetMobileAndTabletForeignSessions(
     return false;
   }
 
-  std::vector<const SyncedSession*> sessions;
+  std::vector<raw_ptr<const SyncedSession, VectorExperimental>> sessions;
   if (!open_tabs->GetAllForeignSessions(&sessions)) {
     return false;
   }

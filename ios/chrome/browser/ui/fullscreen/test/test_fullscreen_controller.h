@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 
+#import "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 
 class FullscreenModel;
@@ -42,7 +43,6 @@ class TestFullscreenController : public FullscreenController {
   void EnterForceFullscreenMode() override;
   void ExitForceFullscreenMode() override;
   void ResizeHorizontalViewport() override;
-  void FreezeToolbarHeight(bool freeze_toolbar_height) override;
 
   // Calls FullscreenViewportInsetRangeChanged() on observers.
   void OnFullscreenViewportInsetRangeChanged(UIEdgeInsets min_viewport_insets,
@@ -60,7 +60,7 @@ class TestFullscreenController : public FullscreenController {
 
  private:
   // The model.
-  FullscreenModel* model_ = nullptr;
+  raw_ptr<FullscreenModel> model_ = nullptr;
   // The broadcaster.
   ChromeBroadcaster* broadcaster_ = nil;
   // The observers.

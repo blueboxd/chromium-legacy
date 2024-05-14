@@ -27,6 +27,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -178,8 +179,9 @@ TEST_F(OmniboxViewTest, SanitizeTextForPaste) {
 // Tests GetIcon returns the default search icon when the match is a search
 // query.
 TEST_F(OmniboxViewTest, GetIcon_Default) {
-  ui::ImageModel expected_icon = ui::ImageModel::FromVectorIcon(
-      vector_icons::kSearchIcon, gfx::kPlaceholderColor, gfx::kFaviconSize);
+  ui::ImageModel expected_icon =
+      ui::ImageModel::FromVectorIcon(vector_icons::kSearchChromeRefreshIcon,
+                                     gfx::kPlaceholderColor, gfx::kFaviconSize);
 
   ui::ImageModel icon = view()->GetIcon(
       gfx::kFaviconSize, gfx::kPlaceholderColor, gfx::kPlaceholderColor,
@@ -199,8 +201,9 @@ TEST_F(OmniboxViewTest, GetIcon_BookmarkIcon) {
   bookmark_model()->AddURL(bookmark_model()->bookmark_bar_node(), 0,
                            u"a bookmark", kUrl);
 
-  ui::ImageModel expected_icon = ui::ImageModel::FromVectorIcon(
-      omnibox::kBookmarkIcon, gfx::kPlaceholderColor, gfx::kFaviconSize);
+  ui::ImageModel expected_icon =
+      ui::ImageModel::FromVectorIcon(omnibox::kBookmarkChromeRefreshIcon,
+                                     gfx::kPlaceholderColor, gfx::kFaviconSize);
 
   ui::ImageModel icon = view()->GetIcon(
       gfx::kFaviconSize, gfx::kPlaceholderColor, gfx::kPlaceholderColor,

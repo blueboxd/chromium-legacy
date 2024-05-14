@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
+#import "ios/chrome/common/string_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -40,6 +41,25 @@ void ExpectModalHistogram(
                           forHistogram:@"Autofill.PlusAddresses.Modal.Events"];
   GREYAssertNil(error, @"Failed to record modal event histogram");
 }
+
+// Assert that the bottom sheet shown duration metrics is recorded.
+// Actual duration is not assessed to avoid unnecessary clock mocking.
+void ExpectModalTimeSample(
+    plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus status,
+    int count) {
+  NSString* modalStatus = [NSString
+      stringWithUTF8String:plus_addresses::PlusAddressMetrics::
+                               PlusAddressModalCompletionStatusToString(status)
+                                   .c_str()];
+  NSString* name = [NSString
+      stringWithFormat:@"Autofill.PlusAddresses.Modal.%@.ShownDuration",
+                       modalStatus];
+
+  NSError* error = [MetricsAppInterface expectTotalCount:count
+                                            forHistogram:name];
+  GREYAssertNil(error, @"Failed to record modal shown duration histogram");
+}
+
 }  // namespace
 
 // Test suite that tests plus addresses functionality.
@@ -106,6 +126,18 @@ id<GREYMatcher> GetMatcherForSettingsLink() {
       grey_accessibilityTrait(UIAccessibilityTraitLink), nil);
 }
 
+id<GREYMatcher> GetMatcherForErrorReportLink() {
+  return grey_allOf(
+      // The link is within
+      // kPlusAddressModalErrorMessageAccessibilityIdentifier.
+      grey_ancestor(grey_accessibilityID(
+          kPlusAddressModalErrorMessageAccessibilityIdentifier)),
+      // UIKit instantiates a `UIAccessibilityLinkSubelement` for the link
+      // element in the label with attributed string.
+      grey_kindOfClassName(@"UIAccessibilityLinkSubelement"),
+      grey_accessibilityTrait(UIAccessibilityTraitLink), nil);
+}
+
 #pragma mark - Tests
 
 // A basic test that simply opens and dismisses the bottom sheet.
@@ -132,9 +164,12 @@ id<GREYMatcher> GetMatcherForSettingsLink() {
 
   // The request to reserve a plus address is hitting the test server, and
   // should fail immediately.
-  id<GREYMatcher> error_message =
-      grey_text(l10n_util::GetNSString(IDS_PLUS_ADDRESS_MODAL_ERROR_MESSAGE));
-  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:error_message];
+  NSString* error_message = l10n_util::GetNSString(
+      IDS_PLUS_ADDRESS_MODAL_REPORT_ERROR_INSTRUCTION_IOS);
+  id<GREYMatcher> parsed_error_message =
+      grey_text(ParseStringWithLinks(error_message).string);
+  // Ensure error message with link is shown and correctly parsed.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:parsed_error_message];
 
   // Ensure the cancel button is shown.
   id<GREYMatcher> cancelButton =
@@ -149,6 +184,13 @@ id<GREYMatcher> GetMatcherForSettingsLink() {
       1);
   ExpectModalHistogram(
       plus_addresses::PlusAddressMetrics::PlusAddressModalEvent::kModalCanceled,
+      1);
+  // The test server currently only response with reserve error. Thus, closing
+  // status is recorded as `kReservePlusAddressError`.
+  // TODO(b/321072266) Expand coverage to other responses.
+  ExpectModalTimeSample(
+      plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus::
+          kReservePlusAddressError,
       1);
 }
 
@@ -180,9 +222,46 @@ id<GREYMatcher> GetMatcherForSettingsLink() {
   // A new tab should open after tapping the link.
   [ChromeEarlGrey waitForMainTabCount:oldRegularTabCount + 1];
   [ChromeEarlGrey waitForIncognitoTabCount:oldIncognitoTabCount];
+
+  // The bottom sheet should be dismissed.
+  [[EarlGrey selectElementWithMatcher:link_text]
+      assertWithMatcher:grey_notVisible()];
 }
 
-- (void)testSwipeToDismiss {
+// TODO(b/324865662): This test fails on official bots.
+- (void)DISABLED_testPlusAddressBottomSheetErrorReportLink {
+  // Tap an element that is eligible for plus_address autofilling.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementWithId(kEmailFieldId)];
+  id<GREYMatcher> user_chip =
+      grey_text(base::SysUTF8ToNSString(kFakeSuggestionLabel));
+
+  // Ensure the plus_address suggestion appears.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:user_chip];
+
+  [[EarlGrey selectElementWithMatcher:user_chip] performAction:grey_tap()];
+
+  id<GREYMatcher> link_text = GetMatcherForErrorReportLink();
+
+  // Take note of how many tabs are open before clicking the link.
+  NSUInteger oldRegularTabCount = [ChromeEarlGreyAppInterface mainTabCount];
+  NSUInteger oldIncognitoTabCount =
+      [ChromeEarlGreyAppInterface incognitoTabCount];
+
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:link_text];
+  [[EarlGrey selectElementWithMatcher:link_text] performAction:grey_tap()];
+
+  // A new tab should open after tapping the link.
+  [ChromeEarlGrey waitForMainTabCount:oldRegularTabCount + 1];
+  [ChromeEarlGrey waitForIncognitoTabCount:oldIncognitoTabCount];
+
+  // The bottom sheet should be dismissed.
+  [[EarlGrey selectElementWithMatcher:link_text]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// TODO(b/324865662): This test fails on official bots.
+- (void)DISABLED_testSwipeToDismiss {
   // TODO(crbug.com/1508365): Test fails on iPad.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Fails on iPad.");
@@ -222,6 +301,10 @@ id<GREYMatcher> GetMatcherForSettingsLink() {
   // patterns, on all platforms.
   ExpectModalHistogram(
       plus_addresses::PlusAddressMetrics::PlusAddressModalEvent::kModalCanceled,
+      1);
+  ExpectModalTimeSample(
+      plus_addresses::PlusAddressMetrics::PlusAddressModalCompletionStatus::
+          kReservePlusAddressError,
       1);
 }
 

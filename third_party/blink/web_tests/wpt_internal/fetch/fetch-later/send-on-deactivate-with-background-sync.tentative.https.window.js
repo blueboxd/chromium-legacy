@@ -1,5 +1,3 @@
-// META: script=/resources/testharness.js
-// META: script=/resources/testharnessreport.js
 // META: script=/common/dispatcher/dispatcher.js
 // META: script=/common/get-host-info.sub.js
 // META: script=/common/utils.js
@@ -56,8 +54,10 @@ parallelPromiseTest(async t => {
     return window.pageshowEvent.persisted;
   }));
 
-  await expectBeacon(uuid, {count: 0});
-}, `fetchLater() does not send on page entering BFCache if BackgroundSync is on.`);
+  // By default, pending requests are all flushed on BFCache no matter
+  // BackgroundSync is on or not. See http://b/310541607#comment28.
+  await expectBeacon(uuid, {count: 1});
+}, `fetchLater() does send on page entering BFCache even if BackgroundSync is on.`);
 
 parallelPromiseTest(async t => {
   // Enables BackgroundSync permission such that deferred request won't be
@@ -130,5 +130,7 @@ parallelPromiseTest(async t => {
     return window.pageshowEvent.persisted;
   }));
 
-  await expectBeacon(uuid, {count: 0});
-}, `fetchLater() with activateAfter=1m does not send on page entering BFCache if BackgroundSync is on.`);
+  // By default, pending requests are all flushed on BFCache no matter
+  // BackgroundSync is on or not. See http://b/310541607#comment28.
+  await expectBeacon(uuid, {count: 1});
+}, `fetchLater() with activateAfter=1m does send on page entering BFCache even if BackgroundSync is on.`);

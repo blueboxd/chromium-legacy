@@ -44,13 +44,18 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   // Starts/Ends overview with `type`. Returns true if enter or exit overview
   // successful. Depending on `type` the enter/exit animation will look
-  // different. `action` is used by UMA to record the reasons that trigger
-  // overview starts or ends. E.g, pressing the overview button.
+  // different. `start_action`/`end_action` is used by UMA to record the reasons
+  // that trigger overview starts or ends. E.g, pressing the overview button.
   bool StartOverview(
-      OverviewStartAction action,
+      OverviewStartAction start_action,
       OverviewEnterExitType type = OverviewEnterExitType::kNormal);
-  bool EndOverview(OverviewEndAction action,
+  bool EndOverview(OverviewEndAction end_action,
                    OverviewEnterExitType type = OverviewEnterExitType::kNormal);
+
+  // Returns true if it's possible to enter overview mode in the current
+  // configuration. This can be false at certain times, such as when the lock
+  // screen is visible we can't enter overview mode.
+  bool CanEnterOverview() const;
 
   // Returns true if overview mode is active.
   bool InOverviewSession() const;
@@ -121,11 +126,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
     delayed_animation_task_delay_ = delta;
   }
 
-  // Returns true if it's possible to enter overview mode in the current
-  // configuration. This can be false at certain times, such as when the lock
-  // screen is visible we can't overview mode.
-  bool CanEnterOverview() const;
-
  private:
   friend class SavedDeskTest;
 
@@ -169,6 +169,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
       occlusion_tracker_pauser_;
 
   std::unique_ptr<OverviewSession> overview_session_;
+
   base::Time last_overview_session_time_;
 
   base::TimeDelta occlusion_pause_duration_for_end_;

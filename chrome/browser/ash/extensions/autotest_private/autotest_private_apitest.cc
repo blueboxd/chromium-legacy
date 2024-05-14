@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/extensions/autotest_private/autotest_private_api.h"
 
 #include <memory>
@@ -44,12 +45,14 @@
 #include "chrome/browser/ash/arc/tracing/test/arc_app_performance_tracing_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -76,7 +79,8 @@ namespace {
 class TestSearchProvider : public app_list::SearchProvider {
  public:
   explicit TestSearchProvider(ash::AppListSearchResultType result_type)
-      : result_type_(result_type) {}
+      : SearchProvider(app_list::SearchCategory::kTest),
+        result_type_(result_type) {}
 
   ~TestSearchProvider() override = default;
 
@@ -116,13 +120,15 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
     // App pin syncing code makes an untitled Play Store icon appear in the
     // shelf. Sync isn't relevant to this test, so skip pinned app sync.
     // https://crbug.com/1085597
-    ChromeShelfPrefs::SkipPinnedAppsFromSyncForTest();
+    ChromeShelfPrefs::SetSkipPinnedAppsFromSyncForTest(true);
   }
 
   AutotestPrivateApiTest(const AutotestPrivateApiTest&) = delete;
   AutotestPrivateApiTest& operator=(const AutotestPrivateApiTest&) = delete;
 
-  ~AutotestPrivateApiTest() override = default;
+  ~AutotestPrivateApiTest() override {
+    ChromeShelfPrefs::SetSkipPinnedAppsFromSyncForTest(false);
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -168,7 +174,14 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivate) {
 }
 
 // Set of tests where ARC is enabled and test apps and packages are registered.
-IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
+// TODO(https://crbug.com/1514431): re-enable the following test.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_AutotestPrivateArcEnabled DISABLED_AutotestPrivateArcEnabled
+#else
+#define MAYBE_AutotestPrivateArcEnabled AutotestPrivateArcEnabled
+#endif
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest,
+                       MAYBE_AutotestPrivateArcEnabled) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(browser()->profile());
   ASSERT_TRUE(prefs);
 
@@ -560,7 +573,8 @@ class AutotestPrivateSearchTest
   AutotestPrivateSearchTest& operator=(const AutotestPrivateSearchTest&) =
       delete;
 
-  std::vector<ChromeSearchResult*> PublishedResults() {
+  std::vector<raw_ptr<ChromeSearchResult, VectorExperimental>>
+  PublishedResults() {
     return AppListClientImpl::GetInstance()
         ->GetModelUpdaterForTest()
         ->GetPublishedSearchResultsForTest();
@@ -636,7 +650,7 @@ IN_PROC_BROWSER_TEST_P(AutotestPrivateSearchTest,
   results_waiter.Wait();
 
   std::vector<ChromeSearchResult*> results;
-  for (auto* result : PublishedResults()) {
+  for (ChromeSearchResult* result : PublishedResults()) {
     // There may be zero state results that are also published, but not visible
     // in the UI. This test should only check search list results.
     if (result->display_type() != ash::SearchResultDisplayType::kList) {
@@ -691,6 +705,18 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ClearAllowedPref) {
                 *browser()->profile()->GetPrefs())
                 .theme(),
             default_theme);
+}
+
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, SetDeviceLanguage) {
+  std::string target_locale = "ja-JP";
+  base::Value::List args;
+  args.Append(base::Value(target_locale));
+  ASSERT_TRUE(
+      RunAutotestPrivateExtensionTest("setDeviceLanguage", std::move(args)))
+      << message_;
+  std::string cur_locale = browser()->profile()->GetPrefs()->GetString(
+      language::prefs::kApplicationLocale);
+  EXPECT_EQ(cur_locale, target_locale);
 }
 
 }  // namespace extensions

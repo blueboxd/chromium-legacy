@@ -38,7 +38,6 @@ class AutocompleteHistoryManager;
 
 namespace content {
 class ClientHintsControllerDelegate;
-class ResourceContext;
 class SSLHostStateDelegate;
 class WebContents;
 }
@@ -99,10 +98,8 @@ class AwBrowserContext : public content::BrowserContext,
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
   jlong GetQuotaManagerBridge(JNIEnv* env);
-  void SetWebLayerRunningInSameProcess(JNIEnv* env);
 
   AwFormDatabaseService* GetFormDatabaseService();
-  autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager();
   CookieManager* GetCookieManager();
 
   bool IsDefaultBrowserContext() const;
@@ -118,7 +115,6 @@ class AwBrowserContext : public content::BrowserContext,
   // content::BrowserContext implementation.
   base::FilePath GetPath() override;
   bool IsOffTheRecord() override;
-  content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
@@ -194,7 +190,6 @@ class AwBrowserContext : public content::BrowserContext,
       autocomplete_history_manager_;
 
   std::unique_ptr<visitedlink::VisitedLinkWriter> visitedlink_writer_;
-  std::unique_ptr<content::ResourceContext> resource_context_;
 
   std::unique_ptr<PrefService> user_pref_service_;
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;

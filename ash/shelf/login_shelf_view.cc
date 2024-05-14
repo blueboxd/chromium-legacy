@@ -198,24 +198,30 @@ void LoginShelfView::OnRequestShutdownCancelled() {
 }
 
 void LoginShelfView::RequestShutdown() {
-  base::RecordAction(base::UserMetricsAction("Shelf_ShutDown"));
-  if (base::FeatureList::IsEnabled(features::kShutdownConfirmationBubble)) {
-    Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
-    // When the created ShelfShutdownConfirmationBubble is destroyed, it would
-    // call LoginShelfView::OnRequestShutdownCancelled() in the destructor to
-    // ensure that the pointer test_shutdown_confirmation_bubble_ here is
-    // cleaned up.
-    // And ShelfShutdownConfirmationBubble would be destroyed when it's
-    // dismissed or its buttons were presses.
-    test_shutdown_confirmation_bubble_ = new ShelfShutdownConfirmationBubble(
-        GetViewByID(kShutdown), shelf->alignment(),
-        base::BindOnce(&LoginShelfView::OnRequestShutdownConfirmed,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&LoginShelfView::OnRequestShutdownCancelled,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    OnRequestShutdownConfirmed();
+  // If the shutdown bubble already on the screen, on the button click
+  // the bubble should be closed to match the right hand side (tray)
+  // behavior.
+  if (test_shutdown_confirmation_bubble_ != nullptr) {
+    test_shutdown_confirmation_bubble_->GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kUnspecified);
+    return;
   }
+  base::RecordAction(base::UserMetricsAction("Shelf_ShutDown"));
+  Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  // When the created ShelfShutdownConfirmationBubble is destroyed, it would
+  // call LoginShelfView::OnRequestShutdownCancelled() in the destructor to
+  // ensure that the pointer test_shutdown_confirmation_bubble_ here is
+  // cleaned up.
+  // And ShelfShutdownConfirmationBubble would be destroyed when it's
+  // dismissed or its buttons were presses.
+  shutdown_confirmation_button_->SetIsActive(true);
+
+  test_shutdown_confirmation_bubble_ = new ShelfShutdownConfirmationBubble(
+      shutdown_confirmation_button_, shelf->alignment(),
+      base::BindOnce(&LoginShelfView::OnRequestShutdownConfirmed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&LoginShelfView::OnRequestShutdownCancelled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 LoginShelfView::LoginShelfView(
@@ -252,6 +258,8 @@ LoginShelfView::LoginShelfView(
       base::BindRepeating(&LoginShelfView::CallIfDisplayIsOn,
                           weak_ptr_factory_.GetWeakPtr(), shutdown_callback),
       IDS_ASH_SHELF_SHUTDOWN_BUTTON, kShelfShutdownButtonIcon);
+  shutdown_confirmation_button_ =
+      static_cast<LoginShelfButton*>(login_shelf_buttons_.back());
   const auto restart_callback = base::BindRepeating(
       &LockStateController::RequestShutdown,
       base::Unretained(Shell::Get()->lock_state_controller()),
@@ -362,10 +370,6 @@ void LoginShelfView::AddedToWidget() {
   UpdateUi();
 }
 
-const char* LoginShelfView::GetClassName() const {
-  return "LoginShelfView";
-}
-
 void LoginShelfView::OnFocus() {
   LOG(WARNING) << "LoginShelfView was focused, but this should never happen. "
                   "Forwarded focus to shelf widget with an unknown direction.";
@@ -403,8 +407,8 @@ void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
 }
 
-void LoginShelfView::Layout() {
-  views::View::Layout();
+void LoginShelfView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
   UpdateButtonUnionBounds();
 }
 
@@ -435,7 +439,7 @@ void LoginShelfView::OnKioskMenuShown(
   if (kiosk_instruction_bubble_) {
     kiosk_instruction_bubble_->GetWidget()->Hide();
   }
-
+  kiosk_apps_button_->SetIsActive(true);
   on_kiosk_menu_shown.Run();
 }
 
@@ -443,6 +447,7 @@ void LoginShelfView::OnKioskMenuclosed() {
   if (kiosk_instruction_bubble_) {
     kiosk_instruction_bubble_->GetWidget()->Show();
   }
+  kiosk_apps_button_->SetIsActive(false);
 }
 
 void LoginShelfView::SetKioskApps(
@@ -491,7 +496,7 @@ void LoginShelfView::SetAddUserButtonEnabled(bool enable_add_user) {
 }
 
 void LoginShelfView::SetShutdownButtonEnabled(bool enable_shutdown_button) {
-  GetViewByID(kShutdown)->SetEnabled(enable_shutdown_button);
+  shutdown_confirmation_button_->SetEnabled(enable_shutdown_button);
 }
 
 void LoginShelfView::SetButtonEnabled(bool enabled) {
@@ -633,7 +638,7 @@ void LoginShelfView::UpdateUi() {
       session_state == SessionState::RMA) {
     // The entire view was set invisible. The buttons are also set invisible
     // to avoid affecting calculation of the shelf size.
-    for (auto* child : children()) {
+    for (views::View* child : children()) {
       child->SetVisible(false);
     }
 
@@ -701,7 +706,7 @@ void LoginShelfView::UpdateUi() {
   // LoginShelfView. We update it here, so we don't need to check visibility
   // every time we move focus to system tray.
   bool is_anything_focusable = false;
-  for (auto* child : login_shelf_buttons_) {
+  for (ash::LoginShelfButton* child : login_shelf_buttons_) {
     if (child->IsFocusable()) {
       is_anything_focusable = true;
       break;
@@ -710,21 +715,20 @@ void LoginShelfView::UpdateUi() {
   SetFocusBehavior(is_anything_focusable ? views::View::FocusBehavior::ALWAYS
                                          : views::View::FocusBehavior::NEVER);
 
-  // When the login shelf view is moved to its own widget, the login shelf
+  // The login shelf view lives in its own widget, therefore the login shelf
   // widget needs to change the size according to the login shelf view's
   // preferred size.
-  if (old_preferred_size != GetPreferredSize() &&
-      features::IsUseLoginShelfWidgetEnabled()) {
+  if (old_preferred_size != GetPreferredSize()) {
     PreferredSizeChanged();
   } else {
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 }
 
 void LoginShelfView::UpdateButtonUnionBounds() {
   button_union_bounds_ = gfx::Rect();
   View::Views children = GetChildrenInZOrder();
-  for (auto* child : children) {
+  for (views::View* child : children) {
     if (child->GetVisible()) {
       button_union_bounds_.Union(child->bounds());
     }

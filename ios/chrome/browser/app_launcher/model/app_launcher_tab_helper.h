@@ -7,6 +7,7 @@
 
 #import <optional>
 
+#import "base/memory/raw_ptr.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/web_state_user_data.h"
 
@@ -31,7 +32,7 @@ class AppLauncherTabHelper
   static bool IsAppUrl(const GURL& url);
 
   // Sets the delegate.
-  void SetDelegate(AppLauncherTabHelperDelegate* delegate);
+  virtual void SetDelegate(AppLauncherTabHelperDelegate* delegate);
 
   // Sets the provider to retrieve the browser presentation state.
   void SetBrowserPresentationProvider(
@@ -48,7 +49,8 @@ class AppLauncherTabHelper
   void RequestToLaunchApp(const GURL& url,
                           const GURL& source_page_url,
                           bool link_transition,
-                          bool is_user_initiated);
+                          bool is_user_initiated,
+                          bool user_tapped_recently);
 
   // web::WebStatePolicyDecider implementation
   void ShouldAllowRequest(
@@ -56,14 +58,16 @@ class AppLauncherTabHelper
       web::WebStatePolicyDecider::RequestInfo request_info,
       web::WebStatePolicyDecider::PolicyDecisionCallback callback) override;
 
- private:
-  friend class web::WebStateUserData<AppLauncherTabHelper>;
-
+ protected:
   // Constructor for AppLauncherTabHelper. `abuse_detector` provides policy for
   // launching apps.
+  // Protected to allow test overriding.
   AppLauncherTabHelper(web::WebState* web_state,
                        AppLauncherAbuseDetector* abuse_detector,
                        bool incognito);
+
+ private:
+  friend class web::WebStateUserData<AppLauncherTabHelper>;
 
   // Getter for the delegate.
   AppLauncherTabHelperDelegate* delegate() const { return delegate_; }
@@ -77,9 +81,16 @@ class AppLauncherTabHelper
   // `user_allowed` is ignored as there is only one button.
   void ShowFailureAlertDone(bool user_allowed);
 
+  // Called when external app is launched.
+  void OnAppLaunchCompleted(bool success);
+
+  // If app was launched successfully, called when application leaves the
+  // the foreground inactive state.
+  void AppNoLongerInactive();
+
   // Resets `is_app_launch_request_pending_` to `false` and call all callbacks
   // waiting for app completion.
-  void OnAppLaunchCompleted(bool success);
+  void LaunchAppRequestCompleted();
 
   // Triggers an in tab prompt to ask the user if the app launch should proceed.
   void ShowAppLaunchAlert(AppLauncherAlertCause cause, const GURL& url);
@@ -95,7 +106,8 @@ class AppLauncherTabHelper
     GURL url;
     GURL source_page_url;
     bool link_transition;
-    bool has_user_gesture;
+    bool is_user_initiated;
+    bool user_tapped_recently;
   };
   using PolicyDecisionAndOptionalAppLaunchRequest =
       std::pair<web::WebStatePolicyDecider::PolicyDecision,
@@ -109,7 +121,7 @@ class AppLauncherTabHelper
       web::WebStatePolicyDecider::RequestInfo request_info) const;
 
   // The WebState that this object is attached to.
-  web::WebState* web_state_ = nullptr;
+  raw_ptr<web::WebState> web_state_ = nullptr;
 
   // Used to check for repeated launches and provide policy for launching apps.
   AppLauncherAbuseDetector* abuse_detector_ = nil;
@@ -118,7 +130,7 @@ class AppLauncherTabHelper
   bool incognito_ = false;
 
   // Used to launch apps and present UI.
-  AppLauncherTabHelperDelegate* delegate_ = nullptr;
+  raw_ptr<AppLauncherTabHelperDelegate> delegate_ = nullptr;
 
   // Used to know if the browser is currently presenting another VC.
   __weak id<AppLauncherTabHelperBrowserPresentationProvider>

@@ -56,10 +56,11 @@
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
+#import "ios/chrome/browser/ui/first_run/first_run_screen_provider.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/unified_consent/model/unified_consent_service_factory.h"
-#import "ios/chrome/browser/web/web_navigation_browser_agent.h"
+#import "ios/chrome/browser/web/model/web_navigation_browser_agent.h"
 #import "ios/chrome/test/app/browsing_data_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/navigation_test_util.h"
@@ -69,6 +70,7 @@
 #import "ios/chrome/test/app/window_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/public/provider/chrome/browser/lens/lens_api.h"
+#import "ios/public/provider/chrome/browser/primes/primes_api.h"
 #import "ios/public/provider/chrome/browser/signin/choice_api.h"
 #import "ios/testing/hardware_keyboard_util.h"
 #import "ios/testing/nserror_util.h"
@@ -87,7 +89,7 @@
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "services/metrics/public/cpp/ukm_recorder.h"
 #import "ui/base/device_form_factor.h"
 
@@ -172,10 +174,8 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
 + (void)killWebKitNetworkProcess {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-  if (@available(iOS 15, *)) {
-    [[WKWebsiteDataStore defaultDataStore]
-        performSelector:@selector(_terminateNetworkProcess)];
-  }
+  [[WKWebsiteDataStore defaultDataStore]
+      performSelector:@selector(_terminateNetworkProcess)];
 #pragma clang diagnostic pop
 }
 
@@ -271,6 +271,14 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
 
 + (void)dismissSettings {
   [chrome_test_util::HandlerForActiveBrowser() closeSettingsUI];
+}
+
++ (void)primesStopLogging {
+  ios::provider::PrimesStopLogging();
+}
+
++ (void)primesTakeMemorySnapshot:(NSString*)eventName {
+  ios::provider::PrimesTakeMemorySnapshot(eventName);
 }
 
 #pragma mark - Tab Utilities (EG2)
@@ -925,10 +933,6 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
   chrome_test_util::SignInWithoutSync(identity);
 }
 
-+ (void)clearSyncServerData {
-  chrome_test_util::ClearSyncServerData();
-}
-
 + (NSError*)waitForSyncEngineInitialized:(BOOL)isInitialized
                              syncTimeout:(base::TimeDelta)timeout {
   bool success = WaitUntilConditionOrTimeout(timeout, ^{
@@ -1011,6 +1015,14 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
 
 + (void)tearDownFakeSyncServer {
   chrome_test_util::TearDownFakeSyncServer();
+}
+
++ (void)clearFakeSyncServerData {
+  chrome_test_util::ClearFakeSyncServerData();
+}
+
++ (void)flushFakeSyncServerToDisk {
+  chrome_test_util::FlushFakeSyncServerToDisk();
 }
 
 + (NSError*)verifyNumberOfSyncEntitiesWithType:(NSUInteger)type
@@ -1297,6 +1309,14 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
   prefService->SetString(path, UTF8Value);
 }
 
++ (void)setStringValue:(NSString*)value forUserPref:(NSString*)prefName {
+  std::string UTF8Value = base::SysNSStringToUTF8(value);
+  std::string path = base::SysNSStringToUTF8(prefName);
+  PrefService* prefService =
+      chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefService->SetString(path, UTF8Value);
+}
+
 + (void)setBoolValue:(BOOL)value forLocalStatePref:(NSString*)prefName {
   std::string path = base::SysNSStringToUTF8(prefName);
   PrefService* prefService = GetApplicationContext()->GetLocalState();
@@ -1511,12 +1531,6 @@ int watchRunNumber = 0;
 + (void)copyURLToPasteBoard {
   UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
   pasteboard.URL = [NSURL URLWithString:@"chrome://version"];
-}
-
-#pragma mark - Default Search Engine Choice Screen Utilities
-
-+ (BOOL)IsSearchEngineChoiceScreenEnabledFre {
-  return ios::provider::IsSearchEngineChoiceScreenEnabledFre();
 }
 
 #pragma mark - First Run Utilities

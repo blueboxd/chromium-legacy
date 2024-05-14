@@ -5,23 +5,28 @@
 import 'chrome://accessory-update/firmware_update_dialog.js';
 
 import {fakeFirmwareUpdate} from 'chrome://accessory-update/fake_data.js';
-import {UpdateState} from 'chrome://accessory-update/firmware_update.mojom-webui.js';
+import {DeviceRequest, DeviceRequestId, DeviceRequestKind, UpdateState} from 'chrome://accessory-update/firmware_update.mojom-webui.js';
 import {FirmwareUpdateDialogElement} from 'chrome://accessory-update/firmware_update_dialog.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
-import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import {CrDialogElement} from 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {PaperProgressElement} from 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
+import {assertEquals, assertFalse, assertThrows, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
 suite('FirmwareUpdateDialogTest', () => {
   let updateDialogElement: FirmwareUpdateDialogElement|null = null;
 
-  setup(() => {
+  teardown(() => {
+    updateDialogElement?.remove();
+    updateDialogElement = null;
+  });
+
+  function createUpdateDialogElement(): void {
     updateDialogElement = document.createElement('firmware-update-dialog');
     assert(updateDialogElement);
     updateDialogElement.update = fakeFirmwareUpdate;
@@ -30,12 +35,7 @@ suite('FirmwareUpdateDialogTest', () => {
       state: UpdateState.kIdle,
     };
     document.body.appendChild(updateDialogElement);
-  });
-
-  teardown(() => {
-    updateDialogElement?.remove();
-    updateDialogElement = null;
-  });
+  }
 
   function setInstallationProgress(
       percentage: number, state: UpdateState): Promise<void> {
@@ -70,7 +70,14 @@ suite('FirmwareUpdateDialogTest', () => {
     return element.textContent?.trim() ?? '';
   }
 
+  function createDeviceRequest(
+      id: DeviceRequestId,
+      kind: DeviceRequestKind = DeviceRequestKind.kImmediate): DeviceRequest {
+    return {id, kind};
+  }
+
   test('DialogStateUpdatesCorrectly', async () => {
+    createUpdateDialogElement();
     assert(updateDialogElement?.shadowRoot);
     // Start update.
     await setInstallationProgress(1, UpdateState.kUpdating);
@@ -96,6 +103,7 @@ suite('FirmwareUpdateDialogTest', () => {
   });
 
   test('DeviceRestarting', async () => {
+    createUpdateDialogElement();
     assert(updateDialogElement?.shadowRoot);
     // Start update.
     await setInstallationProgress(1, UpdateState.kUpdating);
@@ -114,18 +122,25 @@ suite('FirmwareUpdateDialogTest', () => {
     assertEquals(
         getTextContent('#updateDialogBody'),
         loadTimeData.getString('restartingBodyText'));
+    // Body text should not have an aria-live value for non-requests.
+    assertEquals(
+        strictQuery(
+            '#updateDialogBody', updateDialogElement.shadowRoot, HTMLDivElement)
+            .ariaLive,
+        '');
     assertEquals(
         getTextContent('#progress'),
         loadTimeData.getString('restartingFooterText'));
     // Check that the indeterminate progress is shown.
-    assertTrue(!!updateDialogElement.shadowRoot.querySelector(
-        '#indeterminateProgressBar'));
+    assertTrue(isVisible(updateDialogElement.shadowRoot.querySelector(
+        '#indeterminateProgressBar')));
     // No percentage progress bar.
-    assertFalse(
-        !!updateDialogElement.shadowRoot.querySelector('#updateProgressBar'));
+    assertFalse(isVisible(
+        updateDialogElement.shadowRoot.querySelector('#updateProgressBar')));
   });
 
   test('UpdateDialogContent', async () => {
+    createUpdateDialogElement();
     assert(updateDialogElement?.shadowRoot);
     // Start update.
     await setInstallationProgress(1, UpdateState.kUpdating);
@@ -162,14 +177,15 @@ suite('FirmwareUpdateDialogTest', () => {
         getTextContent('#progress'),
         loadTimeData.getString('restartingFooterText'));
     // Check that the indeterminate progress is shown.
-    assertTrue(!!updateDialogElement.shadowRoot.querySelector(
-        '#indeterminateProgressBar'));
+    assertTrue(isVisible(updateDialogElement.shadowRoot.querySelector(
+        '#indeterminateProgressBar')));
     // No percentage progress bar.
-    assertFalse(
-        !!updateDialogElement.shadowRoot.querySelector('#updateProgressBar'));
+    assertFalse(isVisible(
+        updateDialogElement.shadowRoot.querySelector('#updateProgressBar')));
   });
 
   test('ProgressBarAppears', async () => {
+    createUpdateDialogElement();
     assert(updateDialogElement?.shadowRoot);
     // Simulate update inflight, but restarting. Idle state during inflight
     // is equivalent as a restart phase.
@@ -190,8 +206,9 @@ suite('FirmwareUpdateDialogTest', () => {
 
   test('UpdateDialogContent_WaitingForUser_V2Disabled', async () => {
     loadTimeData.overrideValues({isFirmwareUpdateUIV2Enabled: false});
-
+    createUpdateDialogElement();
     assert(updateDialogElement?.shadowRoot);
+
     // Start update.
     await setInstallationProgress(1, UpdateState.kUpdating);
     assertTrue(getUpdateDialog().open);
@@ -210,14 +227,189 @@ suite('FirmwareUpdateDialogTest', () => {
     assertEquals(
         getTextContent('#updateDialogBody'),
         loadTimeData.getString('restartingBodyText'));
+    // Body text should not have an aria-live value for non-requests.
+    assertEquals(
+        strictQuery(
+            '#updateDialogBody', updateDialogElement.shadowRoot, HTMLDivElement)
+            .ariaLive,
+        '');
     assertEquals(
         getTextContent('#progress'),
         loadTimeData.getString('restartingFooterText'));
     // Check that the indeterminate progress is shown.
-    assertTrue(!!updateDialogElement.shadowRoot.querySelector(
-        '#indeterminateProgressBar'));
+    assertTrue(isVisible(updateDialogElement.shadowRoot.querySelector(
+        '#indeterminateProgressBar')));
     // No percentage progress bar.
-    assertFalse(
-        !!updateDialogElement.shadowRoot.querySelector('#updateProgressBar'));
+    assertFalse(isVisible(
+        updateDialogElement.shadowRoot.querySelector('#updateProgressBar')));
+  });
+
+  test('UpdateDialogContent_DeviceRequest_V2Disabled', async () => {
+    loadTimeData.overrideValues({isFirmwareUpdateUIV2Enabled: false});
+    createUpdateDialogElement();
+
+    // Start update.
+    await setInstallationProgress(1, UpdateState.kUpdating);
+    assertTrue(getUpdateDialog().open);
+
+    // Dialog remains open while the device is waiting for user action.
+    await setInstallationProgress(70, UpdateState.kWaitingForUser);
+    assertTrue(getUpdateDialog().open);
+
+    // Device requests are not expected when the flag is disabled, so
+    // throw an error.
+    assertThrows(
+        () => updateDialogElement?.onDeviceRequest(createDeviceRequest(
+            DeviceRequestId.kDoNotPowerOff,
+            DeviceRequestKind.kImmediate,
+            )));
+  });
+
+  test('UpdateDialogContent_WaitingForUser_V2Enabled_ShowUpdate', async () => {
+    loadTimeData.overrideValues({isFirmwareUpdateUIV2Enabled: true});
+    createUpdateDialogElement();
+    assert(updateDialogElement?.shadowRoot);
+
+    // Start update.
+    await setInstallationProgress(1, UpdateState.kUpdating);
+    assertTrue(getUpdateDialog().open);
+
+    // Dialog remains open while the device is waiting for user action.
+    await setInstallationProgress(70, UpdateState.kWaitingForUser);
+    assertTrue(getUpdateDialog().open);
+
+    // If the v2 flag is enabled, and the status is kWaitingForUser, but the
+    // element hasn't received the onDeviceRequest call yet, it should just
+    // show the normal update dialog.
+    assertEquals(
+        getTextContent('#updateDialogTitle'),
+        loadTimeData.getStringF(
+            'updating',
+            mojoString16ToString(updateDialogElement.update!.deviceName)));
+    assertEquals(
+        getTextContent('#updateDialogBody'),
+        loadTimeData.getString('updatingInfo'));
+    const percentBar = updateDialogElement.shadowRoot.querySelector(
+                           '#updateProgressBar') as PaperProgressElement;
+    const percentBarStatus = percentBar.value;
+    assertEquals(70, percentBarStatus);
+  });
+
+  test(
+      'UpdateDialogContent_DeviceRequest_V2Enabled_IgnoreNonImmediate',
+      async () => {
+        loadTimeData.overrideValues({isFirmwareUpdateUIV2Enabled: true});
+        createUpdateDialogElement();
+        assert(updateDialogElement?.shadowRoot);
+
+        // Start update.
+        await setInstallationProgress(1, UpdateState.kUpdating);
+        assertTrue(getUpdateDialog().open);
+
+        // Dialog remains open while the device is waiting for user action.
+        await setInstallationProgress(70, UpdateState.kWaitingForUser);
+        assertTrue(getUpdateDialog().open);
+
+        // Non-immediate device requests should continue to show the default
+        // update screen as if no request was received.
+        updateDialogElement.onDeviceRequest(createDeviceRequest(
+            DeviceRequestId.kDoNotPowerOff, DeviceRequestKind.kPost));
+        await flushTasks();
+        assertEquals(
+            getTextContent('#updateDialogTitle'),
+            loadTimeData.getStringF(
+                'updating',
+                mojoString16ToString(updateDialogElement.update!.deviceName)));
+        assertEquals(
+            getTextContent('#updateDialogBody'),
+            loadTimeData.getString('updatingInfo'));
+        let percentBar = updateDialogElement.shadowRoot.querySelector(
+                             '#updateProgressBar') as PaperProgressElement;
+        let percentBarStatus = percentBar.value;
+        assertEquals(70, percentBarStatus);
+
+        updateDialogElement.onDeviceRequest(createDeviceRequest(
+            DeviceRequestId.kDoNotPowerOff, DeviceRequestKind.kUnknown));
+        await flushTasks();
+
+        // Non-immediate device requests should continue to show the default
+        // update screen as if no request was received.
+        assertEquals(
+            getTextContent('#updateDialogTitle'),
+            loadTimeData.getStringF(
+                'updating',
+                mojoString16ToString(updateDialogElement.update!.deviceName)));
+        assertEquals(
+            getTextContent('#updateDialogBody'),
+            loadTimeData.getString('updatingInfo'));
+        percentBar = updateDialogElement.shadowRoot.querySelector(
+                         '#updateProgressBar') as PaperProgressElement;
+        percentBarStatus = percentBar.value;
+        assertEquals(70, percentBarStatus);
+      });
+
+  test('UpdateDialogContent_DeviceRequest_V2Enabled', async () => {
+    loadTimeData.overrideValues({isFirmwareUpdateUIV2Enabled: true});
+    createUpdateDialogElement();
+    assert(updateDialogElement?.shadowRoot);
+
+    // Start update.
+    await setInstallationProgress(1, UpdateState.kUpdating);
+    assertTrue(getUpdateDialog().open);
+
+    // Dialog remains open while the device is waiting for user action.
+    await setInstallationProgress(70, UpdateState.kWaitingForUser);
+    assertTrue(getUpdateDialog().open);
+
+    // If the v2 flag is enabled, the dialog should show the associated string
+    // for the given device request.
+    const idToExpectedString: Map<DeviceRequestId, string> = new Map([
+      [DeviceRequestId.kRemoveReplug, 'requestIdRemoveReplug'],
+      [DeviceRequestId.kInsertUSBCable, 'requestIdInsertUsbCable'],
+      [DeviceRequestId.kRemoveUSBCable, 'requestIdRemoveUsbCable'],
+      [DeviceRequestId.kPressUnlock, 'requestIdPressUnlock'],
+      [DeviceRequestId.kDoNotPowerOff, 'requestIdDoNotPowerOff'],
+      [DeviceRequestId.kReplugInstall, 'requestIdReplugInstall'],
+    ]);
+
+    for (const [id, expectedString] of idToExpectedString.entries()) {
+      updateDialogElement.onDeviceRequest(createDeviceRequest(id));
+      await flushTasks();
+
+      // Title of dialog should be generic "Updating [device]"
+      assertEquals(
+          getTextContent('#updateDialogTitle'),
+          loadTimeData.getStringF(
+              'updating',
+              mojoString16ToString(updateDialogElement.update!.deviceName)));
+
+      // Body of dialog should correspond to the type of request.
+      assertEquals(
+          getTextContent('#updateDialogBody'),
+          loadTimeData.getString(expectedString));
+      assert(updateDialogElement?.shadowRoot);
+      // For user requests, the dialog body should be an assertive aria-live
+      // region.
+      assertEquals(
+          strictQuery(
+              '#updateDialogBody', updateDialogElement.shadowRoot,
+              HTMLDivElement)
+              .ariaLive,
+          'assertive');
+      assertEquals(
+          getTextContent('#progress'),
+          loadTimeData.getStringF('waitingFooterText', 70));
+
+      // Percentage progress should be shown when waiting for user action, but
+      // the bar should be disabled.
+      assertTrue(isVisible(
+          updateDialogElement.shadowRoot.querySelector('#updateProgressBar')));
+      assertTrue(
+          !!updateDialogElement.shadowRoot.querySelector('#updateProgressBar')!
+                .hasAttribute('disabled'));
+      // Indeterminate progress should not be shown.
+      assertFalse(isVisible(updateDialogElement.shadowRoot.querySelector(
+          '#indeterminateProgressBar')));
+    }
   });
 });

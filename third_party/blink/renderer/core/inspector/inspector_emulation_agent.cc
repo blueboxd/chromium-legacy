@@ -192,6 +192,7 @@ protocol::Response InspectorEmulationAgent::disable() {
   if (emulate_auto_dark_mode_.Get()) {
     setAutoDarkModeOverride(Maybe<bool>());
   }
+  timezone_override_.reset();
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
   disabled_image_types_.Clear();
   return protocol::Response::Success();
@@ -312,6 +313,7 @@ protocol::Response InspectorEmulationAgent::setEmulatedMedia(
       }
       WebThemeEngineHelper::GetNativeThemeEngine()->OverrideForcedColorsTheme(
           is_dark_mode);
+      GetWebViewImpl()->GetPage()->EmulateForcedColors(is_dark_mode);
     } else if (forced_colors_value == "none") {
       if (!forced_colors_override_) {
         initial_system_color_info_state_ =
@@ -320,9 +322,11 @@ protocol::Response InspectorEmulationAgent::setEmulatedMedia(
       forced_colors_override_ = true;
       WebThemeEngineHelper::GetNativeThemeEngine()->SetForcedColors(
           ForcedColors::kNone);
+      GetWebViewImpl()->GetPage()->DisableEmulatedForcedColors();
     } else if (forced_colors_override_) {
       WebThemeEngineHelper::GetNativeThemeEngine()->ResetToSystemColors(
           initial_system_color_info_state_);
+      GetWebViewImpl()->GetPage()->DisableEmulatedForcedColors();
     }
 
     for (const WTF::String& feature : emulated_media_features_.Keys()) {
@@ -396,6 +400,9 @@ protocol::Response InspectorEmulationAgent::setFocusEmulationEnabled(
   protocol::Response response = AssertPage();
   if (!response.IsSuccess())
     return response;
+  if (enabled == emulate_focus_.Get()) {
+    return response;
+  }
   emulate_focus_.Set(enabled);
   GetWebViewImpl()->GetPage()->GetFocusController().SetFocusEmulationEnabled(
       enabled);
@@ -570,7 +577,7 @@ protocol::Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
     return response;
   if (!color.has_value()) {
     // Clear the override and state.
-    GetWebViewImpl()->SetBaseBackgroundColorOverrideForInspector(absl::nullopt);
+    GetWebViewImpl()->SetBaseBackgroundColorOverrideForInspector(std::nullopt);
     default_background_color_override_rgba_.Clear();
     return protocol::Response::Success();
   }
@@ -647,7 +654,7 @@ protocol::Response InspectorEmulationAgent::setUserAgentOverride(
         Platform::Current()->UserAgentMetadata();
 
     if (user_agent.empty()) {
-      ua_metadata_override_ = absl::nullopt;
+      ua_metadata_override_ = std::nullopt;
       serialized_ua_metadata_override_.Set(std::vector<uint8_t>());
       return protocol::Response::InvalidParams(
           "Can't specify UserAgentMetadata but no UA string");
@@ -706,7 +713,7 @@ protocol::Response InspectorEmulationAgent::setUserAgentOverride(
     }
 
   } else {
-    ua_metadata_override_ = absl::nullopt;
+    ua_metadata_override_ = std::nullopt;
   }
 
   std::string marshalled =
@@ -803,7 +810,7 @@ void InspectorEmulationAgent::ApplyUserAgentOverride(String* user_agent) {
 }
 
 void InspectorEmulationAgent::ApplyUserAgentMetadataOverride(
-    absl::optional<blink::UserAgentMetadata>* ua_metadata) {
+    std::optional<blink::UserAgentMetadata>* ua_metadata) {
   // This applies when UA override is set.
   if (!user_agent_override_.Get().empty()) {
     *ua_metadata = ua_metadata_override_;

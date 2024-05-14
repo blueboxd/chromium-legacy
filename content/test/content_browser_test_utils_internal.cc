@@ -51,6 +51,8 @@
 #include "third_party/blink/public/common/frame/frame_visual_properties.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "cc/slim/layer_tree.h"
+#include "content/browser/renderer_host/compositor_impl_android.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -568,11 +570,11 @@ RenderProcessHostBadIpcMessageWaiter::RenderProcessHostBadIpcMessageWaiter(
     : internal_waiter_(render_process_host,
                        "Stability.BadMessageTerminated.Content") {}
 
-absl::optional<bad_message::BadMessageReason>
+std::optional<bad_message::BadMessageReason>
 RenderProcessHostBadIpcMessageWaiter::Wait() {
-  absl::optional<int> internal_result = internal_waiter_.Wait();
+  std::optional<int> internal_result = internal_waiter_.Wait();
   if (!internal_result.has_value())
-    return absl::nullopt;
+    return std::nullopt;
   return static_cast<bad_message::BadMessageReason>(internal_result.value());
 }
 
@@ -683,6 +685,10 @@ void BeforeUnloadBlockingDelegate::Wait() {
 JavaScriptDialogManager*
 BeforeUnloadBlockingDelegate::GetJavaScriptDialogManager(WebContents* source) {
   return this;
+}
+
+bool BeforeUnloadBlockingDelegate::IsBackForwardCacheSupported() {
+  return true;
 }
 
 void BeforeUnloadBlockingDelegate::RunJavaScriptDialog(
@@ -1061,6 +1067,29 @@ void WaitForBrowserCompositorFramePresented(WebContents* web_contents) {
   NOTREACHED();
 #endif
   run_loop.Run();
+}
+
+void ForceNewCompositorFrameFromBrowser(WebContents* web_contents) {
+#if BUILDFLAG(IS_ANDROID)
+  ui::WindowAndroid* window = web_contents->GetTopLevelNativeWindow();
+  ui::WindowAndroidCompositor* compositor = window->GetCompositor();
+  cc::slim::LayerTree* layer_tree =
+      static_cast<CompositorImpl*>(compositor)->GetLayerTreeForTesting();
+  layer_tree->SetNeedsRedrawForTesting();
+#elif BUILDFLAG(IS_MAC)
+  auto* browser_compositor = GetBrowserCompositorMacForTesting(
+      web_contents->GetRenderWidgetHostView());
+  browser_compositor->GetCompositor()->ScheduleFullRedraw();
+#elif BUILDFLAG(IS_IOS)
+  auto* browser_compositor = GetBrowserCompositorIOSForTesting(
+      web_contents->GetRenderWidgetHostView());
+  browser_compositor->GetCompositor()->ScheduleFullRedraw();
+#elif defined(USE_AURA)
+  auto* compositor = static_cast<RenderWidgetHostViewAura*>(
+                         web_contents->GetRenderWidgetHostView())
+                         ->GetCompositor();
+  compositor->ScheduleFullRedraw();
+#endif
 }
 
 namespace {

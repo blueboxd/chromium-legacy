@@ -4,10 +4,9 @@
 
 #include "chrome/updater/win/installer/msi_custom_action.h"
 
-#include <windows.h>
-
 #include <msi.h>
 #include <msiquery.h>
+#include <windows.h>
 
 #include <optional>
 #include <string>
@@ -131,7 +130,8 @@ UINT MsiSetTags(MsiHandleInterface& msi_handle) {
     return ERROR_SUCCESS;
   }
 
-  const auto tag_args = updater::tagging::MsiReadTag(base::FilePath(*msi_path));
+  const auto tag_args =
+      updater::tagging::BinaryReadTag(base::FilePath(*msi_path));
   if (!tag_args) {
     return ERROR_SUCCESS;
   }

@@ -37,6 +37,7 @@
 #include "components/exo/test/shell_surface_builder.h"
 #include "components/exo/test/surface_tree_host_test_util.h"
 #include "components/exo/test/test_data_device_delegate.h"
+#include "components/exo/test/test_data_source_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -63,6 +64,7 @@
 #include "ui/gl/test/gl_test_support.h"
 #include "ui/views/widget/widget.h"
 
+using ::exo::test::TestDataSourceDelegate;
 using ::testing::_;
 using ::testing::AnyNumber;
 
@@ -167,26 +169,6 @@ class MockPointerStylusDelegate : public PointerStylusDelegate {
   MOCK_METHOD(void, OnPointerTilt, (base::TimeTicks, const gfx::Vector2dF&));
 };
 
-class TestDataSourceDelegate : public DataSourceDelegate {
- public:
-  TestDataSourceDelegate() {}
-
-  TestDataSourceDelegate(const TestDataSourceDelegate&) = delete;
-  TestDataSourceDelegate& operator=(const TestDataSourceDelegate&) = delete;
-
-  // Overridden from DataSourceDelegate:
-  void OnDataSourceDestroying(DataSource* device) override {}
-  void OnTarget(const absl::optional<std::string>& mime_type) override {}
-  void OnSend(const std::string& mime_type, base::ScopedFD fd) override {}
-  void OnCancelled() override {}
-  void OnDndDropPerformed() override {}
-  void OnDndFinished() override {}
-  void OnAction(DndAction dnd_action) override {}
-  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
-    return true;
-  }
-};
-
 class PointerTest
     : public test::ExoTestBase,
       public testing::WithParamInterface<test::FrameSubmissionType> {
@@ -279,9 +261,8 @@ class PointerConstraintTest : public PointerTest {
   testing::NiceMock<MockPointerConstraintDelegate> constraint_delegate_;
   testing::NiceMock<MockPointerDelegate> delegate_;
   std::unique_ptr<ShellSurface> shell_surface_;
-  raw_ptr<Surface, DanglingUntriaged | ExperimentalAsh> surface_;
-  raw_ptr<aura::client::FocusClient, DanglingUntriaged | ExperimentalAsh>
-      focus_client_;
+  raw_ptr<Surface, DanglingUntriaged> surface_;
+  raw_ptr<aura::client::FocusClient, DanglingUntriaged> focus_client_;
 };
 
 // Instantiate the values of frame submission types in the parameterized tests.
@@ -1092,11 +1073,23 @@ TEST_P(PointerTest, DragDropAndPointerEnterLeaveEvents) {
 
   // Pointer leave should be called only once upon start.
   EXPECT_CALL(delegate, OnPointerLeave(_)).Times(1);
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(1);
   EXPECT_CALL(delegate, OnPointerEnter(_, _, _)).Times(0);
   EXPECT_CALL(delegate, OnPointerButton(testing::_, testing::_, testing::_))
       .Times(0);
 
   base::RunLoop().RunUntilIdle();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate);
+
+  // Mouse release event happened during drag and drop will be issued on next
+  // mouse event.
+  EXPECT_CALL(delegate,
+              OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, false))
+      .Times(1);
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(1);
+
+  generator.MoveMouseBy(1, 1);
+
   ::testing::Mock::VerifyAndClearExpectations(&delegate);
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(origin))

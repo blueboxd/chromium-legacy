@@ -10,6 +10,7 @@
 namespace manta {
 
 // Please do not renumber these.
+// Should match ash/webui/common/mojom/sea_pen.mojom.
 enum class MantaStatusCode {
   kOk = 0,
   kGenericError = 1,
@@ -26,7 +27,8 @@ enum class MantaStatusCode {
   // Request was never sent due to missing IdentityManager. This is usually
   // caused by a request being attempted while ChromeOS is shutting down.
   kNoIdentityManager = 10,
-  kMax = kNoIdentityManager,
+  kPerUserQuotaExceeded = 11,
+  kMax = kPerUserQuotaExceeded,
 };
 
 struct MantaStatus {

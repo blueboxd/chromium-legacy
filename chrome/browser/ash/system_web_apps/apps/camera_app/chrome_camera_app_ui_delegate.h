@@ -140,6 +140,7 @@ class ChromeCameraAppUIDelegate : public ash::CameraAppUIDelegate {
   base::FilePath GetFilePathByName(const std::string& name) override;
   media_device_salt::MediaDeviceSaltService* GetMediaDeviceSaltService(
       content::BrowserContext* context) override;
+  void OpenWifiDialog(WifiConfig wifi_config) override;
 
  private:
   base::FilePath GetMyFilesFolder();
@@ -152,7 +153,7 @@ class ChromeCameraAppUIDelegate : public ash::CameraAppUIDelegate {
   void IntializeStorageMonitor();
   void OnStorageMonitorInitialized(std::unique_ptr<StorageMonitor> monitor);
 
-  raw_ptr<content::WebUI, ExperimentalAsh> web_ui_;  // Owns |this|.
+  raw_ptr<content::WebUI> web_ui_;  // Owns |this|.
 
   base::Time session_start_time_;
 

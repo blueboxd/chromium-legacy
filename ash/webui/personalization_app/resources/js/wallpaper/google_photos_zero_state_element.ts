@@ -6,11 +6,11 @@
  * @fileoverview Polymer element that displays the Google Photos zero state.
  */
 
-import 'chrome://resources/cr_components/localized_link/localized_link.js';
-import '../../css/wallpaper.css.js';
-import '../../css/common.css.js';
+import 'chrome://resources/ash/common/personalization/common.css.js';
+import 'chrome://resources/ash/common/personalization/wallpaper.css.js';
+import 'chrome://resources/ash/common/cr_elements/localized_link/localized_link.js';
 
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 

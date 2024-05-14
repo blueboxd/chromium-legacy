@@ -24,9 +24,9 @@ class UnifiedSystemTrayController;
 // itself invisible when its child views do not need to be shown. When both
 // buttons are shown uses a two-column side-by-side layout.
 class ASH_EXPORT QuickSettingsHeader : public views::View {
- public:
-  METADATA_HEADER(QuickSettingsHeader);
+  METADATA_HEADER(QuickSettingsHeader, views::View)
 
+ public:
   explicit QuickSettingsHeader(UnifiedSystemTrayController* controller);
   QuickSettingsHeader(const QuickSettingsHeader&) = delete;
   QuickSettingsHeader& operator=(const QuickSettingsHeader&) = delete;
@@ -42,6 +42,7 @@ class ASH_EXPORT QuickSettingsHeader : public views::View {
   EolNoticeQuickSettingsView* eol_notice_for_test() { return eol_notice_; }
 
   views::View* GetManagedButtonForTest();
+  views::View* GetSupervisedButtonForTest();
   views::Label* GetManagedButtonLabelForTest();
   views::Label* GetSupervisedButtonLabelForTest();
 
@@ -59,12 +60,10 @@ class ASH_EXPORT QuickSettingsHeader : public views::View {
   void UpdateVisibilityAndLayout();
 
   // Owned by views hierarchy.
-  raw_ptr<EnterpriseManagedView, ExperimentalAsh> enterprise_managed_view_ =
-      nullptr;
-  raw_ptr<ManagedStateView, ExperimentalAsh> supervised_view_ = nullptr;
-  raw_ptr<ChannelIndicatorQuickSettingsView, ExperimentalAsh> channel_view_ =
-      nullptr;
-  raw_ptr<EolNoticeQuickSettingsView, ExperimentalAsh> eol_notice_ = nullptr;
+  raw_ptr<EnterpriseManagedView> enterprise_managed_view_ = nullptr;
+  raw_ptr<ManagedStateView> supervised_view_ = nullptr;
+  raw_ptr<ChannelIndicatorQuickSettingsView> channel_view_ = nullptr;
+  raw_ptr<EolNoticeQuickSettingsView> eol_notice_ = nullptr;
 };
 
 }  // namespace ash

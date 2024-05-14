@@ -14,14 +14,17 @@ import './profile_picker_shared.css.js';
 import './strings.m.js';
 
 import {listenOnce} from '//resources/js/util.js';
-import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import type {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+import type {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {afterNextRender, DomRepeat, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import type {DomRepeat} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {DragDropReorderTileListDelegate, DraggableTileListInterface} from './drag_drop_reorder_tile_list_delegate.js';
-import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
+import type {DraggableTileListInterface} from './drag_drop_reorder_tile_list_delegate.js';
+import {DragDropReorderTileListDelegate} from './drag_drop_reorder_tile_list_delegate.js';
+import type {ManageProfilesBrowserProxy, ProfileState} from './manage_profiles_browser_proxy.js';
+import {ManageProfilesBrowserProxyImpl} from './manage_profiles_browser_proxy.js';
 import {navigateTo, NavigationMixin, Routes} from './navigation_mixin.js';
 import {isAskOnStartupAllowed, isGuestModeEnabled, isProfileCreationAllowed} from './policy_helper.js';
 import {getTemplate} from './profile_picker_main_view.html.js';
@@ -36,7 +39,6 @@ export interface ProfilePickerMainViewElement {
     wrapper: HTMLElement,
     profiles: DomRepeat,
     forceSigninErrorDialog: CrDialogElement,
-
   };
 }
 
@@ -80,6 +82,23 @@ export class ProfilePickerMainViewElement extends
           return loadTimeData.getBoolean('askOnStartup');
         },
       },
+
+      forceSigninErrorDialogTitle_: {
+        type: String,
+      },
+
+      forceSigninErrorDialogBody_: {
+        type: String,
+      },
+
+      forceSigninErrorProfilePath_: {
+        type: String,
+      },
+
+      shouldShownSigninButton_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -94,6 +113,14 @@ export class ProfilePickerMainViewElement extends
 
   private dragDelegate_: DragDropReorderTileListDelegate|null = null;
   private dragDuration_: number = 300;
+
+  // TODO(crbug.com/1478217): Move the dialog into it's own element with the
+  // below members. This dialog state should be independent of the Profile
+  // Picker itself.
+  private forceSigninErrorDialogTitle_: string;
+  private forceSigninErrorDialogBody_: string;
+  private forceSigninErrorProfilePath_: string;
+  private shouldShownSigninButton_: boolean;
 
   override ready() {
     super.ready();
@@ -119,7 +146,8 @@ export class ProfilePickerMainViewElement extends
         'profile-removed', this.handleProfileRemoved_.bind(this));
     this.addWebUiListener(
         'display-force-signin-error-dialog',
-        () => this.showForceSigninErrorDialog());
+        (title: string, body: string, profilePath: string) =>
+            this.showForceSigninErrorDialog(title, body, profilePath));
     this.manageProfilesBrowserProxy_.initializeMainView();
   }
 
@@ -274,12 +302,32 @@ export class ProfilePickerMainViewElement extends
     return this.profilesList_;
   }
 
-  showForceSigninErrorDialog(): void {
+  showForceSigninErrorDialog(title: string, body: string, profilePath: string):
+      void {
+    this.forceSigninErrorDialogTitle_ = title;
+    this.forceSigninErrorDialogBody_ = body;
+    this.forceSigninErrorProfilePath_ = profilePath;
+    this.shouldShownSigninButton_ = profilePath.length !== 0;
     this.$.forceSigninErrorDialog.showModal();
   }
 
   private onForceSigninErrorDialogOkButtonClicked_(): void {
     this.$.forceSigninErrorDialog.close();
+    this.clearErrorDialogInfo_();
+  }
+
+  private onReauthClicked_(): void {
+    this.$.forceSigninErrorDialog.close();
+    this.manageProfilesBrowserProxy_.launchSelectedProfile(
+        this.forceSigninErrorProfilePath_);
+    this.clearErrorDialogInfo_();
+  }
+
+  private clearErrorDialogInfo_(): void {
+    this.forceSigninErrorDialogTitle_ = '';
+    this.forceSigninErrorDialogBody_ = '';
+    this.forceSigninErrorProfilePath_ = '';
+    this.shouldShownSigninButton_ = false;
   }
 }
 

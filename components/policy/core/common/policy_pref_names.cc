@@ -22,9 +22,6 @@ const char kEnterpriseMDMManagementWindows[] =
 // Integer pref that stores the Mac enterprise MDM management authority.
 const char kEnterpriseMDMManagementMac[] =
     "management.platform.enterprise_mdm_mac";
-// Boolean pref that indicates whether integration with macOS Screen Time should
-// be enabled.
-const char kScreenTimeEnabled[] = "policy.screen_time";
 #endif
 
 // Enterprise policy controlled value representing whether the user may be shown
@@ -157,8 +154,11 @@ const char kLocalTestPoliciesForNextStartup[] =
 const char kForcePermissionPolicyUnloadDefaultEnabled[] =
     "policy.force_permission_policy_unload_default_enabled";
 
-const char kPPAPISharedImagesForVideoDecoderAllowed[] =
-    "policy.ppapi_shared_images_for_video_decoder_allowed";
-
+#if BUILDFLAG(IS_CHROMEOS)
+// Allows user browser navigation access to the listed host patterns. Only
+// applied when a AlwaysOn VPN is active but not connected.
+const char kAlwaysOnVpnPreConnectUrlAllowlist[] =
+    "policy.alwayson_vpn_pre_connect_url_allowlist";
+#endif
 }  // namespace policy_prefs
 }  // namespace policy

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -35,7 +36,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom.h"
@@ -310,7 +310,7 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
                            history::SOURCE_BROWSED);
 
   // Initially there are no UKM entries.
-  std::vector<const ukm::mojom::UkmEntry*> entries =
+  std::vector<raw_ptr<const ukm::mojom::UkmEntry, VectorExperimental>> entries =
       recorder_->GetEntriesByName(ukm::builders::Notification::kEntryName);
   EXPECT_EQ(0u, entries.size());
 
@@ -324,7 +324,7 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
   entries =
       recorder_->GetEntriesByName(ukm::builders::Notification::kEntryName);
   ASSERT_EQ(1u, entries.size());
-  auto* entry = entries[0];
+  auto* entry = entries[0].get();
   recorder_->ExpectEntryMetric(
       entry, kClosedReason,
       static_cast<int>(NotificationDatabaseData::ClosedReason::USER));
@@ -479,7 +479,7 @@ TEST_F(PlatformNotificationServiceTest_WebApps, PopulateWebAppId_NotInScope) {
                     NotificationHandler::Type::WEB_NON_PERSISTENT));
   Notification notification = GetDisplayedNotificationForType(
       NotificationHandler::Type::WEB_NON_PERSISTENT);
-  EXPECT_EQ(absl::nullopt, notification.notifier_id().web_app_id);
+  EXPECT_EQ(std::nullopt, notification.notifier_id().web_app_id);
 
   service()->DisplayPersistentNotification(kNotificationId, kOutOfScopeUrl,
                                            kWebAppOrigin, kNotificationData,
@@ -488,7 +488,7 @@ TEST_F(PlatformNotificationServiceTest_WebApps, PopulateWebAppId_NotInScope) {
                     NotificationHandler::Type::WEB_PERSISTENT));
   notification = GetDisplayedNotificationForType(
       NotificationHandler::Type::WEB_PERSISTENT);
-  EXPECT_EQ(absl::nullopt, notification.notifier_id().web_app_id);
+  EXPECT_EQ(std::nullopt, notification.notifier_id().web_app_id);
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -601,7 +601,7 @@ TEST_F(PlatformNotificationServiceTest_WebAppNotificationIconAndTitle,
 
   provider->Start();
 
-  absl::optional<PlatformNotificationServiceImpl::WebAppIconAndTitle>
+  std::optional<PlatformNotificationServiceImpl::WebAppIconAndTitle>
       icon_and_title = service()->FindWebAppIconAndTitle(web_app_url);
 
   ASSERT_TRUE(icon_and_title.has_value());

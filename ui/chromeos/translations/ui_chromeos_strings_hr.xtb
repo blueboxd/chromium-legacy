@@ -76,7 +76,6 @@
 <translation id="162175252992296058">portugalski s američkom međunarodnom tipkovnicom</translation>
 <translation id="1629521517399325891">Korisnički certifikat nije dostupan za autentifikaciju mreže.</translation>
 <translation id="1641780993263690097">kineski pinyin</translation>
-<translation id="1646019627374511909">Broj datoteka koje će biti dostupne offline: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="164969095109328410">Chrome uređaj</translation>
 <translation id="1661207570040737402">U potpunosti ste iskoristili pohranu dijeljenog diska na Google Workspaceu.</translation>
 <translation id="1661867754829461514">Nedostaje PIN</translation>
@@ -96,7 +95,7 @@
 <translation id="1742316578210444689">transliteracija za hebrejski</translation>
 <translation id="1747761757048858544">nizozemski (Nizozemska)</translation>
 <translation id="174937106936716857">Ukupan broj datoteka</translation>
-<translation id="1755345808328621801">Ta je datoteka predviđena za PC sa softverom Windows. Nije kompatibilna s vašim uređajem na kojem se izvodi Chrome OS. Potražite odgovarajuću zamjensku aplikaciju u Chrome web-trgovini.</translation>
+<translation id="1755345808328621801">Ta je datoteka predviđena za PC sa softverom Windows. Nije kompatibilna s vašim uređajem na kojem se izvodi Chrome OS. Potražite odgovarajuću zamjensku aplikaciju u Chrome Web Storeu.</translation>
 <translation id="1757915090001272240">široka latinica</translation>
 <translation id="1761091787730831947">Dijeli s VM-om <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Certifikat za autentifikaciju odbijen je lokalno</translation>
@@ -168,7 +167,7 @@
 <translation id="2305020378527873881">Stavka <ph name="VOLUME_NAME" /> izbačena je.</translation>
 <translation id="2307462900900812319">Konfiguriraj mrežu</translation>
 <translation id="2312704192806647271">{COUNT,plural, =1{Proširenje s ID-jem <ph name="BEGIN_LIST" /><ph name="END_LIST" /> nije moguće pronaći. Obratite se administratoru.}one{Proširenja s ID-jevima <ph name="BEGIN_LIST" /><ph name="END_LIST" /> nije moguće pronaći. Obratite se administratoru.}few{Proširenja s ID-jevima <ph name="BEGIN_LIST" /><ph name="END_LIST" /> nije moguće pronaći. Obratite se administratoru.}other{Proširenja s ID-jevima <ph name="BEGIN_LIST" /><ph name="END_LIST" /> nije moguće pronaći. Obratite se administratoru.}}</translation>
-<translation id="2325650632570794183">Ta vrsta datoteke nije podržana. Posjetite Chrome web-trgovinu da biste pronašli aplikaciju koja može otvoriti tu vrstu datoteke.</translation>
+<translation id="2325650632570794183">Ta vrsta datoteke nije podržana. Posjetite Chrome Web Store da biste pronašli aplikaciju koja može otvoriti tu vrstu datoteke.</translation>
 <translation id="2326539130272988168">bugarski</translation>
 <translation id="233822363739146957">Nema dovoljno prostora za pohranu da bi se sinkronizirale sve datoteke</translation>
 <translation id="23721837607121582">Preuzmi mobilni profil, mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
@@ -244,7 +243,7 @@
 <translation id="2949781154072577687">Formatiranje diska <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Meduza</translation>
 <translation id="2958458230122209142">Preostalo je malo pohrane, još <ph name="REMAINING_PERCENTAGE" />% od ukupno <ph name="TOTAL_SPACE" /> u vašoj privatnoj pohrani.</translation>
-<translation id="2977940621473452797">Ta je datoteka predviđena za računalo sa softverom Mac OS. Nije kompatibilna s vašim uređajem na kojem se izvodi Chrome OS. Potražite odgovarajuću zamjensku aplikaciju u Chrome web-trgovini.</translation>
+<translation id="2977940621473452797">Ta je datoteka predviđena za računalo sa softverom Mac OS. Nije kompatibilna s vašim uređajem na kojem se izvodi Chrome OS. Potražite odgovarajuću zamjensku aplikaciju u Chrome Web Storeu.</translation>
 <translation id="2984337792991268709">Danas u <ph name="TODAY_DAYTIME" /></translation>
 <translation id="299638574917407533">francuski (Kanada)</translation>
 <translation id="3003189754374775221">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, povežite</translation>
@@ -275,7 +274,7 @@
 <translation id="3241720467332021590">Irski</translation>
 <translation id="3248185426436836442">Na čekanju</translation>
 <translation id="3252266817569339921">Francuski</translation>
-<translation id="3253225298092156258">Nije dostupno</translation>
+<translation id="3253225298092156258">Nedostupno</translation>
 <translation id="3254434849914415189">Odaberite zadanu aplikaciju za <ph name="FILE_TYPE" /> datoteke:</translation>
 <translation id="3255159654094949700">arapski</translation>
 <translation id="326396468955264502">Premještanje <ph name="NUMBER_OF_FILES" /> datoteke/datoteka nije uspjelo jer su šifrirane.</translation>
@@ -309,7 +308,6 @@
 <translation id="3475447146579922140">Googleova proračunska tablica</translation>
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="3486821258960016770">mongolski</translation>
-<translation id="3495304270784461826">Broj pogrešaka: <ph name="COUNT" />.</translation>
 <translation id="3509680540198371098">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, pojedinosti</translation>
 <translation id="3511705761158917664">Priprema za sinkronizaciju sljedećeg broja stavki: <ph name="NUMBER_OF_ITEMS" />...</translation>
 <translation id="3522708245912499433">Portugalski</translation>
@@ -505,6 +503,7 @@
 <translation id="4935975195727477204">Cvijet gazanije</translation>
 <translation id="4943368462779413526">Američki nogomet</translation>
 <translation id="4961158930123534723">S Parallels Desktopom dijeli se jedna mapa</translation>
+<translation id="4965874878399872778">Provjeravamo jesu li datoteke u skladu sa sigurnosnim pravilima vaše organizacije...</translation>
 <translation id="496656650103537022">Vraćeno: <ph name="FILE_NAME" /></translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="4972330214479971536">Postavljanje sinkronizacije datoteka nije uspjelo</translation>
@@ -560,7 +559,6 @@
 <translation id="5275973617553375938">Oporavljene datoteke s Google diska</translation>
 <translation id="5278111733643988471">Da biste vratili tu stavku, povucite je u novu mapu izvan otpada. Izbrisana je izvorna mapa <ph name="PARENT_FOLDER_NAME" /> za tu stavku.</translation>
 <translation id="5283101102242354279">Uključite proširenja u anonimnom načinu:</translation>
-<translation id="5286194356314741248">Skeniranje</translation>
 <translation id="5288441970121584418">Hamburger</translation>
 <translation id="5293615890992542006">Administratorska pravila blokiraju premještanje te datoteke</translation>
 <translation id="5305688511332277257">Nijedan nije instaliran</translation>
@@ -711,6 +709,7 @@
 <translation id="6430271654280079150">Imate još jedan pokušaj.</translation>
 <translation id="643243556292470964">Izbrisane datoteke sad su premještene u otpad</translation>
 <translation id="6438480100790416671">Provjera prostora za pohranu…</translation>
+<translation id="6451527188465304418">Provjeravamo je li datoteka u skladu sa sigurnosnim pravilima vaše organizacije...</translation>
 <translation id="6485131920355264772">Dohvaćanje informacija o prostoru nije uspjelo</translation>
 <translation id="6495925982925244349">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, upravlja administrator, pojedinosti</translation>
 <translation id="649877868557234318">Izdvajanje datoteke <ph name="FILE_NAME" /> u mapu <ph name="FOLDER_NAME" /></translation>
@@ -718,7 +717,6 @@
 <translation id="6503285896705205014">Administratorska pravila blokiraju premještanje <ph name="COUNT" /> datoteke/datoteka</translation>
 <translation id="6509122719576673235">Norveški</translation>
 <translation id="6528513914570774834">Dopusti drugim korisnicima ovog uređaja da upotrebljavaju ovu mrežu</translation>
-<translation id="653019979737152879">Sinkronizacija datoteke <ph name="FILE_NAME" />...</translation>
 <translation id="6549689063733911810">Nedavno</translation>
 <translation id="6558280019477628686">Dogodila se pogreška. Neke stavke možda nisu izbrisane.</translation>
 <translation id="656398493051028875">Brisanje datoteke "<ph name="FILENAME" />"...</translation>
@@ -852,7 +850,6 @@
 <translation id="7553492409867692754">Daje dopuštenje Linux aplikacijama za pristup datotekama u mapi <ph name="FOLDER_NAME" /></translation>
 <translation id="7555339735447658365">Trenutačno ste izvan mreže. Sinkronizacija datoteka nastavit će se kad se povežete s internetom.</translation>
 <translation id="7589661784326793847">Pričekajte trenutak</translation>
-<translation id="7592775719802218421">Offline dostupnost datoteke <ph name="FILE_NAME" /></translation>
 <translation id="7600126690270271294">srpski</translation>
 <translation id="7603724359189955920">Rešetke</translation>
 <translation id="7627790789328695202">Ups, stavka <ph name="FILE_NAME" /> već postoji. Preimenujte je i pokušajte ponovo.</translation>
@@ -936,6 +933,7 @@
 <translation id="813913629614996137">Pokretanje...</translation>
 <translation id="8147028810663464959">Znakovi su u punoj širini</translation>
 <translation id="8151638057146502721">Konfiguracija</translation>
+<translation id="8154666764013920974">{NUM_ERROR,plural, =1{1 pogreška.}one{# pogreška.}few{# pogreške.}other{# pogrešaka.}}</translation>
 <translation id="8154842056504218462">Odabrane su sve stavke.</translation>
 <translation id="8157684860301034423">Dohvaćanje informacija o aplikaciji nije uspjelo.</translation>
 <translation id="8175731104491895765">francuski (Belgija)</translation>
@@ -969,6 +967,7 @@
 <translation id="83651606385705612">Dajte VM-u <ph name="VM_NAME" /> dopuštenje za pristup datotekama u mapi <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">Neispravan WEP ključ</translation>
 <translation id="8372852072747894550">grčki</translation>
+<translation id="8377269993083688872">Izgledi e-poruke</translation>
 <translation id="8386903983509584791">Traženje je dovršeno</translation>
 <translation id="8387733224523483503">Izdvojena je datoteka <ph name="FILE_NAME" />.</translation>
 <translation id="8395901698320285466">Dimenzije</translation>
@@ -1007,7 +1006,6 @@
 <translation id="8569764466147087991">Odaberite datoteku za otvaranje</translation>
 <translation id="8577897833047451336">hrvatski</translation>
 <translation id="8578308463707544055">indonezijski</translation>
-<translation id="8579285237314169903">Sinkronizacija ovoliko stavki: <ph name="NUMBER_OF_FILES" />...</translation>
 <translation id="8600173386174225982">Popis datoteka promijenio se na prikaz minijatura.</translation>
 <translation id="8601932370724196034">Slikovna datoteka Crostinija</translation>
 <translation id="8609695766746872526">islandski</translation>
@@ -1028,6 +1026,7 @@
 <translation id="8787254343425541995">Dopusti proxyje za dijeljene mreže</translation>
 <translation id="8790981080411996443">Osoba zalijeva biljke</translation>
 <translation id="8798099450830957504">Zadano</translation>
+<translation id="8806832560029769670">{NUM_WARNING,plural, =1{1 upozorenje.}one{# upozorenje.}few{# upozorenja.}other{# upozorenja.}}</translation>
 <translation id="8808686172382650546">Mačka</translation>
 <translation id="8810671769985673465">Komprimiranje nije uspjelo, stavka postoji: "<ph name="FILE_NAME" />"</translation>
 <translation id="8813284582615685103">španjolski (Španjolska)</translation>
@@ -1058,7 +1057,6 @@
 <translation id="9038620279323455325">Datoteka s nazivom "<ph name="FILE_NAME" />" već postoji. Odaberite drugi naziv.</translation>
 <translation id="9046895021617826162">Neuspjelo povezivanje</translation>
 <translation id="9065512565307033593">Ako potvrda nije bila uspješna, nećete imati pristup mreži.</translation>
-<translation id="9083722265619106011">{0,plural, =1{Jedno upozorenje.}one{<ph name="COUNT" /> upozorenje.}few{<ph name="COUNT" /> upozorenja.}other{<ph name="COUNT" /> upozorenja.}}</translation>
 <translation id="908378762078012445">ruski s fonetskom tipkovnicom AATSEEL</translation>
 <translation id="9086302186042011942">Sinkronizacija</translation>
 <translation id="9099674669267916096">Broj stranica</translation>

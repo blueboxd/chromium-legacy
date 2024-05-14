@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <optional>
+#include <string_view>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
@@ -78,7 +79,7 @@ class ASH_EXPORT WmModeController : public ShellObserver,
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
-  base::StringPiece GetLogContext() const override;
+  std::string_view GetLogContext() const override;
 
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
@@ -153,13 +154,12 @@ class ASH_EXPORT WmModeController : public ShellObserver,
 
   // The current root window the layer of `this` belongs to. It's always nullptr
   // when WM Mode is inactive.
-  raw_ptr<aura::Window, ExperimentalAsh> current_root_ = nullptr;
+  raw_ptr<aura::Window> current_root_ = nullptr;
 
   // The window that got selected as the top-most one at the most recent
   // received located event. This window (if available) will be the one that
   // receives all the gestures supported by this mode.
-  raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh> selected_window_ =
-      nullptr;
+  raw_ptr<aura::Window, DanglingUntriaged> selected_window_ = nullptr;
 
   views::UniqueWidgetPtr pie_menu_widget_;
   raw_ptr<PieMenuView> pie_menu_view_ = nullptr;

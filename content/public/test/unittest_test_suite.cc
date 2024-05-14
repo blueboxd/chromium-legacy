@@ -41,10 +41,6 @@
 #include "ui/aura/env.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS)
-#include "ui/gfx/linux/gbm_util.h"  // nogncheck
-#endif
-
 namespace content {
 
 class UnitTestTestSuite::UnitTestEventListener
@@ -130,7 +126,7 @@ static UnitTestTestSuite* g_test_suite = nullptr;
 UnitTestTestSuite::UnitTestTestSuite(
     base::TestSuite* test_suite,
     base::RepeatingCallback<std::unique_ptr<ContentClients>()> create_clients,
-    absl::optional<mojo::core::Configuration> child_mojo_config)
+    std::optional<mojo::core::Configuration> child_mojo_config)
     : test_suite_(test_suite), create_clients_(create_clients) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string enabled =
@@ -147,10 +143,6 @@ UnitTestTestSuite::UnitTestTestSuite(
   listeners.Append(new CheckForLeakedWebUIRegistrations);
 
   scoped_feature_list_.InitFromCommandLine(enabled, disabled);
-
-#if BUILDFLAG(IS_CHROMEOS)
-  ui::EnsureIntelMediaCompressionEnvVarIsSet();
-#endif
 
   mojo::core::InitFeatures();
   if (command_line->HasSwitch(switches::kTestChildProcess)) {

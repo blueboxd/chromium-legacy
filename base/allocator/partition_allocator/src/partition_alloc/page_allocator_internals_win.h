@@ -26,7 +26,7 @@ bool IsOutOfMemory(DWORD error) {
   switch (error) {
     // Page file is being extended.
     case ERROR_COMMITMENT_MINIMUM:
-      // Page file is too small.
+    // Page file is too small.
     case ERROR_COMMITMENT_LIMIT:
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
     // Not enough memory resources are available to process this command.
@@ -164,7 +164,8 @@ void SetSystemPagesAccessInternal(
   } else {
     if (!VirtualAllocWithRetry(ptr, length, MEM_COMMIT, access_flag)) {
       int32_t error = GetLastError();
-      if (error == ERROR_COMMITMENT_LIMIT) {
+      if (error == ERROR_COMMITMENT_LIMIT ||
+          error == ERROR_COMMITMENT_MINIMUM) {
         OOM_CRASH(length);
       }
       // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
@@ -189,7 +190,7 @@ void DecommitSystemPagesInternal(
                            PageAccessibilityConfiguration::kInaccessible));
 }
 
-void DecommitAndZeroSystemPagesInternal(uintptr_t address,
+bool DecommitAndZeroSystemPagesInternal(uintptr_t address,
                                         size_t length,
                                         PageTag page_tag) {
   // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualfree:
@@ -201,6 +202,7 @@ void DecommitAndZeroSystemPagesInternal(uintptr_t address,
   // for MEM_COMMIT: "The function also guarantees that when the caller later
   // initially accesses the memory, the contents will be zero."
   PA_CHECK(VirtualFree(reinterpret_cast<void*>(address), length, MEM_DECOMMIT));
+  return true;
 }
 
 void RecommitSystemPagesInternal(

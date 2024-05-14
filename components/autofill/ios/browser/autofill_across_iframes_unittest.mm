@@ -17,6 +17,7 @@
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/test_autofill_manager_injector.h"
 #import "components/autofill/ios/form_util/autofill_test_with_web_state.h"
+#import "components/autofill/ios/form_util/child_frame_registrar.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -58,6 +59,11 @@ class TestAutofillManager : public BrowserAutofillManager {
 
   const std::vector<FormData>& seen_forms() { return seen_forms_; }
 
+  void ResetTestState() {
+    seen_forms_.clear();
+    forms_seen_waiter_.Reset();
+  }
+
  private:
   std::vector<FormData> seen_forms_;
 
@@ -86,11 +92,6 @@ class AutofillAcrossIframesTest : public AutofillTestWithWebState {
         std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
             web_state());
 
-    // Driver factory needs to exist before any call to
-    // `AutofillDriverIOS::FromWebStateAndWebFrame`, or we crash.
-    autofill::AutofillDriverIOSFactory::CreateForWebState(
-        web_state(), &autofill_client_, /*bridge=*/nil, /*locale=*/"en");
-
     // AutofillAgent init crashes without this.
     UniqueIDDataTabHelper::CreateForWebState(web_state());
 
@@ -98,6 +99,12 @@ class AutofillAcrossIframesTest : public AutofillTestWithWebState {
     prefs_ = autofill::test::PrefServiceForTesting();
     autofill_agent_ = [[AutofillAgent alloc] initWithPrefService:prefs_.get()
                                                         webState:web_state()];
+
+    // Driver factory needs to exist before any call to
+    // `AutofillDriverIOS::FromWebStateAndWebFrame`, or we crash.
+    autofill::AutofillDriverIOSFactory::CreateForWebState(
+        web_state(), &autofill_client_, /*bridge=*/autofill_agent_,
+        /*locale=*/"en");
   }
 
   web::WebFrame* WaitForMainFrame() {
@@ -176,6 +183,17 @@ TEST_F(AutofillAcrossIframesTest, NoChildFrames) {
 
   const FormData& form = main_frame_manager().seen_forms()[0];
   EXPECT_EQ(form.child_frames.size(), 0u);
+
+  // The main frame driver should have the correct local frame token set even
+  // without any child frames.
+  LocalFrameToken token = main_frame_driver()->GetFrameToken();
+  ASSERT_TRUE(token);
+  web::WebFramesManager* frames_manager =
+      FormUtilJavaScriptFeature::GetInstance()->GetWebFramesManager(
+          web_state());
+  ASSERT_TRUE(frames_manager);
+  web::WebFrame* frame = frames_manager->GetFrameWithId(token.ToString());
+  EXPECT_EQ(frame, main_frame_driver()->web_frame());
 }
 
 // Ensure that child frames are assigned a token during form extraction, are
@@ -201,6 +219,174 @@ TEST_F(AutofillAcrossIframesTest, WithChildFrames) {
   // valid (the bool cast checks this).
   EXPECT_THAT(remote_token1.token, VariantWith<RemoteFrameToken>(IsTrue()));
   EXPECT_THAT(remote_token2.token, VariantWith<RemoteFrameToken>(IsTrue()));
+
+  auto* registrar =
+      autofill::ChildFrameRegistrar::GetOrCreateForWebState(web_state());
+  ASSERT_TRUE(registrar);
+
+  // Get the frame tokens from the registrar. Wrap this in a block because the
+  // registrar receives these from each frame in a separate JS message.
+  __block std::optional<LocalFrameToken> local_token1, local_token2;
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+        local_token1 = registrar->LookupChildFrame(
+            absl::get<RemoteFrameToken>(remote_token1.token));
+        local_token2 = registrar->LookupChildFrame(
+            absl::get<RemoteFrameToken>(remote_token2.token));
+        return local_token1.has_value() && local_token2.has_value();
+      }));
+
+  web::WebFramesManager* frames_manager =
+      FormUtilJavaScriptFeature::GetInstance()->GetWebFramesManager(
+          web_state());
+  ASSERT_TRUE(frames_manager);
+
+  web::WebFrame* frame1 =
+      frames_manager->GetFrameWithId(local_token1->ToString());
+  EXPECT_TRUE(frame1);
+
+  web::WebFrame* frame2 =
+      frames_manager->GetFrameWithId(local_token2->ToString());
+  EXPECT_TRUE(frame2);
+
+  // TODO(crbug.com/1440471): Check contents of frames to make sure they're the
+  // right ones.
+
+  // Also check that data relating to the frame was properly set on the form-
+  // and field-level data when extracted.
+  ASSERT_TRUE(form.host_frame);
+  web::WebFrame* main_frame_from_form_data =
+      frames_manager->GetFrameWithId(form.host_frame.ToString());
+  ASSERT_TRUE(main_frame_from_form_data);
+  EXPECT_TRUE(main_frame_from_form_data->IsMainFrame());
+
+  FormSignature form_signature = CalculateFormSignature(form);
+
+  EXPECT_EQ(form.fields.size(), 2u);
+  for (const FormFieldData& field : form.fields) {
+    EXPECT_EQ(field.host_frame, form.host_frame);
+    EXPECT_EQ(field.host_form_id, form.renderer_id);
+    EXPECT_EQ(field.origin, url::Origin::Create(form.url));
+    EXPECT_EQ(field.host_form_signature, form_signature);
+  }
+}
+
+// Largely repeats `WithChildFrames` above, but exercises the Resolve method on
+// AutofillDriverIOS.
+TEST_F(AutofillAcrossIframesTest, Resolve) {
+  AddIframe("cf1", "child frame 1");
+  AddInput("text", "name");
+  StartTestServerAndLoad();
+
+  // Wait for a form with a child frame, and grab its remote token.
+  ASSERT_TRUE(main_frame_manager().WaitForFormsSeen(1));
+  ASSERT_EQ(main_frame_manager().seen_forms().size(), 1u);
+  const FormData& form = main_frame_manager().seen_forms()[0];
+  ASSERT_EQ(form.child_frames.size(), 1u);
+  FrameTokenWithPredecessor remote_token = form.child_frames[0];
+  EXPECT_THAT(remote_token.token, VariantWith<RemoteFrameToken>(IsTrue()));
+
+  // Wait for the child frame to register itself.
+  auto* registrar =
+      autofill::ChildFrameRegistrar::GetOrCreateForWebState(web_state());
+  ASSERT_TRUE(registrar);
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+        return registrar
+            ->LookupChildFrame(absl::get<RemoteFrameToken>(remote_token.token))
+            .has_value();
+      }));
+
+  // Verify that resolving the registered remote token returns a valid local
+  // token that corresponds to a known frame.
+  std::optional<LocalFrameToken> local_token =
+      main_frame_driver()->Resolve(remote_token.token);
+  ASSERT_TRUE(local_token.has_value());
+  web::WebFramesManager* frames_manager =
+      FormUtilJavaScriptFeature::GetInstance()->GetWebFramesManager(
+          web_state());
+  ASSERT_TRUE(frames_manager);
+  EXPECT_TRUE(frames_manager->GetFrameWithId(local_token->ToString()));
+
+  // Verify that resolving a local token is an identity operation.
+  EXPECT_EQ(local_token, main_frame_driver()->Resolve(*local_token));
+
+  // Verify that resolving a made-up remote token returns nullopt.
+  RemoteFrameToken junk_remote_token =
+      RemoteFrameToken(base::UnguessableToken::Create());
+  std::optional<LocalFrameToken> shouldnt_exist =
+      main_frame_driver()->Resolve(junk_remote_token);
+  EXPECT_FALSE(shouldnt_exist.has_value());
+}
+
+TEST_F(AutofillAcrossIframesTest, SetAndGetParent) {
+  AddIframe("cf1", "child frame 1");
+  AddInput("text", "name");
+  StartTestServerAndLoad();
+
+  // Wait for a form with a child frame, and grab its remote token.
+  ASSERT_TRUE(main_frame_manager().WaitForFormsSeen(1));
+  ASSERT_EQ(main_frame_manager().seen_forms().size(), 1u);
+  const FormData& form = main_frame_manager().seen_forms()[0];
+  ASSERT_EQ(form.child_frames.size(), 1u);
+  FrameTokenWithPredecessor remote_token = form.child_frames[0];
+  EXPECT_THAT(remote_token.token, VariantWith<RemoteFrameToken>(IsTrue()));
+
+  // Wait for the child frame to register itself.
+  auto* registrar =
+      autofill::ChildFrameRegistrar::GetOrCreateForWebState(web_state());
+  ASSERT_TRUE(registrar);
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+        return registrar
+            ->LookupChildFrame(absl::get<RemoteFrameToken>(remote_token.token))
+            .has_value();
+      }));
+
+  // The main frame shouldn't have a parent – it's the root.
+  EXPECT_FALSE(main_frame_driver()->GetParent());
+
+  // The child frame should have the main frame as its parent.
+  std::optional<LocalFrameToken> local_token =
+      main_frame_driver()->Resolve(remote_token.token);
+  ASSERT_TRUE(local_token);
+  auto* child_frame_driver = AutofillDriverIOS::FromWebStateAndLocalFrameToken(
+      web_state(), *local_token);
+  ASSERT_TRUE(child_frame_driver);
+  EXPECT_EQ(main_frame_driver(), child_frame_driver->GetParent());
+}
+
+TEST_F(AutofillAcrossIframesTest, TriggerExtractionInFrame) {
+  AddInput("text", "name");
+  AddIframe("cf1", "<form><input id='address'></input></form>");
+  StartTestServerAndLoad();
+
+  web::WebFramesManager* frames_manager =
+      FormUtilJavaScriptFeature::GetInstance()->GetWebFramesManager(
+          web_state());
+  ASSERT_TRUE(frames_manager);
+
+  // Wait for the main frame and the child frame to be known to the
+  // WebFramesManager.
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+        return frames_manager->GetAllWebFrames().size() == 2;
+      }));
+
+  for (web::WebFrame* frame : frames_manager->GetAllWebFrames()) {
+    auto* driver =
+        AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), frame);
+    auto& manager =
+        static_cast<TestAutofillManager&>(driver->GetAutofillManager());
+
+    // Extraction will have triggered on page load. Wait for this to complete.
+    EXPECT_TRUE(manager.WaitForFormsSeen(1));
+    manager.ResetTestState();
+
+    // Manually retrigger extraction, and wait for a fresh FormsSeen event.
+    driver->TriggerFormExtractionInDriverFrame();
+    EXPECT_TRUE(manager.WaitForFormsSeen(1));
+  }
 }
 
 // Ensure that disabling the feature actually disables the feature.
@@ -219,6 +405,9 @@ TEST_F(AutofillAcrossIframesTest, FeatureDisabled) {
 
   const FormData& form = main_frame_manager().seen_forms()[0];
   EXPECT_EQ(form.child_frames.size(), 0u);
+
+  EXPECT_FALSE(
+      autofill::ChildFrameRegistrar::GetOrCreateForWebState(web_state()));
 }
 
 }  // namespace autofill

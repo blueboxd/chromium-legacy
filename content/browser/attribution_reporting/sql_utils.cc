@@ -7,10 +7,15 @@
 #include <stdint.h>
 
 #include <iterator>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/features.h"
@@ -29,7 +34,6 @@
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "sql/statement.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -37,6 +41,9 @@ namespace content {
 
 namespace {
 
+using ::attribution_reporting::EventReportWindows;
+using ::attribution_reporting::TriggerSpec;
+using ::attribution_reporting::TriggerSpecs;
 using ::attribution_reporting::mojom::SourceRegistrationTimeConfig;
 using ::attribution_reporting::mojom::SourceType;
 using ::attribution_reporting::mojom::TriggerDataMatching;
@@ -115,7 +122,7 @@ void SerializeCommonAggregatableData(
     data.verification_token = msg.verification_token();
   }
 
-  absl::optional<std::string> trigger_context_id;
+  std::optional<std::string> trigger_context_id;
   if (msg.has_trigger_context_id()) {
     trigger_context_id = msg.trigger_context_id();
   }
@@ -138,32 +145,35 @@ url::Origin DeserializeOrigin(const std::string& origin) {
   return url::Origin::Create(GURL(origin));
 }
 
-absl::optional<SourceType> DeserializeSourceType(int val) {
+std::optional<SourceType> DeserializeSourceType(int val) {
   switch (val) {
     case static_cast<int>(SourceType::kNavigation):
       return SourceType::kNavigation;
     case static_cast<int>(SourceType::kEvent):
       return SourceType::kEvent;
     default:
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 
 void SetReadOnlySourceData(
-    const attribution_reporting::EventReportWindows& event_report_windows,
+    const EventReportWindows* event_report_windows,
     attribution_reporting::MaxEventLevelReports max_event_level_reports,
     proto::AttributionReadOnlySourceData& msg) {
   msg.set_max_event_level_reports(max_event_level_reports);
-  msg.set_event_level_report_window_start_time(
-      event_report_windows.start_time().InMicroseconds());
 
-  for (base::TimeDelta time : event_report_windows.end_times()) {
-    msg.add_event_level_report_window_end_times(time.InMicroseconds());
+  if (event_report_windows) {
+    msg.set_event_level_report_window_start_time(
+        event_report_windows->start_time().InMicroseconds());
+
+    for (base::TimeDelta time : event_report_windows->end_times()) {
+      msg.add_event_level_report_window_end_times(time.InMicroseconds());
+    }
   }
 }
 
 std::string SerializeReadOnlySourceData(
-    const attribution_reporting::EventReportWindows& event_report_windows,
+    const attribution_reporting::TriggerSpecs& trigger_specs,
     attribution_reporting::MaxEventLevelReports max_event_level_reports,
     double randomized_response_rate,
     TriggerDataMatching trigger_data_matching,
@@ -173,7 +183,27 @@ std::string SerializeReadOnlySourceData(
 
   proto::AttributionReadOnlySourceData msg;
 
-  SetReadOnlySourceData(event_report_windows, max_event_level_reports, msg);
+  if (
+      // Calling `mutable_trigger_data()` forces creation of the field, even
+      // when `trigger_specs.empty()` below, so that the presence check in
+      // `DeserializeTriggerSpecs()` doesn't mistakenly use the defaults
+      // corresponding to the field being absent, as opposed to its inner list
+      // being empty.
+      auto* mutable_trigger_data = msg.mutable_trigger_data();
+      const TriggerSpec* trigger_spec = trigger_specs.SingleSharedSpec()) {
+    SetReadOnlySourceData(&trigger_spec->event_report_windows(),
+                          max_event_level_reports, msg);
+
+    for (auto [trigger_data, _] : trigger_specs.trigger_data_indices()) {
+      mutable_trigger_data->add_trigger_data(trigger_data);
+    }
+  } else {
+    // TODO(crbug.com/1499890): Support multiple specs.
+    DCHECK(trigger_specs.empty());
+
+    SetReadOnlySourceData(/*event_report_windows=*/nullptr,
+                          max_event_level_reports, msg);
+  }
 
   msg.set_randomized_response_rate(randomized_response_rate);
 
@@ -193,16 +223,12 @@ std::string SerializeReadOnlySourceData(
   return msg.SerializeAsString();
 }
 
-absl::optional<proto::AttributionReadOnlySourceData>
+std::optional<proto::AttributionReadOnlySourceData>
 DeserializeReadOnlySourceDataAsProto(sql::Statement& stmt, int col) {
-  std::string str;
-  if (!stmt.ColumnBlobAsString(col, &str)) {
-    return absl::nullopt;
-  }
-
   proto::AttributionReadOnlySourceData msg;
-  if (!msg.ParseFromString(str)) {
-    return absl::nullopt;
+  if (base::span<const uint8_t> blob = stmt.ColumnBlob(col);
+      !msg.ParseFromArray(blob.data(), blob.size())) {
+    return std::nullopt;
   }
   return msg;
 }
@@ -220,17 +246,13 @@ std::string SerializeFilterData(
   return msg.SerializeAsString();
 }
 
-absl::optional<attribution_reporting::FilterData> DeserializeFilterData(
+std::optional<attribution_reporting::FilterData> DeserializeFilterData(
     sql::Statement& stmt,
     int col) {
-  std::string string;
-  if (!stmt.ColumnBlobAsString(col, &string)) {
-    return absl::nullopt;
-  }
-
   proto::AttributionFilterData msg;
-  if (!msg.ParseFromString(string)) {
-    return absl::nullopt;
+  if (base::span<const uint8_t> blob = stmt.ColumnBlob(col);
+      !msg.ParseFromArray(blob.data(), blob.size())) {
+    return std::nullopt;
   }
 
   attribution_reporting::FilterValues::container_type filter_values;
@@ -271,16 +293,12 @@ std::string SerializeAggregationKeys(
   return msg.SerializeAsString();
 }
 
-absl::optional<attribution_reporting::AggregationKeys>
+std::optional<attribution_reporting::AggregationKeys>
 DeserializeAggregationKeys(sql::Statement& stmt, int col) {
-  std::string str;
-  if (!stmt.ColumnBlobAsString(col, &str)) {
-    return absl::nullopt;
-  }
-
   proto::AttributionAggregatableSource msg;
-  if (!msg.ParseFromString(str)) {
-    return absl::nullopt;
+  if (base::span<const uint8_t> blob = stmt.ColumnBlob(col);
+      !msg.ParseFromArray(blob.data(), blob.size())) {
+    return std::nullopt;
   }
 
   attribution_reporting::AggregationKeys::Keys::container_type keys;
@@ -288,7 +306,7 @@ DeserializeAggregationKeys(sql::Statement& stmt, int col) {
 
   for (const auto& [id, key] : msg.keys()) {
     if (!IsValid(key)) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     keys.emplace_back(id, absl::MakeUint128(key.high_bits(), key.low_bits()));
@@ -305,12 +323,12 @@ std::string SerializeReportMetadata(
   return msg.SerializeAsString();
 }
 
-bool DeserializeReportMetadata(const std::string& str,
+bool DeserializeReportMetadata(base::span<const uint8_t> blob,
                                uint32_t& trigger_data,
                                int64_t& priority) {
   proto::AttributionEventLevelMetadata msg;
-  if (!msg.ParseFromString(str) || !msg.has_trigger_data() ||
-      !msg.has_priority()) {
+  if (!msg.ParseFromArray(blob.data(), blob.size()) ||
+      !msg.has_trigger_data() || !msg.has_priority()) {
     return false;
   }
 
@@ -340,11 +358,11 @@ std::string SerializeReportMetadata(
 }
 
 bool DeserializeReportMetadata(
-    const std::string& str,
+    base::span<const uint8_t> blob,
     AttributionReport::AggregatableAttributionData& data) {
   proto::AttributionAggregatableMetadata msg;
-  if (!msg.ParseFromString(str) || msg.contributions().empty() ||
-      !msg.has_common_data() ||
+  if (!msg.ParseFromArray(blob.data(), blob.size()) ||
+      msg.contributions().empty() || !msg.has_common_data() ||
       !DeserializeCommonAggregatableData(msg.common_data(), data.common_data)) {
     return false;
   }
@@ -378,11 +396,11 @@ std::string SerializeReportMetadata(
   return msg.SerializeAsString();
 }
 
-bool DeserializeReportMetadata(const std::string& str,
+bool DeserializeReportMetadata(base::span<const uint8_t> blob,
                                AttributionReport::NullAggregatableData& data) {
   proto::AttributionNullAggregatableMetadata msg;
-  if (!msg.ParseFromString(str) || !msg.has_fake_source_time() ||
-      !msg.has_common_data() ||
+  if (!msg.ParseFromArray(blob.data(), blob.size()) ||
+      !msg.has_fake_source_time() || !msg.has_common_data() ||
       !DeserializeCommonAggregatableData(msg.common_data(), data.common_data)) {
     return false;
   }
@@ -393,8 +411,13 @@ bool DeserializeReportMetadata(const std::string& str,
   return true;
 }
 
-absl::optional<attribution_reporting::EventReportWindows>
-DeserializeEventReportWindows(const proto::AttributionReadOnlySourceData& msg) {
+std::optional<TriggerSpecs> DeserializeTriggerSpecs(
+    const proto::AttributionReadOnlySourceData& msg,
+    SourceType source_type) {
+  if (msg.has_trigger_data() && msg.trigger_data().trigger_data().empty()) {
+    return TriggerSpecs();
+  }
+
   std::vector<base::TimeDelta> end_times;
   end_times.reserve(msg.event_level_report_window_end_times_size());
 
@@ -402,9 +425,28 @@ DeserializeEventReportWindows(const proto::AttributionReadOnlySourceData& msg) {
     end_times.push_back(base::Microseconds(time));
   }
 
-  return attribution_reporting::EventReportWindows::Create(
+  auto event_report_windows = EventReportWindows::Create(
       base::Microseconds(msg.event_level_report_window_start_time()),
       std::move(end_times));
+  if (!event_report_windows.has_value()) {
+    return std::nullopt;
+  }
+
+  if (!msg.has_trigger_data()) {
+    return TriggerSpecs(source_type, std::move(*event_report_windows));
+  }
+
+  std::vector<TriggerSpec> specs;
+  specs.emplace_back(std::move(*event_report_windows));
+
+  return TriggerSpecs::Create(
+      base::MakeFlatMap<uint32_t, uint8_t>(msg.trigger_data().trigger_data(),
+                                           /*comp=*/{},
+                                           [](uint32_t trigger_data) {
+                                             return std::make_pair(trigger_data,
+                                                                   uint8_t{0});
+                                           }),
+      std::move(specs));
 }
 
 }  // namespace content

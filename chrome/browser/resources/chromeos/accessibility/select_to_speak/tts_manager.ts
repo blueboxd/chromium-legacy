@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {TestImportManager} from '/common/testing/test_import_manager.js';
+
 /**
  * The wrapper for Select-to-speak's text-to-speech features.
  */
@@ -19,7 +21,7 @@ export class TtsManager {
     /**
      * The TTS options that the client passed in.
      */
-    this.clientTtsOptions_ = ({});
+    this.clientTtsOptions_ = {};
 
     /**
      * The current char index to the |this.text_| indicating the current spoken
@@ -94,7 +96,7 @@ export class TtsManager {
         ttsOptions: chrome.tts.TtsOptions): void {
     // @ts-ignore: TODO(b/270623046): this.text_ can be null.
     const text = this.text_.slice(offset);
-    const modifiedOptions = (Object.assign({}, ttsOptions));
+    const modifiedOptions = Object.assign({}, ttsOptions);
     // Saves a copy of the ttsOptions for resume.
     Object.assign(this.clientTtsOptions_, ttsOptions);
     modifiedOptions.onEvent = event => {
@@ -104,8 +106,7 @@ export class TtsManager {
             // Retry with local voice. Use modifiedOptions to preserve
             // word and character indices.
             console.warn('Network TTS error, retrying with local voice');
-            const localOptions = /** @type {!chrome.tts.TtsOptions} */ (
-                Object.assign({}, modifiedOptions));
+            const localOptions = Object.assign({}, modifiedOptions);
             localOptions.voiceName = this.fallbackVoice_;
             if (this.text_) {
               this.speak(
@@ -225,7 +226,7 @@ export class TtsManager {
 
   private cleanTtsState_() : void {
     this.text_ = null;
-    this.clientTtsOptions_ = /** @type {!chrome.tts.TtsOptions} */ ({});
+    this.clientTtsOptions_ = {};
     this.currentCharIndex_ = 0;
     this.pauseCompleteCallback_ = null;
     this.isSpeaking_ = false;
@@ -255,3 +256,5 @@ export namespace TtsManager {
     RESUME_WITH_EMPTY_CONTENT = 'Cannot resume with empty content.',
   }
 }
+
+TestImportManager.exportForTesting(TtsManager);

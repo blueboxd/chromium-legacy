@@ -23,9 +23,15 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 
+class GURL;
+
 namespace base {
 class FilePath;
 }  // namespace base
+
+namespace storage {
+class FileSystemURL;
+}  // namespace storage
 
 namespace ash {
 
@@ -59,8 +65,9 @@ class HoldingSpaceFileSystemDelegate
       const std::vector<const HoldingSpaceItem*>& items) override;
   void OnHoldingSpaceItemsRemoved(
       const std::vector<const HoldingSpaceItem*>& items) override;
-  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item,
-                                 uint32_t updated_fields) override;
+  void OnHoldingSpaceItemUpdated(
+      const HoldingSpaceItem* item,
+      const HoldingSpaceItemUpdatedFields& updated_fields) override;
   void OnHoldingSpaceItemInitialized(const HoldingSpaceItem* item) override;
 
   // file_manager::VolumeManagerObserver:
@@ -70,6 +77,9 @@ class HoldingSpaceFileSystemDelegate
                          const file_manager::Volume& volume) override;
 
   // FileChangeServiceObserver:
+  void OnFileCreatedFromShowSaveFilePicker(
+      const GURL& file_picker_binding_context,
+      const storage::FileSystemURL& url) override;
   void OnFileModified(const storage::FileSystemURL& url) override;
   void OnFileMoved(const storage::FileSystemURL& src,
                    const storage::FileSystemURL& dst) override;

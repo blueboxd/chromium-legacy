@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
 
+#include <string_view>
+
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/ui/webui/ash/login/consumer_update_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_info_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/guest_tos_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/network_screen_handler.h"
@@ -184,6 +187,10 @@ void TapUserCreationNext() {
   OobeJS().TapOnPath({"user-creation", "nextButton"});
 }
 
+void WaitForGaiaInfoScreen() {
+  WaitFor(GaiaInfoScreenView::kScreenId);
+}
+
 void WaitForOobeJSReady() {
   if (!LoginDisplayHost::default_host()->GetOobeUI()) {
     base::RunLoop run_loop;
@@ -302,7 +309,7 @@ void OobeUiDestroyedWaiter::OnDestroyingOobeUI() {
 
 // Start observing, tap/click and wait.
 void TapOnPathAndWaitForOobeToBeDestroyed(
-    std::initializer_list<base::StringPiece> element_ids) {
+    std::initializer_list<std::string_view> element_ids) {
   // Get the OOBE WebUI Controller (OobeUI) and start observing.
   content::WebContents* web_contents =
       LoginDisplayHost::default_host()->GetOobeWebContents();

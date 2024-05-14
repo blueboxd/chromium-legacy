@@ -5,6 +5,8 @@
 #ifndef MEDIA_GPU_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
 #define MEDIA_GPU_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
 
+#include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
@@ -17,6 +19,7 @@
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
+#include "media/base/decoder_status.h"
 #include "media/base/overlay_info.h"
 #include "media/base/scoped_async_trace.h"
 #include "media/base/video_decoder.h"
@@ -28,7 +31,6 @@
 #include "media/gpu/android/surface_chooser_helper.h"
 #include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/media_gpu_export.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -210,7 +212,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final
   // must be either kSurfaceDestroyed or kError.  |reason| will be logged to
   // |media_log_| as an info event ("error" indicates that playback will stop,
   // but we don't know that the renderer will do that).
-  void EnterTerminalState(State state, const char* reason);
+  void EnterTerminalState(State state, DecoderStatus reason);
   bool InTerminalState();
 
   // Releases |codec_| if it's not null.
@@ -240,13 +242,14 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final
   bool lazy_init_pending_ = true;
   base::circular_deque<PendingDecode> pending_decodes_;
 
-  // Whether we've seen MediaCodec return MEDIA_CODEC_NO_KEY indicating that
-  // the corresponding key was not set yet, and MediaCodec will not accept
-  // buffers until OnCdmContextEvent() is called with kHasAdditionalUsableKey.
+  // Whether we've seen MediaCodec return MediaCodecResult::Codes::kNoKey
+  // indicating that the corresponding key was not set yet, and MediaCodec will
+  // not accept buffers until OnCdmContextEvent() is called with
+  // kHasAdditionalUsableKey.
   bool waiting_for_key_ = false;
 
   // The reason for the current drain operation if any.
-  absl::optional<DrainType> drain_type_;
+  std::optional<DrainType> drain_type_;
 
   // The current reset cb if a Reset() is in progress.
   base::OnceClosure reset_cb_;

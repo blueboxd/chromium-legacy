@@ -12,6 +12,7 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/single_thread_task_runner.h"
+#import "components/browser_sync/sync_to_signin_migration.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
@@ -26,7 +27,7 @@
 #import "google_apis/gaia/gaia_auth_util.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
 #import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
@@ -105,7 +106,7 @@ void AuthenticationService::Initialize(
   signin::Tribool device_restore_session = IsFirstSessionAfterDeviceRestore();
   initialized_ = true;
 
-  identity_manager_observation_.Observe(identity_manager_);
+  identity_manager_observation_.Observe(identity_manager_.get());
   HandleForgottenIdentity(nil, /*should_prompt=*/true,
                           device_restore_session == signin::Tribool::kTrue);
 
@@ -116,7 +117,7 @@ void AuthenticationService::Initialize(
   crash_keys::SetCurrentlySignedIn(
       HasPrimaryIdentity(signin::ConsentLevel::kSignin));
 
-  account_manager_service_observation_.Observe(account_manager_service_);
+  account_manager_service_observation_.Observe(account_manager_service_.get());
 
   // Register for prefs::kSigninAllowed.
   pref_change_registrar_.Init(pref_service_);
@@ -135,10 +136,9 @@ void AuthenticationService::Initialize(
                                    browser_signin_policy_callback);
 
   // Reload credentials to ensure the accounts from the token service are
-  // up-to-date.
-  // As UpdateHaveAccountsChangedAtColdStart is only called while the
-  // application is cold starting, `keychain_reload` must be set to true.
-  ReloadCredentialsFromIdentities(/*keychain_reload=*/true);
+  // up-to-date. As this is called while the application is started,
+  // `should_prompt` must be set to true.
+  ReloadCredentialsFromIdentities(/*should_prompt=*/true);
 
   OnApplicationWillEnterForeground();
   bool has_primary_account_after_initialize =
@@ -335,6 +335,7 @@ void AuthenticationService::SignIn(id<SystemIdentity> identity,
       identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
   CHECK(!primary_account.empty());
   CHECK_EQ(account_id, primary_account);
+  pref_service_->SetTime(prefs::kLastSigninTimestamp, base::Time::Now());
   crash_keys::SetCurrentlySignedIn(true);
 }
 
@@ -343,7 +344,7 @@ void AuthenticationService::GrantSyncConsent(
     signin_metrics::AccessPoint access_point) {
   if (base::FeatureList::IsEnabled(
           syncer::kReplaceSyncPromosWithSignInPromos)) {
-    // TODO(crbug.com/1462858): Turn sync on was deprecated. Remove
+    // TODO(crbug.com/40067025): Turn sync on was deprecated. Remove
     // `GrantSyncConsent()` as it is obsolete.
     DUMP_WILL_BE_CHECK(access_point !=
                        signin_metrics::AccessPoint::
@@ -408,7 +409,10 @@ void AuthenticationService::SignOut(
 
   const bool is_managed =
       HasPrimaryIdentityManaged(signin::ConsentLevel::kSignin);
-  // Get first setup complete value before to stop the sync service.
+  const bool is_migrated_from_syncing =
+      browser_sync::WasPrimaryAccountMigratedFromSyncingToSignedIn(
+          identity_manager_, pref_service_);
+  // Get first setup complete value before stopping the sync service.
   const bool is_initial_sync_feature_setup_complete =
       sync_service_->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
 
@@ -422,9 +426,11 @@ void AuthenticationService::SignOut(
   cached_mdm_errors_.clear();
 
   // Browsing data for managed account needs to be cleared only if sync has
-  // started at least once.
+  // started at least once. This also includes the case where a
+  // previously-syncing user was migrated to signed-in.
   if (force_clear_browsing_data ||
-      (is_managed && is_initial_sync_feature_setup_complete)) {
+      (is_managed && is_initial_sync_feature_setup_complete) ||
+      (is_managed && is_migrated_from_syncing)) {
     delegate_->ClearBrowsingData(completion);
   } else if (completion) {
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -480,7 +486,7 @@ void AuthenticationService::OnPrimaryAccountChanged(
   }
 }
 
-void AuthenticationService::OnIdentityListChanged(bool need_user_approval) {
+void AuthenticationService::OnIdentityListChanged(bool notify_user) {
   ClearAccountSettingsPrefsOfRemovedAccounts();
 
   if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
@@ -500,7 +506,7 @@ void AuthenticationService::OnIdentityListChanged(bool need_user_approval) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&AuthenticationService::ReloadCredentialsFromIdentities,
-                     GetWeakPtr(), need_user_approval));
+                     GetWeakPtr(), /*should_prompt=*/notify_user));
 }
 
 bool AuthenticationService::HandleMDMError(id<SystemIdentity> identity,
@@ -662,13 +668,13 @@ void AuthenticationService::HandleForgottenIdentity(
 }
 
 void AuthenticationService::ReloadCredentialsFromIdentities(
-    bool keychain_reload) {
+    bool should_prompt) {
   if (is_reloading_credentials_)
     return;
 
   base::AutoReset<bool> auto_reset(&is_reloading_credentials_, true);
 
-  HandleForgottenIdentity(nil, keychain_reload, /*device_restore=*/false);
+  HandleForgottenIdentity(nil, should_prompt, /*device_restore=*/false);
   if (!HasPrimaryIdentity(signin::ConsentLevel::kSignin))
     return;
 

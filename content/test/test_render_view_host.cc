@@ -5,6 +5,7 @@
 #include "content/test/test_render_view_host.h"
 
 #include <memory>
+#include <optional>
 #include <tuple>
 
 #include "base/strings/utf_string_conversions.h"
@@ -34,7 +35,6 @@
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/drag/drag.mojom.h"
@@ -190,6 +190,10 @@ void TestRenderWidgetHostView::ShowSharePicker(
     const std::string& url,
     const std::vector<std::string>& file_paths,
     blink::mojom::ShareService::ShareCallback callback) {}
+
+uint64_t TestRenderWidgetHostView::GetNSViewId() const {
+  return 0;
+}
 #endif
 
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
@@ -206,17 +210,16 @@ void TestRenderWidgetHostView::TakeFallbackContentFrom(
   CopyBackgroundColorIfPresentFrom(*view);
 }
 
-blink::mojom::PointerLockResult TestRenderWidgetHostView::LockMouse(bool) {
+blink::mojom::PointerLockResult TestRenderWidgetHostView::LockPointer(bool) {
   return blink::mojom::PointerLockResult::kUnknownError;
 }
 
-blink::mojom::PointerLockResult TestRenderWidgetHostView::ChangeMouseLock(
+blink::mojom::PointerLockResult TestRenderWidgetHostView::ChangePointerLock(
     bool) {
   return blink::mojom::PointerLockResult::kUnknownError;
 }
 
-void TestRenderWidgetHostView::UnlockMouse() {
-}
+void TestRenderWidgetHostView::UnlockPointer() {}
 
 const viz::FrameSinkId& TestRenderWidgetHostView::GetFrameSinkId() const {
   return frame_sink_id_;
@@ -260,7 +263,7 @@ void TestRenderWidgetHostView::SetDisplayFeatureForTesting(
   if (display_feature)
     display_feature_ = *display_feature;
   else
-    display_feature_ = absl::nullopt;
+    display_feature_ = std::nullopt;
 }
 
 void TestRenderWidgetHostView::NotifyHostAndDelegateOnWasShown(
@@ -315,7 +318,7 @@ void TestRenderWidgetHostView::
   EXPECT_EQ(page_visibility_, PageVisibilityState::kHiddenButPainting);
 }
 
-absl::optional<DisplayFeature> TestRenderWidgetHostView::GetDisplayFeature() {
+std::optional<DisplayFeature> TestRenderWidgetHostView::GetDisplayFeature() {
   return display_feature_;
 }
 
@@ -393,11 +396,11 @@ TestRenderViewHost::~TestRenderViewHost() {
 }
 
 bool TestRenderViewHost::CreateTestRenderView() {
-  return CreateRenderView(absl::nullopt, MSG_ROUTING_NONE, false);
+  return CreateRenderView(std::nullopt, MSG_ROUTING_NONE, false);
 }
 
 bool TestRenderViewHost::CreateRenderView(
-    const absl::optional<blink::FrameToken>& opener_frame_token,
+    const std::optional<blink::FrameToken>& opener_frame_token,
     int proxy_route_id,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());

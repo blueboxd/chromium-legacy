@@ -92,8 +92,10 @@
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller_impl.h"
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
+#include "chrome/common/chrome_switches.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 using autofill::CalculateFormSignature;
@@ -142,7 +144,7 @@ FormData MakePasswordFormData() {
   field.id_attribute = field.name;
   field.name_attribute = field.name;
   field.form_control_type = autofill::FormControlType::kInputPassword;
-  field.unique_renderer_id = FieldRendererId(123);
+  field.renderer_id = FieldRendererId(123);
   form_data.fields.push_back(field);
 
   return form_data;
@@ -168,7 +170,7 @@ FormData CreateFormForRenderHost(content::RenderFrameHost& rfh,
   form.url = rfh.GetLastCommittedURL();
   form.action = form.url;
   form.host_frame = autofill::LocalFrameToken(rfh.GetFrameToken().value());
-  form.unique_renderer_id = autofill::test::MakeFormRendererId();
+  form.renderer_id = autofill::test::MakeFormRendererId();
   form.fields = std::move(fields);
   for (FormFieldData& field : form.fields) {
     field.host_frame = form.host_frame;
@@ -454,45 +456,6 @@ TEST_F(ChromePasswordManagerClientTest, LogEntryNotifyRenderer) {
   log_router->UnregisterReceiver(&log_receiver);
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
   EXPECT_FALSE(logging_active);
-}
-
-TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
-  sync_service()->GetUserSettings()->SetSelectedTypes(
-      /*sync_everything=*/false,
-      /*types=*/{syncer::UserSelectableType::kPasswords});
-  sync_service()->SetIsUsingExplicitPassphrase(false);
-
-  ChromePasswordManagerClient* client = GetClient();
-
-  // Passwords are syncing and custom passphrase isn't used.
-  EXPECT_EQ(password_manager::SyncState::kSyncingNormalEncryption,
-            client->GetPasswordSyncState());
-
-  // Sync paused due to a persistent auth error.
-  sync_service()->SetPersistentAuthError();
-  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
-            client->GetPasswordSyncState());
-
-  // Again, using a custom passphrase.
-  sync_service()->ClearAuthError();
-  sync_service()->SetIsUsingExplicitPassphrase(true);
-
-  EXPECT_EQ(password_manager::SyncState::kSyncingWithCustomPassphrase,
-            client->GetPasswordSyncState());
-
-  // Report correctly if we aren't syncing passwords.
-  sync_service()->GetUserSettings()->SetSelectedTypes(
-      /*sync_everything=*/false,
-      /*types=*/{syncer::UserSelectableType::kBookmarks});
-
-  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
-            client->GetPasswordSyncState());
-
-  // Again, without a custom passphrase.
-  sync_service()->SetIsUsingExplicitPassphrase(false);
-
-  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
-            client->GetPasswordSyncState());
 }
 
 TEST_F(ChromePasswordManagerClientTest,
@@ -1218,7 +1181,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
   PasswordGenerationController* pwd_generation_controller =
       PasswordGenerationController::GetOrCreate(web_contents());
   pwd_generation_controller->FocusedInputChanged(
-      FocusedFieldType::kFillablePasswordField, base::AsWeakPtr(driver.get()));
+      FocusedFieldType::kFillablePasswordField, driver->AsWeakPtrImpl());
 
   ChromePasswordManagerClient* client = GetClient();
 
@@ -1291,9 +1254,9 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       *weak_mock_pwd_controller,
       RefreshSuggestionsForField(FocusedFieldType::kFillablePasswordField,
                                  /*is_manual_generation_available=*/false));
-  GetClient()->FocusedInputChanged(
-      driver.get(), observed_form_data.fields[0].unique_renderer_id,
-      FocusedFieldType::kFillablePasswordField);
+  GetClient()->FocusedInputChanged(driver.get(),
+                                   observed_form_data.fields[0].renderer_id,
+                                   FocusedFieldType::kFillablePasswordField);
 }
 
 TEST_F(ChromePasswordManagerClientAndroidTest,
@@ -1309,6 +1272,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       static_cast<MockPasswordStoreInterface*>(
           GetClient()->GetProfilePasswordStore());
   base::WeakPtr<PasswordStoreConsumer> store_consumer;
+  EXPECT_CALL(*mock_store, IsAbleToSavePasswords).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_store, GetLogins(_, _))
       .WillOnce(SaveArg<1>(&store_consumer));
   driver->GetPasswordManager()->OnPasswordFormsParsed(driver.get(),
@@ -1325,9 +1289,9 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       *weak_mock_pwd_controller,
       RefreshSuggestionsForField(FocusedFieldType::kFillablePasswordField,
                                  /*is_manual_generation_available=*/true));
-  GetClient()->FocusedInputChanged(
-      driver.get(), observed_form_data.fields[0].unique_renderer_id,
-      FocusedFieldType::kFillablePasswordField);
+  GetClient()->FocusedInputChanged(driver.get(),
+                                   observed_form_data.fields[0].renderer_id,
+                                   FocusedFieldType::kFillablePasswordField);
 }
 
 TEST_F(ChromePasswordManagerClientAndroidTest,
@@ -1462,4 +1426,79 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
   EXPECT_CALL(settings_service(), RequestSettingsFromBackend);
   GetClient()->RefreshPasswordManagerSettingsIfNeeded();
 }
+
+class ChromePasswordManagerClientWithAccountStoreAndroidTest
+    : public ChromePasswordManagerClientAndroidTest {
+  void SetUp() override {
+    // Using the account store on Android requires enabling the flag for UPM
+    // support of local passwords. Skip the Gms version check, otherwise the
+    // flag won't do anything in bots that have outdated GmsCore.
+    feature_list_.InitWithFeatures(
+        {password_manager::features::
+             kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
+         password_manager::features::kSharedPasswordNotificationUI},
+        {});
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kSkipLocalUpmGmsCoreVersionCheckForTesting);
+
+    ChromePasswordManagerClientAndroidTest::SetUp();
+
+    AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
+        GetBrowserContext(),
+        base::BindRepeating(
+            &password_manager::BuildPasswordStoreInterface<
+                content::BrowserContext, MockPasswordStoreInterface>));
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ChromePasswordManagerClientWithAccountStoreAndroidTest,
+       MarkSharedCredentialsAsNotified) {
+  GURL kURL = GURL("https://example.com");
+  auto origin = url::Origin::Create(kURL);
+  auto not_shared = MakePasswordForm();
+  not_shared->username_value = u"not_shared";
+
+  auto shared_and_notified = MakePasswordForm();
+  shared_and_notified->username_value = u"shared_and_notified";
+  shared_and_notified->type = PasswordForm::Type::kReceivedViaSharing;
+  shared_and_notified->sharing_notification_displayed = true;
+
+  auto shared_not_notified_profile = MakePasswordForm();
+  shared_not_notified_profile->username_value = u"shared_not_notified_profile";
+  shared_not_notified_profile->type = PasswordForm::Type::kReceivedViaSharing;
+  shared_not_notified_profile->sharing_notification_displayed = false;
+  shared_not_notified_profile->in_store = PasswordForm::Store::kProfileStore;
+
+  auto shared_not_notified_account = MakePasswordForm();
+  shared_not_notified_account->username_value = u"shared_not_notified_account";
+  shared_not_notified_account->type = PasswordForm::Type::kReceivedViaSharing;
+  shared_not_notified_account->sharing_notification_displayed = false;
+  shared_not_notified_account->in_store = PasswordForm::Store::kAccountStore;
+
+  GetClient()
+      ->GetCredentialCacheForTesting()
+      ->SaveCredentialsAndBlocklistedForOrigin(
+          {not_shared.get(), shared_and_notified.get(),
+           shared_not_notified_profile.get(),
+           shared_not_notified_account.get()},
+          CredentialCache::IsOriginBlocklisted(false), origin);
+
+  MockPasswordStoreInterface* profile_store =
+      static_cast<MockPasswordStoreInterface*>(
+          GetClient()->GetProfilePasswordStore());
+
+  MockPasswordStoreInterface* account_store =
+      static_cast<MockPasswordStoreInterface*>(
+          GetClient()->GetAccountPasswordStore());
+
+  shared_not_notified_profile->sharing_notification_displayed = true;
+  shared_not_notified_account->sharing_notification_displayed = true;
+  EXPECT_CALL(*profile_store, UpdateLogin(*shared_not_notified_profile, _));
+  EXPECT_CALL(*account_store, UpdateLogin(*shared_not_notified_account, _));
+  GetClient()->MarkSharedCredentialsAsNotified(kURL);
+}
+
 #endif  //  BUILDFLAG(IS_ANDROID)

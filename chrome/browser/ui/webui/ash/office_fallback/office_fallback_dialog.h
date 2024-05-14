@@ -20,10 +20,12 @@ enum class FallbackReason {
   kDriveAuthenticationNotReady,
   kDriveFsInterfaceError,
   kMeteredConnection,
+  kDisableDrivePreferenceSet,
+  kDriveDisabledForAccountType,
 };
 
 using DialogChoiceCallback =
-    base::OnceCallback<void(const std::string& choice)>;
+    base::OnceCallback<void(std::optional<const std::string>)>;
 
 // Defines the web dialog used to allow users to choose what to do when failing
 // to open office files.
@@ -49,9 +51,12 @@ class OfficeFallbackDialog : public SystemWebDialogDelegate {
                        const std::string& title_text,
                        const std::string& reason_message,
                        const std::string& instructions_message,
+                       const int& width,
+                       const int& height,
                        DialogChoiceCallback callback);
   std::string GetDialogArgs() const override;
   void GetDialogSize(gfx::Size* size) const override;
+  bool ShouldCloseDialogOnEscape() const override;
   bool ShouldShowCloseButton() const override;
 
  private:
@@ -59,6 +64,8 @@ class OfficeFallbackDialog : public SystemWebDialogDelegate {
   const std::string title_text_;
   const std::string reason_message_;
   const std::string instructions_message_;
+  const int width_;
+  const int height_;
   DialogChoiceCallback callback_;
 };
 

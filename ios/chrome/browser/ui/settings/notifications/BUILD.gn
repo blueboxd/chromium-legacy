@@ -31,6 +31,9 @@ source_set("notifications") {
     "//ios/chrome/browser/shared/ui/table_view:utils",
     "//ios/chrome/browser/shared/ui/table_view/cells",
     "//ios/chrome/browser/signin/model",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui_util",
+    "//ios/chrome/browser/ui/push_notification:opt_in_alert_coordinator",
+    "//ios/chrome/browser/ui/push_notification:presenters",
     "//ios/chrome/browser/ui/settings/notifications/tracking_price",
     "//ios/chrome/common/ui/colors",
     "//ui/base",
@@ -39,12 +42,12 @@ source_set("notifications") {
 
 source_set("notifications_ui") {
   sources = [
-    "notifications_alert_presenter.h",
     "notifications_consumer.h",
     "notifications_navigation_commands.h",
     "notifications_view_controller.h",
     "notifications_view_controller.mm",
     "notifications_view_controller_delegate.h",
+    "tips_notifications_alert_presenter.h",
   ]
   deps = [
     ":constants",
@@ -68,19 +71,36 @@ source_set("utils") {
   sources = [
     "notifications_settings_observer.h",
     "notifications_settings_observer.mm",
-    "notifications_settings_util.h",
-    "notifications_settings_util.mm",
   ]
   deps = [
     "//components/commerce/core:pref_names",
     "//components/prefs",
     "//components/prefs/ios:ios",
+    "//ios/chrome/browser/push_notification/model:constants",
     "//ios/chrome/browser/push_notification/model:push_notification_client",
     "//ios/chrome/browser/push_notification/model:push_notification_service",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
   ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "notifications_settings_observer_unittest.mm" ]
+  deps = [
+    ":notifications_ui",
+    ":utils",
+    "//base/test:test_support",
+    "//components/commerce/core:pref_names",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser/push_notification/model:constants",
+    "//ios/chrome/browser/push_notification/model:push_notification_client",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//third_party/ocmock",
+  ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("eg2_tests") {
@@ -92,6 +112,8 @@ source_set("eg2_tests") {
     "//base",
     "//base/test:test_support",
     "//components/commerce/core:feature_list",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/push_notification:test_support",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ui/base",

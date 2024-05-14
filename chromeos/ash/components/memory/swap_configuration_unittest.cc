@@ -26,8 +26,7 @@ class SwapConfigurationPressureThreshold : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
-  raw_ptr<FakeResourcedClient, DanglingUntriaged | ExperimentalAsh>
-      resourced_client_ = nullptr;
+  raw_ptr<FakeResourcedClient, DanglingUntriaged> resourced_client_ = nullptr;
 };
 
 }  // namespace
@@ -36,7 +35,7 @@ TEST_F(SwapConfigurationPressureThreshold, NoArcDefault) {
   feature_list_.InitAndEnableFeature(kCrOSMemoryPressureSignalStudyNonArc);
   ConfigureSwap(/*arc_enabled=*/false);
 
-  EXPECT_EQ(resourced_client_->get_critical_margin_bps(), 520u);
+  EXPECT_EQ(resourced_client_->get_critical_margin_bps(), 1500u);
   EXPECT_EQ(resourced_client_->get_moderate_margin_bps(), 4000u);
 }
 

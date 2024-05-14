@@ -112,10 +112,13 @@ StyleImage* StyleImageLoader::Load(
   }
 
   if (auto* crossfade_value = DynamicTo<cssvalue::CSSCrossfadeValue>(value)) {
-    return MakeGarbageCollected<StyleCrossfadeImage>(
-        *crossfade_value,
-        CrossfadeArgument(crossfade_value->From(), cross_origin),
-        CrossfadeArgument(crossfade_value->To(), cross_origin));
+    HeapVector<Member<StyleImage>> style_images;
+    for (const auto& [image, percentage] :
+         crossfade_value->GetImagesAndPercentages()) {
+      style_images.push_back(CrossfadeArgument(*image, cross_origin));
+    }
+    return MakeGarbageCollected<StyleCrossfadeImage>(*crossfade_value,
+                                                     std::move(style_images));
   }
 
   if (auto* image_gradient_value =
@@ -168,8 +171,7 @@ StyleImage* StyleImageLoader::ResolveImageSet(
   }
   CSSValue& image_value = option->GetImage();
   // Artificially reject types that are not "supported".
-  if (RuntimeEnabledFeatures::CSSImageSetEnabled() &&
-      !IsA<CSSImageValue>(image_value) &&
+  if (!IsA<CSSImageValue>(image_value) &&
       !IsA<cssvalue::CSSGradientValue>(image_value)) {
     return nullptr;
   }

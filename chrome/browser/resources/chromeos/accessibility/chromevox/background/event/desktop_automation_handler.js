@@ -5,13 +5,15 @@
 /**
  * @fileoverview Handles automation from a desktop automation node.
  */
-import {AsyncUtil} from '../../../common/async_util.js';
-import {AutomationPredicate} from '../../../common/automation_predicate.js';
-import {AutomationUtil} from '../../../common/automation_util.js';
-import {constants} from '../../../common/constants.js';
-import {WrappingCursor} from '../../../common/cursors/cursor.js';
-import {CursorRange} from '../../../common/cursors/range.js';
-import {LocalStorage} from '../../../common/local_storage.js';
+import {AsyncUtil} from '/common/async_util.js';
+import {AutomationPredicate} from '/common/automation_predicate.js';
+import {AutomationUtil} from '/common/automation_util.js';
+import {constants} from '/common/constants.js';
+import {WrappingCursor} from '/common/cursors/cursor.js';
+import {CursorRange} from '/common/cursors/range.js';
+import {LocalStorage} from '/common/local_storage.js';
+import {TestImportManager} from '/common/testing/test_import_manager.js';
+
 import {Command} from '../../common/command.js';
 import {ChromeVoxEvent, CustomAutomationEvent} from '../../common/custom_automation_event.js';
 import {EventSourceType} from '../../common/event_source_type.js';
@@ -685,10 +687,16 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
         return;
       }
 
-      // Menu items and IME candidates always announce on selection events,
-      // independent of focus.
-      if (AutomationPredicate.menuItem(target) ||
-          target.role === RoleType.IME_CANDIDATE) {
+      // IME candidates are announced, independent of focus.
+      // This shouldn't move ChromeVoxRange to keep editing work.
+      if (target.role === RoleType.IME_CANDIDATE) {
+        const range = CursorRange.fromNode(target);
+        new Output().withRichSpeech(range, null, evt.type).go();
+        return;
+      }
+
+      // Menu items always announce on selection events, independent of focus.
+      if (AutomationPredicate.menuItem(target)) {
         override = true;
       }
 
@@ -713,6 +721,7 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
           target.className === 'PopupFooterView' ||
           target.className === 'PopupWarningView' ||
           target.className === 'PopupBaseView' ||
+          target.className === 'PopupRowView' ||
           target.className === 'PopupRowContentView' ||
           target.className ===
               'PasswordGenerationPopupViewViews::GeneratedPasswordBox') {
@@ -956,3 +965,5 @@ DesktopAutomationHandler.MIN_ALERT_DELAY_MS = 50;
  * @const {number}
  */
 DesktopAutomationHandler.ATTRIBUTE_DELAY_MS = 1500;
+
+TestImportManager.exportForTesting(DesktopAutomationHandler);

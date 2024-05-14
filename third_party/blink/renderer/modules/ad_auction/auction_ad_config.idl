@@ -23,6 +23,13 @@ dictionary ProtectedAudiencePrivateAggregationConfig {
   USVString aggregationCoordinatorOrigin;
 };
 
+dictionary AuctionReportBuyerDebugModeConfig {
+  boolean enabled = false;
+
+  // Must only be provided if `enabled` is true.
+  bigint? debugKey;
+};
+
 dictionary AuctionAdConfig {
   required USVString seller;
 
@@ -37,6 +44,7 @@ dictionary AuctionAdConfig {
   USVString trustedScoringSignalsURL;
   [ImplementedAs=trustedScoringSignalsUrlDeprecated]
   USVString trustedScoringSignalsUrl;
+  long maxTrustedScoringSignalsURLLength;
   sequence<USVString> interestGroupBuyers;
   Promise<any> auctionSignals;
   Promise<any> sellerSignals;
@@ -44,6 +52,8 @@ dictionary AuctionAdConfig {
   Promise<USVString> directFromSellerSignals;
   [RuntimeEnabled=FledgeDirectFromSellerSignalsHeaderAdSlot]
   Promise<DOMString> directFromSellerSignalsHeaderAdSlot;
+
+  Promise<record<USVString, USVString>> deprecatedRenderURLReplacements;
 
   unsigned long long sellerTimeout;
   unsigned short sellerExperimentGroupId;
@@ -59,11 +69,16 @@ dictionary AuctionAdConfig {
   record<USVString, unsigned short> perBuyerExperimentGroupIds;
   record<USVString, record<USVString, double>> perBuyerPrioritySignals;
 
+  [RuntimeEnabled=FledgeMultiBid]
+  record<USVString, unsigned short> perBuyerMultiBidLimits;
+
   // `auctionReportBuyerKeys`, `auctionReportBuyers`, and
   // `requiredSellerCapabilities` are described in:
   // https://github.com/WICG/turtledove/blob/main/FLEDGE_extended_PA_reporting.md
   sequence<bigint> auctionReportBuyerKeys;
   record<DOMString, AuctionReportBuyersConfig> auctionReportBuyers;
+  [RuntimeEnabled=PrivateAggregationAuctionReportBuyerDebugModeConfig]
+  AuctionReportBuyerDebugModeConfig auctionReportBuyerDebugModeConfig;
   sequence<DOMString> requiredSellerCapabilities;
 
   AuctionAdInterestGroupSize requestedSize;

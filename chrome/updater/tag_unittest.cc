@@ -7,13 +7,14 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/strings/string_piece.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "chrome/updater/util/unit_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +22,8 @@ namespace {
 
 using updater::tagging::AppArgs;
 using updater::tagging::ErrorCode;
+using updater::tagging::NeedsAdmin;
+using updater::tagging::RuntimeModeArgs;
 using updater::tagging::TagArgs;
 
 // Builder pattern helper to construct the TagArgs struct.
@@ -72,6 +75,10 @@ class TagArgsBuilder {
     this->inner_.apps.push_back(std::move(app));
     return *this;
   }
+  TagArgsBuilder& WithRuntimeMode(RuntimeModeArgs runtime_mode) {
+    this->inner_.runtime_mode = runtime_mode;
+    return *this;
+  }
 
  private:
   TagArgs inner_;
@@ -88,7 +95,7 @@ class AppArgsBuilder {
     this->inner_.app_name = app_name;
     return *this;
   }
-  AppArgsBuilder& WithNeedsAdmin(AppArgs::NeedsAdmin needs_admin) {
+  AppArgsBuilder& WithNeedsAdmin(NeedsAdmin needs_admin) {
     this->inner_.needs_admin = needs_admin;
     return *this;
   }
@@ -118,22 +125,37 @@ class AppArgsBuilder {
   AppArgs inner_;
 };
 
+// Builder pattern helper to construct the RuntimeModeArgs struct.
+class RuntimeModeArgsBuilder {
+ public:
+  RuntimeModeArgsBuilder() = default;
+
+  RuntimeModeArgs Build() { return std::move(inner_); }
+
+  RuntimeModeArgsBuilder& WithNeedsAdmin(NeedsAdmin needs_admin) {
+    this->inner_.needs_admin = needs_admin;
+    return *this;
+  }
+
+ private:
+  RuntimeModeArgs inner_;
+};
+
 void VerifyTagParseSuccess(
-    base::StringPiece tag,
-    std::optional<base::StringPiece> app_installer_data_args,
+    std::string_view tag,
+    std::optional<std::string_view> app_installer_data_args,
     const TagArgs& expected) {
   TagArgs actual;
-  ASSERT_EQ(ErrorCode::kSuccess, Parse(tag, app_installer_data_args, &actual));
+  ASSERT_EQ(ErrorCode::kSuccess, Parse(tag, app_installer_data_args, actual));
 
   updater::test::ExpectTagArgsEqual(actual, expected);
 }
 
-void VerifyTagParseFail(
-    base::StringPiece tag,
-    std::optional<base::StringPiece> app_installer_data_args,
-    ErrorCode expected) {
+void VerifyTagParseFail(std::string_view tag,
+                        std::optional<std::string_view> app_installer_data_args,
+                        ErrorCode expected) {
   TagArgs args;
-  ASSERT_EQ(expected, Parse(tag, app_installer_data_args, &args));
+  ASSERT_EQ(expected, Parse(tag, app_installer_data_args, args));
 }
 
 }  // namespace
@@ -296,6 +318,11 @@ TEST(TagParserTest, AppIdCaseInsensitive) {
           .Build());
 }
 
+TEST(TagParserTest, NoRuntimeModeOrAppOnlyNeedsAdminValue) {
+  VerifyTagParseFail("needsadmin=true", std::nullopt,
+                     ErrorCode::kApp_AppIdNotSpecified);
+}
+
 TEST(TagParserTest, NeedsAdminInvalid) {
   VerifyTagParseFail(
       "appguid=8617EE50-F91C-4DC1-B937-0969EEF59B0B&"
@@ -317,7 +344,7 @@ TEST(TagParserTest, NeedsAdminTrueUpperCaseT) {
       std::nullopt,
       TagArgsBuilder()
           .WithApp(AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b")
-                       .WithNeedsAdmin(AppArgs::NeedsAdmin::kYes)
+                       .WithNeedsAdmin(NeedsAdmin::kYes)
                        .Build())
           .Build());
 }
@@ -329,7 +356,7 @@ TEST(TagParserTest, NeedsAdminTrueLowerCaseT) {
       std::nullopt,
       TagArgsBuilder()
           .WithApp(AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b")
-                       .WithNeedsAdmin(AppArgs::NeedsAdmin::kYes)
+                       .WithNeedsAdmin(NeedsAdmin::kYes)
                        .Build())
           .Build());
 }
@@ -341,7 +368,7 @@ TEST(TagParserTest, NeedsFalseUpperCaseF) {
       std::nullopt,
       TagArgsBuilder()
           .WithApp(AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b")
-                       .WithNeedsAdmin(AppArgs::NeedsAdmin::kNo)
+                       .WithNeedsAdmin(NeedsAdmin::kNo)
                        .Build())
           .Build());
 }
@@ -353,7 +380,7 @@ TEST(TagParserTest, NeedsAdminFalseLowerCaseF) {
       std::nullopt,
       TagArgsBuilder()
           .WithApp(AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b")
-                       .WithNeedsAdmin(AppArgs::NeedsAdmin::kNo)
+                       .WithNeedsAdmin(NeedsAdmin::kNo)
                        .Build())
           .Build());
 }
@@ -793,6 +820,15 @@ TEST(TagParserTest, BrandCodeValid) {
               AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b").Build())
           .WithBrandCode("GOOG")
           .Build());
+  VerifyTagParseSuccess(
+      "appguid=8617EE50-F91C-4DC1-B937-0969EEF59B0B&"
+      "brand=GOOGLE",
+      std::nullopt,
+      TagArgsBuilder()
+          .WithApp(
+              AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b").Build())
+          .WithBrandCode("GOOGLE")
+          .Build());
 }
 
 TEST(TagParserTest, ClientIdValid) {
@@ -931,8 +967,8 @@ TEST(TagParserTest, InstallDataIndexValid) {
 }
 
 TEST(TagParserTest, BrowserTypeValid) {
-  std::tuple<base::StringPiece, TagArgs::BrowserType>
-      pairs[static_cast<int>(TagArgs::BrowserType::kMax)] = {
+  std::tuple<std::string_view, TagArgs::BrowserType>
+      pairs[base::to_underlying(TagArgs::BrowserType::kMax)] = {
           {"0", TagArgs::BrowserType::kUnknown},
           {"1", TagArgs::BrowserType::kDefault},
           {"2", TagArgs::BrowserType::kInternetExplorer},
@@ -940,16 +976,16 @@ TEST(TagParserTest, BrowserTypeValid) {
           {"4", TagArgs::BrowserType::kChrome},
       };
 
-  for (const auto& pair : pairs) {
+  for (const auto& [browser, browser_type] : pairs) {
     std::stringstream tag;
     tag << "appguid=8617EE50-F91C-4DC1-B937-0969EEF59B0B&";
-    tag << "browser=" << std::get<0>(pair);
+    tag << "browser=" << browser;
     VerifyTagParseSuccess(
         tag.str(), std::nullopt,
         TagArgsBuilder()
             .WithApp(
                 AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b").Build())
-            .WithBrowserType(std::get<1>(pair))
+            .WithBrowserType(browser_type)
             .Build());
   }
 }
@@ -1105,7 +1141,7 @@ TEST(TagParserTestMultipleEntries, ThreeApplications) {
           .WithUsageStatsEnable(false)
           .WithApp(AppArgsBuilder("8617ee50-f91c-4dc1-b937-0969eef59b0b")
                        .WithAppName("TestApp")
-                       .WithNeedsAdmin(AppArgs::NeedsAdmin::kNo)
+                       .WithNeedsAdmin(NeedsAdmin::kNo)
                        .WithAp("test_ap")
                        .WithEncodedInstallerData("installerdata_app1")
                        .WithExperimentLabels("_experiment_a")
@@ -1113,7 +1149,7 @@ TEST(TagParserTestMultipleEntries, ThreeApplications) {
                        .Build())
           .WithApp(AppArgsBuilder("5e46de36-737d-4271-91c1-c062f9fe21d9")
                        .WithAppName("TestApp2")
-                       .WithNeedsAdmin(AppArgs::NeedsAdmin::kYes)
+                       .WithNeedsAdmin(NeedsAdmin::kYes)
                        .WithAp("test_ap2")
                        .WithExperimentLabels("_experiment_b")
                        .WithUntrustedData("X=5")
@@ -1121,9 +1157,56 @@ TEST(TagParserTestMultipleEntries, ThreeApplications) {
           .WithApp(AppArgsBuilder("5f46de36-737d-4271-91c1-c062f9fe21d9")
                        .WithAppName("TestApp3")
                        .WithEncodedInstallerData("installerdata_app3")
-                       .WithNeedsAdmin(AppArgs::NeedsAdmin::kPrefers)
+                       .WithNeedsAdmin(NeedsAdmin::kPrefers)
                        .Build())
           .Build());
+}
+
+TEST(TagParserTest, RuntimeModeBeforeApp) {
+  VerifyTagParseFail(
+      "runtime=true&appguid=D0324988-DA8A-49e5-BCE5-925FCD04EAB7&"
+      "appname1=Hello",
+      std::nullopt, ErrorCode::kUnrecognizedName);
+}
+
+TEST(TagParserTest, RuntimeModeAfterApp) {
+  VerifyTagParseFail(
+      "appguid=D0324988-DA8A-49e5-BCE5-925FCD04EAB7&appname1=Hello&runtime="
+      "true",
+      std::nullopt, ErrorCode::kUnrecognizedName);
+}
+
+TEST(TagParserTest, RuntimeModeIncorrectValue) {
+  VerifyTagParseFail("runtime=foo", std::nullopt,
+                     ErrorCode::kGlobal_RuntimeModeValueIsInvalid);
+}
+
+TEST(TagParserTest, RuntimeModeIncorrectNeedsAdminValue) {
+  VerifyTagParseFail("runtime=true&needsadmin=foo", std::nullopt,
+                     ErrorCode::kRuntimeMode_NeedsAdminValueIsInvalid);
+}
+
+TEST(TagParserTest, RuntimeModeValid) {
+  VerifyTagParseSuccess("runtime=true", std::nullopt,
+                        TagArgsBuilder()
+                            .WithRuntimeMode(RuntimeModeArgsBuilder().Build())
+                            .Build());
+}
+
+TEST(TagParserTest, RuntimeModeValidSystem) {
+  VerifyTagParseSuccess(
+      "runtime=true&needsadmin=true", std::nullopt,
+      TagArgsBuilder()
+          .WithRuntimeMode(
+              RuntimeModeArgsBuilder().WithNeedsAdmin(NeedsAdmin::kYes).Build())
+          .Build());
+}
+
+TEST(TagParserTest, RuntimeModeValidUser) {
+  VerifyTagParseSuccess("runtime=true&needsadmin=false", std::nullopt,
+                        TagArgsBuilder()
+                            .WithRuntimeMode(RuntimeModeArgsBuilder().Build())
+                            .Build());
 }
 
 TEST(TagExtractorTest, AdvanceIt) {
@@ -1164,14 +1247,21 @@ TEST(TagExtractorTest, CheckRange) {
   ASSERT_FALSE(tagging::internal::CheckRange(it, 1, binary.end()));
 }
 
+TEST(ExeTagTest, FileNotFound) {
+  ASSERT_TRUE(
+      tagging::BinaryReadTagString(test::GetTestFilePath("FileNotFound.exe"))
+          .empty());
+}
+
 TEST(ExeTagTest, UntaggedExe) {
-  ASSERT_TRUE(tagging::ExeReadTag(test::GetTestFilePath("signed.exe")).empty());
+  ASSERT_TRUE(tagging::BinaryReadTagString(test::GetTestFilePath("signed.exe"))
+                  .empty());
 }
 
 TEST(ExeTagTest, TaggedExeEncodeUtf8) {
-  ASSERT_EQ(
-      tagging::ExeReadTag(test::GetTestFilePath("tagged_encode_utf8.exe")),
-      "TestTag123");
+  ASSERT_EQ(tagging::BinaryReadTagString(
+                test::GetTestFilePath("tagged_encode_utf8.exe")),
+            "TestTag123");
 }
 
 struct ExeTagTestExeWriteTagTestCase {
@@ -1222,13 +1312,13 @@ TEST_P(ExeTagTestExeWriteTagTest, TestCases) {
   base::FilePath out_file;
   ASSERT_TRUE(CreateTemporaryFileInDir(temp_dir.GetPath(), &out_file));
 
-  ASSERT_EQ(tagging::ExeWriteTag(
+  ASSERT_EQ(tagging::BinaryWriteTag(
                 test::GetTestFilePath(GetParam().exe_file_name.c_str()),
                 GetParam().tag_string, 8206, out_file),
             GetParam().expected_success)
       << GetParam().exe_file_name << ": " << GetParam().tag_string;
   if (GetParam().expected_success) {
-    EXPECT_EQ(tagging::ExeReadTag(out_file), GetParam().tag_string);
+    EXPECT_EQ(tagging::BinaryReadTagString(out_file), GetParam().tag_string);
   }
 }
 
@@ -1279,7 +1369,7 @@ INSTANTIATE_TEST_SUITE_P(
            tagging::AppArgs app_args("{8A69D345-D564-463C-AFF1-A69D9E530F96}");
            app_args.app_name = "Google Chrome";
            app_args.install_data_index = "defaultbrowser";
-           app_args.needs_admin = tagging::AppArgs::NeedsAdmin::kPrefers;
+           app_args.needs_admin = tagging::NeedsAdmin::kPrefers;
            tag_args.apps = {app_args};
 
            return tag_args;
@@ -1294,7 +1384,7 @@ INSTANTIATE_TEST_SUITE_P(
 
            tagging::AppArgs app_args("{8237E44A-0054-442C-B6B6-EA0509993955}");
            app_args.app_name = "Google Chrome Beta";
-           app_args.needs_admin = tagging::AppArgs::NeedsAdmin::kYes;
+           app_args.needs_admin = tagging::NeedsAdmin::kYes;
            tag_args.apps = {app_args};
 
            return tag_args;
@@ -1335,8 +1425,8 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(MsiTagTestMsiReadTagTest, TestCases) {
   const auto tag_args =
-      tagging::MsiReadTag(test::GetTestFilePath("tagged_msi")
-                              .AppendASCII(GetParam().msi_file_name));
+      tagging::BinaryReadTag(test::GetTestFilePath("tagged_msi")
+                                 .AppendASCII(GetParam().msi_file_name));
   EXPECT_EQ(tag_args.has_value(), GetParam().expected_tag_args.has_value());
   if (GetParam().expected_tag_args) {
     test::ExpectTagArgsEqual(*tag_args, *GetParam().expected_tag_args);
@@ -1371,18 +1461,18 @@ INSTANTIATE_TEST_SUITE_P(
          "defaultbrowser",
          true},
 
+        // empty tag string.
+        {"GUH-untagged.msi", "", true},
+
+        // already tagged.
+        {"GUH-brand-only.msi", "brand=QAQA", true},
+
         // unknown tag argument `unknowntagarg`.
         {"GUH-untagged.msi",
          "appguid={8A69D345-D564-463C-AFF1-A69D9E530F96}&iid={2D8C18E9-8D3A-"
          "4EFC-"
          "6D61-AE23E3530EA2}&unknowntagarg=foo",
          false},
-
-        // empty tag string.
-        {"GUH-untagged.msi", "", false},
-
-        // already tagged.
-        {"GUH-brand-only.msi", "brand=QAQA", false},
     }));
 
 TEST_P(MsiTagTestMsiWriteTagTest, TestCases) {
@@ -1398,15 +1488,16 @@ TEST_P(MsiTagTestMsiWriteTagTest, TestCases) {
   for (const auto& [msi_file, out_msi_file] :
        {std::make_pair(msi_file_path, out_file),
         std::make_pair(in_out_file, base::FilePath())}) {
-    ASSERT_EQ(
-        tagging::MsiWriteTag(msi_file, GetParam().tag_string, out_msi_file),
-        GetParam().expected_success);
-    if (GetParam().expected_success) {
+    ASSERT_EQ(tagging::BinaryWriteTag(msi_file, GetParam().tag_string, 8206,
+                                      out_msi_file),
+              GetParam().expected_success);
+    if (GetParam().expected_success && !GetParam().tag_string.empty()) {
       tagging::TagArgs tag_args;
-      ASSERT_EQ(tagging::Parse(GetParam().tag_string, {}, &tag_args),
+      ASSERT_EQ(tagging::Parse(GetParam().tag_string, {}, tag_args),
                 tagging::ErrorCode::kSuccess);
       test::ExpectTagArgsEqual(
-          tagging::MsiReadTag(!out_msi_file.empty() ? out_msi_file : msi_file)
+          tagging::BinaryReadTag(!out_msi_file.empty() ? out_msi_file
+                                                       : msi_file)
               .value(),
           tag_args);
     }

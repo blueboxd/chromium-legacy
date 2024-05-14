@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_WIDGET_H_
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_types.h"
@@ -112,7 +112,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public ui::metadata::MetaDataProvider {
  public:
   METADATA_HEADER_BASE(Widget);
-  using Widgets = std::set<Widget*>;
+  using Widgets = std::set<raw_ptr<Widget, SetExperimental>>;
   using ShapeRects = std::vector<gfx::Rect>;
   using PaintAsActiveCallbackList = base::RepeatingClosureList;
 
@@ -279,8 +279,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // If kOpaque, we can perform optimizations based on the widget being fully
     // opaque. Default is based on ViewsDelegate::GetOpacityForInitParams().
     // Defaults to kOpaque for non-window widgets. Translucent windows may not
-    // always be supported. Use IsTranslucentWindowOpacitySupported() to
-    // determine whether they are.
+    // always be supported.
     WindowOpacity opacity = WindowOpacity::kInferred;
 
     bool accept_events = true;
@@ -290,7 +289,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // The class of window and its overall z-order level. This level is visible
     // to other applications in the system. A value other than `kNormal` will
     // create an "always on top" widget.
-    absl::optional<ui::ZOrderLevel> z_order;
+    std::optional<ui::ZOrderLevel> z_order;
 
     // The z-order sublevel that is invisible to other applications in the
     // system. Widgets of the same `z_order` are stacked in the order specified
@@ -308,7 +307,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     // A hint about the size of the shadow if the type is ShadowType::kDrop. May
     // be ignored on some platforms. No value indicates no preference.
-    absl::optional<int> shadow_elevation;
+    std::optional<int> shadow_elevation;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ui::ColorProviderKey::ElevationMode background_elevation =
@@ -316,7 +315,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 #endif
 
     // The window corner radius. May be ignored on some platforms.
-    absl::optional<int> corner_radius;
+    std::optional<int> corner_radius;
 
     // Specifies that the system default caption and icon should not be
     // rendered, and that the client area should be equivalent to the window
@@ -367,7 +366,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // If specified and the `bounds` is inside the specified display, the widget
     // will be created on this display. Otherwise, the display matching the
     // `bounds` will be used.
-    absl::optional<int64_t> display_id;
+    std::optional<int64_t> display_id;
 #endif
 
     // The initial workspace of the Widget. Default is "", which means the
@@ -382,9 +381,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // of the default one.
     // TODO(beng): Figure out if there's a better way to expose this, e.g. get
     // rid of NW subclasses and do this all via message handling.
-    // DanglingUntriaged because it is assigned a DanglingUntriaged pointer.
-    raw_ptr<DesktopWindowTreeHost, DanglingUntriaged> desktop_window_tree_host =
-        nullptr;
+    raw_ptr<DesktopWindowTreeHost> desktop_window_tree_host = nullptr;
 
     // Only used by NativeWidgetAura. Specifies the type of layer for the
     // aura::Window.
@@ -439,8 +436,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // `restore_window_id_source` is used for widgets without inherent restore
     // window ids, e.g. Chrome apps.
     int32_t restore_session_id = 0;
-    absl::optional<int32_t> restore_window_id;
-    absl::optional<std::string> restore_window_id_source;
+    std::optional<int32_t> restore_window_id;
+    std::optional<std::string> restore_window_id_source;
 #endif
 
     // Contains any properties with which the native widget should be
@@ -454,6 +451,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // window should request the wayland compositor to send key events,
     // even if it matches with the compositor's keyboard shortcuts.
     bool inhibit_keyboard_shortcuts = false;
+
+    // Specifies the insets of the Widget. Default is empty, which means no
+    // insets are to be set.
+    gfx::Insets frame_insets;
 #endif
 
     // Directly sets the NativeTheme used by the Widget. Providing the
@@ -557,6 +558,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns true if the specified type requires a NonClientView.
   static bool RequiresNonClientView(InitParams::Type type);
+
+  static bool IsWindowCompositingSupported();
 
   // Initializes the widget, and in turn, the native widget. |params| should be
   // moved to Init() by the caller.
@@ -1059,9 +1062,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // mouse location to refresh hovering status in the widget.
   void SynthesizeMouseMoveEvent();
 
-  // Whether the widget supports translucency.
-  bool IsTranslucentWindowOpacitySupported() const;
-
   // Returns the gesture recognizer which can handle touch/gesture events on
   // this.
   ui::GestureRecognizer* GetGestureRecognizer();
@@ -1166,7 +1166,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets an override for `color_mode` when `GetColorProvider()` is requested.
   // e.g. if set to kDark, colors will always be for the dark theme.
   void SetColorModeOverride(
-      absl::optional<ui::ColorProviderKey::ColorMode> color_mode);
+      std::optional<ui::ColorProviderKey::ColorMode> color_mode);
 
   // ui::ColorProviderSource:
   const ui::ColorProvider* GetColorProvider() const override;
@@ -1185,6 +1185,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Causes IsFullscreen() to also check parent state, since this widget is
   // logically part of the same window as the parent.
   void SetCheckParentForFullscreen();
+
+  // Returns the current ownership model of the widget.
+  InitParams::Ownership ownership() const { return ownership_; }
 
  protected:
   // Creates the RootView to be used within this Widget. Subclasses may override
@@ -1240,9 +1243,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   friend class TextfieldTest;
   friend class ViewAuraTest;
   friend class ui_devtools::PageAgentViews;
-  // TODO (kylixrd): Remove this after Widget no longer can "own" the
-  // WidgetDelegate.
-  friend class WidgetDelegate;
   friend void DisableActivationChangeHandlingForTests();
 
   // Sets/gets the type of disabling widget activation change handling.
@@ -1308,15 +1308,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // to Init() a default WidgetDelegate is created.
   base::WeakPtr<WidgetDelegate> widget_delegate_;
 
-  // TODO(kylixrd): Rename this once the transition requiring the client to own
-  // the delegate is finished.
-  // [Owned Widget delegate if the DefaultWidgetDelegate is used. This
-  // ties the lifetime of the default delegate to the Widget.]
-  //
-  // This will "own" the delegate when WidgetDelegate::owned_by_widget() is
-  // true.
-  std::unique_ptr<WidgetDelegate> owned_widget_delegate_;
-
   // The parent of this widget. This is the widget that associates with
   // the |params.parent| supplied to Init(). If no parent is given or the native
   // view parent has no associating Widget, this value will be nullptr.
@@ -1362,7 +1353,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // If set, overrides this value is used instead of the one from NativeTheme
   // when constructing a ColorProvider.
-  absl::optional<ui::ColorProviderKey::ColorMode> color_mode_override_;
+  std::optional<ui::ColorProviderKey::ColorMode> color_mode_override_;
 
   // The current frame type in use by this window. Defaults to
   // FrameType::kDefault.

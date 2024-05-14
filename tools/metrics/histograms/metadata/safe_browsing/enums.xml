@@ -72,6 +72,8 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="MISSING_WEB_CONTENTS"/>
   <int value="1" label="SB_NAVIGATION_MANAGER_NOT_READY"/>
   <int value="2" label="COMPLETE"/>
+  <int value="3" label="MISSING_RENDER_FRAME_HOST"/>
+  <int value="4" label="RENDER_FRAME_HOST_INVALID_URL"/>
 </enum>
 
 <enum name="ApkDownloadTelemetryOutcome">
@@ -136,6 +138,11 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Received"/>
 </enum>
 
+<enum name="BooleanTransferred">
+  <int value="0" label="Did not transfer"/>
+  <int value="1" label="Transferred"/>
+</enum>
+
 <enum name="BooleanUnavailable">
   <int value="0" label="Available"/>
   <int value="1" label="Unavailable"/>
@@ -160,17 +167,6 @@ chromium-metrics-reviews@google.com.
   <int value="19" label="Blocked Ad redirect"/>
   <int value="20" label="Blocked Ad popup"/>
   <int value="21" label="Hash-prefix real-time experiment"/>
-</enum>
-
-<enum name="HPRTExperimentCombinedResult">
-  <int value="0" label="No mechanism"/>
-  <int value="1" label="URL real-time only"/>
-  <int value="2" label="Hash database only"/>
-  <int value="3" label="Hash real-time only"/>
-  <int value="4" label="URL real-time + hash database"/>
-  <int value="5" label="URL real-time + hash real-time"/>
-  <int value="6" label="Hash database + hash real-time"/>
-  <int value="7" label="All mechanisms"/>
 </enum>
 
 <enum name="SafeBrowsingAllowlistAsyncMatch">
@@ -306,7 +302,7 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="WithoutToken"/>
 </enum>
 
-<enum name="SafeBrowsingHPRTOperationResult">
+<enum name="SafeBrowsingHPRTOperationOutcome">
   <int value="0" label="Success"/>
   <int value="1" label="Parse response error"/>
   <int value="2" label="No cache duration in response"/>
@@ -315,6 +311,9 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="Network error"/>
   <int value="6" label="HTTP error"/>
   <int value="7" label="Bug: Reached NOTREACHED code"/>
+  <int value="8" label="Result found in local cache"/>
+  <int value="9" label="Service is in backoff mode"/>
+  <int value="10" label="OHTTP key fetch failed"/>
 </enum>
 
 <enum name="SafeBrowsingOhttpFetchKeyTriggerReason">

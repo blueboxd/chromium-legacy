@@ -49,13 +49,19 @@ base::flat_set<std::u16string> ExtractPasswords(
                                            &CredentialUIEntry::password);
 }
 
-bool ChangesRequireRerunningCheck(const PasswordStoreChangeList& changes) {
+bool ChangesRequireRerunningReuseCheck(const PasswordStoreChangeList& changes) {
   return base::ranges::any_of(changes, [](const auto& change) {
     return change.type() == PasswordStoreChange::ADD ||
            change.type() == PasswordStoreChange::REMOVE ||
            (change.type() == PasswordStoreChange::UPDATE &&
             change.password_changed());
   });
+}
+
+bool ChangeRequiresRerunningWeakCheck(const PasswordStoreChange& change) {
+  return change.type() == PasswordStoreChange::ADD ||
+         (change.type() == PasswordStoreChange::UPDATE &&
+          change.password_changed());
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -98,7 +104,8 @@ void InsecureCredentialsManager::StartWeakCheck(
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 void InsecureCredentialsManager::SaveInsecureCredential(
-    const LeakCheckCredential& leak) {
+    const LeakCheckCredential& leak,
+    TriggerBackendNotification should_trigger_notification) {
   // Iterate over all currently saved credentials and mark those as insecure
   // that have the same canonicalized username and password.
   const std::u16string canonicalized_username =
@@ -111,7 +118,7 @@ void InsecureCredentialsManager::SaveInsecureCredential(
       credential_to_update.password_issues.insert_or_assign(
           InsecureType::kLeaked,
           InsecurityMetadata(base::Time::Now(), IsMuted(false),
-                             TriggerBackendNotification(false)));
+                             should_trigger_notification));
       presenter_->EditSavedCredentials(credential, credential_to_update);
     }
   }
@@ -206,23 +213,37 @@ void InsecureCredentialsManager::OnWeakCheckDone(
   NotifyInsecureCredentialsChanged();
 }
 
+void InsecureCredentialsManager::OnPartialWeakCheckDone(
+    base::flat_set<std::u16string> weak_passwords) {
+  if (weak_passwords.empty()) {
+    return;
+  }
+
+  weak_passwords_.insert(weak_passwords.begin(), weak_passwords.end());
+  NotifyInsecureCredentialsChanged();
+}
+
 // Re-computes the list of insecure credentials with passwords after obtaining a
 // new list of saved passwords.
 void InsecureCredentialsManager::OnSavedPasswordsChanged(
     const PasswordStoreChangeList& changes) {
   // Disable on Android  to avoid pulling in a big dependency on zxcvbn.
 #if !BUILDFLAG(IS_ANDROID)
+  base::flat_set<std::u16string> passwords_to_recheck;
   for (const auto& change : changes) {
-    if (change.type() == PasswordStoreChange::ADD ||
-        (change.type() == PasswordStoreChange::UPDATE &&
-         change.password_changed())) {
-      const std::u16string& password = change.form().password_value;
-      if (!weak_passwords_.contains(password) && IsWeak(password)) {
-        weak_passwords_.insert(password);
-      }
+    if (ChangeRequiresRerunningWeakCheck(change)) {
+      passwords_to_recheck.insert(change.form().password_value);
     }
   }
-  if (ChangesRequireRerunningCheck(changes)) {
+  if (!passwords_to_recheck.empty()) {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&BulkWeakCheck, std::move(passwords_to_recheck)),
+        base::BindOnce(&InsecureCredentialsManager::OnPartialWeakCheckDone,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  if (ChangesRequireRerunningReuseCheck(changes)) {
     // Re-run reused check since user might have changed reused password. Don't
     // notify observers yet, as they'll be notified on OnReuseCheckDone()
     // anyway.

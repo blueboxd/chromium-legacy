@@ -10,8 +10,6 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow.h"
-#include "base/debug/stack_trace.h"
-#include "base/logging.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/frame_utils.h"
@@ -23,13 +21,13 @@ namespace {
 
 // Lock shadow params
 constexpr ResizeShadow::InitParams kLockParams{
-    /*thickness=*/6,
-    /*shadow_corner_radius=*/6,
-    /*window_corner_radius=*/2,
-    /*opacity =*/0.3f,
-    /*color=*/gfx::kGoogleGrey900,
-    /*hit_test_enabled=*/false,
-    /*hide_duration_ms=*/0,
+    .thickness = 6,
+    .shadow_corner_radius = 6,
+    .window_corner_radius = 2,
+    .opacity = 0.3f,
+    .color = gfx::kGoogleGrey900,
+    .hit_test_enabled = false,
+    .hide_duration_ms = 0,
 };
 
 }  // namespace

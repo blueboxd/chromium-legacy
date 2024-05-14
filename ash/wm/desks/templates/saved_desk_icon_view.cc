@@ -118,7 +118,7 @@ void SavedDeskIconView::CreateCountLabelChildView(bool show_plus,
                        .Build());
 }
 
-BEGIN_METADATA(SavedDeskIconView, views::View)
+BEGIN_METADATA(SavedDeskIconView)
 END_METADATA
 
 // -----------------------------------------------------------------------------
@@ -144,7 +144,7 @@ SavedDeskRegularIconView::SavedDeskRegularIconView(
 
 SavedDeskRegularIconView::~SavedDeskRegularIconView() = default;
 
-void SavedDeskRegularIconView::Layout() {
+void SavedDeskRegularIconView::Layout(PassKey) {
   DCHECK(icon_view_);
   gfx::Size icon_preferred_size = icon_view_->CalculatePreferredSize();
   icon_view_->SetBoundsRect(gfx::Rect(
@@ -277,7 +277,7 @@ void SavedDeskRegularIconView::LoadDefaultIcon() {
   }
 }
 
-BEGIN_METADATA(SavedDeskRegularIconView, views::View)
+BEGIN_METADATA(SavedDeskRegularIconView)
 END_METADATA
 
 // -----------------------------------------------------------------------------
@@ -293,7 +293,7 @@ SavedDeskOverflowIconView::SavedDeskOverflowIconView(int count, bool show_plus)
 
 SavedDeskOverflowIconView::~SavedDeskOverflowIconView() = default;
 
-void SavedDeskOverflowIconView::Layout() {
+void SavedDeskOverflowIconView::Layout(PassKey) {
   DCHECK(count_label_);
   count_label_->SetBoundsRect(gfx::Rect(0, 0, width(), kIconViewSize));
 }
@@ -322,7 +322,7 @@ bool SavedDeskOverflowIconView::IsOverflowIcon() const {
   return true;
 }
 
-BEGIN_METADATA(SavedDeskOverflowIconView, views::View)
+BEGIN_METADATA(SavedDeskOverflowIconView)
 END_METADATA
 
 }  // namespace ash

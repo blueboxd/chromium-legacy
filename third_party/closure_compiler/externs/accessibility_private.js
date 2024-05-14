@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -415,6 +415,14 @@ chrome.accessibilityPrivate.TtsVariant = {
 chrome.accessibilityPrivate.PumpkinData;
 
 /**
+ * @typedef {{
+ *   model: ArrayBuffer,
+ *   wasm: ArrayBuffer
+ * }}
+ */
+chrome.accessibilityPrivate.FaceGazeAssets;
+
+/**
  * Property to indicate whether event source should default to touch.
  * @type {number}
  */
@@ -444,6 +452,14 @@ chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};
 chrome.accessibilityPrivate.installPumpkinForDictation = function(callback) {};
 
 /**
+ * Called to request an install of the FaceGaze assets DLC, which contains files
+ * (e.g. the FaceLandmarker model) required for FaceGaze to work.
+ * @param {function(!chrome.accessibilityPrivate.FaceGazeAssets): void} callback
+ *     Runs when the DLC download finishes.
+ */
+chrome.accessibilityPrivate.installFaceGazeAssets = function(callback) {};
+
+/**
  * Enables or disables native accessibility support. Once disabled, it is up to
  * the calling extension to provide accessibility for web contents.
  * @param {boolean} enabled True if native accessibility support should be
@@ -468,6 +484,16 @@ chrome.accessibilityPrivate.setFocusRings = function(focusRings, atType) {};
  *     #FF9982 or #EEE.
  */
 chrome.accessibilityPrivate.setHighlights = function(rects, color) {};
+
+/**
+ * Informs the system where Select to Speak's reading focus is in screen
+ * coordinates. Causes chrome.accessibilityPrivate.onSelectToSpeakFocusChanged
+ * to be fired within the AccessibilityCommon component extension.
+ * @param {!chrome.accessibilityPrivate.ScreenRect} bounds Bounds of currently
+ *     spoken word (if available) or node (if the spoken node is not a text
+ *     node).
+ */
+chrome.accessibilityPrivate.setSelectToSpeakFocus = function(bounds) {};
 
 /**
  * Sets the calling extension as a listener of all keyboard events optionally
@@ -746,6 +772,12 @@ chrome.accessibilityPrivate.onTwoFingerTouchStop;
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSelectToSpeakContextMenuClicked;
+
+/**
+ * Fired when the Select to Speak reading focus changes.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onSelectToSpeakFocusChanged;
 
 /**
  * Fired when Chrome OS wants to change the Select-to-Speak state, between

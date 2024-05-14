@@ -74,10 +74,6 @@ class SyncService;
 
 namespace commerce {
 
-// The conversion multiplier to go from standard currency units to
-// micro-currency units.
-extern const long kToMicroCurrency;
-
 extern const char kImageAvailabilityHistogramName[];
 extern const char kProductInfoLocalExtractionTime[];
 
@@ -181,7 +177,7 @@ using DiscountsOptGuideCallback = base::OnceCallback<void(DiscountsPair)>;
 // A callback for getting updated ProductInfo for a bookmark. This provides the
 // bookmark ID being updated, the URL, and the product info.
 using BookmarkProductInfoUpdatedCallback = base::RepeatingCallback<
-    void(const int64_t, const GURL&, absl::optional<ProductInfo>)>;
+    void(const int64_t, const GURL&, std::optional<ProductInfo>)>;
 
 // Under Desktop browser test or interactive ui test, use
 // ShoppingServiceFactory::SetTestingFactory to create a
@@ -262,7 +258,7 @@ class ShoppingService : public KeyedService,
   // the specified |url|. This method is less reliable than GetProductInfoForUrl
   // above as it may return an empty or partial result prior to the page being
   // processed or information being available from the backend.
-  virtual absl::optional<ProductInfo> GetAvailableProductInfoForUrl(
+  virtual std::optional<ProductInfo> GetAvailableProductInfoForUrl(
       const GURL& url);
 
   // Get updated product info (including price) for the provided list of
@@ -339,7 +335,7 @@ class ShoppingService : public KeyedService,
   // and sync opt-in state, returns either LocalOrSyncable or Account bookmark
   // model instance.
   //
-  // TODO(crbug.com/1462978): Delete this when ConsentLevel::kSync is deleted.
+  // TODO(crbug.com/40067058): Delete this when ConsentLevel::kSync is deleted.
   //     See ConsentLevel::kSync documentation for details.
   virtual bookmarks::BookmarkModel* GetBookmarkModelUsedForSync();
 
@@ -361,6 +357,14 @@ class ShoppingService : public KeyedService,
   // |bookmark_update_manager_|.
   virtual void ScheduleSavedProductUpdate();
 
+  // Returns whether a feature that is restricted to a specific region and
+  // locale is enabled. This method is a proxy for the utility method by the
+  // same name in commerce_feature_list but provides the country and locale as
+  // determined by this service at startup.
+  bool IsRegionLockedFeatureEnabled(
+      const base::Feature& feature,
+      const base::Feature& region_specific_feature);
+
   // This is a feature check for the "shopping list". This will only return true
   // if the user has the feature flag enabled, is signed-in, has MSBB enabled,
   // has webapp activity enabled, is allowed by enterprise policy, and (if
@@ -376,12 +380,6 @@ class ShoppingService : public KeyedService,
   // be passed to the callback.
   virtual void WaitForReady(
       base::OnceCallback<void(ShoppingService*)> callback);
-
-  // Check whether a product (based on cluster ID) is explicitly price tracked
-  // by the user.
-  virtual void IsClusterIdTrackedByUser(
-      uint64_t cluster_id,
-      base::OnceCallback<void(bool)> callback);
 
   // This is a feature check for the "merchant viewer", which will return true
   // if the user has the feature flag enabled or (if applicable) is in an
@@ -494,7 +492,7 @@ class ShoppingService : public KeyedService,
   void RunLocalExtractionForProductInfoForShoppingPage(
       base::WeakPtr<WebWrapper> web,
       const GURL& url,
-      absl::optional<bool> is_shopping_page);
+      std::optional<bool> is_shopping_page);
 
   // Whether APIs like |GetProductInfoForURL| are enabled and allowed to be
   // used.
@@ -712,7 +710,7 @@ class ShoppingService : public KeyedService,
   // The object for local extractions of commerce information.
   std::unique_ptr<commerce::WebExtractor> web_extractor_;
 
-  // TODO(crbug.com/1462978): Delete this when ConsentLevel::kSync is deleted.
+  // TODO(crbug.com/40067058): Delete this when ConsentLevel::kSync is deleted.
   //     See ConsentLevel::kSync documentation for details.
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observation_{this};

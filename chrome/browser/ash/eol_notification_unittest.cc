@@ -68,7 +68,7 @@ class EolNotificationTest : public BrowserWithTestWindowTest,
 
   void DismissNotification() {
     eol_notification_->Click(EolNotification::ButtonIndex::BUTTON_DISMISS,
-                             absl::nullopt);
+                             std::nullopt);
   }
 
   void SetCurrentTimeToUtc(const char* utc_date_string) {
@@ -86,8 +86,7 @@ class EolNotificationTest : public BrowserWithTestWindowTest,
   bool SuppressFirstWarningEnabled() { return GetParam(); }
 
  protected:
-  raw_ptr<FakeUpdateEngineClient, DanglingUntriaged | ExperimentalAsh>
-      fake_update_engine_client_;
+  raw_ptr<FakeUpdateEngineClient, DanglingUntriaged> fake_update_engine_client_;
   std::unique_ptr<NotificationDisplayServiceTester> tester_;
   std::unique_ptr<EolNotification> eol_notification_;
   std::unique_ptr<base::SimpleTestClock> clock_;

@@ -11,6 +11,7 @@
 #include "third_party/win_virtual_display/controller/display_driver_controller.h"
 #include "third_party/win_virtual_display/driver/public/properties.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/test/virtual_display_util.h"
 
 namespace display {
 class Display;
@@ -23,22 +24,19 @@ struct DisplayParams;
 // integration testing of display information and window management APIs in
 // multi-screen device environments. It updates the displays that the normal
 // windows screen impl sees.
-class VirtualDisplayWinUtil : public display::DisplayObserver {
+class VirtualDisplayUtilWin : public display::DisplayObserver,
+                              public VirtualDisplayUtil {
  public:
-  explicit VirtualDisplayWinUtil(Screen* screen);
-  ~VirtualDisplayWinUtil() override;
+  explicit VirtualDisplayUtilWin(Screen* screen);
+  ~VirtualDisplayUtilWin() override;
 
-  // Check whether the related driver is available to support this API.
-  bool IsAPIAvailable();
+  // Check whether the related drivers are available on the current system.
+  static bool IsAPIAvailable();
 
-  // `id` is used to uniquely identify the virtual display. This function
-  // returns the generated display::Display id, which can be used with the
-  // Screen instance or passed to `RemoveDisplay`.
-  int64_t AddDisplay(unsigned short id, const DisplayParams& display_params);
-  // Remove a virtual display corresponding to the specified display ID.
-  void RemoveDisplay(int64_t display_id);
-  // Reset and remove all virtual displays.
-  void RemoveAllDisplays();
+  // VirtualDisplayUtil overrides:
+  int64_t AddDisplay(uint8_t id, const DisplayParams& display_params) override;
+  void RemoveDisplay(int64_t display_id) override;
+  void ResetDisplays() override;
   static const DisplayParams k1920x1080;
   static const DisplayParams k1024x768;
 
@@ -54,10 +52,12 @@ class VirtualDisplayWinUtil : public display::DisplayObserver {
   void StopWaiting();
 
   raw_ptr<Screen> screen_;
+  // True if the environment was considered headless during initialization.
+  const bool is_headless_;
   std::unique_ptr<base::RunLoop> run_loop_;
   DisplayDriverController driver_controller_;
   // Contains the last configuration that was set.
-  std::optional<DriverProperties> current_config_;
+  DriverProperties current_config_;
   // Map of virtual display ID (product code) to corresponding display ID.
   base::flat_map<unsigned short, int64_t> virtual_displays_;
 };

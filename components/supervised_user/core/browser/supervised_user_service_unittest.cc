@@ -26,18 +26,18 @@
 #include "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "components/supervised_user/core/browser/kids_chrome_management_client.h"
 #include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/browser/supervised_user_settings_service.h"
+#include "components/supervised_user/core/browser/supervised_user_utils.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
-#include "components/supervised_user/core/common/supervised_user_utils.h"
 #include "components/supervised_user/test_support/supervised_user_url_filter_test_utils.h"
 #include "components/sync/test/mock_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace supervised_user {
@@ -49,13 +49,14 @@ const char kExampleUrl1[] = "http://www.example1.com/123";
 
 }  // namespace
 
+class MockPlatformDelegate : public SupervisedUserService::PlatformDelegate {
+ public:
+  MOCK_METHOD(void, CloseIncognitoTabs, (), (override));
+};
+
 class SupervisedUserServiceTestBase : public ::testing::Test {
  public:
-  explicit SupervisedUserServiceTestBase(bool is_supervised)
-      : kids_chrome_management_client_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_),
-            identity_test_env_.identity_manager()) {
+  explicit SupervisedUserServiceTestBase(bool is_supervised) {
     settings_service_.Init(syncable_pref_service_.user_prefs_store());
     supervised_user::RegisterProfilePrefs(syncable_pref_service_.registry());
     if (is_supervised) {
@@ -66,11 +67,13 @@ class SupervisedUserServiceTestBase : public ::testing::Test {
     }
 
     service_ = std::make_unique<SupervisedUserService>(
-        identity_test_env_.identity_manager(), &kids_chrome_management_client_,
-        syncable_pref_service_, settings_service_, &sync_service_,
+        identity_test_env_.identity_manager(),
+        test_url_loader_factory_.GetSafeWeakWrapper(), syncable_pref_service_,
+        settings_service_, &sync_service_,
         /*check_webstore_url_callback=*/
         base::BindRepeating([](const GURL& url) { return false; }),
         std::make_unique<FakeURLFilterDelegate>(),
+        std::make_unique<MockPlatformDelegate>(),
         /*can_show_first_time_interstitial_banner=*/true);
 
     service_->Init();
@@ -90,7 +93,6 @@ class SupervisedUserServiceTestBase : public ::testing::Test {
   syncer::MockSyncService sync_service_;
   sync_preferences::TestingPrefServiceSyncable syncable_pref_service_;
   SupervisedUserSettingsService settings_service_;
-  KidsChromeManagementClient kids_chrome_management_client_;
 
   std::unique_ptr<SupervisedUserService> service_;
 };
@@ -101,6 +103,50 @@ class SupervisedUserServiceTest : public SupervisedUserServiceTestBase {
       : SupervisedUserServiceTestBase(/*is_supervised=*/true) {}
 };
 
+// Tests that changes in parent configuration for web filter types are recorded.
+TEST_F(SupervisedUserServiceTest, WebFilterTypeOnPrefsChange) {
+  base::HistogramTester histogram_tester;
+
+  // Tests filter "try to block mature sites".
+  syncable_pref_service_.SetInteger(
+      prefs::kDefaultSupervisedUserFilteringBehavior,
+      static_cast<int>(FilteringBehavior::kAllow));
+  syncable_pref_service_.SetBoolean(prefs::kSupervisedUserSafeSites, true);
+
+  // This should not increase since only changes from the default are recorded.
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
+      /*sample=*/
+      WebFilterType::kTryToBlockMatureSites,
+      /*expected_bucket_count=*/0);
+
+  // Tests filter "allow all sites".
+  syncable_pref_service_.SetBoolean(prefs::kSupervisedUserSafeSites, false);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
+      /*sample=*/
+      WebFilterType::kAllowAllSites,
+      /*expected_count=*/1);
+
+  // Tests filter "only allow certain sites".
+  syncable_pref_service_.SetInteger(
+      prefs::kDefaultSupervisedUserFilteringBehavior,
+      static_cast<int>(FilteringBehavior::kBlock));
+  service_->GetURLFilter()->SetDefaultFilteringBehavior(
+      FilteringBehavior::kBlock);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
+      /*sample=*/
+      WebFilterType::kCertainSites,
+      /*expected_count=*/1);
+
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
+      /*expected_count=*/2);
+}
+
+// Tests that changes to the allow or blocklist of the parent configuration are
+// recorded.
 TEST_F(SupervisedUserServiceTest, ManagedSiteListTypeMetricOnPrefsChange) {
   base::HistogramTester histogram_tester;
 

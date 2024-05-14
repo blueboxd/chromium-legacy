@@ -23,9 +23,9 @@ class DeskBarViewBase;
 // A button view in the desks bar with an icon. The button have three different
 // states, and the three states are interchangeable.
 class ASH_EXPORT DeskIconButton : public DeskButtonBase {
- public:
-  METADATA_HEADER(DeskIconButton);
+  METADATA_HEADER(DeskIconButton, DeskButtonBase)
 
+ public:
   // The enum class defines three states for the button. The button at different
   // states has different sizes. Any state could be transformed into another
   // state under certain conditions.
@@ -104,7 +104,7 @@ class ASH_EXPORT DeskIconButton : public DeskButtonBase {
   // id `kColorAshCurrentDeskColor` even if it's not already focused.
   bool paint_as_active_ = false;
 
-  const raw_ptr<const gfx::VectorIcon, ExperimentalAsh> button_icon_;
+  const raw_ptr<const gfx::VectorIcon> button_icon_;
   const ui::ColorId icon_color_id_;
   const ui::ColorId background_color_id_;
 

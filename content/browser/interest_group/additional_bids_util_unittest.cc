@@ -8,6 +8,7 @@
 
 #include <array>
 #include <limits>
+#include <optional>
 #include <string>
 
 #include "base/base64.h"
@@ -21,12 +22,12 @@
 #include "base/values.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/interest_group/auction_metrics_recorder.h"
+#include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom-forward.h"
 #include "crypto/openssl_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_constants.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
@@ -195,7 +196,7 @@ TEST_F(AdditionalBidsUtilTest, FailNotDict) {
 
   auto result = DecodeAdditionalBid(/*auction=*/nullptr, input, kAuctionNonce,
                                     kInterestGroupBuyers, kSeller,
-                                    /*top_level_seller=*/absl::nullopt);
+                                    /*top_level_seller=*/std::nullopt);
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(
       "Additional bid on auction with seller 'https://seller.test' is not a "
@@ -210,7 +211,7 @@ TEST_F(AdditionalBidsUtilTest, FailNoNonce) {
 
   auto result = DecodeAdditionalBid(/*auction=*/nullptr, input, kAuctionNonce,
                                     kInterestGroupBuyers, kSeller,
-                                    /*top_level_seller=*/absl::nullopt);
+                                    /*top_level_seller=*/std::nullopt);
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(
       "Additional bid on auction with seller 'https://seller.test' rejected "
@@ -225,7 +226,7 @@ TEST_F(AdditionalBidsUtilTest, FailInvalidNonce) {
 
   auto result = DecodeAdditionalBid(/*auction=*/nullptr, input, kAuctionNonce,
                                     kInterestGroupBuyers, kSeller,
-                                    /*top_level_seller=*/absl::nullopt);
+                                    /*top_level_seller=*/std::nullopt);
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(
       "Additional bid on auction with seller 'https://seller.test' rejected "
@@ -240,7 +241,7 @@ TEST_F(AdditionalBidsUtilTest, FailMissingSeller) {
 
   auto result = DecodeAdditionalBid(/*auction=*/nullptr, input, kAuctionNonce,
                                     kInterestGroupBuyers, kSeller,
-                                    /*top_level_seller=*/absl::nullopt);
+                                    /*top_level_seller=*/std::nullopt);
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(
       "Additional bid on auction with seller 'https://seller.test' rejected "
@@ -255,7 +256,7 @@ TEST_F(AdditionalBidsUtilTest, FailInvalidSeller) {
 
   auto result = DecodeAdditionalBid(/*auction=*/nullptr, input, kAuctionNonce,
                                     kInterestGroupBuyers, kSeller,
-                                    /*top_level_seller=*/absl::nullopt);
+                                    /*top_level_seller=*/std::nullopt);
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(
       "Additional bid on auction with seller 'https://seller.test' rejected "
@@ -268,7 +269,7 @@ TEST_F(AdditionalBidsUtilTest, FailInvalidTopLevelSeller) {
   base::Value input(MakeMinimalValid());
   auto result = DecodeAdditionalBid(/*auction=*/nullptr, input, kAuctionNonce,
                                     kInterestGroupBuyers, kSeller,
-                                    /*top_level_seller=*/absl::nullopt);
+                                    /*top_level_seller=*/std::nullopt);
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(
       "Additional bid on auction with seller 'https://seller.test' rejected "
@@ -507,17 +508,17 @@ TEST_F(AdditionalBidsUtilTest, MinimalValid) {
   ASSERT_TRUE(bid_state->bidder->interest_group.ads.has_value());
   ASSERT_EQ(1u, bid_state->bidder->interest_group.ads->size());
   EXPECT_EQ("https://en.wikipedia.test/wiki/Train",
-            bid_state->bidder->interest_group.ads.value()[0].render_url.spec());
+            bid_state->bidder->interest_group.ads.value()[0].render_url());
 
-  EXPECT_EQ(InterestGroupAuction::Bid::BidRole::kBothKAnonModes, bid->bid_role);
+  EXPECT_EQ(auction_worklet::mojom::BidRole::kBothKAnonModes, bid->bid_role);
   EXPECT_EQ("null", bid->ad_metadata);
   EXPECT_EQ(10.0, bid->bid);
-  EXPECT_EQ(absl::nullopt, bid->bid_currency);
-  EXPECT_EQ(absl::nullopt, bid->ad_cost);
+  EXPECT_EQ(std::nullopt, bid->bid_currency);
+  EXPECT_EQ(std::nullopt, bid->ad_cost);
   EXPECT_EQ(blink::AdDescriptor(GURL("https://en.wikipedia.test/wiki/Train")),
             bid->ad_descriptor);
   EXPECT_EQ(0u, bid->ad_component_descriptors.size());
-  EXPECT_EQ(absl::nullopt, bid->modeling_signals);
+  EXPECT_EQ(std::nullopt, bid->modeling_signals);
   EXPECT_EQ(&bid_state->bidder->interest_group, bid->interest_group);
   EXPECT_EQ(&bid_state->bidder->interest_group.ads.value()[0], bid->bid_ad);
   EXPECT_EQ(bid_state, bid->bid_state);
@@ -718,7 +719,8 @@ TEST_F(AdditionalBidsUtilTest, InvalidAdComponentsEntry) {
 TEST_F(AdditionalBidsUtilTest, TooManyAdComponents) {
   base::Value::Dict additional_bid_dict = MakeMinimalValid();
   base::Value::List ad_components_list;
-  for (size_t i = 0; i < blink::kMaxAdAuctionAdComponents + 1; ++i) {
+  const size_t kMaxAdAuctionAdComponents = blink::MaxAdAuctionAdComponents();
+  for (size_t i = 0; i < kMaxAdAuctionAdComponents + 1; ++i) {
     ad_components_list.Append("https://en.wikipedia.test/wiki/Locomotive");
   }
   additional_bid_dict.SetByDottedPath("bid.adComponents",
@@ -766,10 +768,10 @@ TEST_F(AdditionalBidsUtilTest, ValidAdComponents) {
             result->bid_state->bidder->interest_group.ad_components->size());
   EXPECT_EQ("https://en.wikipedia.test/wiki/Locomotive",
             result->bid_state->bidder->interest_group.ad_components.value()[0]
-                .render_url.spec());
+                .render_url());
   EXPECT_EQ("https://en.wikipedia.test/wiki/High-speed_rail",
             result->bid_state->bidder->interest_group.ad_components.value()[1]
-                .render_url.spec());
+                .render_url());
 }
 
 TEST_F(AdditionalBidsUtilTest, ValidAdComponentsEmpty) {
@@ -1227,7 +1229,7 @@ TEST_F(AdditionalBidsUtilNegativeTargetingTest, SuccessfullyNegativeTargets) {
   std::vector<std::string> errors_out;
   EXPECT_TRUE(negative_targeter_.ShouldDropDueToNegativeTargeting(
       kBuyer,
-      /*negative_target_joining_origin=*/absl::nullopt,
+      /*negative_target_joining_origin=*/std::nullopt,
       /*negative_target_interest_group_names=*/{"a"},
       /*signatures=*/
       {SignatureWithLiteralKey(kKey1), SignatureWithLiteralKey(kKey2)},
@@ -1243,7 +1245,7 @@ TEST_F(AdditionalBidsUtilNegativeTargetingTest, WrongBuyer) {
   std::vector<std::string> errors_out;
   EXPECT_FALSE(negative_targeter_.ShouldDropDueToNegativeTargeting(
       kBuyer,
-      /*negative_target_joining_origin=*/absl::nullopt,
+      /*negative_target_joining_origin=*/std::nullopt,
       /*negative_target_interest_group_names=*/{"c"},
       /*signatures=*/
       {SignatureWithLiteralKey(kKey1)},
@@ -1260,7 +1262,7 @@ TEST_F(AdditionalBidsUtilNegativeTargetingTest,
   std::vector<std::string> errors_out;
   EXPECT_TRUE(negative_targeter_.ShouldDropDueToNegativeTargeting(
       kBuyer,
-      /*negative_target_joining_origin=*/absl::nullopt,
+      /*negative_target_joining_origin=*/std::nullopt,
       /*negative_target_interest_group_names=*/{"a"},
       /*signatures=*/
       {SignatureWithLiteralKey(kKey1), SignatureWithLiteralKey(kKey2)},
@@ -1280,7 +1282,7 @@ TEST_F(AdditionalBidsUtilNegativeTargetingTest, NoMatchingKey) {
   std::vector<std::string> errors_out;
   EXPECT_FALSE(negative_targeter_.ShouldDropDueToNegativeTargeting(
       kBuyer,
-      /*negative_target_joining_origin=*/absl::nullopt,
+      /*negative_target_joining_origin=*/std::nullopt,
       /*negative_target_interest_group_names=*/{"b"},
       /*signatures=*/
       {SignatureWithLiteralKey(kKey1)},
@@ -1302,7 +1304,7 @@ TEST_F(AdditionalBidsUtilNegativeTargetingTest, SuccessfulDespiteMissingKey) {
   std::vector<std::string> errors_out;
   EXPECT_TRUE(negative_targeter_.ShouldDropDueToNegativeTargeting(
       kBuyer,
-      /*negative_target_joining_origin=*/absl::nullopt,
+      /*negative_target_joining_origin=*/std::nullopt,
       /*negative_target_interest_group_names=*/{"a", "c", "d", "b"},
       /*signatures=*/
       {SignatureWithLiteralKey(kKey2)},
@@ -1325,7 +1327,7 @@ TEST_F(AdditionalBidsUtilNegativeTargetingTest,
   std::vector<std::string> errors_out;
   EXPECT_TRUE(negative_targeter_.ShouldDropDueToNegativeTargeting(
       kBuyer,
-      /*negative_target_joining_origin=*/absl::nullopt,
+      /*negative_target_joining_origin=*/std::nullopt,
       /*negative_target_interest_group_names=*/{"a", "c", "d", "b"},
       /*signatures=*/
       {SignatureWithLiteralKey(kKey1)},

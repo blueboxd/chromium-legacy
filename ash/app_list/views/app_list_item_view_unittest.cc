@@ -20,6 +20,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event_utils.h"
@@ -70,7 +71,9 @@ class AppListItemViewTest : public AshTestBase,
   void SetUp() override {
     scoped_feature_list_.InitWithFeatureStates(
         {{app_list_features::kDragAndDropRefactor, IsUsingDragDropController()},
-         {features::kPromiseIcons, true}});
+         {features::kPromiseIcons, true},
+         {chromeos::features::kCrosWebAppShortcutUiUpdate, true},
+         {features::kSeparateWebAppShortcutBadgeIcon, true}});
 
     AshTestBase::SetUp();
 
@@ -110,6 +113,15 @@ class AppListItemViewTest : public AshTestBase,
     return item;
   }
 
+  AppListItem* CreateWebAppShortcutItemWithHostBadge(const std::string& name) {
+    AppListItem* item =
+        GetAppListTestHelper()
+            ->model()
+            ->CreateAndAddWebAppShortcutItemWithHostBadge(name + "_id");
+    item->SetName(name);
+    return item;
+  }
+
   AppListItemView::DragState GetDragState(AppListItemView* view) {
     return view->drag_state_;
   }
@@ -127,7 +139,7 @@ class AppListItemViewTest : public AshTestBase,
   bool IsUsingDragDropController() { return GetParam(); }
 
   int drag_started_on_controller_ = 0;
-  raw_ptr<AppListItemView, DanglingUntriaged | ExperimentalAsh> drag_view_;
+  raw_ptr<AppListItemView, DanglingUntriaged> drag_view_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 INSTANTIATE_TEST_SUITE_P(All, AppListItemViewTest, testing::Bool());
@@ -534,6 +546,78 @@ TEST_P(AppListItemViewTest, UpdateProgressOnPromiseIcon) {
   item->SetProgress(1.5f);
   EXPECT_EQ(view->item()->progress(), 1.5f);
   ProgressIndicatorWaiter().WaitForProgress(progress_indicator, 1.0f);
+}
+
+TEST_P(AppListItemViewTest, ShortcutIconEffectsShowOnShorcutItemWithHostBadge) {
+  AppListItem* item = CreateWebAppShortcutItemWithHostBadge("TestItem 1");
+
+  auto* helper = GetAppListTestHelper();
+  helper->ShowAppList();
+
+  auto* apps_grid_view = helper->GetScrollableAppsGridView();
+  AppListItemView* view = apps_grid_view->GetItemViewAt(0);
+
+  EXPECT_FALSE(item->GetHostBadgeIcon().isNull());
+  EXPECT_TRUE(view->has_host_badge_for_test());
+}
+
+TEST_P(AppListItemViewTest, NoShortcutIconEffectOntItemWithoutHostBadge) {
+  AppListItem* item = CreateAppListItem("TestItem 1");
+
+  auto* helper = GetAppListTestHelper();
+  helper->ShowAppList();
+
+  auto* apps_grid_view = helper->GetScrollableAppsGridView();
+  AppListItemView* view = apps_grid_view->GetItemViewAt(0);
+
+  EXPECT_TRUE(item->GetHostBadgeIcon().isNull());
+  EXPECT_FALSE(view->has_host_badge_for_test());
+}
+
+TEST_P(AppListItemViewTestWithDragDropController,
+       ShortcutIconEffectsPersistThroughDragDrop) {
+  AppListItem* item = CreateWebAppShortcutItemWithHostBadge("TestItem 1");
+
+  auto* helper = GetAppListTestHelper();
+  helper->ShowAppList();
+
+  auto* apps_grid_view = helper->GetScrollableAppsGridView();
+  AppListItemView* view = apps_grid_view->GetItemViewAt(0);
+  auto* generator = GetEventGenerator();
+  ASSERT_EQ(GetDragState(view), AppListItemView::DragState::kNone);
+
+  SetAppListItemViewForTest(view);
+
+  gfx::Point from = view->GetBoundsInScreen().CenterPoint();
+  generator->MoveTouch(from);
+  generator->PressTouch();
+  view->FireTouchDragTimerForTest();
+  EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kInitialized);
+
+  // Make sure that the item view has a started drag state during drag.
+  ShellTestApi().drag_drop_controller()->SetLoopClosureForTesting(
+      base::BindLambdaForTesting([&]() {
+        drag_started_on_controller_++;
+        generator->MoveTouchBy(10, 10);
+        EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kStarted);
+        generator->MoveMouseTo(apps_grid_view->GetBoundsInScreen().top_right());
+        generator->MoveTouchBy(10, 10);
+        EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kStarted);
+        EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kStarted);
+        generator->ReleaseTouch();
+      }),
+      base::DoNothing());
+
+  generator->MoveTouchBy(10, 10);
+
+  EXPECT_EQ(GetDragState(view), AppListItemView::DragState::kNone);
+  EXPECT_FALSE(view->FireTouchDragTimerForTest());
+  EXPECT_FALSE(IsIconScaled(view));
+
+  EXPECT_FALSE(item->GetHostBadgeIcon().isNull());
+  EXPECT_TRUE(view->has_host_badge_for_test());
+
+  MaybeCheckDragStartedOnControllerCount(1);
 }
 
 }  // namespace ash

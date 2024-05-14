@@ -220,10 +220,11 @@ class TabManagerDelegate::FocusedProcess {
 
 // Target memory to free is the amount which brings available
 // memory back to the margin.
-int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
+memory_pressure::ReclaimTarget
+TabManagerDelegate::MemoryStat::TargetMemoryToFree() {
   auto* monitor = ash::memory::SystemMemoryPressureEvaluator::Get();
   if (monitor) {
-    return monitor->GetCachedReclaimTargetKB();
+    return monitor->GetCachedReclaimTarget();
   } else {
     // When TabManager::DiscardTab(LifecycleUnitDiscardReason::EXTERNAL) is
     // called by an integration test, TabManagerDelegate might be used without
@@ -233,7 +234,7 @@ int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
     // TODO(vovoy): Remove this code path and modify the related browser tests.
     LOG(WARNING) << "SystemMemoryPressureEvaluator is not available";
     constexpr int kDefaultLowMemoryMarginKb = 50 * 1024;
-    return kDefaultLowMemoryMarginKb;
+    return memory_pressure::ReclaimTarget(kDefaultLowMemoryMarginKb);
   }
 }
 
@@ -345,7 +346,7 @@ void TabManagerDelegate::LowMemoryKill(
     }
   }
 
-  LowMemoryKillImpl(now, reason, std::move(tab_discard_done), absl::nullopt);
+  LowMemoryKillImpl(now, reason, std::move(tab_discard_done), std::nullopt);
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
@@ -497,7 +498,7 @@ void TabManagerDelegate::AdjustOomPriorities() {
   }
 
   // Pass in nullopt if unable to get ARC container processes.
-  AdjustOomPrioritiesImpl(absl::nullopt);
+  AdjustOomPrioritiesImpl(std::nullopt);
 }
 
 // Get a list of candidates to kill, sorted by descending importance.
@@ -576,7 +577,10 @@ void TabManagerDelegate::LowMemoryKillImpl(
   std::vector<Candidate> candidates =
       GetSortedCandidates(GetLifecycleUnits(), arc_processes);
 
-  int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
+  memory_pressure::ReclaimTarget target_memory_to_free =
+      mem_stat_->TargetMemoryToFree();
+
+  unnecessary_discard_monitor_.OnReclaimTargetBegin(target_memory_to_free);
 
   MEMORY_LOG(ERROR) << "List of low memory kill candidates "
                        "(sorted from low priority to high priority):";
@@ -588,26 +592,33 @@ void TabManagerDelegate::LowMemoryKillImpl(
   // bring the system memory back to a normal level.
   // The list is sorted by descending importance, so we go through the list
   // backwards.
-  absl::optional<base::TimeTicks> first_kill_time = absl::nullopt;
+  std::optional<base::TimeTicks> first_kill_time = std::nullopt;
   const TimeTicks now = TimeTicks::Now();
 
   for (auto& candidate : base::Reversed(candidates)) {
-    MEMORY_LOG(ERROR) << "Target memory to free: " << target_memory_to_free_kb
-                      << " KB";
-    if (target_memory_to_free_kb <= 0)
+    MEMORY_LOG(ERROR) << "Target memory to free: "
+                      << target_memory_to_free.target_kb << " KB";
+    if (target_memory_to_free.target_kb == 0) {
       break;
+    }
 
-    int freed_memory_kb =
-        ProcessCandidate(reason, now, candidate, target_memory_to_free_kb);
+    int freed_memory_kb = ProcessCandidate(reason, now, candidate,
+                                           target_memory_to_free.target_kb);
 
-    target_memory_to_free_kb -= freed_memory_kb;
+    unnecessary_discard_monitor_.OnDiscard(freed_memory_kb,
+                                           base::TimeTicks::Now());
+
+    // Prevent underflow by capping the memory freed.
+    target_memory_to_free.target_kb -=
+        std::min(static_cast<uint64_t>(freed_memory_kb),
+                 target_memory_to_free.target_kb);
 
     if (freed_memory_kb > 0 && !first_kill_time) {
       first_kill_time = base::TimeTicks::Now();
     }
   }
 
-  if (target_memory_to_free_kb > 0) {
+  if (target_memory_to_free.target_kb > 0) {
     MEMORY_LOG(ERROR)
         << "Unable to kill enough candidates to meet target_memory_to_free_kb ";
   }
@@ -618,6 +629,8 @@ void TabManagerDelegate::LowMemoryKillImpl(
     UMA_HISTOGRAM_MEDIUM_TIMES("Memory.LowMemoryKiller.FirstKillLatency",
                                delta);
   }
+
+  unnecessary_discard_monitor_.OnReclaimTargetEnd();
 
   // tab_discard_done runs when it goes out of the scope.
 }

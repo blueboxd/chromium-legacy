@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.suggestions.tile;
 
+import static org.junit.Assume.assumeTrue;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -32,6 +34,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -40,6 +43,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
@@ -51,6 +55,7 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.test.util.ViewUtils;
 import org.chromium.url.GURL;
 
@@ -104,8 +109,14 @@ public class TileGroupTest {
         FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
         testValuesOverride.addFeatureFlagOverride(
                 ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID, mEnableScrollableMVT);
-        testValuesOverride.addFeatureFlagOverride(
-                ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID, mEnableScrollableMVT);
+        if (!ChromeFeatureList.sSurfacePolish.isEnabled()) {
+            testValuesOverride.addFeatureFlagOverride(
+                    ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID,
+                    mEnableScrollableMVT);
+        } else {
+            StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(
+                    mEnableScrollableMVT);
+        }
         FeatureList.setTestValues(testValuesOverride);
 
         mTestServer =
@@ -134,7 +145,22 @@ public class TileGroupTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    public void testDismissTileWithContextMenu() throws Exception {
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    public void testDismissTileWithContextMenu_Phones() throws Exception {
+        testDismissTileWithContextMenuImpl();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_TABLET})
+    public void testDismissTileWithContextMenu_Tablets() throws Exception {
+        // Only the scrollable MVT is enabled on tablets when the Surface polish flag is enabled.
+        assumeTrue(mEnableScrollableMVT);
+        testDismissTileWithContextMenuImpl();
+    }
+
+    private void testDismissTileWithContextMenuImpl() throws Exception {
         initializeTab();
         SiteSuggestion siteToDismiss = mMostVisitedSites.getCurrentSites().get(0);
         final View tileView = getNonNullTileViewFor(siteToDismiss);
@@ -157,11 +183,24 @@ public class TileGroupTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    public void testDismissTileUndo() throws Exception {
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    public void testDismissTileUndo_Phones() throws Exception {
+        testDismissTileUndoImpl();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_TABLET})
+    public void testDismissTileUndo_Tablets() throws Exception {
+        // Only the scrollable MVT is enabled on tablets when the Surface polish flag is enabled.
+        assumeTrue(mEnableScrollableMVT);
+        testDismissTileUndoImpl();
+    }
+
+    private void testDismissTileUndoImpl() throws Exception {
         initializeTab();
         GURL url0 = new GURL(mSiteSuggestionUrls[0]);
-        GURL url1 = new GURL(mSiteSuggestionUrls[1]);
-        GURL url2 = new GURL(mSiteSuggestionUrls[2]);
         SiteSuggestion siteToDismiss = mMostVisitedSites.getCurrentSites().get(0);
         final ViewGroup tileContainer = getTileLayout();
         final View tileView = getNonNullTileViewFor(siteToDismiss);

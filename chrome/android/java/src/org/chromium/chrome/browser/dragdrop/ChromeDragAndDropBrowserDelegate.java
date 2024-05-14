@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.dragdrop;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipData.Item;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.view.DragAndDropPermissions;
@@ -16,25 +17,27 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.DragAndDropLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.content_public.common.ContentFeatures;
+import org.chromium.ui.base.MimeTypeUtils;
 import org.chromium.ui.dragdrop.DragAndDropBrowserDelegate;
+import org.chromium.ui.dragdrop.DragDropMetricUtils.UrlIntentSource;
 import org.chromium.ui.dragdrop.DropDataAndroid;
 import org.chromium.ui.dragdrop.DropDataProviderImpl;
 import org.chromium.ui.dragdrop.DropDataProviderUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /** Delegate for browser related functions used by Drag and Drop. */
 public class ChromeDragAndDropBrowserDelegate implements DragAndDropBrowserDelegate {
-    /** The MIME type for a tab object dragged from Chrome. */
-    public static final String CHROME_MIMETYPE_TAB = "chrome/tab";
-
-    public static final String[] SUPPORTED_MIME_TYPES = {CHROME_MIMETYPE_TAB};
-
     private static final String PARAM_CLEAR_CACHE_DELAYED_MS = "ClearCacheDelayedMs";
     @VisibleForTesting static final String PARAM_DROP_IN_CHROME = "DropInChrome";
+    private final String[] mSupportedMimeTypes;
 
     private final Context mContext;
     private final boolean mSupportDropInChrome;
@@ -61,6 +64,18 @@ public class ChromeDragAndDropBrowserDelegate implements DragAndDropBrowserDeleg
                                 PARAM_CLEAR_CACHE_DELAYED_MS,
                                 DropDataProviderImpl.DEFAULT_CLEAR_CACHED_DATA_INTERVAL_MS);
         DropDataProviderUtils.setClearCachedDataIntervalMs(delay);
+
+        List<String> supportedMimeTypeList = new ArrayList();
+        supportedMimeTypeList.add(MimeTypeUtils.CHROME_MIMETYPE_TAB);
+        if (!TabUiFeatureUtilities.DISABLE_DRAG_TO_NEW_INSTANCE_DD.getValue()) {
+            supportedMimeTypeList.addAll(
+                    Arrays.asList(
+                            ClipDescription.MIMETYPE_TEXT_PLAIN,
+                            ClipDescription.MIMETYPE_TEXT_INTENT,
+                            MimeTypeUtils.CHROME_MIMETYPE_LINK));
+        }
+        mSupportedMimeTypes = new String[supportedMimeTypeList.size()];
+        supportedMimeTypeList.toArray(mSupportedMimeTypes);
     }
 
     @Override
@@ -85,7 +100,7 @@ public class ChromeDragAndDropBrowserDelegate implements DragAndDropBrowserDeleg
     }
 
     @Override
-    public Intent createLinkIntent(String urlString) {
+    public Intent createUrlIntent(String urlString, @UrlIntentSource int intentSrc) {
         Intent intent = null;
         if (MultiWindowUtils.isMultiInstanceApi31Enabled()) {
             intent =
@@ -93,7 +108,8 @@ public class ChromeDragAndDropBrowserDelegate implements DragAndDropBrowserDeleg
                             mContext,
                             urlString,
                             MultiWindowUtils.getInstanceIdForLinkIntent(
-                                    ContextUtils.activityFromContext(mContext)));
+                                    ContextUtils.activityFromContext(mContext)),
+                            intentSrc);
         }
         return intent;
     }
@@ -102,14 +118,16 @@ public class ChromeDragAndDropBrowserDelegate implements DragAndDropBrowserDeleg
     public ClipData buildClipData(@NonNull DropDataAndroid dropData) {
         assert dropData instanceof ChromeDropDataAndroid;
         ChromeDropDataAndroid chromeDropDataAndroid = (ChromeDropDataAndroid) dropData;
+        Intent intent = null;
+        if (!TabUiFeatureUtilities.DISABLE_DRAG_TO_NEW_INSTANCE_DD.getValue()) {
+            intent =
+                    createUrlIntent(
+                            chromeDropDataAndroid.mTab.getUrl().getSpec(),
+                            UrlIntentSource.TAB_IN_STRIP);
+        }
         return new ClipData(
                 null,
-                SUPPORTED_MIME_TYPES,
-                new Item(getTextForBrowserData(chromeDropDataAndroid), null));
-    }
-
-    private String getTextForBrowserData(ChromeDropDataAndroid dropData) {
-        assert dropData.hasTab();
-        return "TabId=" + dropData.mTabId;
+                mSupportedMimeTypes,
+                new Item(chromeDropDataAndroid.buildTabClipDataText(), intent, null));
     }
 }

@@ -124,8 +124,8 @@ CreateIncomingPasswordSharingInvitation(const std::string& invitation_guid,
   CHECK(success);
 
   const CrossUserSharingPublicPrivateKeyPair& key_pair =
-      cryptographer->GetCrossUserSharingKeyPairForTesting(/*version=*/0);
-  absl::optional<std::vector<uint8_t>> encrypted_data =
+      cryptographer->GetCrossUserSharingKeyPair(/*version=*/0);
+  std::optional<std::vector<uint8_t>> encrypted_data =
       cryptographer->AuthEncryptForCrossUserSharing(
           base::as_bytes(base::make_span(serialized_data)),
           key_pair.GetRawPublicKey());
@@ -1636,13 +1636,13 @@ TEST_F(ModelTypeWorkerTest, CommitOnly) {
   const SyncEntity entity =
       server()->GetNthCommitMessage(0).commit().entries(0);
 
-  EXPECT_FALSE(entity.has_ctime());
-  EXPECT_FALSE(entity.has_deleted());
   EXPECT_FALSE(entity.has_folder());
-  EXPECT_FALSE(entity.has_id_string());
-  EXPECT_FALSE(entity.has_mtime());
-  EXPECT_FALSE(entity.has_version());
-  EXPECT_FALSE(entity.has_name());
+  EXPECT_TRUE(entity.has_ctime());
+  EXPECT_TRUE(entity.has_deleted());
+  EXPECT_TRUE(entity.has_mtime());
+  EXPECT_TRUE(entity.has_version());
+  EXPECT_TRUE(entity.has_name());
+  EXPECT_TRUE(entity.has_id_string());
   EXPECT_TRUE(entity.specifics().has_user_event());
   EXPECT_EQ(id, entity.specifics().user_event().event_time_usec());
 
@@ -1974,8 +1974,7 @@ TEST(ModelTypeWorkerPopulateUpdateResponseDataTest,
   *entity.mutable_specifics()
        ->mutable_webauthn_credential()
        ->mutable_sync_id() = sync_id;
-  *entity.mutable_client_tag_hash() =
-      base::HexEncode(sync_id.data(), sync_id.size());
+  *entity.mutable_client_tag_hash() = base::HexEncode(sync_id);
 
   ASSERT_EQ(
       ModelTypeWorker::SUCCESS,
@@ -2016,8 +2015,10 @@ class GetLocalChangesRequestTest : public testing::Test {
   scoped_refptr<GetLocalChangesRequest> MakeRequest();
 
   void BlockingWaitForResponseOrCancelation(
-      scoped_refptr<GetLocalChangesRequest> request);
-  void ScheduleBlockingWait(scoped_refptr<GetLocalChangesRequest> request);
+      scoped_refptr<GetLocalChangesRequest> request,
+      CancelationSignal* cancelation_signal);
+  void ScheduleBlockingWait(scoped_refptr<GetLocalChangesRequest> request,
+                            CancelationSignal* cancelation_signal);
 
  protected:
   CancelationSignal cancelation_signal_;
@@ -2045,48 +2046,50 @@ void GetLocalChangesRequestTest::TearDown() {
 
 scoped_refptr<GetLocalChangesRequest>
 GetLocalChangesRequestTest::MakeRequest() {
-  return base::MakeRefCounted<GetLocalChangesRequest>(&cancelation_signal_);
+  return base::MakeRefCounted<GetLocalChangesRequest>();
 }
 
 void GetLocalChangesRequestTest::BlockingWaitForResponseOrCancelation(
-    scoped_refptr<GetLocalChangesRequest> request) {
+    scoped_refptr<GetLocalChangesRequest> request,
+    CancelationSignal* cancelation_signal) {
   start_event_.Signal();
-  request->WaitForResponseOrCancelation();
+  request->WaitForResponseOrCancelation(cancelation_signal);
   done_event_.Signal();
 }
 
 void GetLocalChangesRequestTest::ScheduleBlockingWait(
-    scoped_refptr<GetLocalChangesRequest> request) {
+    scoped_refptr<GetLocalChangesRequest> request,
+    CancelationSignal* cancelation_signal) {
   blocking_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GetLocalChangesRequestTest::BlockingWaitForResponseOrCancelation,
-          base::Unretained(this), request));
+          base::Unretained(this), request, cancelation_signal));
 }
 
 // Tests that request doesn't block when cancelation signal is already signaled.
 TEST_F(GetLocalChangesRequestTest, CancelationSignaledBeforeRequest) {
   cancelation_signal_.Signal();
   scoped_refptr<GetLocalChangesRequest> request = MakeRequest();
-  request->WaitForResponseOrCancelation();
-  EXPECT_TRUE(request->WasCancelled());
+  request->WaitForResponseOrCancelation(&cancelation_signal_);
+  EXPECT_TRUE(cancelation_signal_.IsSignalled());
 }
 
 // Tests that signaling cancelation signal while request is blocked unblocks it.
 TEST_F(GetLocalChangesRequestTest, CancelationSignaledAfterRequest) {
   scoped_refptr<GetLocalChangesRequest> request = MakeRequest();
-  ScheduleBlockingWait(request);
+  ScheduleBlockingWait(request, &cancelation_signal_);
   start_event_.Wait();
   cancelation_signal_.Signal();
   done_event_.Wait();
-  EXPECT_TRUE(request->WasCancelled());
+  EXPECT_TRUE(cancelation_signal_.IsSignalled());
 }
 
 // Tests that setting response unblocks request.
 TEST_F(GetLocalChangesRequestTest, SuccessfulRequest) {
   const std::string kHash1 = "SomeHash";
   scoped_refptr<GetLocalChangesRequest> request = MakeRequest();
-  ScheduleBlockingWait(request);
+  ScheduleBlockingWait(request, &cancelation_signal_);
   start_event_.Wait();
   {
     CommitRequestDataList response;
@@ -2095,7 +2098,6 @@ TEST_F(GetLocalChangesRequestTest, SuccessfulRequest) {
     request->SetResponse(std::move(response));
   }
   done_event_.Wait();
-  EXPECT_FALSE(request->WasCancelled());
   CommitRequestDataList response = request->ExtractResponse();
   EXPECT_EQ(1U, response.size());
   EXPECT_EQ(kHash1, response[0]->specifics_hash);
@@ -2659,19 +2661,7 @@ TEST_F(ModelTypeWorkerTest, ShouldHaveLocalChangesWhenContributedMaxEntities) {
   EXPECT_FALSE(worker()->HasLocalChanges());
 }
 
-class ModelTypeWorkerPasswordsTestWithNotes
-    : public ModelTypeWorkerPasswordsTest {
- public:
-  ModelTypeWorkerPasswordsTestWithNotes() {
-    feature_list_.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
-  }
-  ~ModelTypeWorkerPasswordsTestWithNotes() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+TEST_F(ModelTypeWorkerPasswordsTest,
        ShouldIgnoreTheEncryptedNotesBackupWhenNotesInPasswordSpecificsData) {
   base::HistogramTester histogram_tester;
   const std::string kPasswordInSpecificsNote = "Note Value";
@@ -2720,7 +2710,7 @@ TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
       syncer::PasswordNotesStateForUMA::kSetInSpecificsData, 1);
 }
 
-TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+TEST_F(ModelTypeWorkerPasswordsTest,
        ShouldUseTheEncryptedNotesBackupWhenMissingInPasswordSpecificsData) {
   base::HistogramTester histogram_tester;
   const std::string kPasswordNoteBackup = "Note Backup";
@@ -2765,8 +2755,7 @@ TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
       syncer::PasswordNotesStateForUMA::kSetOnlyInBackup, 1);
 }
 
-TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
-       ShouldEmitUnsetWhenNoNotesInUpdate) {
+TEST_F(ModelTypeWorkerPasswordsTest, ShouldEmitUnsetWhenNoNotesInUpdate) {
   base::HistogramTester histogram_tester;
   NormalInitialize();
 
@@ -2793,7 +2782,7 @@ TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
                                       1);
 }
 
-TEST_F(ModelTypeWorkerPasswordsTestWithNotes, ShouldEmitNotesBackupCorrupted) {
+TEST_F(ModelTypeWorkerPasswordsTest, ShouldEmitNotesBackupCorrupted) {
   base::HistogramTester histogram_tester;
   const std::string kPasswordNoteBackup = "Note Backup";
   NormalInitialize();
@@ -2834,8 +2823,7 @@ TEST_F(ModelTypeWorkerPasswordsTestWithNotes, ShouldEmitNotesBackupCorrupted) {
       syncer::PasswordNotesStateForUMA::kSetOnlyInBackupButCorrupted, 1);
 }
 
-TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
-       ShouldPopulatePasswordNotesBackup) {
+TEST_F(ModelTypeWorkerPasswordsTest, ShouldPopulatePasswordNotesBackup) {
   const std::string kPasswordInSpecificsNote = "Note Value";
   NormalInitialize();
 
@@ -2868,7 +2856,7 @@ TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
   EXPECT_EQ(kPasswordInSpecificsNote, decrypted_notes.note(0).value());
 }
 
-TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+TEST_F(ModelTypeWorkerPasswordsTest,
        ShouldPopulatePasswordNotesBackupWhenNoLocalNotes) {
   NormalInitialize();
 

@@ -26,6 +26,8 @@ include_rules = [
   "+gpu/config/gpu_finch_features.h",
   "+gpu/vulkan",
   "+media/base",
+  "+media/filters/video_cadence_estimator.h",
+  "+media/gpu/buildflags.h",
   "+mojo/public/cpp/system",
   "+skia",
   "+third_party/khronos",

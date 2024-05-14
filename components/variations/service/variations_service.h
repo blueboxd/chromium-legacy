@@ -50,6 +50,7 @@ class PrefRegistrySyncable;
 }
 
 namespace variations {
+struct StudyGroupNames;
 class VariationsSeed;
 }
 
@@ -206,6 +207,10 @@ class VariationsService
       std::unique_ptr<base::FeatureList> feature_list,
       PlatformFieldTrials* platform_field_trials);
 
+  // Returns the names of studies and their groups which could possibly be
+  // forced.
+  std::vector<StudyGroupNames> GetStudiesAvailableToForce();
+
   // The seed type used.
   SeedType GetSeedType() const;
 
@@ -316,6 +321,11 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DoNotRetryAfterARetry);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            DoNotRetryIfInsecureURLIsHTTPS);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // For the test to access |limited_entropy_synthetic_trial_|.
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceBrowserTest,
+                           LimitedEntropySyntheticTrialSeedTransfer);
+#endif
 
   void InitResourceRequestedAllowedNotifier();
 

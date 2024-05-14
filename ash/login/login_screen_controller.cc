@@ -41,6 +41,8 @@ namespace ash {
 
 namespace {
 
+constexpr std::string_view kKioskToastId = "KioskAppError";
+
 enum class SystemTrayVisibility {
   kNone,     // Tray not visible anywhere.
   kPrimary,  // Tray visible only on primary display.
@@ -301,7 +303,8 @@ LoginScreenModel* LoginScreenController::GetModel() {
 }
 
 void LoginScreenController::ShowKioskAppError(const std::string& message) {
-  ToastData toast_data("KioskAppError", ToastCatalogName::kKioskAppError,
+  ToastData toast_data(std::string(kKioskToastId),
+                       ToastCatalogName::kKioskAppError,
                        base::UTF8ToUTF16(message), ToastData::kInfiniteDuration,
                        /*visible_on_lock_screen=*/true,
                        /*has_dismiss_button=*/true);
@@ -323,14 +326,9 @@ void LoginScreenController::FocusLoginShelf(bool reverse) {
     Shell::Get()->focus_cycler()->FocusWidget(shelf->GetStatusAreaWidget());
   } else if (shelf->shelf_widget()->GetLoginShelfView()->IsFocusable()) {
     // Otherwise focus goes to login shelf buttons when there is any.
-    if (features::IsUseLoginShelfWidgetEnabled()) {
-      LoginShelfWidget* login_shelf_widget = shelf->login_shelf_widget();
-      login_shelf_widget->SetDefaultLastFocusableChild(reverse);
-      Shell::Get()->focus_cycler()->FocusWidget(login_shelf_widget);
-    } else {
-      shelf->shelf_widget()->set_default_last_focusable_child(reverse);
-      Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
-    }
+    LoginShelfWidget* login_shelf_widget = shelf->login_shelf_widget();
+    login_shelf_widget->SetDefaultLastFocusableChild(reverse);
+    Shell::Get()->focus_cycler()->FocusWidget(login_shelf_widget);
   } else {
     // No elements to focus on the shelf.
     //
@@ -530,6 +528,9 @@ void LoginScreenController::OnLockScreenDestroyed() {
     LOG(WARNING) << "Lock screen is destroyed while the authentication stage: "
                  << authentication_stage_;
   }
+
+  // Dismiss the toast created by `ShowKioskAppError`, if any.
+  Shell::Get()->toast_manager()->Cancel(kKioskToastId);
 
   // Still handle it to avoid crashes during Login/Lock/Unlock flows.
   SetAuthenticationStage(AuthenticationStage::kIdle);

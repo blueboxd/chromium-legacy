@@ -42,11 +42,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -60,7 +62,6 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -95,7 +96,7 @@ public class TabGridDialogMediatorUnitTest {
     @Mock TabGridDialogMediator.DialogController mDialogController;
     @Mock TabCreatorManager mTabCreatorManager;
     @Mock TabCreator mTabCreator;
-    @Mock TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
+    @Mock TabSwitcherResetHandler mTabSwitcherResetHandler;
     @Mock TabGridDialogMediator.AnimationSourceViewProvider mAnimationSourceViewProvider;
     @Mock TabGroupModelFilter mTabGroupModelFilter;
     @Mock TabModel mTabModel;
@@ -603,6 +604,7 @@ public class TabGridDialogMediatorUnitTest {
 
         assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
         verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false);
+        ShadowLooper.runUiThreadTasks();
         verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(TAB1_ID));
     }
 
@@ -626,6 +628,7 @@ public class TabGridDialogMediatorUnitTest {
         assertThat(
                 mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(CUSTOMIZED_DIALOG_TITLE));
         verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false);
+        ShadowLooper.runUiThreadTasks();
         verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(TAB2_ID));
     }
 
@@ -642,6 +645,7 @@ public class TabGridDialogMediatorUnitTest {
         // Dialog should still be hidden.
         assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(false));
         verify(mTabSwitcherResetHandler, never()).resetWithTabList(mTabGroupModelFilter, false);
+        ShadowLooper.runUiThreadTasks();
         verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(TAB1_ID));
     }
 
@@ -649,6 +653,7 @@ public class TabGridDialogMediatorUnitTest {
     public void tabClosureCommitted() {
         mTabModelObserverCaptor.getValue().tabClosureCommitted(mTab1);
 
+        ShadowLooper.runUiThreadTasks();
         verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(TAB1_ID));
     }
 
@@ -657,6 +662,7 @@ public class TabGridDialogMediatorUnitTest {
         List<Tab> tabs = Arrays.asList(mTab1, mTab2);
         mTabModelObserverCaptor.getValue().onFinishingMultipleTabClosure(tabs);
 
+        ShadowLooper.runUiThreadTasks();
         verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(tabs));
     }
 
@@ -665,6 +671,7 @@ public class TabGridDialogMediatorUnitTest {
         List<Tab> tabs = Arrays.asList(mTab1);
         mTabModelObserverCaptor.getValue().onFinishingMultipleTabClosure(tabs);
 
+        ShadowLooper.runUiThreadTasks();
         verify(mSnackbarManager).dismissSnackbars(eq(mMediator), eq(TAB1_ID));
     }
 
@@ -672,6 +679,7 @@ public class TabGridDialogMediatorUnitTest {
     public void allTabsClosureCommitted() {
         mTabModelObserverCaptor.getValue().allTabsClosureCommitted(false);
 
+        ShadowLooper.runUiThreadTasks();
         verify(mSnackbarManager).dismissSnackbars(eq(mMediator));
     }
 

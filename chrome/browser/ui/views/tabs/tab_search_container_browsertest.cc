@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/feature_list.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/optimization_guide/browser_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -29,17 +32,14 @@ class TabSearchContainerBrowserTest : public InProcessBrowserTest {
   TabSearchContainerBrowserTest() {
     feature_list_.InitWithFeatures(
         {features::kTabOrganization, features::kChromeRefresh2023,
-         features::kChromeWebuiRefresh2023,
-         optimization_guide::features::internal::
-             kTabOrganizationSettingsVisibility,
-         optimization_guide::features::kOptimizationGuideModelExecution},
+         features::kChromeWebuiRefresh2023},
         {});
+    TabOrganizationUtils::GetInstance()->SetIgnoreOptGuideForTesting(true);
   }
 
   void EnableOptGuide() {
-    signin::MakePrimaryAccountAvailable(
-        IdentityManagerFactory::GetForProfile(browser()->profile()),
-        "test@example.com", signin::ConsentLevel::kSync);
+    optimization_guide::EnableSigninAndModelExecutionCapability(
+        browser()->profile());
 
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetInteger(
@@ -65,11 +65,6 @@ class TabSearchContainerBrowserTest : public InProcessBrowserTest {
  private:
   base::test::ScopedFeatureList feature_list_;
 };
-
-IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
-                       PRE_TogglesActionUIState) {
-  EnableOptGuide();
-}
 
 IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest, TogglesActionUIState) {
   ASSERT_FALSE(
@@ -122,11 +117,6 @@ IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest, DelaysHide) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
-                       PRE_ImmediatelyHidesWhenOrganizeButtonClicked) {
-  EnableOptGuide();
-}
-
-IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
                        ImmediatelyHidesWhenOrganizeButtonClicked) {
   tab_search_container()->expansion_animation_for_testing()->Reset(1);
   tab_search_container()->SetLockedExpansionModeForTesting(
@@ -136,11 +126,6 @@ IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
 
   EXPECT_TRUE(
       tab_search_container()->expansion_animation_for_testing()->IsClosing());
-}
-
-IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
-                       PRE_ImmediatelyHidesWhenOrganizeButtonDismissed) {
-  EnableOptGuide();
 }
 
 IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
@@ -171,4 +156,61 @@ IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
 
   ASSERT_TRUE(
       tab_search_container()->expansion_animation_for_testing()->IsClosing());
+}
+
+IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
+                       LogsSuccessWhenButtonClicked) {
+  base::HistogramTester histogram_tester;
+
+  tab_search_container()->expansion_animation_for_testing()->Reset(1);
+
+  TabOrganizationService* service =
+      tab_search_container()->tab_organization_service_for_testing();
+
+  service->OnTriggerOccured(browser());
+
+  tab_search_container()->OnOrganizeButtonClicked();
+
+  histogram_tester.ExpectUniqueSample("Tab.Organization.AllEntrypoints.Clicked",
+                                      true, 1);
+  histogram_tester.ExpectUniqueSample("Tab.Organization.Proactive.Clicked",
+                                      true, 1);
+  histogram_tester.ExpectUniqueSample("Tab.Organization.Trigger.Outcome", 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
+                       LogsFailureWhenButtonDismissed) {
+  base::HistogramTester histogram_tester;
+
+  tab_search_container()->expansion_animation_for_testing()->Reset(1);
+
+  TabOrganizationService* service =
+      tab_search_container()->tab_organization_service_for_testing();
+
+  service->OnTriggerOccured(browser());
+
+  tab_search_container()->OnOrganizeButtonDismissed();
+
+  histogram_tester.ExpectUniqueSample("Tab.Organization.Proactive.Clicked",
+                                      false, 1);
+  histogram_tester.ExpectUniqueSample("Tab.Organization.Trigger.Outcome", 1, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
+                       LogsFailureWhenButtonTimeout) {
+  base::HistogramTester histogram_tester;
+
+  tab_search_container()->expansion_animation_for_testing()->Reset(1);
+
+  TabOrganizationService* service =
+      tab_search_container()->tab_organization_service_for_testing();
+
+  service->OnTriggerOccured(browser());
+
+  tab_search_container()->OnOrganizeButtonTimeout();
+
+  histogram_tester.ExpectUniqueSample("Tab.Organization.Proactive.Clicked",
+                                      false, 1);
+
+  histogram_tester.ExpectUniqueSample("Tab.Organization.Trigger.Outcome", 2, 1);
 }

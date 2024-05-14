@@ -162,8 +162,7 @@ class OmniboxResultTest : public testing::Test {
         BookmarkModelFactory::GetInstance(),
         BookmarkModelFactory::GetDefaultFactory());
     profile_builder.SetSharedURLLoaderFactory(
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_));
+        test_url_loader_factory_.GetSafeWeakWrapper());
     profile_ = profile_builder.Build();
 
     app_list_controller_delegate_ =
@@ -235,7 +234,7 @@ class OmniboxResultTest : public testing::Test {
 
   testing::NiceMock<favicon::MockFaviconService> favicon_service_;
 
-  raw_ptr<bookmarks::BookmarkModel, ExperimentalAsh> bookmark_model_;
+  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
 };
 
 TEST_F(OmniboxResultTest, Basic) {

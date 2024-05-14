@@ -5,6 +5,8 @@
 #include "google_apis/gaia/gaia_config.h"
 
 #include <optional>
+#include <string_view>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -12,7 +14,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/strings/string_piece.h"
 #include "base/threading/thread_restrictions.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/google_api_keys.h"
@@ -28,7 +29,7 @@ GaiaConfig::GaiaConfig(base::Value::Dict parsed_config)
 
 GaiaConfig::~GaiaConfig() = default;
 
-bool GaiaConfig::GetURLIfExists(base::StringPiece key, GURL* out_url) {
+bool GaiaConfig::GetURLIfExists(std::string_view key, GURL* out_url) {
   const base::Value::Dict* urls = parsed_config_.FindDict("urls");
   if (!urls)
     return false;
@@ -55,7 +56,7 @@ bool GaiaConfig::GetURLIfExists(base::StringPiece key, GURL* out_url) {
   return true;
 }
 
-bool GaiaConfig::GetAPIKeyIfExists(base::StringPiece key,
+bool GaiaConfig::GetAPIKeyIfExists(std::string_view key,
                                    std::string* out_api_key) {
   const base::Value::Dict* api_keys = parsed_config_.FindDict("api_keys");
   if (!api_keys)
@@ -103,7 +104,6 @@ std::unique_ptr<GaiaConfig> GaiaConfig::ReadConfigFromString(
   std::optional<base::Value> dict = base::JSONReader::Read(config_contents);
   if (!dict || !dict->is_dict()) {
     LOG(FATAL) << "Couldn't parse Gaia config file";
-    return nullptr;
   }
 
   return std::make_unique<GaiaConfig>(std::move(dict->GetDict()));
@@ -120,7 +120,6 @@ std::unique_ptr<GaiaConfig> GaiaConfig::ReadConfigFromDisk(
   std::string config_contents;
   if (!base::ReadFileToString(config_path, &config_contents)) {
     LOG(FATAL) << "Couldn't read Gaia config file " << config_path;
-    return nullptr;
   }
   return ReadConfigFromString(config_contents);
 }
@@ -133,7 +132,6 @@ std::unique_ptr<GaiaConfig> GaiaConfig::ReadConfigFromCommandLineSwitches(
     LOG(FATAL) << "Either a Gaia config file path or a config file contents "
                   "can be provided; "
                << "not both";
-    return nullptr;
   }
 
   if (command_line->HasSwitch(switches::kGaiaConfigContents)) {

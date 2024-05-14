@@ -67,9 +67,9 @@ class ASH_EXPORT SavedDeskItemView : public views::Button,
                                      public OverviewFocusableView,
                                      public views::ViewTargeterDelegate,
                                      public views::TextfieldController {
- public:
-  METADATA_HEADER(SavedDeskItemView);
+  METADATA_HEADER(SavedDeskItemView, views::Button)
 
+ public:
   explicit SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk);
   SavedDeskItemView(const SavedDeskItemView&) = delete;
   SavedDeskItemView& operator=(const SavedDeskItemView&) = delete;
@@ -114,7 +114,7 @@ class ASH_EXPORT SavedDeskItemView : public views::Button,
 
   // views::Button:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void Layout() override;
+  void Layout(PassKey) override;
   void OnViewFocused(views::View* observed_view) override;
   void OnViewBlurred(views::View* observed_view) override;
   void OnFocus() override;
@@ -165,16 +165,15 @@ class ASH_EXPORT SavedDeskItemView : public views::Button,
   std::unique_ptr<DeskTemplate> saved_desk_;
 
   // Owned by the views hierarchy.
-  raw_ptr<SavedDeskNameView, ExperimentalAsh> name_view_ = nullptr;
+  raw_ptr<SavedDeskNameView> name_view_ = nullptr;
   // When template is managed by admin, `time_view_` will display management
   // description instead.
-  raw_ptr<views::Label, ExperimentalAsh> time_view_ = nullptr;
-  raw_ptr<SavedDeskIconContainer, ExperimentalAsh> icon_container_view_ =
-      nullptr;
-  raw_ptr<IconButton, ExperimentalAsh> delete_button_ = nullptr;
-  raw_ptr<PillButton, ExperimentalAsh> launch_button_ = nullptr;
+  raw_ptr<views::Label> time_view_ = nullptr;
+  raw_ptr<SavedDeskIconContainer> icon_container_view_ = nullptr;
+  raw_ptr<IconButton> delete_button_ = nullptr;
+  raw_ptr<PillButton> launch_button_ = nullptr;
   // Container used for holding all the views that appear on hover.
-  raw_ptr<views::View, ExperimentalAsh> hover_container_ = nullptr;
+  raw_ptr<views::View> hover_container_ = nullptr;
 
   std::unique_ptr<SystemShadow> shadow_;
 

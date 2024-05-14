@@ -13,12 +13,12 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
-#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_badge_view.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_chip_view.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_textfield_view.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_view_delegate.h"
 #include "chrome/browser/ui/views/editor_menu/utils/pre_target_handler.h"
+#include "chrome/browser/ui/views/editor_menu/utils/pre_target_handler_view.h"
 #include "chrome/browser/ui/views/editor_menu/utils/preset_text_query.h"
 #include "chrome/browser/ui/views/editor_menu/utils/utils.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -53,14 +53,13 @@ constexpr char kWidgetName[] = "EditorMenuViewWidget";
 
 constexpr gfx::Insets kTitleContainerInsets = gfx::Insets::TLBR(12, 16, 12, 14);
 
-// Min width in rewrite mode to ensure there is space for the chips.
-constexpr int kEditorMenuRewriteModeMinWidth = 288;
-
 constexpr int kBadgeHorizontalPadding = 8;
 
 // Spacing to apply between and around chips.
 constexpr int kChipsHorizontalPadding = 8;
 constexpr int kChipsVerticalPadding = 12;
+constexpr int kHeightWithoutChips = 100;
+constexpr int kHeightPerChipRow = 40;
 constexpr gfx::Insets kChipsContainerInsets = gfx::Insets::TLBR(0, 16, 16, 16);
 
 constexpr gfx::Insets kTextfieldContainerInsets =
@@ -72,9 +71,8 @@ EditorMenuView::EditorMenuView(EditorMenuMode editor_menu_mode,
                                const PresetTextQueries& preset_text_queries,
                                const gfx::Rect& anchor_view_bounds,
                                EditorMenuViewDelegate* delegate)
-    : editor_menu_mode_(editor_menu_mode),
-      pre_target_handler_(
-          std::make_unique<PreTargetHandler>(this, CardType::kEditorMenu)),
+    : PreTargetHandlerView(CardType::kEditorMenu),
+      editor_menu_mode_(editor_menu_mode),
       delegate_(delegate) {
   CHECK(delegate_);
   InitLayout(preset_text_queries);
@@ -108,7 +106,7 @@ views::UniqueWidgetPtr EditorMenuView::CreateWidget(
 }
 
 void EditorMenuView::AddedToWidget() {
-  widget_observation_.Observe(GetWidget());
+  PreTargetHandlerView::AddedToWidget();
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
@@ -125,30 +123,36 @@ void EditorMenuView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                                     : IDS_EDITOR_MENU_REWRITE_CARD_TITLE));
 }
 
+int EditorMenuView::GetHeightForWidth(int width) const {
+  // When the width of editor menu view is updated, we will adjust the number of
+  // rows chips (see: UpdateChipsContainer). Thus, here we need to pre-compute
+  // the expected number of rows here and so we can estimate the height rather
+  // than relying on the default logic.
+
+  const int chip_container_width = width - kChipsContainerInsets.width();
+  int running_width = 0;
+  int num_rows = 0;
+  for (views::View* row : chips_container_->children()) {
+    for (views::View* chip : row->children()) {
+      const int chip_width = chip->GetPreferredSize().width();
+      if (num_rows > 0 &&
+          running_width + kChipsHorizontalPadding + chip_width <=
+              chip_container_width) {
+        running_width += kChipsHorizontalPadding + chip_width;
+      } else {
+        ++num_rows;
+        running_width = chip_width;
+      }
+    }
+  }
+
+  return kHeightWithoutChips + num_rows * kHeightPerChipRow;
+}
+
 bool EditorMenuView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   CHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
   GetWidget()->Close();
   return true;
-}
-
-void EditorMenuView::OnWidgetDestroying(views::Widget* widget) {
-  widget_observation_.Reset();
-}
-
-void EditorMenuView::OnWidgetActivationChanged(views::Widget* widget,
-                                               bool active) {
-  // When the widget is active, will use default focus behavior.
-  if (active) {
-    // Reset `pre_target_handler_` immediately causes problems if the events are
-    // not all precessed. Reset it asynchronously.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(&EditorMenuView::ResetPreTargetHandler,
-                                  weak_factory_.GetWeakPtr()));
-    return;
-  }
-
-  // Close widget When it is deactivated.
-  GetWidget()->Close();
 }
 
 void EditorMenuView::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -158,22 +162,16 @@ void EditorMenuView::OnWidgetVisibilityChanged(views::Widget* widget,
 }
 
 void EditorMenuView::UpdateBounds(const gfx::Rect& anchor_view_bounds) {
-  const int editor_menu_width = editor_menu_mode_ == EditorMenuMode::kWrite
-                                    ? anchor_view_bounds.width()
-                                    : std::max(anchor_view_bounds.width(),
-                                               kEditorMenuRewriteModeMinWidth);
-  UpdateChipsContainer(editor_menu_width);
-
-  GetWidget()->SetBounds(GetEditorMenuBounds(
-      anchor_view_bounds,
-      gfx::Size(editor_menu_width, GetHeightForWidth(editor_menu_width))));
+  gfx::Rect editor_menu_bounds = GetEditorMenuBounds(anchor_view_bounds, this);
+  GetWidget()->SetBounds(editor_menu_bounds);
+  UpdateChipsContainer(/*editor_menu_width=*/editor_menu_bounds.width());
 }
 
 void EditorMenuView::DisableMenu() {
   settings_button_->SetEnabled(false);
 
-  for (auto* row : chips_container_->children()) {
-    for (auto* chip : row->children()) {
+  for (views::View* row : chips_container_->children()) {
+    for (views::View* chip : row->children()) {
       chip->SetEnabled(false);
     }
   }
@@ -263,7 +261,7 @@ void EditorMenuView::UpdateChipsContainer(int editor_menu_width) {
   // Remove chips from their current rows and transfer ownership since we want
   // to add the chips to new rows.
   std::vector<std::unique_ptr<EditorMenuChipView>> chips;
-  for (auto* row : chips_container_->children()) {
+  for (views::View* row : chips_container_->children()) {
     while (!row->children().empty()) {
       chips.push_back(row->RemoveChildViewT(
           views::AsViewClass<EditorMenuChipView>(row->children()[0])));
@@ -318,11 +316,7 @@ void EditorMenuView::OnChipButtonPressed(const std::string& text_query_id) {
   delegate_->OnChipButtonPressed(text_query_id);
 }
 
-void EditorMenuView::ResetPreTargetHandler() {
-  pre_target_handler_.reset();
-}
-
-BEGIN_METADATA(EditorMenuView, views::View)
+BEGIN_METADATA(EditorMenuView)
 END_METADATA
 
 }  // namespace chromeos::editor_menu

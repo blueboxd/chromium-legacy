@@ -19,6 +19,9 @@
 #include "chromeos/ash/components/smbfs/smbfs_mounter.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -121,10 +124,9 @@ class SmbServiceBaseTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       content::BrowserTaskEnvironment::REAL_IO_THREAD};
   base::test::ScopedFeatureList scoped_feature_list_;
-  raw_ptr<TestingProfile, DanglingUntriaged | ExperimentalAsh> profile_ =
+  raw_ptr<TestingProfile, DanglingUntriaged> profile_ = nullptr;
+  raw_ptr<disks::FakeDiskMountManager, DanglingUntriaged> disk_mount_manager_ =
       nullptr;
-  raw_ptr<disks::FakeDiskMountManager, DanglingUntriaged | ExperimentalAsh>
-      disk_mount_manager_ = nullptr;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 };

@@ -13,6 +13,7 @@
 #include "components/global_media_controls/public/constants.h"
 #include "components/global_media_controls/public/media_item_manager.h"
 #include "components/global_media_controls/public/media_session_item_producer.h"
+#include "components/global_media_controls/public/views/media_item_ui_detailed_view.h"
 #include "components/global_media_controls/public/views/media_item_ui_view.h"
 #include "services/media_session/public/cpp/media_session_service.h"
 #include "ui/views/view.h"
@@ -103,7 +104,8 @@ void QuickSettingsMediaViewController::HideMediaItem(const std::string& id) {
 // global_media_controls::MediaItemUIObserver implementations:
 
 void QuickSettingsMediaViewController::OnMediaItemUIClicked(
-    const std::string& id) {
+    const std::string& id,
+    bool activate_original_media) {
   tray_controller_->ShowMediaControlsDetailedView(
       GlobalMediaControlsEntryPoint::kQuickSettingsMiniPlayer);
 }

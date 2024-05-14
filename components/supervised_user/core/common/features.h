@@ -22,7 +22,11 @@ BASE_DECLARE_FEATURE(kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 BASE_DECLARE_FEATURE(kSupervisedPrefsControlledBySupervisedStore);
 BASE_DECLARE_FEATURE(kEnableManagedByParentUi);
 extern const base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl;
-BASE_DECLARE_FEATURE(kClearingCookiesKeepsSupervisedUsersSignedIn);
+
+// Applies the updated extension approval flow, which can skip parent-approvals
+// on extension installations.
+BASE_DECLARE_FEATURE(
+    kEnableSupervisedUserSkipParentApprovalToInstallExtensions);
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
@@ -31,9 +35,6 @@ BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
 // Returns whether banner can be displayed to the user after website filtering
 // is enabled
 bool CanDisplayFirstTimeInterstitialBanner();
-
-// Experiments to enable proto fetchers
-BASE_DECLARE_FEATURE(kEnableProtoApiForClassifyUrl);
 
 // Request priority experiment for ClassifyUrl (for critical path of rendering).
 BASE_DECLARE_FEATURE(kHighestRequestPriorityForClassifyUrl);
@@ -55,14 +56,17 @@ BASE_DECLARE_FEATURE(kShadowKidsApiWithSafeSites);
 // Forces Safe Search for supervised users.
 BASE_DECLARE_FEATURE(kForceGoogleSafeSearchForSupervisedUsers);
 
+// Updates usages of Profile.isChild() in Profile.java to use the account
+// capability to determine if account is supervised.
+#if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kMigrateAccountManagementSettingsToCapabilities);
+#endif
+
 // Returns whether local parent approvals on Family Link user's device are
 // enabled.
 // Local web approvals are only available when refreshed version of web
 // filter interstitial is enabled.
 bool IsLocalWebApprovalsEnabled();
-
-// Returns whether the ClassifyUrl call uses proto apis.
-bool IsProtoApiForClassifyUrlEnabled();
 
 // Returns true if child account supervision features should be enabled for this
 // client.

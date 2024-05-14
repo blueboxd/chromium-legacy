@@ -33,9 +33,9 @@ class PieMenuView;
 
 // Defines a container for buttons representing menu items in a pie menu.
 class ASH_EXPORT PieSubMenuContainerView : public views::View {
- public:
-  METADATA_HEADER(PieSubMenuContainerView);
+  METADATA_HEADER(PieSubMenuContainerView, views::View)
 
+ public:
   PieSubMenuContainerView(const PieSubMenuContainerView&) = delete;
   PieSubMenuContainerView& operator=(const PieSubMenuContainerView&) = delete;
   ~PieSubMenuContainerView() override;
@@ -61,11 +61,11 @@ class ASH_EXPORT PieSubMenuContainerView : public views::View {
   explicit PieSubMenuContainerView(PieMenuView* owner_menu_view);
 
   // The parent owner pie menu that hosts this container. Not null.
-  const raw_ptr<PieMenuView, ExperimentalAsh> owner_menu_view_;
+  const raw_ptr<PieMenuView> owner_menu_view_;
 
   // The buttons on this container, which will be painted as slices of a circle
   // in their same order in this vector.
-  std::vector<PieMenuButton*> buttons_;
+  std::vector<raw_ptr<PieMenuButton, VectorExperimental>> buttons_;
 };
 
 // -----------------------------------------------------------------------------
@@ -77,9 +77,9 @@ class ASH_EXPORT PieSubMenuContainerView : public views::View {
 // to the previous sub menu in the stack. There is always a main menu container
 // at all times.
 class ASH_EXPORT PieMenuView : public views::View {
- public:
-  METADATA_HEADER(PieMenuView);
+  METADATA_HEADER(PieMenuView, views::View)
 
+ public:
   // Defines an interface for the delegate of this class which will be informed
   // when a button on this pie view is pressed.
   class Delegate {
@@ -123,7 +123,7 @@ class ASH_EXPORT PieMenuView : public views::View {
   gfx::Point GetButtonContentsCenterInScreen(int button_id) const;
 
   // views::View:
-  void Layout() override;
+  void Layout(PassKey) override;
   void AddedToWidget() override;
   void OnThemeChanged() override;
 
@@ -160,12 +160,12 @@ class ASH_EXPORT PieMenuView : public views::View {
 
   // The delegate of this view which takes care of handling button presses. Not
   // null.
-  const raw_ptr<Delegate, DanglingUntriaged | ExperimentalAsh> delegate_;
+  const raw_ptr<Delegate, DanglingUntriaged> delegate_;
 
   // The container hosting the buttons on the main menu of this view. When this
   // is visible, `active_sub_menus_stack_` should be empty, and `back_button_`
   // should be hidden.
-  const raw_ptr<PieSubMenuContainerView, ExperimentalAsh> main_menu_container_;
+  const raw_ptr<PieSubMenuContainerView> main_menu_container_;
 
   // Since a button on a sub menu can open another sub menu and so on, we keep
   // a stack of currently active sub menus (other than the main menu), so that
@@ -174,7 +174,7 @@ class ASH_EXPORT PieMenuView : public views::View {
   // `main_menu_container_` shows up and `back_button_` hides.
   std::stack<PieSubMenuContainerView*> active_sub_menus_stack_;
 
-  const raw_ptr<views::ImageButton, ExperimentalAsh> back_button_;
+  const raw_ptr<views::ImageButton> back_button_;
 
   // Maps all the buttons on all sub menu containers of this view by their IDs.
   base::flat_map</*button_id=*/int, PieMenuButton*> buttons_by_id_;

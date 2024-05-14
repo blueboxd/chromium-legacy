@@ -179,7 +179,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   ResourceFetcher* Fetcher() final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
   void ExceptionThrown(ErrorEvent*) final;
-  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
   void AddInspectorIssue(AuditsIssue) final;
   EventTarget* ErrorEventTarget() final { return this; }
   String OutgoingReferrer() const final;
@@ -194,7 +193,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ReportPermissionsPolicyViolation(
       mojom::blink::PermissionsPolicyFeature,
       mojom::blink::PolicyDisposition,
-      const absl::optional<String>& reporting_endpoint,
+      const std::optional<String>& reporting_endpoint,
       const String& message = g_empty_string) const final;
   void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
@@ -368,11 +367,13 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void releaseEvents() {}
   External* external();
 
-  bool isSecureContext() const;
+  bool isSecureContext() const;  // NOLINT(bugprone-virtual-near-miss)
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch)
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange)
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pageconceal, kPageconceal)
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(pagereveal, kPagereveal)
 
@@ -538,11 +539,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // given window, it cannot be taken away.
   void SetHasStorageAccess();
 
-  void maximize(ExceptionState&);
-  void minimize(ExceptionState&);
-  void restore(ExceptionState&);
-  void setResizable(bool resizable, ExceptionState&);
-
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -570,8 +566,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void DispatchLoadEvent();
 
   void SetIsPictureInPictureWindow();
-
-  bool CanUseWindowingControls(ExceptionState& exception_state);
 
   // Return the viewport size including scrollbars.
   gfx::Size GetViewportSize() const;

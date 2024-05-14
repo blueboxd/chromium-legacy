@@ -4,6 +4,7 @@
 
 #include "services/network/cookie_manager.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -11,6 +12,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/process/process.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -25,7 +27,6 @@
 #include "net/url_request/url_request_context.h"
 #include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/session_cleanup_cookie_store.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using CookieDeletionInfo = net::CookieDeletionInfo;
@@ -36,7 +37,7 @@ namespace network {
 namespace {
 
 using CookiePartitionKeyPairCallback = base::OnceCallback<void(
-    std::pair<bool, absl::optional<net::CookiePartitionKey>>)>;
+    std::pair<bool, std::optional<net::CookiePartitionKey>>)>;
 
 bool g_crash_on_get_cookie_list = false;
 
@@ -128,18 +129,18 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
                                        const GURL& source_url,
                                        const net::CookieOptions& cookie_options,
                                        SetCanonicalCookieCallback callback) {
-  const absl::optional<net::CookiePartitionKey>& cookie_partition_key =
+  const std::optional<net::CookiePartitionKey>& cookie_partition_key =
       cookie.PartitionKey();
 
   auto cookie_ptr = std::make_unique<net::CanonicalCookie>(cookie);
   base::Time adjusted_expiry_date =
-      net::CanonicalCookie::ValidateAndAdjustExpiryDate(cookie.ExpiryDate(),
-                                                        cookie.CreationDate());
+      net::CanonicalCookie::ValidateAndAdjustExpiryDate(
+          cookie.ExpiryDate(), cookie.CreationDate(), cookie.SourceScheme());
   if (adjusted_expiry_date != cookie.ExpiryDate() || !cookie_partition_key) {
     cookie_ptr = net::CanonicalCookie::FromStorage(
         cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(),
         cookie.CreationDate(), adjusted_expiry_date, cookie.LastAccessDate(),
-        cookie.LastUpdateDate(), cookie.IsSecure(), cookie.IsHttpOnly(),
+        cookie.LastUpdateDate(), cookie.SecureAttribute(), cookie.IsHttpOnly(),
         cookie.SameSite(), cookie.Priority(), cookie_partition_key,
         cookie.SourceScheme(), cookie.SourcePort());
     if (!cookie_ptr) {
@@ -194,7 +195,7 @@ void CookieManager::DeleteSessionOnlyCookies(
       base::BindRepeating(
           [](const DeleteCookiePredicate& predicate,
              const net::CanonicalCookie& cookie) {
-            return predicate.Run(cookie.Domain(), cookie.IsSecure());
+            return predicate.Run(cookie.Domain(), cookie.SourceScheme());
           },
           std::move(delete_cookie_predicate)),
       std::move(callback));
@@ -202,7 +203,7 @@ void CookieManager::DeleteSessionOnlyCookies(
 
 void CookieManager::AddCookieChangeListener(
     const GURL& url,
-    const absl::optional<std::string>& name,
+    const std::optional<std::string>& name,
     mojo::PendingRemote<mojom::CookieChangeListener> listener) {
   auto listener_registration = std::make_unique<ListenerRegistration>();
   listener_registration->listener.Bind(std::move(listener));
@@ -219,13 +220,13 @@ void CookieManager::AddCookieChangeListener(
     // key when attaching cookie change listeners to service workers.
     listener_registration->subscription =
         cookie_store_->GetChangeDispatcher().AddCallbackForCookie(
-            url, *name, absl::nullopt, std::move(cookie_change_callback));
+            url, *name, std::nullopt, std::move(cookie_change_callback));
   } else {
     // TODO(https://crbug.com/1225444): Include the correct cookie partition
     // key when attaching cookie change listeners to service workers.
     listener_registration->subscription =
         cookie_store_->GetChangeDispatcher().AddCallbackForUrl(
-            url, absl::nullopt, std::move(cookie_change_callback));
+            url, std::nullopt, std::move(cookie_change_callback));
   }
 
   listener_registration->listener.set_disconnect_handler(
@@ -291,6 +292,12 @@ void CookieManager::RemoveChangeListener(ListenerRegistration* registration) {
 void CookieManager::CloneInterface(
     mojo::PendingReceiver<mojom::CookieManager> new_interface) {
   AddReceiver(std::move(new_interface));
+}
+
+void CookieManager::SetPreCommitCallbackDelayForTesting(base::TimeDelta delay) {
+  session_cleanup_cookie_store_->SetBeforeCommitCallback(base::BindRepeating(
+      [](base::TimeDelta delay) { base::PlatformThread::Sleep(delay); },
+      delay));
 }
 
 void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {

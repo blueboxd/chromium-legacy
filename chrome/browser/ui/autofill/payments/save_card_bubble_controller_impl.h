@@ -37,14 +37,6 @@ class SaveCardBubbleControllerImpl
       public SavePaymentIconController,
       public content::WebContentsUserData<SaveCardBubbleControllerImpl> {
  public:
-  // An observer class used by browsertests that gets notified whenever
-  // particular actions occur.
-  class ObserverForTest {
-   public:
-    virtual void OnBubbleShown() = 0;
-    virtual void OnIconShown() = 0;
-  };
-
   SaveCardBubbleControllerImpl(const SaveCardBubbleControllerImpl&) = delete;
   SaveCardBubbleControllerImpl& operator=(const SaveCardBubbleControllerImpl&) =
       delete;
@@ -95,31 +87,8 @@ class SaveCardBubbleControllerImpl
   // just saved and links the user to manage their other cards.
   void ShowBubbleForManageCardsForTesting(const CreditCard& card);
 
-  // TODO(crbug.com/1337392): Revisit the function when card upload feedback is
-  // to be added again. In the new proposal, we may not show feedback via icons
-  // so the functions updating the icon may need to be renamed or removed.
-  // Update the icon when card is successfully saved. This
-  // will dismiss the icon and trigger a highlight animation of the avatar
-  // button.
-  void UpdateIconForSaveCardSuccess();
-
-  // TODO(crbug.com/1337392): Revisit the function when card upload feedback is
-  // to be added again. In the new proposal, we may not show feedback via icons
-  // so the functions updating the icon may need to be renamed or removed.
-  // Updates the save card icon when credit card upload failed. This will only
-  // update the icon image and stop icon from animating. The actual bubble will
-  // be shown when users click on the icon.
-  void UpdateIconForSaveCardFailure();
-
-  // TODO(crbug.com/1337392): Revisit the function when card upload feedback is
-  // to be added again. In the new proposal, we may not show feedback via a
-  // failure bubble so the functions showing the bubble may need to be renamed
-  // or removed.
-  // For testing. Sets up the controller for showing the save card failure
-  // bubble.
-  void ShowBubbleForSaveCardFailureForTesting();
-
-  void ReshowBubble();
+  void ReshowBubble(bool is_user_gesture);
+  virtual void ShowConfirmationBubbleView(bool card_saved);
 
   // SaveCardBubbleController:
   std::u16string GetWindowTitle() const override;
@@ -129,8 +98,13 @@ class SaveCardBubbleControllerImpl
   AccountInfo GetAccountInfo() override;
   Profile* GetProfile() const override;
   const CreditCard& GetCard() const override;
+  base::OnceCallback<void(PaymentsBubbleClosedReason)>
+  GetOnBubbleClosedCallback() override;
+  const SaveCardAndVirtualCardEnrollConfirmationUiParams&
+  GetConfirmationUiParams() const override;
   bool ShouldRequestNameFromUser() const override;
   bool ShouldRequestExpirationDateFromUser() const override;
+  ui::ImageModel GetCreditCardImage() const override;
 
   void OnSaveButton(const AutofillClient::UserProvidedCardDetails&
                         user_provided_card_details) override;
@@ -159,6 +133,7 @@ class SaveCardBubbleControllerImpl
   virtual void ShowPaymentsSettingsPage();
 
   // AutofillBubbleControllerBase::
+  void OnVisibilityChanged(content::Visibility visibility) override;
   PageActionIconType GetPageActionIconType() override;
   void DoShowBubble() override;
 
@@ -179,11 +154,6 @@ class SaveCardBubbleControllerImpl
   void UpdateSaveCardIcon();
 
   void OpenUrl(const GURL& url);
-
-  // For testing.
-  void SetEventObserverForTesting(ObserverForTest* observer) {
-    observer_for_testing_ = observer;
-  }
 
   // Should outlive this object.
   raw_ptr<PersonalDataManager> personal_data_manager_;
@@ -215,8 +185,17 @@ class SaveCardBubbleControllerImpl
   // Governs whether the upload or local save version of the UI should be shown.
   bool is_upload_save_ = false;
 
-  // Whether ReshowBubble() has been called since ShowBubbleFor*() was called.
+  // Whether the bubble view show is prompted by a user gesture. This is used
+  // when showing the bubble view to set the display reason for
+  // LocationBarBubbleDelegateView::ShowForReason() which will determine whether
+  // the bubble view is initially active or inactive when created.
+  bool is_triggered_by_user_gesture_ = false;
+
+  // Whether the bubble view show is a re-show of the view.
   bool is_reshow_ = false;
+
+  // Whether a url was opened from the bubble view.
+  bool was_url_opened_ = false;
 
   // `options_.should_request_name_from_user`, whether the upload save version
   // of the UI should surface a textfield requesting the cardholder name.
@@ -243,8 +222,12 @@ class SaveCardBubbleControllerImpl
   // The security level for the current context.
   security_state::SecurityLevel security_level_;
 
-  // Observer for when a bubble is created. Initialized only during tests.
-  raw_ptr<ObserverForTest> observer_for_testing_ = nullptr;
+  // UI parameters needed to display the save card confirmation view.
+  std::optional<SaveCardAndVirtualCardEnrollConfirmationUiParams>
+      confirmation_ui_params_;
+
+  // Weak pointer factory for this save card bubble controller.
+  base::WeakPtrFactory<SaveCardBubbleControllerImpl> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

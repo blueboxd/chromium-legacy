@@ -66,7 +66,7 @@ bool PhoneNumber::operator==(const PhoneNumber& other) const {
   return number_ == other.number_ && profile_ == other.profile_;
 }
 
-void PhoneNumber::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
+void PhoneNumber::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(PHONE_HOME_WHOLE_NUMBER);
   supported_types->insert(PHONE_HOME_NUMBER);
   supported_types->insert(PHONE_HOME_NUMBER_PREFIX);
@@ -81,8 +81,8 @@ void PhoneNumber::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   }
 }
 
-std::u16string PhoneNumber::GetRawInfo(ServerFieldType type) const {
-  DCHECK_EQ(FieldTypeGroup::kPhone, GroupTypeOfServerFieldType(type));
+std::u16string PhoneNumber::GetRawInfo(FieldType type) const {
+  DCHECK_EQ(FieldTypeGroup::kPhone, GroupTypeOfFieldType(type));
   if (type == PHONE_HOME_WHOLE_NUMBER)
     return number_;
 
@@ -92,10 +92,10 @@ std::u16string PhoneNumber::GetRawInfo(ServerFieldType type) const {
   return std::u16string();
 }
 
-void PhoneNumber::SetRawInfoWithVerificationStatus(ServerFieldType type,
+void PhoneNumber::SetRawInfoWithVerificationStatus(FieldType type,
                                                    const std::u16string& value,
                                                    VerificationStatus status) {
-  DCHECK_EQ(FieldTypeGroup::kPhone, GroupTypeOfServerFieldType(type));
+  DCHECK_EQ(FieldTypeGroup::kPhone, GroupTypeOfFieldType(type));
   if (type != PHONE_HOME_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly. The browser is
     // intentionally caused to crash to prevent all users from setting raw info
@@ -111,7 +111,7 @@ void PhoneNumber::SetRawInfoWithVerificationStatus(ServerFieldType type,
 
 void PhoneNumber::GetMatchingTypes(const std::u16string& text,
                                    const std::string& app_locale,
-                                   ServerFieldTypeSet* matching_types) const {
+                                   FieldTypeSet* matching_types) const {
   // Strip the common phone number non numerical characters before calling the
   // base matching type function. For example, the |text| "(514) 121-1523"
   // would become the stripped text "5141211523". Since the base matching
@@ -176,7 +176,7 @@ void PhoneNumber::GetMatchingTypes(const std::u16string& text,
 // If the phone cannot be normalized, returns the stored value verbatim.
 std::u16string PhoneNumber::GetInfoImpl(const AutofillType& type,
                                         const std::string& app_locale) const {
-  ServerFieldType storable_type = type.GetStorableType();
+  FieldType storable_type = type.GetStorableType();
   UpdateCacheIfNeeded(app_locale);
 
   // When the phone number autofill has stored cannot be normalized, it
@@ -317,11 +317,7 @@ void PhoneNumber::UpdateCacheIfNeeded(const std::string& app_locale) const {
     // To enable filling of country calling codes for nationally formatted
     // numbers, infer it from the `profile_`'s country information while parsing
     // the number.
-    cached_parsed_phone_ = i18n::PhoneObject(
-        number_, region,
-        /*infer_country_code=*/profile_->HasInfo(ADDRESS_HOME_COUNTRY) &&
-            base::FeatureList::IsEnabled(
-                features::kAutofillInferCountryCallingCode));
+    cached_parsed_phone_ = i18n::PhoneObject(number_, region);
   }
 }
 
@@ -331,7 +327,7 @@ PhoneNumber::PhoneCombineHelper::~PhoneCombineHelper() = default;
 
 bool PhoneNumber::PhoneCombineHelper::SetInfo(const AutofillType& type,
                                               const std::u16string& value) {
-  ServerFieldType storable_type = type.GetStorableType();
+  FieldType storable_type = type.GetStorableType();
   if (storable_type == PHONE_HOME_COUNTRY_CODE) {
     country_ = value;
     return true;

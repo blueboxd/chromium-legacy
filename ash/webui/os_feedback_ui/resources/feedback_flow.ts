@@ -154,8 +154,8 @@ export class FeedbackFlowElement extends PolymerElement {
 
   static get properties() {
     return {
-      currentState: {type: FeedbackFlowState},
-      feedbackContext: {type: FeedbackContext, readonly: false, notify: true},
+      currentState: {type: String},
+      feedbackContext: {type: Object, readonly: false, notify: true},
     };
   }
 
@@ -236,22 +236,20 @@ export class FeedbackFlowElement extends PolymerElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    if (loadTimeData.getBoolean('isJellyEnabledForOsFeedback')) {
-      // TODO(b/276493287): After the Jelly experiment is launched, replace
-      // `cros_styles.css` with `theme/colors.css` directly in `index.html`.
-      // Also add `theme/typography.css` to `index.html`.
-      document.querySelector('link[href*=\'cros_styles.css\']')
-          ?.setAttribute('href', 'chrome://theme/colors.css?sets=legacy,sys');
-      const typographyLink = document.createElement('link');
-      typographyLink.href = 'chrome://theme/typography.css';
-      typographyLink.rel = 'stylesheet';
-      document.head.appendChild(typographyLink);
-      document.body.classList.add('jelly-enabled');
-      /** @suppress {checkTypes} */
-      (function() {
-        ColorChangeUpdater.forDocument().start();
-      })();
-    }
+    // TODO(b/276493287): After the Jelly experiment is launched, replace
+    // `cros_styles.css` with `theme/colors.css` directly in `index.html`.
+    // Also add `theme/typography.css` to `index.html`.
+    document.querySelector('link[href*=\'cros_styles.css\']')
+        ?.setAttribute('href', 'chrome://theme/colors.css?sets=legacy,sys');
+    const typographyLink = document.createElement('link');
+    typographyLink.href = 'chrome://theme/typography.css';
+    typographyLink.rel = 'stylesheet';
+    document.head.appendChild(typographyLink);
+    document.body.classList.add('jelly-enabled');
+    /** @suppress {checkTypes} */
+    (function() {
+      ColorChangeUpdater.forDocument().start();
+    })();
   }
 
   override ready() {
@@ -621,11 +619,13 @@ export class FeedbackFlowElement extends PolymerElement {
     return this.descriptionPlaceholderText;
   }
 
-
   getIsUserLoggedInForTesting(): boolean {
     return this.isUserLoggedIn;
   }
 
+  getFeedbackContextForTesting(): FeedbackContext|null {
+    return this.feedbackContext;
+  }
 
   getShouldShowWifiDebugLogsCheckboxForTesting(): boolean {
     return this.shouldShowWifiDebugLogsCheckbox;

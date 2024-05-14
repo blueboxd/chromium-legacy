@@ -32,12 +32,8 @@ namespace {
 const em::DeviceRegisterRequest::Type kCloudPolicyRegistrationType =
     em::DeviceRegisterRequest::ANDROID_BROWSER;
 #elif BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1312263): Use em::DeviceRegisterRequest::IOS_BROWSER when
-// supported in the dmserver. The type for Desktop is temporarily used on iOS
-// to allow early testing of the feature before the DMServer can support iOS
-// User Policy.
 const em::DeviceRegisterRequest::Type kCloudPolicyRegistrationType =
-    em::DeviceRegisterRequest::BROWSER;
+    em::DeviceRegisterRequest::IOS_BROWSER;
 #else
 const em::DeviceRegisterRequest::Type kCloudPolicyRegistrationType =
     em::DeviceRegisterRequest::BROWSER;
@@ -192,15 +188,16 @@ UserPolicySigninServiceBase::CreateClientForRegistrationOnly(
   device_management_service_->ScheduleInitialization(0);
 
   // Create a new CloudPolicyClient for fetching the DMToken.
-  return CreateCloudPolicyClient(device_management_service_,
-                                 system_url_loader_factory_);
+  return std::make_unique<CloudPolicyClient>(
+      GetProfileId(), device_management_service_, system_url_loader_factory_,
+      CloudPolicyClient::DeviceDMTokenCallback());
 }
 
 std::unique_ptr<CloudPolicyClient>
 UserPolicySigninServiceBase::CreateClientForNonRegistration(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<CloudPolicyClient>(
-      device_management_service_, std::move(url_loader_factory),
+      GetProfileId(), device_management_service_, std::move(url_loader_factory),
       GetDeviceDMTokenIfAffiliatedCallback());
 }
 
@@ -331,16 +328,6 @@ void UserPolicySigninServiceBase::RegisterForPolicyWithAccountId(
       base::Unretained(this), std::move(policy_client), std::move(callback));
   registration_helper_for_temporary_client_->StartRegistration(
       identity_manager(), account_id, std::move(registration_callback));
-}
-
-// static
-std::unique_ptr<CloudPolicyClient>
-UserPolicySigninServiceBase::CreateCloudPolicyClient(
-    DeviceManagementService* device_management_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  return std::make_unique<CloudPolicyClient>(
-      device_management_service, std::move(url_loader_factory),
-      CloudPolicyClient::DeviceDMTokenCallback());
 }
 
 void UserPolicySigninServiceBase::SetDeviceDMTokenCallbackForTesting(

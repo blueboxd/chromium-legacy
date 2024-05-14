@@ -88,6 +88,7 @@ namespace {
 using ::base::test::RunUntil;
 using ::testing::_;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::IsTrue;
 using ::testing::Property;
 
@@ -228,13 +229,6 @@ std::unique_ptr<HoldingSpaceImage> CreateStubHoldingSpaceImage(
   return std::make_unique<HoldingSpaceImage>(
       holding_space_util::GetMaxImageSizeForType(type), file_path,
       /*async_bitmap_resolver=*/base::DoNothing());
-}
-
-std::vector<HoldingSpaceItem::Type> GetHoldingSpaceItemTypes() {
-  std::vector<HoldingSpaceItem::Type> types;
-  for (int i = 0; i <= static_cast<int>(HoldingSpaceItem::Type::kMaxValue); ++i)
-    types.push_back(static_cast<HoldingSpaceItem::Type>(i));
-  return types;
 }
 
 std::vector<HoldingSpaceCommandId> GetHoldingSpaceCommandIds() {
@@ -378,8 +372,8 @@ class ScopedTransformRecordingLayerDelegate : public ui::LayerDelegate {
     max_translation_.SetToMax(end_translation_);
   }
 
-  const raw_ptr<ui::Layer, ExperimentalAsh> layer_;
-  const raw_ptr<ui::LayerDelegate, ExperimentalAsh> layer_delegate_;
+  const raw_ptr<ui::Layer> layer_;
+  const raw_ptr<ui::LayerDelegate> layer_delegate_;
 
   bool did_animate_ = false;
   gfx::Vector2dF start_scale_;
@@ -611,6 +605,27 @@ class HoldingSpaceTrayTest : public HoldingSpaceTrayTestBase {
 };
 
 // Tests -----------------------------------------------------------------------
+
+// Holding Space used to own the constant which determines its bubble's width
+// but now shares a constant with the rest of the system UI bubbles. Holding
+// Space UI is not yet implemented to be fully reactive to variable bubble
+// widths, so this test adds a speed bump to (hopefully) prevent the shared
+// constant from being updated and inadvertently breaking Holding Space UI.
+TEST_F(HoldingSpaceTrayTest, BubbleHasExpectedWidth) {
+  // Start session and verify the holding space tray is showing in the shelf.
+  StartSession(/*pre_mark_time_of_first_add=*/true);
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // Show the holding space bubble.
+  test_api()->Show();
+  EXPECT_TRUE(test_api()->IsShowing());
+
+  // Verify holding space bubble width.
+  views::View* const bubble = test_api()->GetBubble();
+  ASSERT_TRUE(bubble);
+  ViewDrawnWaiter().Wait(bubble);
+  EXPECT_EQ(bubble->width(), 360);
+}
 
 TEST_F(HoldingSpaceTrayTest, ShowTrayButtonWhenForced) {
   // Case: Force show in shelf prior to session start.
@@ -1320,8 +1335,11 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   EXPECT_FALSE(item_views[2]->selected());
 
   // Press the enter key. We expect the client to open the selected item.
-  EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item()),
-                                   testing::_));
+  EXPECT_CALL(
+      *client(),
+      OpenItems(ElementsAre(item_views[0]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceBubble),
+                /*callback=*/_));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
@@ -1331,9 +1349,11 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   EXPECT_TRUE(item_views[1]->selected());
 
   // Press the enter key. We expect the client to open the selected items.
-  EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item(),
-                                                        item_views[1]->item()),
-                                   testing::_));
+  EXPECT_CALL(
+      *client(),
+      OpenItems(ElementsAre(item_views[0]->item(), item_views[1]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceBubble),
+                /*callback=*/_));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
@@ -1342,8 +1362,11 @@ TEST_F(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
 
   // Press the enter key. The client should open only the focused item since
   // it was *not* selected prior to pressing the enter key.
-  EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[2]->item()),
-                                   testing::_));
+  EXPECT_CALL(
+      *client(),
+      OpenItems(ElementsAre(item_views[2]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceItem),
+                /*callback=*/_));
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
   EXPECT_FALSE(item_views[0]->selected());
   EXPECT_FALSE(item_views[1]->selected());
@@ -1607,9 +1630,12 @@ TEST_F(HoldingSpaceTrayTest, MultiselectInTouchMode) {
   EXPECT_CALL(*client(), OpenItems)
       .WillOnce(
           testing::Invoke([&](const std::vector<const HoldingSpaceItem*>& items,
+                              holding_space_metrics::EventSource event_source,
                               HoldingSpaceClient::SuccessCallback callback) {
             ASSERT_EQ(items.size(), 1u);
             EXPECT_EQ(items[0], item_views[2]->item());
+            EXPECT_EQ(event_source,
+                      holding_space_metrics::EventSource::kHoldingSpaceItem);
           }));
   GestureTap(item_views[2]);
   testing::Mock::VerifyAndClearExpectations(client());
@@ -1767,19 +1793,29 @@ TEST_F(HoldingSpaceTrayTest, SelectionWithPrimaryAndSecondaryActions) {
         {CreateInProgressCommand(
              HoldingSpaceCommandId::kCancelItem,
              IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL,
-             base::BindLambdaForTesting([&](const HoldingSpaceItem* item,
-                                            HoldingSpaceCommandId command_id) {
-               DCHECK_EQ(command_id, HoldingSpaceCommandId::kCancelItem);
-               cancelled_items.push_back(item);
-             })),
+             base::BindLambdaForTesting(
+                 [&](const HoldingSpaceItem* item,
+                     HoldingSpaceCommandId command_id,
+                     holding_space_metrics::EventSource event_source) {
+                   EXPECT_EQ(command_id, HoldingSpaceCommandId::kCancelItem);
+                   EXPECT_EQ(
+                       event_source,
+                       holding_space_metrics::EventSource::kHoldingSpaceItem);
+                   cancelled_items.push_back(item);
+                 })),
          CreateInProgressCommand(
              HoldingSpaceCommandId::kPauseItem,
              IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PAUSE,
-             base::BindLambdaForTesting([&](const HoldingSpaceItem* item,
-                                            HoldingSpaceCommandId command_id) {
-               DCHECK_EQ(command_id, HoldingSpaceCommandId::kPauseItem);
-               paused_items.push_back(item);
-             }))}));
+             base::BindLambdaForTesting(
+                 [&](const HoldingSpaceItem* item,
+                     HoldingSpaceCommandId command_id,
+                     holding_space_metrics::EventSource event_source) {
+                   EXPECT_EQ(command_id, HoldingSpaceCommandId::kPauseItem);
+                   EXPECT_EQ(
+                       event_source,
+                       holding_space_metrics::EventSource::kHoldingSpaceItem);
+                   paused_items.push_back(item);
+                 }))}));
   }
 
   // Show UI.
@@ -1909,7 +1945,11 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
 
   // Double click an item with the control key down. Expect the clicked holding
   // space item to be opened.
-  EXPECT_CALL(*client(), OpenItems(ElementsAre(item_views[0]->item()), _));
+  EXPECT_CALL(
+      *client(),
+      OpenItems(ElementsAre(item_views[0]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceItem),
+                /*callback=*/_));
   DoubleClick(item_views[0], ui::EF_CONTROL_DOWN);
   testing::Mock::VerifyAndClearExpectations(client());
 
@@ -1919,7 +1959,11 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
 
   // Double click an item with the shift key down. Expect the clicked holding
   // space item to be opened.
-  EXPECT_CALL(*client(), OpenItems(ElementsAre(item_views[0]->item()), _));
+  EXPECT_CALL(
+      *client(),
+      OpenItems(ElementsAre(item_views[0]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceItem),
+                /*callback=*/_));
   DoubleClick(item_views[0], ui::EF_SHIFT_DOWN);
   testing::Mock::VerifyAndClearExpectations(client());
 
@@ -1929,7 +1973,11 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
 
   // Click a holding space item. Then double click the same item with the
   // control key down. Expect the clicked holding space item to be opened.
-  EXPECT_CALL(*client(), OpenItems(ElementsAre(item_views[0]->item()), _));
+  EXPECT_CALL(
+      *client(),
+      OpenItems(ElementsAre(item_views[0]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceItem),
+                /*callback=*/_));
   Click(item_views[0]);
   DoubleClick(item_views[0], ui::EF_CONTROL_DOWN);
   testing::Mock::VerifyAndClearExpectations(client());
@@ -1940,7 +1988,11 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
 
   // Click a holding space item. Then double click the same item with the
   // shift key down. Expect the clicked holding space item to be opened.
-  EXPECT_CALL(*client(), OpenItems(ElementsAre(item_views[0]->item()), _));
+  EXPECT_CALL(
+      *client(),
+      OpenItems(ElementsAre(item_views[0]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceItem),
+                /*callback=*/_));
   Click(item_views[0]);
   DoubleClick(item_views[0], ui::EF_SHIFT_DOWN);
   testing::Mock::VerifyAndClearExpectations(client());
@@ -1953,7 +2005,9 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
   // control key down. Expect both holding space items to be opened.
   EXPECT_CALL(
       *client(),
-      OpenItems(ElementsAre(item_views[0]->item(), item_views[1]->item()), _));
+      OpenItems(ElementsAre(item_views[0]->item(), item_views[1]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceItem),
+                /*callback=*/_));
   Click(item_views[0]);
   DoubleClick(item_views[1], ui::EF_CONTROL_DOWN);
   testing::Mock::VerifyAndClearExpectations(client());
@@ -1966,7 +2020,9 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
   // shift key down. Expect both holding space items to be opened.
   EXPECT_CALL(
       *client(),
-      OpenItems(ElementsAre(item_views[0]->item(), item_views[1]->item()), _));
+      OpenItems(ElementsAre(item_views[0]->item(), item_views[1]->item()),
+                Eq(holding_space_metrics::EventSource::kHoldingSpaceItem),
+                /*callback=*/_));
   Click(item_views[0]);
   DoubleClick(item_views[1], ui::EF_SHIFT_DOWN);
   testing::Mock::VerifyAndClearExpectations(client());
@@ -2396,10 +2452,12 @@ TEST_F(HoldingSpacePreviewsTrayTest, ShelfAlignmentChangeWithMultipleDisplays) {
   views::View* const secondary_icon_previews_container =
       secondary_tray->GetViewByID(kHoldingSpaceTrayPreviewsIconId)
           ->children()[0];
-  const std::vector<ui::Layer*>& primary_icon_previews =
-      primary_icon_previews_container->layer()->children();
-  const std::vector<ui::Layer*>& secondary_icon_previews =
-      secondary_icon_previews_container->layer()->children();
+  const std::vector<raw_ptr<ui::Layer, VectorExperimental>>&
+      primary_icon_previews =
+          primary_icon_previews_container->layer()->children();
+  const std::vector<raw_ptr<ui::Layer, VectorExperimental>>&
+      secondary_icon_previews =
+          secondary_icon_previews_container->layer()->children();
 
   // Verify each tray contains three previews.
   ASSERT_EQ(primary_icon_previews.size(), 3u);
@@ -3967,9 +4025,10 @@ class HoldingSpaceTrayPrimaryAndSecondaryActionsTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         HoldingSpaceTrayPrimaryAndSecondaryActionsTest,
-                         testing::ValuesIn(GetHoldingSpaceItemTypes()));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HoldingSpaceTrayPrimaryAndSecondaryActionsTest,
+    testing::ValuesIn(holding_space_util::GetAllItemTypes()));
 
 // Verifies that holding space item views have the expected primary and
 // secondary actions for their state of progress, both inline and in their
@@ -4173,7 +4232,7 @@ class HoldingSpaceTrayVisibilityTest
 INSTANTIATE_TEST_SUITE_P(
     All,
     HoldingSpaceTrayVisibilityTest,
-    testing::Combine(testing::ValuesIn(GetHoldingSpaceItemTypes()),
+    testing::Combine(testing::ValuesIn(holding_space_util::GetAllItemTypes()),
                      /*predictability_enabled=*/testing::Bool(),
                      /*suggestions_enabled=*/testing::Bool()));
 

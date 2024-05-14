@@ -13,6 +13,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/test/mock_attribution_data_host_manager.h"
@@ -36,6 +37,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
 #include "url/gurl.h"
@@ -129,7 +131,7 @@ class FencedFrameReporterTest : public RenderViewHostTestHarness {
 
   void ValidateRequest(const network::ResourceRequest& request,
                        const GURL& expected_url,
-                       const absl::optional<std::string>& event_data) {
+                       const std::optional<std::string>& event_data) {
     EXPECT_EQ(request.url, expected_url);
     EXPECT_EQ(request.mode, network::mojom::RequestMode::kCors);
     EXPECT_EQ(request.credentials_mode, network::mojom::CredentialsMode::kOmit);
@@ -143,7 +145,7 @@ class FencedFrameReporterTest : public RenderViewHostTestHarness {
       return;
     }
 
-    // Checks specific to DestinationEnum events.
+    // Checks specific to DestinationEnum + AutomaticBeacon events.
     EXPECT_EQ(request.request_initiator, report_url_declarer_origin_);
     EXPECT_EQ(request.method, net::HttpRequestHeaders::kPostMethod);
 
@@ -165,6 +167,10 @@ class FencedFrameReporterTest : public RenderViewHostTestHarness {
  protected:
   RenderFrameHostImpl* main_rfh_impl() {
     return static_cast<RenderFrameHostImpl*>(main_rfh());
+  }
+
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
   }
 
   void ShutDownAttributionManager() {
@@ -199,6 +205,7 @@ class FencedFrameReporterTest : public RenderViewHostTestHarness {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histogram_tester_;
 };
 
 // ReportingDestination has no map.
@@ -269,7 +276,7 @@ TEST_F(FencedFrameReporterTest, NoReportNoMap) {
       /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
       main_frame_origin_,
       /*winner_origin=*/report_destination_origin_,
-      /*winner_aggregation_coordinator_origin=*/absl::nullopt);
+      /*winner_aggregation_coordinator_origin=*/std::nullopt);
   EXPECT_FALSE(reporter->SendReport(
       DestinationEnumEvent("event_type", "event_data"),
       blink::FencedFrame::ReportingDestination::kSharedStorageSelectUrl,
@@ -423,7 +430,7 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsAfterMapsReceived) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/{{report_destination_origin_}});
 
   // Receive all mappings.
@@ -490,7 +497,7 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsAfterMapsReceived) {
       console_message_level));
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 5);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[4].request,
-                  report_destination_, absl::nullopt);
+                  report_destination_, std::nullopt);
 }
 
 // Test reports in the FLEDGE case, where reporting URL maps are received after
@@ -502,7 +509,7 @@ TEST_F(FencedFrameReporterTest, SendReportsFledgeBeforeMapsReceived) {
           /*direct_seller_is_seller=*/true, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/{{report_destination_origin_}});
 
   // Make reports. They should be queued, since mappings haven't been received
@@ -570,7 +577,7 @@ TEST_F(FencedFrameReporterTest, SendReportsFledgeBeforeMapsReceived) {
                   report_destination3_, "event_data");
   // This one is from the DestinationURLEvent report.
   ValidateRequest((*test_url_loader_factory_.pending_requests())[4].request,
-                  report_destination_, absl::nullopt);
+                  report_destination_, std::nullopt);
 }
 
 // Test reports in the FLEDGE case, where reporting URL maps are received after
@@ -601,7 +608,7 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsBeforeMapsReceivedWithErrors) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/{{report_destination_origin_}});
 
   // SendReport() is called, and then a mapping is received that doesn't have
@@ -653,14 +660,14 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsBeforeMapsReceivedWithErrors) {
       /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
-                  report_destination_, absl::nullopt);
+                  report_destination_, std::nullopt);
 }
 
 // Test that both absence of an allowlist and empty allowlist disable custom
 // destination URL reports.
 TEST_F(FencedFrameReporterTest, CustomDestinationURLNoOrEmptyAllowlist) {
-  static const absl::optional<std::vector<url::Origin>> test_cases[] = {
-      absl::nullopt, {{}}};
+  static const std::optional<std::vector<url::Origin>> test_cases[] = {
+      std::nullopt, {{}}};
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(test_case.has_value());
     scoped_refptr<FencedFrameReporter> reporter =
@@ -669,7 +676,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNoOrEmptyAllowlist) {
             /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
             main_frame_origin_,
             /*winner_origin=*/report_destination_origin_,
-            /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+            /*winner_aggregation_coordinator_origin=*/std::nullopt,
             /*allowed_reporting_origins=*/test_case);
 
     // Receive buyer mapping.
@@ -697,7 +704,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNoOrEmptyAllowlist) {
   }
 }
 
-// Test that absence of an ad macro map (i.e., being absl::nullopt) disables
+// Test that absence of an ad macro map (i.e., being std::nullopt) disables
 // custom destination URL reports.
 TEST_F(FencedFrameReporterTest, CustomDestinationURLNoAdMacroMap) {
   scoped_refptr<FencedFrameReporter> reporter =
@@ -706,14 +713,14 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNoAdMacroMap) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/{});
 
-  // Receive a buyer mapping whose `reporting_ad_macro_map` is absl::nullopt.
+  // Receive a buyer mapping whose `reporting_ad_macro_map` is std::nullopt.
   reporter->OnUrlMappingReady(blink::FencedFrame::ReportingDestination::kBuyer,
                               report_url_declarer_origin_,
                               /*reporting_url_map=*/{{}},
-                              /*reporting_ad_macros=*/absl::nullopt);
+                              /*reporting_ad_macros=*/std::nullopt);
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
 
   std::string error_message;
@@ -741,7 +748,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLEmptyAdMacroMap) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_}});
 
@@ -768,7 +775,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLEmptyAdMacroMap) {
       console_message_level));
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
-                  report_destination_substituted, absl::nullopt);
+                  report_destination_substituted, std::nullopt);
 }
 
 // Test macro substitution for reports to custom destination URLs, where all
@@ -780,7 +787,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLCompleteMacroSubstitution) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_}});
 
@@ -810,7 +817,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLCompleteMacroSubstitution) {
       console_message_level));
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
-                  report_destination_substituted, absl::nullopt);
+                  report_destination_substituted, std::nullopt);
 }
 
 // Test macro substitution for reports to custom destination URLs, where only
@@ -823,7 +830,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLPartialMacroSubstitution) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_}});
 
@@ -853,7 +860,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLPartialMacroSubstitution) {
       console_message_level));
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
-                  report_destination_substituted, absl::nullopt);
+                  report_destination_substituted, std::nullopt);
 }
 
 // Test macro substitution for reports to custom destination URLs, where the
@@ -866,7 +873,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNestedMacro) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_}});
 
@@ -897,7 +904,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNestedMacro) {
       console_message_level));
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
-                  report_destination_substituted, absl::nullopt);
+                  report_destination_substituted, std::nullopt);
 }
 
 // Test that reports to HTTP custom destination URLs fail.
@@ -908,7 +915,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationHTTPURL) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_}});
 
@@ -947,7 +954,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationInvalidURL) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_}});
 
@@ -987,7 +994,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationInvalidURLAfterMacros) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_}});
 
@@ -1029,7 +1036,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLAllowlist) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
           /*allowed_reporting_origins=*/
           {{report_destination_origin_, report_destination2_origin_}});
 
@@ -1052,7 +1059,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLAllowlist) {
       console_message_level));
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
-                  report_destination_, absl::nullopt);
+                  report_destination_, std::nullopt);
 
   // Send a request to a different allowed origin. (It should succeed.)
   EXPECT_TRUE(reporter->SendReport(
@@ -1062,7 +1069,7 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLAllowlist) {
       console_message_level));
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 2);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[1].request,
-                  report_destination2_, absl::nullopt);
+                  report_destination2_, std::nullopt);
 
   // Send a request to a disallowed origin. (It should fail, and disable
   // future custom destination URL requests..)
@@ -1141,7 +1148,7 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsNoMapReceived) {
             /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
             main_frame_origin_,
             /*winner_origin=*/report_destination_origin_,
-            /*winner_aggregation_coordinator_origin=*/absl::nullopt);
+            /*winner_aggregation_coordinator_origin=*/std::nullopt);
 
     // SendReport() is called, but a mapping is never received.
     std::string error_message;
@@ -1165,7 +1172,7 @@ TEST_F(FencedFrameReporterTest, FledgeEventsReceivedAfterRequestsReady) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt);
+          /*winner_aggregation_coordinator_origin=*/std::nullopt);
 
   // Receive all non-reserved private aggregation requests.
   std::map<std::string, PrivateAggregationRequests>
@@ -1251,7 +1258,7 @@ TEST_F(FencedFrameReporterTest, FledgeEventsReceivedBeforeRequestsReady) {
           /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
           main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt);
+          /*winner_aggregation_coordinator_origin=*/std::nullopt);
 
   // Calls SendPrivateAggregationRequestsForEvent() with event types. The event
   // types should be queued, since non-reserved private aggregation requests
@@ -1318,9 +1325,6 @@ TEST_F(FencedFrameReporterTest, FledgeEventsReceivedBeforeRequestsReady) {
   private_aggregation_event_map2["event_type2"].push_back(
       kPrivateAggregationRequest.Clone());
 
-  // We expect two calls to `SendHistogramReport()` given the two events.
-  private_aggregation_manager_.set_allow_multiple_calls_per_origin(true);
-
   reporter->OnForEventPrivateAggregationRequestsReceived(
       std::move(private_aggregation_event_map2));
 
@@ -1343,7 +1347,7 @@ TEST_F(FencedFrameReporterTest, FledgeEventsReceivedUnexpectedly) {
           /*direct_seller_is_seller=*/false,
           /*private_aggregation_manager=*/nullptr, main_frame_origin_,
           /*winner_origin=*/report_destination_origin_,
-          /*winner_aggregation_coordinator_origin=*/absl::nullopt);
+          /*winner_aggregation_coordinator_origin=*/std::nullopt);
 
   // Calls SendPrivateAggregationRequestsForEvent() with "event_type".
   // "event_type" should be ignored and not be queued.
@@ -1382,6 +1386,223 @@ TEST_F(FencedFrameReporterTest, AttributionManagerShutDown_NoCrash) {
 
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
       report_destination_.spec(), ""));
+}
+
+// Histogram tests. Separate from existing tests because we need to account
+// for HTTP request failures, and actually simulate HTTP responses instead of
+// just leaving them pending.
+
+TEST_F(FencedFrameReporterTest, SendReportsRecordHistogramsEnum) {
+  scoped_refptr<FencedFrameReporter> reporter =
+      FencedFrameReporter::CreateForSharedStorage(
+          shared_url_loader_factory(), browser_context(),
+          report_url_declarer_origin_,
+          /*reporting_url_map=*/
+          {{"event_type", report_destination_},
+           {"event_type2", report_destination2_}});
+
+  std::string error_message;
+  blink::mojom::ConsoleMessageLevel console_message_level =
+      blink::mojom::ConsoleMessageLevel::kError;
+
+  // Make an enum report that succeeds.
+  EXPECT_TRUE(reporter->SendReport(
+      DestinationEnumEvent("event_type", "event_data"),
+      blink::FencedFrame::ReportingDestination::kSharedStorageSelectUrl,
+      main_rfh_impl(), network::AttributionReportingRuntimeFeatures(),
+      error_message, console_message_level));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
+  ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
+                  report_destination_, "event_data");
+
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      report_destination_.spec(), "");
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  histogram_tester().ExpectTotalCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA, 1);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kDestinationEnumSuccess, 1);
+
+  // Make an enum report that fails due to HTTP status 404.
+  EXPECT_TRUE(reporter->SendReport(
+      DestinationEnumEvent("event_type", "event_data"),
+      blink::FencedFrame::ReportingDestination::kSharedStorageSelectUrl,
+      main_rfh_impl(), network::AttributionReportingRuntimeFeatures(),
+      error_message, console_message_level));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
+  ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
+                  report_destination_, "event_data");
+
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      report_destination_.spec(), "", net::HTTP_NOT_FOUND);
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  histogram_tester().ExpectTotalCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA, 2);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kDestinationEnumSuccess, 1);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kDestinationEnumFailure, 1);
+}
+
+TEST_F(FencedFrameReporterTest, SendReportsRecordHistogramsURL) {
+  scoped_refptr<FencedFrameReporter> reporter =
+      FencedFrameReporter::CreateForFledge(
+          shared_url_loader_factory(), browser_context(),
+          /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
+          main_frame_origin_,
+          /*winner_origin=*/report_destination_origin_,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
+          /*allowed_reporting_origins=*/{{report_destination_origin_}});
+
+  // Receive all mappings.
+  reporter->OnUrlMappingReady(
+      blink::FencedFrame::ReportingDestination::kSeller,
+      report_url_declarer_origin_,
+      /*reporting_url_map=*/{{"event_type", report_destination_}});
+  reporter->OnUrlMappingReady(
+      blink::FencedFrame::ReportingDestination::kComponentSeller,
+      report_url_declarer_origin_,
+      /*reporting_url_map=*/{{"event_type", report_destination2_}});
+  reporter->OnUrlMappingReady(
+      blink::FencedFrame::ReportingDestination::kBuyer,
+      report_url_declarer_origin_,
+      /*reporting_url_map=*/{{"event_type", report_destination3_}},
+      /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  std::string error_message;
+  blink::mojom::ConsoleMessageLevel console_message_level =
+      blink::mojom::ConsoleMessageLevel::kError;
+
+  // Make a URL report that succeeds.
+  EXPECT_TRUE(reporter->SendReport(
+      DestinationURLEvent(report_destination_),
+      blink::FencedFrame::ReportingDestination::kBuyer, main_rfh_impl(),
+      network::AttributionReportingRuntimeFeatures(), error_message,
+      console_message_level));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
+  ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
+                  report_destination_, std::nullopt);
+
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      report_destination_.spec(), "");
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  histogram_tester().ExpectTotalCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA, 1);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kDestinationUrlSuccess, 1);
+
+  // Make a URL report that fails with HTTP status 404.
+  EXPECT_TRUE(reporter->SendReport(
+      DestinationURLEvent(report_destination_),
+      blink::FencedFrame::ReportingDestination::kBuyer, main_rfh_impl(),
+      network::AttributionReportingRuntimeFeatures(), error_message,
+      console_message_level));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
+  ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
+                  report_destination_, std::nullopt);
+
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      report_destination_.spec(), "", net::HTTP_NOT_FOUND);
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  histogram_tester().ExpectTotalCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA, 2);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kDestinationUrlSuccess, 1);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kDestinationUrlFailure, 1);
+}
+
+TEST_F(FencedFrameReporterTest, SendReportsRecordHistogramsAutomaticBeacon) {
+  scoped_refptr<FencedFrameReporter> reporter =
+      FencedFrameReporter::CreateForFledge(
+          shared_url_loader_factory(), browser_context(),
+          /*direct_seller_is_seller=*/false, &private_aggregation_manager_,
+          main_frame_origin_,
+          /*winner_origin=*/report_destination_origin_,
+          /*winner_aggregation_coordinator_origin=*/std::nullopt,
+          /*allowed_reporting_origins=*/{{report_destination_origin_}});
+
+  // Receive all mappings.
+  reporter->OnUrlMappingReady(
+      blink::FencedFrame::ReportingDestination::kSeller,
+      report_url_declarer_origin_,
+      /*reporting_url_map=*/
+      {{blink::kFencedFrameTopNavigationStartBeaconType, report_destination_}});
+  reporter->OnUrlMappingReady(
+      blink::FencedFrame::ReportingDestination::kComponentSeller,
+      report_url_declarer_origin_,
+      /*reporting_url_map=*/
+      {{blink::kFencedFrameTopNavigationStartBeaconType,
+        report_destination2_}});
+  reporter->OnUrlMappingReady(
+      blink::FencedFrame::ReportingDestination::kBuyer,
+      report_url_declarer_origin_,
+      /*reporting_url_map=*/
+      {{blink::kFencedFrameTopNavigationStartBeaconType, report_destination3_}},
+      /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  std::string error_message;
+  blink::mojom::ConsoleMessageLevel console_message_level =
+      blink::mojom::ConsoleMessageLevel::kError;
+
+  // Make an automatic beacon report that succeeds.
+  EXPECT_TRUE(reporter->SendReport(
+      AutomaticBeaconEvent(
+          blink::mojom::AutomaticBeaconType::kTopNavigationStart,
+          "event_data3"),
+      blink::FencedFrame::ReportingDestination::kBuyer, main_rfh_impl(),
+      network::AttributionReportingRuntimeFeatures(), error_message,
+      console_message_level));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
+  ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
+                  report_destination3_, "event_data3");
+
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      report_destination3_.spec(), "");
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  histogram_tester().ExpectTotalCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA, 1);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kAutomaticSuccess, 1);
+
+  // Make an automatic beacon report that fails with HTTP status 404.
+  EXPECT_TRUE(reporter->SendReport(
+      AutomaticBeaconEvent(
+          blink::mojom::AutomaticBeaconType::kTopNavigationStart,
+          "event_data3"),
+      blink::FencedFrame::ReportingDestination::kBuyer, main_rfh_impl(),
+      network::AttributionReportingRuntimeFeatures(), error_message,
+      console_message_level));
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
+  ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
+                  report_destination3_, "event_data3");
+
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      report_destination3_.spec(), "", net::HTTP_NOT_FOUND);
+  EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  histogram_tester().ExpectTotalCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA, 2);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kAutomaticSuccess, 1);
+  histogram_tester().ExpectBucketCount(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      blink::FencedFrameBeaconReportingResult::kAutomaticFailure, 1);
 }
 
 }  // namespace

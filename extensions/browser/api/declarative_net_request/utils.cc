@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <set>
+#include <string_view>
 #include <utility>
 
 #include "base/files/file.h"
@@ -36,8 +37,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
-namespace extensions {
-namespace declarative_net_request {
+namespace extensions::declarative_net_request {
 namespace {
 
 namespace dnr_api = api::declarative_net_request;
@@ -48,7 +48,7 @@ namespace flat_rule = url_pattern_index::flat;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 30;
+constexpr int kIndexedRulesetFormatVersion = 31;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
@@ -91,7 +91,7 @@ std::string GetVersionHeader() {
 // Helper to ensure pointers to string literals can be used with
 // base::JoinString.
 std::string JoinString(base::span<const char* const> parts) {
-  std::vector<base::StringPiece> parts_piece;
+  std::vector<std::string_view> parts_piece;
   for (const char* part : parts)
     parts_piece.push_back(part);
   return base::JoinString(parts_piece, ", ");
@@ -144,8 +144,8 @@ void OverrideGetChecksumForTest(int checksum) {
 std::string GetIndexedRulesetData(base::span<const uint8_t> data) {
   return base::StrCat(
       {GetVersionHeader(),
-       base::StringPiece(reinterpret_cast<const char*>(data.data()),
-                         data.size())});
+       std::string_view(reinterpret_cast<const char*>(data.data()),
+                        data.size())});
 }
 
 bool PersistIndexedRuleset(const base::FilePath& path,
@@ -316,9 +316,8 @@ re2::RE2::Options CreateRE2Options(bool is_case_sensitive,
 
   options.set_log_errors(false);
 
-  // Limit the maximum memory per regex to 2 Kb. This means given 1024 rules,
-  // the total usage would be 2 Mb.
-  options.set_max_mem(2 << 10);
+  // Limit the maximum memory per regex.
+  options.set_max_mem(kRegexMaxMemKb << 10);
 
   return options;
 }
@@ -800,7 +799,7 @@ flat_rule::RequestMethod GetRequestMethod(bool http_or_https,
 
   using net::HttpRequestHeaders;
   static const base::NoDestructor<
-      base::flat_map<base::StringPiece, flat_rule::RequestMethod>>
+      base::flat_map<std::string_view, flat_rule::RequestMethod>>
       kRequestMethods(
           {{HttpRequestHeaders::kDeleteMethod, flat_rule::RequestMethod_DELETE},
            {HttpRequestHeaders::kGetMethod, flat_rule::RequestMethod_GET},
@@ -883,5 +882,4 @@ bool IsRuleSafe(const flat::UrlRuleMetadata& url_rule_metadata) {
          action_type == flat::ActionType_upgrade_scheme;
 }
 
-}  // namespace declarative_net_request
-}  // namespace extensions
+}  // namespace extensions::declarative_net_request

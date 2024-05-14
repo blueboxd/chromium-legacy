@@ -201,11 +201,11 @@ class CORE_EXPORT HTMLInputElement
   // delay the 'input' event with EventQueueScope.
   void SetValueFromRenderer(const String&);
 
-  absl::optional<uint32_t> selectionStartForBinding(ExceptionState&) const;
-  absl::optional<uint32_t> selectionEndForBinding(ExceptionState&) const;
+  std::optional<uint32_t> selectionStartForBinding(ExceptionState&) const;
+  std::optional<uint32_t> selectionEndForBinding(ExceptionState&) const;
   String selectionDirectionForBinding(ExceptionState&) const;
-  void setSelectionStartForBinding(absl::optional<uint32_t>, ExceptionState&);
-  void setSelectionEndForBinding(absl::optional<uint32_t>, ExceptionState&);
+  void setSelectionStartForBinding(std::optional<uint32_t>, ExceptionState&);
+  void setSelectionEndForBinding(std::optional<uint32_t>, ExceptionState&);
   void setSelectionDirectionForBinding(const String&, ExceptionState&);
   void setSelectionRangeForBinding(unsigned start,
                                    unsigned end,
@@ -426,6 +426,7 @@ class CORE_EXPORT HTMLInputElement
 
   void AccessKeyAction(SimulatedClickCreationScope creation_scope) final;
 
+  void DidRecalcStyle(const StyleRecalcChange) override;
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const final;
   void CollectStyleForPresentationAttribute(const QualifiedName&,
@@ -471,7 +472,7 @@ class CORE_EXPORT HTMLInputElement
   void DisabledAttributeChanged() final;
 
   void InitializeTypeInParsing();
-  void UpdateType();
+  void UpdateType(const AtomicString&);
 
   void SubtreeHasChanged() final;
 

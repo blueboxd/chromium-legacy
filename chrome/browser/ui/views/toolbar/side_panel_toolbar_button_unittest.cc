@@ -29,7 +29,7 @@ class SidePanelToolbarButtonTest : public TestWithBrowserView {
 
 // Verify correct buttons are shown when side panel alignment is changed.
 TEST_F(SidePanelToolbarButtonTest, SetCorrectIconInLTR) {
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     GTEST_SKIP()
         << "Default sidepanel button is not present with pinning feature.";
   }
@@ -54,7 +54,8 @@ TEST_F(SidePanelToolbarButtonTest, SetCorrectIconInLTR) {
   ASSERT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(side_panel_button->GetImage(views::Button::STATE_NORMAL)),
       gfx::Image(gfx::CreateVectorIcon(
-          kSidePanelIcon, color_provider->GetColor(kColorToolbarButtonIcon)))));
+          kSidePanelChromeRefreshIcon,
+          color_provider->GetColor(kColorToolbarButtonIcon)))));
 
   // Left aligned side panels should use the left aligned icon.
   browser_view()->GetProfile()->GetPrefs()->SetBoolean(
@@ -63,13 +64,13 @@ TEST_F(SidePanelToolbarButtonTest, SetCorrectIconInLTR) {
   ASSERT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(side_panel_button->GetImage(views::Button::STATE_NORMAL)),
       gfx::Image(gfx::CreateVectorIcon(
-          kSidePanelLeftIcon,
+          kSidePanelLeftChromeRefreshIcon,
           color_provider->GetColor(kColorToolbarButtonIcon)))));
 }
 
 // Verify correct buttons are shown in RTL mode.
 TEST_F(SidePanelToolbarButtonTest, SetCorrectIconInRTL) {
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     GTEST_SKIP()
         << "Default sidepanel button is not present with pinning feature.";
   }
@@ -97,7 +98,8 @@ TEST_F(SidePanelToolbarButtonTest, SetCorrectIconInRTL) {
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(side_panel_button->GetImage(views::Button::STATE_NORMAL)),
       gfx::Image(gfx::CreateVectorIcon(
-          kSidePanelIcon, color_provider->GetColor(kColorToolbarButtonIcon)))));
+          kSidePanelChromeRefreshIcon,
+          color_provider->GetColor(kColorToolbarButtonIcon)))));
 
   // Left aligned side panels should use the left aligned icon.
   browser_view()->GetProfile()->GetPrefs()->SetBoolean(
@@ -106,6 +108,6 @@ TEST_F(SidePanelToolbarButtonTest, SetCorrectIconInRTL) {
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(side_panel_button->GetImage(views::Button::STATE_NORMAL)),
       gfx::Image(gfx::CreateVectorIcon(
-          kSidePanelLeftIcon,
+          kSidePanelLeftChromeRefreshIcon,
           color_provider->GetColor(kColorToolbarButtonIcon)))));
 }

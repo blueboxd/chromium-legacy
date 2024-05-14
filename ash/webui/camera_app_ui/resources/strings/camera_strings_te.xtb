@@ -46,6 +46,7 @@
 <translation id="3067436040345934772">కుడి వైపునకు ప్యాన్ చేయి</translation>
 <translation id="3081586908890909590">వీడియో రికార్డింగ్ మోడ్‌కు మార్చు</translation>
 <translation id="313467653172006084">30 FPS</translation>
+<translation id="3158534262962737808">"<ph name="WIFINAME" />"లో చేరండి</translation>
 <translation id="3227137524299004712">మైక్రోఫోన్</translation>
 <translation id="3240426699337459095">లింక్ కాపీ చేయబడింది</translation>
 <translation id="3354465018370944241">ఫోటో సెట్టింగ్‌లు</translation>
@@ -78,12 +79,14 @@
 <translation id="4705093842003735294">పూర్తి రిజల్యూషన్</translation>
 <translation id="4864143361253542638">స్కాన్ చేసిన పేజీ లిస్ట్</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="4892746741161549733"><ph name="URL" /> లింక్ అడ్రస్‌ను కాపీ చేయండి</translation>
 <translation id="491895758387112773">మల్టీస్ట్రీమ్ వీడియో రికార్డింగ్</translation>
 <translation id="495170559598752135">చర్యలు</translation>
 <translation id="4984613436295737187">క్వాడ్ HD (1440p)</translation>
 <translation id="5034763830503483128">ఫోటో ఆకార నిష్పత్తి</translation>
 <translation id="5057360777601936059">మీ కెమెరా ప్రస్తుతం అందుబాటులో లేదు.
         కెమెరా సరిగ్గా కనెక్ట్ అయ్యిందో లేదో, దయచేసి సరిచూడండి.</translation>
+<translation id="5157591164390831335">URL గుర్తించబడింది.</translation>
 <translation id="5163387177077603948">కుడి వైపునకు కదులుతోంది</translation>
 <translation id="5235304959032763950">16:9</translation>
 <translation id="5266635337630551423">డాక్యుమెంట్ ఎగువ ఎడమ మూలన</translation>
@@ -110,6 +113,7 @@
 <translation id="6353688143752491039">కెమెరా యాప్ గురించి ఫీడ్‌బ్యాక్ ఇచ్చినందుకు ధన్యవాదాలు.
 
 మీ ఫీడ్‌బ్యాక్ ఇమేజ్ లేదా వీడియో క్వాలిటీ గురించి అయితే, దయచేసి నమూనా ఫోటో లేదా వీడియోను జోడించి, అందులో తప్పు ఏమిటో వివరించండి. (ఉదాహరణకు, ఫోటో మరీ మసకగా ఉండటం, లేదా తీయాల్సిన దానిపై ఫోకస్ చేయకపోవడం వంటివి)</translation>
+<translation id="6519884562954018934"><ph name="WIFINAME" />‌లో చేరండి</translation>
 <translation id="6527303717912515753">షేర్ చేయండి</translation>
 <translation id="6617916774429601017">అన్ని రిజల్యూషన్‌లను చూడండి</translation>
 <translation id="6631515515009660915">మిర్రర్ బటన్‌ను ఆఫ్ చేయండి</translation>
@@ -129,6 +133,7 @@
 <translation id="7450541714075000668">టెక్స్ట్ కాపీ చేయబడింది</translation>
 <translation id="7488619942230388918">GIF వీడియోను రికార్డ్ చేయండి</translation>
 <translation id="7557677699350329807">తర్వాతి కెమెరాకు మార్చు</translation>
+<translation id="7562584071994185503"><ph name="TEXT" /> టెక్స్ట్‌ను కాపీ చేయండి</translation>
 <translation id="7607002721634913082">పాజ్ చేయబడింది</translation>
 <translation id="7608223098072244877">4 బై 4</translation>
 <translation id="761421184377987513">దిగువ-ఎడమ వైపునకు కదులుతోంది</translation>
@@ -141,6 +146,7 @@
 <translation id="7726641833034062494">సాధారణ వీడియోను రికార్డ్ చేయండి</translation>
 <translation id="7748344063862150053">డాక్యుమెంట్ ఎగువ కుడి మూలన</translation>
 <translation id="7933675232020478311">దిగువ-కుడి వైపునకు కదులుతోంది</translation>
+<translation id="7983668134180549431">టెక్స్ట్ గుర్తించబడింది.</translation>
 <translation id="8079255378695216066">రికార్డింగ్‌ను ప్రారంభించడం సాధ్యం కాలేదు</translation>
 <translation id="8120146556401698679">ప్యాన్ చేయి టిల్ట్ చేయి జూమ్ చేయి</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
@@ -150,16 +156,17 @@
 <translation id="8346544573713510785">కెమెరా HAL ద్వారా ఫ్రేమ్‌లను స్కేల్ చేయండి</translation>
 <translation id="8425673304802773841">కిందికి టిల్ట్ చేయి</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
+<translation id="8609951387004618906"><ph name="URL" />‌ను తెరవండి</translation>
 <translation id="8629662593426079630">360p</translation>
 <translation id="8711011893539266636">మైక్రోఫోన్‌ను మ్యూట్‌కు టోగుల్ చేయండి. మ్యూట్ ఆన్‌లో ఉంది</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>
 <translation id="8732462232047530626">మెటాడేటాను ప్రివ్యూ చేయి</translation>
+<translation id="874854738381978209">Wi-Fi నెట్‌వర్క్ గుర్తించబడింది.</translation>
 <translation id="8815966864175525708">పోర్ట్రెయిట్ ఫోటోను తీసే విధంగా మార్చు</translation>
 <translation id="8828441885228359828">రికార్డింగ్ కొనసాగించండి</translation>
 <translation id="8870695351537079478">రికార్డింగ్‌ను ప్రారంభించడం సాధ్యం కాలేదు</translation>
 <translation id="8880167521484863515">4:3</translation>
 <translation id="8903921497873541725">దగ్గరికి జూమ్ చేయి</translation>
-<translation id="8926890870105777777">"<ph name="WIFINAME" />" నెట్‌వర్క్‌లో చేరండి</translation>
 <translation id="9045010116236796332">డాక్యుమెంట్‌లోని అన్ని అంచులు ఫ్రేమ్ లోపల వచ్చేటట్టుగా ఉంచండి</translation>
 <translation id="9045155556724273246">10 సెకన్లు</translation>
 <translation id="906331135292332864">ఇమేజ్‌ను ప్రాసెస్ చేస్తోంది...</translation>

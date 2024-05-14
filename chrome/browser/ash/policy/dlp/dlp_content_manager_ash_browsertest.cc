@@ -120,7 +120,7 @@ content::MediaStreamRequest CreateMediaStreamRequest(
       web_contents->GetPrimaryMainFrame()->GetRoutingID(),
       /*page_request_id=*/0, url::Origin::Create(GURL(kExampleUrl)),
       /*user_gesture=*/false, blink::MEDIA_GENERATE_STREAM,
-      /*requested_audio_device_id=*/std::string(), requested_video_device_id,
+      /*requested_audio_device_id=*/{}, {requested_video_device_id},
       blink::mojom::MediaStreamType::NO_SERVICE, video_type,
       /*disable_local_echo=*/false,
       /*request_pan_tilt_zoom_permission=*/false);
@@ -197,6 +197,7 @@ class DlpContentManagerAshBrowserTest : public InProcessBrowserTest {
   }
 
   void CheckEvents(DlpRulesManager::Restriction restriction,
+                   const std::string& src_url,
                    DlpRulesManager::Level level,
                    size_t count) {
     EXPECT_EQ(events_.size(), count);
@@ -204,7 +205,7 @@ class DlpContentManagerAshBrowserTest : public InProcessBrowserTest {
       EXPECT_THAT(
           events_[i],
           data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
-              kSrcPattern, restriction, kRuleName, kRuleId, level)));
+              src_url, restriction, kRuleName, kRuleId, level)));
     }
   }
 
@@ -237,8 +238,7 @@ class DlpContentManagerAshBrowserTest : public InProcessBrowserTest {
  protected:
   std::unique_ptr<DlpContentManagerTestHelper> helper_;
   base::HistogramTester histogram_tester_;
-  raw_ptr<MockDlpRulesManager, DanglingUntriaged | ExperimentalAsh>
-      mock_rules_manager_;
+  raw_ptr<MockDlpRulesManager, DanglingUntriaged> mock_rules_manager_;
   std::vector<DlpPolicyEvent> events_;
 };
 
@@ -334,7 +334,8 @@ IN_PROC_BROWSER_TEST_P(ScreenshotTest, CheckRestriction) {
       /*total_count=*/4,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot, param.level,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+              web_contents->GetLastCommittedURL().spec(), param.level,
               param.report_event_counts[0]);
 
   helper_->ChangeConfidentiality(web_contents, param.restriction_set);
@@ -349,7 +350,8 @@ IN_PROC_BROWSER_TEST_P(ScreenshotTest, CheckRestriction) {
       /*total_count=*/8,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot, param.level,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+              web_contents->GetLastCommittedURL().spec(), param.level,
               param.report_event_counts[1]);
 
   web_contents->WasHidden();
@@ -363,7 +365,8 @@ IN_PROC_BROWSER_TEST_P(ScreenshotTest, CheckRestriction) {
       /*total_count=*/12,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot, param.level,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+              web_contents->GetLastCommittedURL().spec(), param.level,
               param.report_event_counts[2]);
 
   web_contents->WasShown();
@@ -379,7 +382,8 @@ IN_PROC_BROWSER_TEST_P(ScreenshotTest, CheckRestriction) {
       /*total_count=*/16,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot, param.level,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+              web_contents->GetLastCommittedURL().spec(), param.level,
               param.report_event_counts[3]);
 
   helper_->DestroyWebContents(web_contents);
@@ -391,7 +395,8 @@ IN_PROC_BROWSER_TEST_P(ScreenshotTest, CheckRestriction) {
       /*total_count=*/19,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot, param.level,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+              web_contents->GetLastCommittedURL().spec(), param.level,
               param.report_event_counts[3]);
 }
 
@@ -407,8 +412,12 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, WarningProceededReportedAfterCapture) {
   helper_->ChangeConfidentiality(web_contents, kScreenshotWarned);
   ScreenshotArea fullscreen = ScreenshotArea::CreateForAllRootWindows();
   CheckScreenshotRestriction(fullscreen, /*expected_allowed=*/true);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kWarn, 1);
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
+              data_controls::IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  web_contents->GetLastCommittedURL().spec(),
+                  DlpRulesManager::Restriction::kScreenshot, kRuleName, kRuleId,
+                  DlpRulesManager::Level::kWarn)));
   histogram_tester_.ExpectBucketCount(
       data_controls::GetDlpHistogramPrefix() +
           data_controls::dlp::kScreenshotWarnProceededUMA,
@@ -423,8 +432,8 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, WarningProceededReportedAfterCapture) {
   EXPECT_THAT(
       events_[1],
       data_controls::IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-          kSrcPattern, DlpRulesManager::Restriction::kScreenshot, kRuleName,
-          kRuleId)));
+          web_contents->GetLastCommittedURL().spec(),
+          DlpRulesManager::Restriction::kScreenshot, kRuleName, kRuleId)));
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenshotTest, CheckRestriction_Blocked_Lacros) {
@@ -462,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, CheckRestriction_Blocked_Lacros) {
       /*total_count=*/4,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot, kSrcPattern,
               DlpRulesManager::Level::kBlock, 0u);
 
   DlpContentManagerAsh* manager =
@@ -479,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, CheckRestriction_Blocked_Lacros) {
       /*total_count=*/8,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot, kSrcPattern,
               DlpRulesManager::Level::kBlock, 3u);
 
   window->Hide();
@@ -493,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, CheckRestriction_Blocked_Lacros) {
       /*total_count=*/12,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot, kSrcPattern,
               DlpRulesManager::Level::kBlock, 4u);
 
   window->Show();
@@ -507,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, CheckRestriction_Blocked_Lacros) {
       /*total_count=*/16,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot, kSrcPattern,
               DlpRulesManager::Level::kBlock, 7u);
 
   manager->OnWindowDestroying(window);
@@ -519,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, CheckRestriction_Blocked_Lacros) {
       /*total_count=*/19,
       /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
       /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot, kSrcPattern,
               DlpRulesManager::Level::kBlock, 7u);
 }
 
@@ -555,8 +564,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
   auto* capture_mode_delegate = ChromeCaptureModeDelegate::Get();
   capture_mode_delegate->StartObservingRestrictedContent(
       root_window, root_window->bounds(), run_loop.QuitClosure());
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kBlock, 0u);
+  ASSERT_EQ(events_.size(), 0u);
 
   // Move first window with confidential content to make it visible.
   browser1->window()->SetBounds(gfx::Rect(100, 100, 700, 700));
@@ -570,8 +578,12 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
       data_controls::GetDlpHistogramPrefix() +
           data_controls::dlp::kVideoCaptureInterruptedUMA,
       true, 1);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kBlock, 1u);
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
+              data_controls::IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  web_contents1->GetLastCommittedURL().spec(),
+                  DlpRulesManager::Restriction::kScreenshot, kRuleName, kRuleId,
+                  DlpRulesManager::Level::kBlock)));
 }
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, VideoCaptureReported) {
@@ -620,8 +632,12 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, VideoCaptureReported) {
       data_controls::GetDlpHistogramPrefix() +
           data_controls::dlp::kVideoCaptureInterruptedUMA,
       true, 0);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kReport, 1u);
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
+              data_controls::IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  web_contents1->GetLastCommittedURL().spec(),
+                  DlpRulesManager::Restriction::kScreenshot, kRuleName, kRuleId,
+                  DlpRulesManager::Level::kReport)));
 }
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
@@ -656,8 +672,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
   auto* capture_mode_delegate = ChromeCaptureModeDelegate::Get();
   capture_mode_delegate->StartObservingRestrictedContent(
       root_window, root_window->bounds(), run_loop.QuitClosure());
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kBlock, 0u);
+  ASSERT_EQ(events_.size(), 0u);
 
   // Move second window to make first window with confidential content visible.
   browser2->window()->SetBounds(gfx::Rect(150, 150, 700, 700));
@@ -671,8 +686,12 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
       data_controls::GetDlpHistogramPrefix() +
           data_controls::dlp::kVideoCaptureInterruptedUMA,
       true, 1);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kBlock, 1u);
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0],
+              data_controls::IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  web_contents1->GetLastCommittedURL().spec(),
+                  DlpRulesManager::Restriction::kScreenshot, kRuleName, kRuleId,
+                  DlpRulesManager::Level::kBlock)));
 }
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
@@ -728,7 +747,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
       data_controls::GetDlpHistogramPrefix() +
           data_controls::dlp::kVideoCaptureInterruptedUMA,
       0);
-  CheckEvents(DlpRulesManager::Restriction::kScreenshot,
+  CheckEvents(DlpRulesManager::Restriction::kScreenshot, kSrcPattern,
               DlpRulesManager::Level::kBlock, 0u);
 }
 
@@ -1211,6 +1230,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
   helper_->ChangeConfidentiality(web_contents, kScreenShareRestricted);
 
   CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              web_contents->GetLastCommittedURL().spec(),
               DlpRulesManager::Level::kBlock, 1u);
   EXPECT_TRUE(
       display_service_tester.GetNotification(kScreenSharePausedNotificationId));
@@ -1256,6 +1276,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
           data_controls::dlp::kScreenSharePausedOrResumedUMA,
       false, 1);
   CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              web_contents->GetLastCommittedURL().spec(),
               DlpRulesManager::Level::kBlock, 1u);
 }
 
@@ -1285,6 +1306,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
   helper_->ChangeConfidentiality(web_contents, kScreenShareRestricted);
 
   CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              web_contents->GetLastCommittedURL().spec(),
               DlpRulesManager::Level::kBlock, 1u);
   EXPECT_TRUE(
       display_service_tester.GetNotification(kScreenSharePausedNotificationId));
@@ -1332,8 +1354,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
       data_controls::GetDlpHistogramPrefix() +
           data_controls::dlp::kScreenSharePausedOrResumedUMA,
       false, 1);
-  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
-              DlpRulesManager::Level::kBlock, 1u);
+  ASSERT_EQ(events_.size(), 1u);
 }
 
 struct ScreenShareTestParams {
@@ -1411,18 +1432,18 @@ IN_PROC_BROWSER_TEST_P(CheckAndStartScreenShareTest, FullScreenShare) {
       /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
 
   ASSERT_EQ(events_.size(), param.report_event_count);
-  EXPECT_THAT(
-      events_[0],
-      data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
-          kSrcPattern, DlpRulesManager::Restriction::kScreenShare, kRuleName,
-          kRuleId, param.level)));
+  EXPECT_THAT(events_[0], data_controls::IsDlpPolicyEvent(
+                              data_controls::CreateDlpPolicyEvent(
+                                  web_contents->GetLastCommittedURL().spec(),
+                                  DlpRulesManager::Restriction::kScreenShare,
+                                  kRuleName, kRuleId, param.level)));
 
   if (param.expect_warning_proceeded) {
     EXPECT_THAT(
         events_[1],
         data_controls::IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-            kSrcPattern, DlpRulesManager::Restriction::kScreenShare, kRuleName,
-            kRuleId)));
+            web_contents->GetLastCommittedURL().spec(),
+            DlpRulesManager::Restriction::kScreenShare, kRuleName, kRuleId)));
     histogram_tester_.ExpectBucketCount(
         data_controls::GetDlpHistogramPrefix() +
             data_controls::dlp::kScreenShareWarnProceededUMA,
@@ -1460,18 +1481,18 @@ IN_PROC_BROWSER_TEST_P(CheckAndStartScreenShareTest, TabShare) {
       /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
 
   ASSERT_EQ(events_.size(), param.report_event_count);
-  EXPECT_THAT(
-      events_[0],
-      data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
-          kSrcPattern, DlpRulesManager::Restriction::kScreenShare, kRuleName,
-          kRuleId, param.level)));
+  EXPECT_THAT(events_[0], data_controls::IsDlpPolicyEvent(
+                              data_controls::CreateDlpPolicyEvent(
+                                  web_contents->GetLastCommittedURL().spec(),
+                                  DlpRulesManager::Restriction::kScreenShare,
+                                  kRuleName, kRuleId, param.level)));
 
   if (param.expect_warning_proceeded) {
     EXPECT_THAT(
         events_[1],
         data_controls::IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-            kSrcPattern, DlpRulesManager::Restriction::kScreenShare, kRuleName,
-            kRuleId)));
+            web_contents->GetLastCommittedURL().spec(),
+            DlpRulesManager::Restriction::kScreenShare, kRuleName, kRuleId)));
     histogram_tester_.ExpectBucketCount(
         data_controls::GetDlpHistogramPrefix() +
             data_controls::dlp::kScreenShareWarnProceededUMA,
@@ -1532,8 +1553,8 @@ IN_PROC_BROWSER_TEST_P(CheckRunningScreenShareTest, FullScreenShare) {
     EXPECT_THAT(
         events_[1],
         data_controls::IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-            kSrcPattern, DlpRulesManager::Restriction::kScreenShare, kRuleName,
-            kRuleId)));
+            web_contents->GetLastCommittedURL().spec(),
+            DlpRulesManager::Restriction::kScreenShare, kRuleName, kRuleId)));
     histogram_tester_.ExpectBucketCount(
         data_controls::GetDlpHistogramPrefix() +
             data_controls::dlp::kScreenShareWarnProceededUMA,
@@ -1604,8 +1625,8 @@ IN_PROC_BROWSER_TEST_P(CheckRunningScreenShareTest, TabShare) {
     EXPECT_THAT(
         events_[1],
         data_controls::IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-            kSrcPattern, DlpRulesManager::Restriction::kScreenShare, kRuleName,
-            kRuleId)));
+            web_contents->GetLastCommittedURL().spec(),
+            DlpRulesManager::Restriction::kScreenShare, kRuleName, kRuleId)));
     histogram_tester_.ExpectBucketCount(
         data_controls::GetDlpHistogramPrefix() +
             data_controls::dlp::kScreenShareWarnProceededUMA,
@@ -1815,6 +1836,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
           data_controls::dlp::kScreenSharePausedOrResumedUMA,
       true, 1);
   CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              web_contents2->GetLastCommittedURL().spec(),
               DlpRulesManager::Level::kBlock, 1u);
 }
 
@@ -1924,6 +1946,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
 
   MaybeStartTabShare(web_contents);
   CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              web_contents->GetLastCommittedURL().spec(),
               DlpRulesManager::Level::kReport, 1u);
   EXPECT_FALSE(display_service_tester.GetNotification(
       kScreenShareBlockedNotificationId));
@@ -1953,6 +1976,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
   ASSERT_EQ(browser()->tab_strip_model()->GetActiveWebContents(), web_contents);
 
   CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              web_contents->GetLastCommittedURL().spec(),
               DlpRulesManager::Level::kReport, 1u);
   EXPECT_FALSE(display_service_tester.GetNotification(
       kScreenShareBlockedNotificationId));
@@ -2034,27 +2058,30 @@ IN_PROC_BROWSER_TEST_P(ScreenShareNavigateWebContentsTest, Reporting) {
   EXPECT_CALL(source_cb_, Run).Times(1);
 
   //   Navigate to reported content. Should emit a report event.
-  helper_->UpdateConfidentiality(web_contents, kScreenShareReported);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), reported_url));
+  helper_->UpdateConfidentiality(web_contents, kScreenShareReported);
   helper_->CheckRunningScreenShares();
 
-  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
-              DlpRulesManager::Level::kReport, 1u);
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(
+      events_[0],
+      data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
+          web_contents->GetLastCommittedURL().spec(),
+          DlpRulesManager::Restriction::kScreenShare, kRuleName, kRuleId,
+          DlpRulesManager::Level::kReport)));
 
   // Navigate to unrestricted content. Should not emit any events.
-  helper_->UpdateConfidentiality(web_contents, kEmptyRestrictionSet);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), unrestricted_url));
+  helper_->UpdateConfidentiality(web_contents, kEmptyRestrictionSet);
   helper_->CheckRunningScreenShares();
-  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
-              DlpRulesManager::Level::kReport, 1u);
+  ASSERT_EQ(events_.size(), 1u);
 
   // Navigate to the previous reported content. Should not emit any report
   // event.
-  helper_->UpdateConfidentiality(web_contents, kScreenShareReported);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), reported_url));
+  helper_->UpdateConfidentiality(web_contents, kScreenShareReported);
   helper_->CheckRunningScreenShares();
-  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
-              DlpRulesManager::Level::kReport, 1u);
+  ASSERT_EQ(events_.size(), 1u);
 
   EXPECT_FALSE(
       display_service_tester.GetNotification(kScreenSharePausedNotificationId));
@@ -2069,15 +2096,15 @@ IN_PROC_BROWSER_TEST_P(ScreenShareNavigateWebContentsTest, Reporting) {
             0);
 
   // Navigate to restricted content. Should emit a corresponding event.
-  helper_->UpdateConfidentiality(web_contents, param.restriction_set);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), restricted_url));
+  helper_->UpdateConfidentiality(web_contents, param.restriction_set);
   helper_->CheckRunningScreenShares();
   ASSERT_EQ(events_.size(), 2u);
-  EXPECT_THAT(
-      events_[1],
-      data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
-          kSrcPattern, DlpRulesManager::Restriction::kScreenShare, kRuleName,
-          kRuleId, param.level)));
+  EXPECT_THAT(events_[1], data_controls::IsDlpPolicyEvent(
+                              data_controls::CreateDlpPolicyEvent(
+                                  GURL(restricted_url).spec(),
+                                  DlpRulesManager::Restriction::kScreenShare,
+                                  kRuleName, kRuleId, param.level)));
   if (param.level == DlpRulesManager::Level::kWarn) {
     // Proceed, as otherwise the screen share would be stopped.
     DismissDialog(/*allow=*/true);
@@ -2094,8 +2121,8 @@ IN_PROC_BROWSER_TEST_P(ScreenShareNavigateWebContentsTest, Reporting) {
   auto prev_events_size = events_.size();
   // Navigate to the previous reported content. Should not emit any reporting
   // event.
-  helper_->UpdateConfidentiality(web_contents, kScreenShareReported);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), reported_url));
+  helper_->UpdateConfidentiality(web_contents, kScreenShareReported);
   helper_->CheckRunningScreenShares();
   EXPECT_EQ(events_.size(), prev_events_size);
   WaitForScreenShareResume();

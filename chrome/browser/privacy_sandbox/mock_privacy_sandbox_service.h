@@ -42,12 +42,8 @@ class MockPrivacySandboxService : public PrivacySandboxService {
   MOCK_METHOD(bool, IsPromptOpenForBrowser, (Browser*), (override));
 #endif  // !BUILDFLAG(IS_ANDROID)
   MOCK_METHOD(void, ForceChromeBuildForTests, (bool), (override));
-  MOCK_METHOD(void, SetPrivacySandboxEnabled, (bool), (override));
-  MOCK_METHOD(bool, IsPrivacySandboxEnabled, (), (override));
-  MOCK_METHOD(bool, IsPrivacySandboxManaged, (), (override));
   // Mock this method to enable opening the settings page in tests.
   MOCK_METHOD(bool, IsPrivacySandboxRestricted, (), (override));
-  MOCK_METHOD(void, OnPrivacySandboxV2PrefChanged, (), (override));
   MOCK_METHOD(bool, IsRestrictedNoticeEnabled, (), (override));
   MOCK_METHOD(void, SetFirstPartySetsDataAccessEnabled, (bool), (override));
   MOCK_METHOD(bool, IsFirstPartySetsDataAccessEnabled, (), (const, override));
@@ -56,11 +52,11 @@ class MockPrivacySandboxService : public PrivacySandboxService {
               GetSampleFirstPartySets,
               (),
               (const, override));
-  MOCK_METHOD(absl::optional<net::SchemefulSite>,
+  MOCK_METHOD(std::optional<net::SchemefulSite>,
               GetFirstPartySetOwner,
               (const GURL& site_url),
               (const, override));
-  MOCK_METHOD(absl::optional<std::u16string>,
+  MOCK_METHOD(std::optional<std::u16string>,
               GetFirstPartySetOwnerForDisplay,
               (const GURL& site_url),
               (const, override));
@@ -83,6 +79,14 @@ class MockPrivacySandboxService : public PrivacySandboxService {
   MOCK_METHOD(std::vector<privacy_sandbox::CanonicalTopic>,
               GetCurrentTopTopics,
               (),
+              (const, override));
+  MOCK_METHOD(std::vector<privacy_sandbox::CanonicalTopic>,
+              GetFirstLevelTopics,
+              (),
+              (const, override));
+  MOCK_METHOD(std::vector<privacy_sandbox::CanonicalTopic>,
+              GetChildTopicsCurrentlyAssigned,
+              (const privacy_sandbox::CanonicalTopic& topic),
               (const, override));
   MOCK_METHOD(std::vector<privacy_sandbox::CanonicalTopic>,
               GetBlockedTopics,

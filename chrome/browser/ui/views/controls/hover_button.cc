@@ -49,8 +49,9 @@ std::unique_ptr<views::Border> CreateBorderWithVerticalSpacing(
 // layout should be the same whether or not the icon is badged, so allow the
 // badged part of the icon to extend into the padding.
 class IconWrapper : public views::View {
+  METADATA_HEADER(IconWrapper, views::View)
+
  public:
-  METADATA_HEADER(IconWrapper);
   explicit IconWrapper(std::unique_ptr<views::View> icon, int vertical_spacing)
       : icon_(AddChildView(std::move(icon))) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -79,7 +80,7 @@ class IconWrapper : public views::View {
   raw_ptr<views::View> icon_;
 };
 
-BEGIN_METADATA(IconWrapper, views::View)
+BEGIN_METADATA(IconWrapper)
 END_METADATA
 
 }  // namespace
@@ -136,9 +137,10 @@ HoverButton::HoverButton(PressedCallback callback,
 
   // Set the layout manager to ignore the ink_drop_container to ensure the ink
   // drop tracks the bounds of its parent.
+  ink_drop_container()->SetProperty(views::kViewIgnoredByLayoutKey, true);
+
   SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetChildViewIgnoredByLayout(ink_drop_container(), true);
+      ->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
   // The vertical space that must exist on the top and the bottom of the item
   // to ensure the proper spacing is maintained between items when stacking
@@ -338,5 +340,5 @@ void HoverButton::OnPressed(const ui::Event& event) {
   }
 }
 
-BEGIN_METADATA(HoverButton, views::LabelButton)
+BEGIN_METADATA(HoverButton)
 END_METADATA

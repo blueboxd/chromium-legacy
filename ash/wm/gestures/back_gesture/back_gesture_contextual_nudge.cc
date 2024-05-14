@@ -229,7 +229,7 @@ class BackGestureContextualNudge::ContextualNudgeView
 
    private:
     // views::View:
-    void Layout() override {
+    void Layout(PassKey) override {
       const gfx::Rect bounds = GetLocalBounds();
       gfx::Rect label_rect(bounds);
       label_rect.ClampToCenteredSize(label_->GetPreferredSize());
@@ -293,10 +293,9 @@ class BackGestureContextualNudge::ContextualNudgeView
       }
     }
 
-    raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
+    raw_ptr<views::Label> label_ = nullptr;
     int current_animation_times_ = 0;
-    raw_ptr<ContextualNudgeView, ExperimentalAsh> nudge_view_ =
-        nullptr;  // Not owned.
+    raw_ptr<ContextualNudgeView> nudge_view_ = nullptr;  // Not owned.
   };
 
   // Showing contextual nudge from off screen to its start position.
@@ -336,7 +335,9 @@ class BackGestureContextualNudge::ContextualNudgeView
   }
 
   // views::View:
-  void Layout() override { suggestion_view_->SetBoundsRect(GetLocalBounds()); }
+  void Layout(PassKey) override {
+    suggestion_view_->SetBoundsRect(GetLocalBounds());
+  }
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
@@ -360,7 +361,7 @@ class BackGestureContextualNudge::ContextualNudgeView
   }
 
   // Created by ContextualNudgeView. Owned by views hierarchy.
-  raw_ptr<SuggestionView, ExperimentalAsh> suggestion_view_ = nullptr;
+  raw_ptr<SuggestionView> suggestion_view_ = nullptr;
 
   // Timer to start show the sliding in animation.
   base::OneShotTimer show_timer_;

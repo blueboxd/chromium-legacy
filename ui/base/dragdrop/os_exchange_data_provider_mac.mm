@@ -145,12 +145,12 @@ void OSExchangeDataProviderMac::MarkRendererTaintedFromOrigin(
                      forType:kUTTypeChromiumRendererInitiatedDrag];
 }
 
-absl::optional<url::Origin>
+std::optional<url::Origin>
 OSExchangeDataProviderMac::GetRendererTaintedOrigin() const {
   NSString* item =
       [GetPasteboard() stringForType:kUTTypeChromiumRendererInitiatedDrag];
   if (!item) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   if (0 == [item length]) {

@@ -42,6 +42,7 @@ import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.password_manager.GetLoginMatchType;
@@ -51,11 +52,10 @@ import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Credentia
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.chrome.browser.touch_to_fill.data.WebAuthnCredential;
+import org.chromium.chrome.browser.touch_to_fill.data.WebauthnCredential;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -89,12 +89,12 @@ public class TouchToFillRenderTest {
     private static final Credential MARIAM =
             new Credential("مريم", "***", "مريم", "", "example.com", GetLoginMatchType.EXACT, 0);
     private static final byte[] RANDOM_ID = new byte[] {0};
-    private static final WebAuthnCredential BATMAN =
-            new WebAuthnCredential("example.com", RANDOM_ID, RANDOM_ID, "batman");
-    private static final WebAuthnCredential PETROL =
-            new WebAuthnCredential("example.com", RANDOM_ID, RANDOM_ID, "petrol");
-    private static final WebAuthnCredential SPOR =
-            new WebAuthnCredential("example.com", RANDOM_ID, RANDOM_ID, "spor");
+    private static final WebauthnCredential BATMAN =
+            new WebauthnCredential("example.com", RANDOM_ID, RANDOM_ID, "batman");
+    private static final WebauthnCredential PETROL =
+            new WebauthnCredential("example.com", RANDOM_ID, RANDOM_ID, "petrol");
+    private static final WebauthnCredential SPOR =
+            new WebauthnCredential("example.com", RANDOM_ID, RANDOM_ID, "spor");
 
     @Mock private Callback<Integer> mDismissHandler;
     @Mock private Callback<Credential> mCredentialCallback;
@@ -345,7 +345,7 @@ public class TouchToFillRenderTest {
                 TouchToFillProperties.ItemType.CREDENTIAL, credential, mCredentialCallback, false);
     }
 
-    private MVCListAdapter.ListItem buildWebAuthnCredentialItem(WebAuthnCredential credential) {
+    private MVCListAdapter.ListItem buildWebAuthnCredentialItem(WebauthnCredential credential) {
         return new MVCListAdapter.ListItem(
                 TouchToFillProperties.ItemType.WEBAUTHN_CREDENTIAL,
                 new PropertyModel.Builder(

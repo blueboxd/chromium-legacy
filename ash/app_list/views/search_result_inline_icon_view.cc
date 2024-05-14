@@ -62,7 +62,7 @@ void SearchResultInlineIconView::SetIcon(const gfx::VectorIcon& icon) {
   icon_ = &icon;
 
   ui::ImageModel icon_model;
-  if (ash::features::isSearchCustomizableShortcutsInLauncherEnabled()) {
+  if (ash::features::IsSearchCustomizableShortcutsInLauncherEnabled()) {
     icon_model = ui::ImageModel::FromVectorIcon(
         *icon_, use_modified_styling_
                     ? cros_tokens::kCrosSysSystemOnPrimaryContainer
@@ -95,12 +95,13 @@ void SearchResultInlineIconView::SetText(const std::u16string& text) {
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW_INLINE_ANSWER_DETAILS);
     label_->SetTextStyle(views::style::STYLE_EMPHASIZED);
+    label_->SetAutoColorReadabilityEnabled(false);
   }
 
   label_->SetText(text);
   label_->SetVisible(true);
 
-  if (ash::features::isSearchCustomizableShortcutsInLauncherEnabled()) {
+  if (ash::features::IsSearchCustomizableShortcutsInLauncherEnabled()) {
     label_->SetEnabledColorId(
         use_modified_styling_ ? cros_tokens::kCrosSysSystemOnPrimaryContainer
                               : cros_tokens::kCrosSysOnSurface);
@@ -120,8 +121,13 @@ void SearchResultInlineIconView::SetText(const std::u16string& text) {
   SetVisible(true);
 }
 
+void SearchResultInlineIconView::SetTooltipTextForImageView(
+    const std::u16string& text) {
+  icon_image_->SetTooltipText(text);
+}
+
 void SearchResultInlineIconView::OnPaint(gfx::Canvas* canvas) {
-  if (ash::features::isSearchCustomizableShortcutsInLauncherEnabled()) {
+  if (ash::features::IsSearchCustomizableShortcutsInLauncherEnabled()) {
     return;
   }
 

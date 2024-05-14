@@ -31,14 +31,25 @@ declare_args() {
   # into their project to enable CXX there.
   enable_cxx = build_with_chromium
 
+  # The chromium prelude crate provides the `chromium::import!` macro which
+  # is needed to depend on first-party rust libraries. Third-party libraries
+  # are specified with cargo_crate and do not get imported through this macro.
+  #
+  # The macro requires //third_party/rust for syn, quote, and proc_macro2.
+  # Downstream projects that want to use //build for the rust GN templates but
+  # don't want to enable the chromium prelude can disable it here, and should
+  # specify a globally unique `crate_name` in their rust library GN rules
+  # instead. Note that using a `crate_name` is strongly discouraged inside
+  # Chromium, and is also discouraged for downstream projects when possible.
+  enable_chromium_prelude = build_with_chromium
+
   # As we incrementally enable Rust on mainstream builders, we want to enable
   # the toolchain (by switching 'enable_rust' to true) while still disabling
   # almost all Rust features). Yet we still want to have some builders with
   # all Rust features enabled.
   enable_all_rust_features = false
 
-  # Chromium provides a Rust toolchain in //third_party/rust-toolchain when
-  # checkout_rust is True (which is being rolled out by default over time).
+  # Chromium provides a Rust toolchain in //third_party/rust-toolchain.
   #
   # To use a custom toolchain instead, specify an absolute path to the root of
   # a Rust sysroot, which will have a 'bin' directory and others. Commonly
@@ -54,6 +65,17 @@ declare_args() {
   # If you're using a Rust toolchain as specified by rust_sysroot_absolute,
   # you can specify whether it supports nacl here.
   rust_toolchain_supports_nacl = false
+
+  # Whether artifacts produced by the Rust compiler can participate in ThinLTO.
+  #
+  # One important consideration is whether the linker uses the same LLVM
+  # version as `rustc` (i.e. if it can understand the LLVM-IR from the
+  # compilation artifacts produced by `rustc`).  In LaCrOS and ash builds this
+  # may not be true - see b/299483903.
+  #
+  # TODO(https://crbug.com/1482525): Re-enable ThinLTO for Rust on LaCrOS
+  # TODO(b/300937673): Re-enable ThinLTO for Rust on ash-chrome
+  toolchain_supports_rust_thin_lto = !is_chromeos
 
   # Any extra std rlibs in your Rust toolchain, relative to the standard
   # Rust toolchain. Typically used with 'rust_sysroot_absolute'
@@ -99,7 +121,7 @@ declare_args() {
   enable_rust_gtest_interop = enable_rust
 
   # Enable Boringssl Rust bindings generation
-  enable_rust_boringssl = enable_rust && enable_all_rust_features
+  enable_rust_boringssl = enable_rust
 
   # Enable experimental Fontations Rust font stack.
   use_typeface_fontations = enable_rust
@@ -144,17 +166,6 @@ if (enable_rust) {
 # them as a dylib and put them into an APK. We should reuse all the same logic
 # for gtests from the `//testing/test:test` template.
 can_build_rust_unit_tests = toolchain_has_rust && !is_android
-
-# Whether artifacts produced by the Rust compiler can participate in ThinLTO.
-#
-# One important consideration is whether the linker uses the same LLVM
-# version as `rustc` (i.e. if it can understand the LLVM-IR from the
-# compilation artifacts produced by `rustc`).  In LaCrOS and ash builds this may
-# not be true - see b/299483903.
-#
-# TODO(https://crbug.com/1482525): Re-enable ThinLTO for Rust on LaCrOS
-# TODO(b/300937673): Re-enable ThinLTO for Rust on ash-chrome
-toolchain_supports_rust_thin_lto = !is_chromeos
 
 # We want to store rust_sysroot as a source-relative variable for ninja
 # portability. In practice if an external toolchain was specified, it might

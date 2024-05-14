@@ -32,7 +32,7 @@ namespace autofill {
 class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
                                          public AutofillPopupController {
  public:
-  AutofillKeyboardAccessoryAdapter(
+  explicit AutofillKeyboardAccessoryAdapter(
       base::WeakPtr<AutofillPopupController> controller);
 
   AutofillKeyboardAccessoryAdapter(const AutofillKeyboardAccessoryAdapter&) =
@@ -60,10 +60,13 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
     // Makes announcement for acessibility.
     virtual void AxAnnounce(const std::u16string& text);
 
-    // Ask to confirm a deletion. Triggers the callback upon confirmation.
-    virtual void ConfirmDeletion(const std::u16string& confirmation_title,
-                                 const std::u16string& confirmation_body,
-                                 base::OnceClosure confirm_deletion) = 0;
+    // Ask to confirm a deletion. Triggers the callback upon the user confirming
+    // or declining the deletion. The detection callback parameter specifies
+    // whether the deletion was confirmed or declined.
+    virtual void ConfirmDeletion(
+        const std::u16string& confirmation_title,
+        const std::u16string& confirmation_body,
+        base::OnceCallback<void(bool)> deletion_callback) = 0;
   };
 
   void SetAccessoryView(std::unique_ptr<AccessoryView> view) {
@@ -106,8 +109,9 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   bool RemoveSuggestion(
       int index,
       AutofillMetrics::SingleEntryRemovalMethod removal_method) override;
-  void SelectSuggestion(std::optional<size_t> index) override;
-  PopupType GetPopupType() const override;
+  void SelectSuggestion(int index) override;
+  void UnselectSuggestion() override;
+  FillingProduct GetMainFillingProduct() const override;
   bool ShouldIgnoreMouseObservedOutsideItemBoundsCheck() const override;
   base::WeakPtr<AutofillPopupController> OpenSubPopup(
       const gfx::RectF& anchor_bounds,
@@ -124,7 +128,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   std::optional<AutofillClient::PopupScreenLocation> GetPopupScreenLocation()
       const override;
 
-  void OnDeletionConfirmed(int index);
+  void OnDeletionDialogClosed(int index, bool confirmed);
 
   // Indices might be offset because a special item is moved to the front. This
   // method returns the index used by the keyboard accessory (may be offset).

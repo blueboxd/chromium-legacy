@@ -39,6 +39,8 @@ namespace blink {
 
 class Element;
 class ExceptionState;
+class GetHTMLOptions;
+class GetInnerHTMLOptions;
 class HTMLCollection;
 class RadioNodeList;
 class StyleRecalcContext;
@@ -335,8 +337,8 @@ class CORE_EXPORT ContainerNode : public Node {
     kNonElementRemoved,
     kAllChildrenRemoved,
     kTextChanged,
-    // When the parser builds a DocumentFragment (because of inner/outer-html)
-    // a single ChildrenChange event is sent at the end.
+    // When the parser builds nodes (because of inner/outer-html or
+    // parseFromString) a single ChildrenChange event is sent at the end.
     kFinishedBuildingDocumentFragmentTree,
   };
   enum class ChildrenChangeSource : uint8_t { kAPI, kParser };
@@ -459,6 +461,11 @@ class CORE_EXPORT ContainerNode : public Node {
   void ReplaceChildren(const VectorOf<Node>& nodes,
                        ExceptionState& exception_state);
 
+  // Common implementation of getHTML and getInnerHTML. These are exposed (via
+  // IDL) on Element and ShadowRoot only.
+  String getInnerHTML(const GetInnerHTMLOptions* options) const;
+  String getHTML(const GetHTMLOptions*, ExceptionState&) const;
+
   // DocumentOrElementEventHandlers:
   // These event listeners are only actually web-exposed on interfaces that
   // include the DocumentOrElementEventHandlers mixin in their idl.
@@ -514,12 +521,11 @@ class CORE_EXPORT ContainerNode : public Node {
   void RemoveBetween(Node* previous_child, Node* next_child, Node& old_child);
   // Inserts the specified nodes before |next|.
   // |next| may be nullptr.
-  // |post_insertion_notification_targets| must not be nullptr.
   template <typename Functor>
   void InsertNodeVector(const NodeVector&,
                         Node* next,
                         const Functor&,
-                        NodeVector* post_insertion_notification_targets);
+                        NodeVector& post_insertion_notification_targets);
   void DidInsertNodeVector(
       const NodeVector&,
       Node* next,

@@ -15,6 +15,7 @@
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_constants.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -93,8 +94,8 @@ gfx::Size WindowCycleItemView::GetPreviewViewSize() const {
   return preview_pref_size;
 }
 
-void WindowCycleItemView::Layout() {
-  WindowMiniView::Layout();
+void WindowCycleItemView::Layout(PassKey) {
+  LayoutSuperclass<WindowMiniView>(this);
 
   if (!preview_view())
     return;
@@ -124,7 +125,7 @@ gfx::Size WindowCycleItemView::CalculatePreferredSize() const {
       std::clamp(preview_size.width(), kMinPreviewWidthDp, kMaxPreviewWidthDp));
 
   const int margin = GetInsets().width();
-  preview_size.Enlarge(margin, margin + WindowMiniView::kHeaderHeightDp);
+  preview_size.Enlarge(margin, margin + kWindowMiniViewHeaderHeight);
   return preview_size;
 }
 
@@ -150,7 +151,7 @@ void WindowCycleItemView::RefreshItemVisuals() {
   RefreshFocusRingVisuals();
 }
 
-BEGIN_METADATA(WindowCycleItemView, WindowMiniView)
+BEGIN_METADATA(WindowCycleItemView)
 END_METADATA
 
 GroupContainerCycleView::GroupContainerCycleView(SnapGroup* snap_group) {
@@ -185,7 +186,7 @@ bool GroupContainerCycleView::Contains(aura::Window* window) const {
 
 aura::Window* GroupContainerCycleView::GetWindowAtPoint(
     const gfx::Point& screen_point) const {
-  for (auto* mini_view : mini_views_) {
+  for (ash::WindowCycleItemView* mini_view : mini_views_) {
     if (auto* window = mini_view->GetWindowAtPoint(screen_point)) {
       return window;
     }
@@ -194,7 +195,7 @@ aura::Window* GroupContainerCycleView::GetWindowAtPoint(
 }
 
 void GroupContainerCycleView::SetShowPreview(bool show) {
-  for (auto* mini_view : mini_views_) {
+  for (ash::WindowCycleItemView* mini_view : mini_views_) {
     mini_view->SetShowPreview(show);
   }
 }
@@ -202,17 +203,17 @@ void GroupContainerCycleView::SetShowPreview(bool show) {
 void GroupContainerCycleView::RefreshItemVisuals() {
   if (mini_views_.size() == 2u) {
     mini_views_[0]->SetRoundedCornersRadius(gfx::RoundedCornersF(
-        /*upper_left=*/WindowMiniView::kWindowMiniViewCornerRadius,
+        /*upper_left=*/kWindowMiniViewCornerRadius,
         /*upper_right=*/0, /*lower_right=*/0,
-        /*lower_left=*/WindowMiniView::kWindowMiniViewCornerRadius));
+        /*lower_left=*/kWindowMiniViewCornerRadius));
     mini_views_[1]->SetRoundedCornersRadius(gfx::RoundedCornersF(
         /*upper_left=*/0,
-        /*upper_right=*/WindowMiniView::kWindowMiniViewCornerRadius,
-        /*lower_right=*/WindowMiniView::kWindowMiniViewCornerRadius,
+        /*upper_right=*/kWindowMiniViewCornerRadius,
+        /*lower_right=*/kWindowMiniViewCornerRadius,
         /*lower_left=*/0));
   }
 
-  for (auto* mini_view : mini_views_) {
+  for (ash::WindowCycleItemView* mini_view : mini_views_) {
     mini_view->RefreshItemVisuals();
   }
 }
@@ -284,7 +285,7 @@ void GroupContainerCycleView::SetSelectedWindowForFocus(aura::Window* window) {
   } else {
     // For normal use case, follow the window cycle order and `UpdateFocusState`
     // on the cycle item that contains the target window.
-    for (auto* mini_view : mini_views_) {
+    for (ash::WindowCycleItemView* mini_view : mini_views_) {
       if (mini_view->Contains(window)) {
         mini_view->UpdateFocusState(/*focus=*/true);
         break;
@@ -294,12 +295,12 @@ void GroupContainerCycleView::SetSelectedWindowForFocus(aura::Window* window) {
 }
 
 void GroupContainerCycleView::ClearFocusSelection() {
-  for (auto* mini_view : mini_views_) {
+  for (ash::WindowCycleItemView* mini_view : mini_views_) {
     mini_view->UpdateFocusState(/*focus=*/false);
   }
 }
 
-BEGIN_METADATA(GroupContainerCycleView, WindowMiniViewBase)
+BEGIN_METADATA(GroupContainerCycleView)
 END_METADATA
 
 }  // namespace ash

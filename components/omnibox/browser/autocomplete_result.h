@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <optional>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -105,22 +106,38 @@ class AutocompleteResult {
   void DeduplicateMatches(const AutocompleteInput& input,
                           TemplateURLService* template_url_service);
 
-  // Removes duplicates, puts the list in sorted order and culls to leave only
-  // the best GetMaxMatches() matches. Sets the default match to the best match
-  // and updates the alternate nav URL.
+  // See `Sort()`. `SortAndCull()` also groups and culls the suggestions.
+  // TODO(manukh): `Sort()` without grouping and culling is only needed
+  //   temporarily for ML ranking without changing the search v URL balance.
+  //   After we remove that restriction, they should be re-merged into 1
+  //   function, because calling `Sort()` without calling `SortAndCull()`
+  //   afterwards is probably invalid.
+  void SortAndCull(const AutocompleteInput& input,
+                   TemplateURLService* template_url_service,
+                   OmniboxTriggeredFeatureService* triggered_feature_service,
+                   std::optional<AutocompleteMatch> default_match_to_preserve =
+                       std::nullopt);
+
+  // Removes duplicates, puts the list in sorted order. Sets the default match
+  // to the best match and updates the alternate nav URL.
   //
-  // |default_match_to_preserve| can be used to prevent the default match from
+  // `default_match_to_preserve` can be used to prevent the default match from
   // being surprisingly swapped out during the asynchronous pass. If it has a
   // value, this method searches the results for that match, and promotes it to
   // the top. But we don't add back that match if it doesn't already exist.
   //
   // On desktop, it filters the matches to be either all tail suggestions
   // (except for the first match) or no tail suggestions.
-  void SortAndCull(const AutocompleteInput& input,
-                   TemplateURLService* template_url_service,
-                   OmniboxTriggeredFeatureService* triggered_feature_service,
-                   absl::optional<AutocompleteMatch> default_match_to_preserve =
-                       absl::nullopt);
+  //
+  // TODO(manukh): `Sort()` is useful for determining the default suggestion
+  //   accurately. It includes more code than absolutely necessary for
+  //   determining the default suggestion to help avoid accidentally leaving the
+  //   results in an invalid state. But it really shouldn't be called except if
+  //   `SortAndCull()` is guaranteed to be called soon after. The 2 should be
+  //   re-merged into 1 function once this is no longer needed.
+  void Sort(const AutocompleteInput& input,
+            TemplateURLService* template_url_service,
+            std::optional<AutocompleteMatch> default_match_to_preserve);
 
   // Ensures that matches belonging to suggestion groups, i.e., those with a
   // suggestion_group_id value and a corresponding suggestion group info, are
@@ -214,7 +231,27 @@ class AutocompleteResult {
     return suggestion_groups_map_;
   }
 
-  // Clears the matches for this result set.
+  bool zero_prefix_enabled_in_session() const {
+    return zero_prefix_enabled_in_session_;
+  }
+
+  void set_zero_prefix_enabled_in_session(bool enabled) {
+    zero_prefix_enabled_in_session_ = enabled;
+  }
+
+  size_t num_zero_prefix_suggestions_shown_in_session() const {
+    return num_zero_prefix_suggestions_shown_in_session_;
+  }
+
+  void set_num_zero_prefix_suggestions_shown_in_session(size_t number) {
+    num_zero_prefix_suggestions_shown_in_session_ = number;
+  }
+
+  // Clears the matches and their related data for this result set.
+  void ClearMatches();
+
+  // Clears the matches and their related data for the session. Called only when
+  // AutocompleteController::Stop() with `clear_result=true` is called.
   void Reset();
 
   void Swap(AutocompleteResult* other);
@@ -388,10 +425,21 @@ class AutocompleteResult {
   //    that they will be removed from result list later.
   void DemoteOnDeviceSearchSuggestions();
 
+  // The current result set. Cleared on `ClearMatches()` or `Reset()`.
   ACMatches matches_;
 
-  // The map of suggestion group IDs to suggestion group information.
+  // The map of suggestion group IDs to suggestion group information for
+  // `matches_`. Cleared on `ClearMatches()` or `Reset()`.
   omnibox::GroupConfigMap suggestion_groups_map_;
+
+  // Whether zero-prefix suggestions were enabled in the session (i.e., the
+  // user could have seen zero-prefix suggestions), regardless of current
+  // `matches_` - Cleared on `Reset()`.
+  bool zero_prefix_enabled_in_session_ = false;
+
+  // The number of zero-prefix suggestions in the session, regardless of current
+  // `matches_`. Cleared on `Reset()`.
+  size_t num_zero_prefix_suggestions_shown_in_session_ = 0u;
 
 #if BUILDFLAG(IS_ANDROID)
   // Corresponding Java object.

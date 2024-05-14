@@ -62,6 +62,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/contains.h"
@@ -2148,7 +2149,8 @@ TEST_F(CaptureModeTest, RotateDisplayWhileRecording) {
 }
 
 // Regression test for https://crbug.com/1331095.
-TEST_F(CaptureModeTest, CornerRegionWithScreenRotation) {
+// This is disabled due to flakiness: b/318349807
+TEST_F(CaptureModeTest, DISABLED_CornerRegionWithScreenRotation) {
   UpdateDisplay("800x600");
 
   // Pick a region at the bottom right corner of the landscape screen, so that
@@ -3392,8 +3394,7 @@ TEST_F(CaptureModeTest, CaptureModeBarButtonTypeHistograms) {
                                      CaptureModeBarButtonType::kWindow, 1);
 
   // Enter tablet mode and test the bar buttons.
-  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
-  tablet_mode_controller->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   ASSERT_TRUE(display::Screen::GetScreen()->InTabletMode());
 
   ClickOnView(GetImageToggleButton(), event_generator);
@@ -3544,8 +3545,7 @@ TEST_F(CaptureModeTest, NumberOfCaptureRegionAdjustmentsHistogram) {
 
   // Enter tablet mode and restart the capture session. The capture region
   // should be remembered.
-  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
-  tablet_mode_controller->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   ASSERT_TRUE(display::Screen::GetScreen()->InTabletMode());
   StartImageRegionCapture();
   ASSERT_EQ(target_region, controller->user_capture_region());
@@ -3764,7 +3764,8 @@ TEST_F(CaptureModeTest, KeyboardNavigationBasic) {
 // mode.
 TEST_F(CaptureModeTest, KeyboardNavigationTabThroughWindowsOnMultipleDisplays) {
   UpdateDisplay("800x700,801+0-800x700");
-  std::vector<aura::Window*> root_windows = Shell::GetAllRootWindows();
+  std::vector<raw_ptr<aura::Window, VectorExperimental>> root_windows =
+      Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
 
   // Create three windows, one of them is a modal transient child.
@@ -4505,9 +4506,14 @@ TEST_F(CaptureModeTest, CannotDoMultipleRecordings) {
   EXPECT_FALSE(GetVideoToggleButton()->selected());
   EXPECT_EQ(CaptureModeType::kImage, controller->type());
 
-  // Things should go back to normal when there's no recording going on.
+  // Things should go back to normal when there's no recording going on and the
+  // video file has been fully saved.
   controller->Stop();
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+  EXPECT_FALSE(controller->can_start_new_recording());
+  WaitForCaptureFileToBeSaved();
+  EXPECT_TRUE(controller->can_start_new_recording());
+
   StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
   EXPECT_EQ(CaptureModeType::kVideo, controller->type());
   EXPECT_FALSE(GetImageToggleButton()->selected());
@@ -4799,6 +4805,7 @@ TEST_F(CaptureModeTest, SimulateUserCancelingDlpWarningDialog) {
   EXPECT_FALSE(GetPreviewNotification());
   ash::HoldingSpaceTestApi holding_space_api;
   EXPECT_TRUE(holding_space_api.GetScreenCaptureViews().empty());
+  EXPECT_TRUE(controller->can_start_new_recording());
 }
 
 // Tests that `CaptureScreenshotOfGivenWindow` can take window screenshot
@@ -6014,7 +6021,7 @@ class EventTargetCatcher : public ui::EventHandler {
   }
 
  private:
-  raw_ptr<ui::EventTarget, ExperimentalAsh> last_event_target_ = nullptr;
+  raw_ptr<ui::EventTarget> last_event_target_ = nullptr;
 };
 
 }  // namespace
@@ -6501,13 +6508,13 @@ TEST_F(CaptureModeSettingsTest, NudgeDoesNotShowForAllUserTypes) {
     user_manager::UserType user_type;
     bool can_see_nudge;
   } kUserTypeTestCases[] = {
-      {"regular user", user_manager::USER_TYPE_REGULAR, true},
-      {"child", user_manager::USER_TYPE_CHILD, true},
-      {"guest", user_manager::USER_TYPE_GUEST, false},
-      {"public account", user_manager::USER_TYPE_PUBLIC_ACCOUNT, false},
-      {"kiosk app", user_manager::USER_TYPE_KIOSK_APP, false},
-      {"arc kiosk app", user_manager::USER_TYPE_ARC_KIOSK_APP, false},
-      {"web kiosk app", user_manager::USER_TYPE_WEB_KIOSK_APP, false},
+      {"regular user", user_manager::UserType::kRegular, true},
+      {"child", user_manager::UserType::kChild, true},
+      {"guest", user_manager::UserType::kGuest, false},
+      {"public account", user_manager::UserType::kPublicAccount, false},
+      {"kiosk app", user_manager::UserType::kKioskApp, false},
+      {"arc kiosk app", user_manager::UserType::kArcKioskApp, false},
+      {"web kiosk app", user_manager::UserType::kWebKioskApp, false},
   };
 
   for (const auto& test_case : kUserTypeTestCases) {

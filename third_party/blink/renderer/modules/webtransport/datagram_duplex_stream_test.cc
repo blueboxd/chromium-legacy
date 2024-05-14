@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/webtransport/test_utils.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -35,7 +36,7 @@ class StubWebTransport final : public network::mojom::blink::WebTransport {
           pending_receiver)
       : receiver_(this, std::move(pending_receiver)) {}
 
-  absl::optional<base::TimeDelta> OutgoingDatagramExpirationDurationValue() {
+  std::optional<base::TimeDelta> OutgoingDatagramExpirationDurationValue() {
     return outgoing_datagram_expiration_duration_value_;
   }
 
@@ -96,7 +97,7 @@ class StubWebTransport final : public network::mojom::blink::WebTransport {
   base::OnceCallback<void(uint32_t, mojo::ScopedDataPipeConsumerHandle)>
       ignored_unidirectional_stream_callback_;
   mojo::Receiver<network::mojom::blink::WebTransport> receiver_;
-  absl::optional<base::TimeDelta> outgoing_datagram_expiration_duration_value_;
+  std::optional<base::TimeDelta> outgoing_datagram_expiration_duration_value_;
 };
 
 // This class sets up a connected blink::WebTransport object using a
@@ -152,6 +153,7 @@ class ScopedDatagramDuplexStream final {
 };
 
 TEST(DatagramDuplexStreamTest, Defaults) {
+  test::TaskEnvironment task_environment;
   ScopedDatagramDuplexStream scope;
   auto* duplex = scope.Duplex();
   EXPECT_FALSE(duplex->incomingMaxAge().has_value());
@@ -161,6 +163,7 @@ TEST(DatagramDuplexStreamTest, Defaults) {
 }
 
 TEST(DatagramDuplexStreamTest, SetIncomingMaxAge) {
+  test::TaskEnvironment task_environment;
   ScopedDatagramDuplexStream scope;
   auto* duplex = scope.Duplex();
 
@@ -168,7 +171,7 @@ TEST(DatagramDuplexStreamTest, SetIncomingMaxAge) {
   ASSERT_TRUE(duplex->incomingMaxAge().has_value());
   EXPECT_EQ(duplex->incomingMaxAge().value(), 1.0);
 
-  duplex->setIncomingMaxAge(absl::nullopt);
+  duplex->setIncomingMaxAge(std::nullopt);
   ASSERT_FALSE(duplex->incomingMaxAge().has_value());
 
   duplex->setIncomingMaxAge(0.0);
@@ -179,6 +182,7 @@ TEST(DatagramDuplexStreamTest, SetIncomingMaxAge) {
 }
 
 TEST(DatagramDuplexStreamTest, SetOutgoingMaxAge) {
+  test::TaskEnvironment task_environment;
   ScopedDatagramDuplexStream scope;
   auto* duplex = scope.Duplex();
   auto* stub = scope.Stub();
@@ -191,7 +195,7 @@ TEST(DatagramDuplexStreamTest, SetOutgoingMaxAge) {
   ASSERT_TRUE(expiration_duration.has_value());
   EXPECT_EQ(expiration_duration.value(), base::Milliseconds(1.0));
 
-  duplex->setOutgoingMaxAge(absl::nullopt);
+  duplex->setOutgoingMaxAge(std::nullopt);
   ASSERT_FALSE(duplex->outgoingMaxAge().has_value());
   test::RunPendingTasks();
   expiration_duration = stub->OutgoingDatagramExpirationDurationValue();
@@ -226,6 +230,7 @@ TEST(DatagramDuplexStreamTest, SetOutgoingMaxAge) {
 }
 
 TEST(DatagramDuplexStreamTest, SetIncomingHighWaterMark) {
+  test::TaskEnvironment task_environment;
   ScopedDatagramDuplexStream scope;
   auto* duplex = scope.Duplex();
 
@@ -240,6 +245,7 @@ TEST(DatagramDuplexStreamTest, SetIncomingHighWaterMark) {
 }
 
 TEST(DatagramDuplexStreamTest, SetOutgoingHighWaterMark) {
+  test::TaskEnvironment task_environment;
   ScopedDatagramDuplexStream scope;
   auto* duplex = scope.Duplex();
 
@@ -254,6 +260,7 @@ TEST(DatagramDuplexStreamTest, SetOutgoingHighWaterMark) {
 }
 
 TEST(DatagramDuplexStreamTest, InitialMaxDatagramSize) {
+  test::TaskEnvironment task_environment;
   ScopedDatagramDuplexStream scope;
   auto* duplex = scope.Duplex();
 

@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/page/v8_compile_hints_histograms.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
@@ -388,6 +389,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
  private:
   void SetFinished(ResourceScriptStreamer::LoadingState state) {
     load_state_ = state;
+    data_pipe_.reset();
   }
 
   // TODO(leszeks): Make this a DCHECK-only flag.
@@ -767,6 +769,9 @@ bool ResourceScriptStreamer::TryStartStreamingTask() {
   if (compile_hints_producer && compile_hints_producer->MightGenerateData()) {
     DCHECK(base::FeatureList::IsEnabled(features::kProduceCompileHints2));
     compile_options = v8::ScriptCompiler::kProduceCompileHints;
+    base::UmaHistogramEnumeration(
+        v8_compile_hints::kStatusHistogram,
+        v8_compile_hints::Status::kProduceCompileHintsStreaming);
   } else if (local_compile_hints_enabled &&
              V8CodeCache::HasCompileHints(
                  script_resource_->CacheHandler(),
@@ -783,7 +788,8 @@ bool ResourceScriptStreamer::TryStartStreamingTask() {
     // code cache yet) and produce new ones.
     CachedMetadataHandler* cache_handler = script_resource_->CacheHandler();
     scoped_refptr<CachedMetadata> cached_metadata =
-        V8CodeCache::GetCachedMetadataForCompileHints(cache_handler);
+        V8CodeCache::GetCachedMetadataForCompileHints(
+            cache_handler, CachedMetadataHandler::kAllowUnchecked);
     local_compile_hints_consumer_ =
         std::make_unique<v8_compile_hints::V8LocalCompileHintsConsumer>(
             cached_metadata.get());
@@ -792,6 +798,9 @@ bool ResourceScriptStreamer::TryStartStreamingTask() {
       compile_hint_callback =
           v8_compile_hints::V8LocalCompileHintsConsumer::GetCompileHint;
       compile_options = v8::ScriptCompiler::kConsumeCompileHints;
+      base::UmaHistogramEnumeration(
+          v8_compile_hints::kStatusHistogram,
+          v8_compile_hints::Status::kConsumeLocalCompileHintsStreaming);
     }
   } else if (compile_hints_consumer && compile_hints_consumer->HasData()) {
     // This doesn't need to be gated behind a runtime flag, because there won't
@@ -805,19 +814,34 @@ bool ResourceScriptStreamer::TryStartStreamingTask() {
         &v8_compile_hints::V8CrowdsourcedCompileHintsConsumer::
             CompileHintCallback;
     compile_options = v8::ScriptCompiler::kConsumeCompileHints;
+    base::UmaHistogramEnumeration(
+        v8_compile_hints::kStatusHistogram,
+        v8_compile_hints::Status::kConsumeCrowdsourcedCompileHintsStreaming);
   } else if (local_compile_hints_enabled) {
     // Produce local compile hints. TODO(chromium:1495723): If we later find out
     // there were local compile hints (but the cache arrived late), we'll need
     // to use them.
     compile_options = v8::ScriptCompiler::kProduceCompileHints;
+    base::UmaHistogramEnumeration(
+        v8_compile_hints::kStatusHistogram,
+        v8_compile_hints::Status::kProduceCompileHintsStreaming);
   }
 
+  v8::Isolate* isolate = script_resource_->GetIsolateOrNull();
+  if (!isolate) {
+    stream_ = nullptr;
+    source_.reset();
+    SuppressStreaming(NotStreamingReason::kContextNotValid);
+    return false;
+  }
+
+  // Isolate is valid to pass to another thread because it is the main thread
+  // isolate that is never destroyed.
   std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
       script_streaming_task =
           base::WrapUnique(v8::ScriptCompiler::StartStreaming(
-              V8PerIsolateData::MainThreadIsolate(), source_.get(),
-              script_type_, compile_options, compile_hint_callback,
-              compile_hint_callback_data));
+              isolate, source_.get(), script_type_, compile_options,
+              compile_hint_callback, compile_hint_callback_data));
 
   if (!script_streaming_task) {
     // V8 cannot stream the script.
@@ -975,7 +999,7 @@ void ResourceScriptStreamer::OnDataPipeReadable(
   CHECK_EQ(begin_read_result, MOJO_RESULT_OK);
 
   response_body_loader_client_->DidReceiveData(
-      base::make_span(reinterpret_cast<const char*>(data), data_size));
+      base::make_span(static_cast<const char*>(data), data_size));
   if (DecodingEnabled()) {
     auto copy_for_decoding = std::make_unique<char[]>(data_size);
     memcpy(copy_for_decoding.get(), data, data_size);
@@ -1147,6 +1171,7 @@ class InlineSourceStream final
 };
 
 BackgroundInlineScriptStreamer::BackgroundInlineScriptStreamer(
+    v8::Isolate* isolate,
     const String& text,
     v8::ScriptCompiler::CompileOptions compile_options) {
   auto stream = std::make_unique<InlineSourceStream>(text);
@@ -1156,8 +1181,7 @@ BackgroundInlineScriptStreamer::BackgroundInlineScriptStreamer(
                              : v8::ScriptCompiler::StreamedSource::TWO_BYTE);
 
   task_ = base::WrapUnique(v8::ScriptCompiler::StartStreaming(
-      V8PerIsolateData::MainThreadIsolate(), source_.get(),
-      v8::ScriptType::kClassic, compile_options));
+      isolate, source_.get(), v8::ScriptType::kClassic, compile_options));
 }
 
 void BackgroundInlineScriptStreamer::Run() {

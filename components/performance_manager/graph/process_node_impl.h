@@ -6,6 +6,7 @@
 #define COMPONENTS_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/containers/flat_set.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/background_tracing_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 
@@ -61,7 +61,7 @@ class ProcessNodeImpl
   explicit ProcessNodeImpl(BrowserProcessNodeTag tag);
 
   // Constructor for a renderer process.
-  explicit ProcessNodeImpl(RenderProcessHostProxy proxy);
+  ProcessNodeImpl(RenderProcessHostProxy proxy, base::TaskPriority priority);
 
   // Constructor for a non-renderer child process.
   ProcessNodeImpl(content::ProcessType process_type,
@@ -98,7 +98,7 @@ class ProcessNodeImpl
   const base::Process& GetProcess() const override;
   resource_attribution::ProcessContext GetResourceContext() const override;
   base::TimeTicks GetLaunchTime() const override;
-  absl::optional<int32_t> GetExitStatus() const override;
+  std::optional<int32_t> GetExitStatus() const override;
   const std::string& GetMetricsName() const override;
   bool GetMainThreadTaskLoadIsLow() const override;
   uint64_t GetPrivateFootprintKb() const override;
@@ -168,7 +168,8 @@ class ProcessNodeImpl
 
   // Shared constructor for all process types.
   ProcessNodeImpl(content::ProcessType process_type,
-                  AnyChildProcessHostProxy proxy);
+                  AnyChildProcessHostProxy proxy,
+                  base::TaskPriority priority);
 
   // Rest of ProcessNode implementation. These are private so that users of the
   // impl use the private getters rather than the public interface.
@@ -198,7 +199,7 @@ class ProcessNodeImpl
       process_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   base::TimeTicks launch_time_ GUARDED_BY_CONTEXT(sequence_checker_);
-  absl::optional<int32_t> exit_status_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::optional<int32_t> exit_status_ GUARDED_BY_CONTEXT(sequence_checker_);
   std::string metrics_name_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The type of the process that this node represents.
@@ -216,13 +217,14 @@ class ProcessNodeImpl
           false};
 
   // Process priority information. This is aggregated from the priority of
-  // all workers and frames in a given process.
+  // all workers and frames in a given process by the ProcessPriorityAggregator.
+  // Initially high priority until the first execution context it hosts
+  // determine the right priority.
   ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
       base::TaskPriority,
       base::TaskPriority,
       &ProcessNodeObserver::OnPriorityChanged>
-      priority_ GUARDED_BY_CONTEXT(sequence_checker_){
-          base::TaskPriority::LOWEST};
+      priority_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // A bit field that indicates which type of content this process has hosted,
   // either currently or in the past.

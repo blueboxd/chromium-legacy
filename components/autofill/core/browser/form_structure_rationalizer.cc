@@ -7,7 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/form_parsing/credit_card_field.h"
+#include "components/autofill/core/browser/form_parsing/credit_card_field_parser.h"
 #include "components/autofill/core/browser/form_structure_rationalization_engine.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/rationalization_util.h"
@@ -26,13 +26,12 @@ namespace {
 // `type` are only filled if at least one field of some `GetNecessaryTypesFor()`
 // is present.
 // TODO(crbug.com/1311937) Cleanup when launched.
-ServerFieldTypeSet GetNecessaryTypesFor(ServerFieldType type) {
+FieldTypeSet GetNecessaryTypesFor(FieldType type) {
   switch (type) {
     case PHONE_HOME_COUNTRY_CODE: {
-      return ServerFieldTypeSet{
-          PHONE_HOME_NUMBER, PHONE_HOME_NUMBER_PREFIX,
-          PHONE_HOME_CITY_AND_NUMBER,
-          PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX};
+      return FieldTypeSet{PHONE_HOME_NUMBER, PHONE_HOME_NUMBER_PREFIX,
+                          PHONE_HOME_CITY_AND_NUMBER,
+                          PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX};
     }
     default:
       return {};
@@ -126,12 +125,12 @@ void FormStructureRationalizer::RationalizeAutocompleteAttributes(
         }
         if (base::FeatureList::IsEnabled(
                 features::kAutofillEnableExpirationDateImprovements)) {
-          ServerFieldType server_hint = field->server_type();
-          ServerFieldType forced_field_type =
+          FieldType server_hint = field->server_type();
+          FieldType forced_field_type =
               field->server_type_prediction_is_override() ? field->server_type()
                                                           : NO_SERVER_DATA;
-          CreditCardField::ExpirationDateFormat format =
-              CreditCardField::DetermineExpirationDateFormat(
+          CreditCardFieldParser::ExpirationDateFormat format =
+              CreditCardFieldParser::DetermineExpirationDateFormat(
                   *field, /*fallback_type=*/CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
                   /*server_hint=*/server_hint,
                   /*forced_field_type=*/forced_field_type);
@@ -154,17 +153,18 @@ void FormStructureRationalizer::RationalizeAutocompleteAttributes(
         }
         if (base::FeatureList::IsEnabled(
                 features::kAutofillEnableExpirationDateImprovements)) {
-          ServerFieldType server_hint = field->server_type();
-          ServerFieldType forced_field_type =
+          FieldType server_hint = field->server_type();
+          FieldType forced_field_type =
               field->server_type_prediction_is_override() ? field->server_type()
                                                           : NO_SERVER_DATA;
           // The default for select or list elements does not really matter
           // because it's practically always chosen from the select options.
           // The default for text elements was chosen base on statistics from
           // server side classifications (go/iqwtu).
-          // Keep this in sync with CreditCardField::GetExpirationYearType().
-          ServerFieldType overall_type =
-              CreditCardField::DetermineExpirationYearType(
+          // Keep this in sync with
+          // CreditCardFieldParser::GetExpirationYearType().
+          FieldType overall_type =
+              CreditCardFieldParser::DetermineExpirationYearType(
                   *field,
                   /*fallback_type=*/CREDIT_CARD_EXP_4_DIGIT_YEAR,
                   /*server_hint=*/server_hint,
@@ -186,6 +186,15 @@ void FormStructureRationalizer::RationalizeAutocompleteAttributes(
   }
 }
 
+void FormStructureRationalizer::RationalizeContentEditables(
+    LogManager* log_manager) {
+  for (const auto& field : *fields_) {
+    if (field->form_control_type == FormControlType::kContentEditable) {
+      field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
+    }
+  }
+}
+
 void FormStructureRationalizer::RationalizeCreditCardFieldPredictions(
     LogManager* log_manager) {
   bool cc_first_name_found = false;
@@ -199,8 +208,7 @@ void FormStructureRationalizer::RationalizeCreditCardFieldPredictions(
   size_t num_months_found = 0;
   size_t num_other_fields_found = 0;
   for (const auto& field : *fields_) {
-    ServerFieldType current_field_type =
-        field->ComputedType().GetStorableType();
+    FieldType current_field_type = field->ComputedType().GetStorableType();
     switch (current_field_type) {
       case CREDIT_CARD_NAME_FIRST:
         cc_first_name_found = true;
@@ -284,7 +292,7 @@ void FormStructureRationalizer::RationalizeCreditCardFieldPredictions(
   // found. See comments inline below.
   for (auto it = fields_->begin(); it != fields_->end(); ++it) {
     auto& field = *it;
-    ServerFieldType current_field_type = field->Type().GetStorableType();
+    FieldType current_field_type = field->Type().GetStorableType();
     switch (current_field_type) {
       case CREDIT_CARD_NAME_FIRST:
         if (!keep_cc_fields)
@@ -334,7 +342,7 @@ void FormStructureRationalizer::RationalizeCreditCardFieldPredictions(
                    "months and the last field was an expiration month";
             field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
           } else {
-            ServerFieldType next_field_type = (*it2)->Type().GetStorableType();
+            FieldType next_field_type = (*it2)->Type().GetStorableType();
             if (next_field_type != CREDIT_CARD_EXP_2_DIGIT_YEAR &&
                 next_field_type != CREDIT_CARD_EXP_4_DIGIT_YEAR) {
               LOG_AF(log_manager)
@@ -395,22 +403,21 @@ void FormStructureRationalizer::RationalizeCreditCardFieldPredictions(
           features::kAutofillEnableExpirationDateImprovements)) {
     for (const auto& field : *fields_) {
       // Here we look at the type after rationalization.
-      ServerFieldType current_field_type = field->Type().GetStorableType();
+      FieldType current_field_type = field->Type().GetStorableType();
       if (current_field_type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
           current_field_type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
-        ServerFieldType server_hint = field->server_type();
-        ServerFieldType forced_field_type =
+        FieldType server_hint = field->server_type();
+        FieldType forced_field_type =
             field->server_type_prediction_is_override() ? server_hint
                                                         : NO_SERVER_DATA;
-        CreditCardField::ExpirationDateFormat format =
-            CreditCardField::DetermineExpirationDateFormat(
+        CreditCardFieldParser::ExpirationDateFormat format =
+            CreditCardFieldParser::DetermineExpirationDateFormat(
                 *field, /*fallback_type=*/CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
                 /*server_hint=*/server_hint,
                 /*forced_field_type=*/forced_field_type);
-        ServerFieldType new_field_type =
-            format.digits_in_expiration_year == 4
-                ? CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR
-                : CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
+        FieldType new_field_type = format.digits_in_expiration_year == 4
+                                       ? CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR
+                                       : CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
         if (new_field_type != current_field_type) {
           LOG_AF(log_manager)
               << LoggingScope::kRationalization << LogMessage::kRationalization
@@ -429,7 +436,7 @@ void FormStructureRationalizer::RationalizeMultiOriginCreditCardFields(
   auto is_in_subframe = [&main_origin](const FormFieldData& field) {
     return field.origin != main_origin;
   };
-  auto rationalize = [&](ServerFieldType relevant_type) {
+  auto rationalize = [&](FieldType relevant_type) {
     auto is_relevant = [relevant_type](const AutofillField& field) {
       return field.ComputedType().GetStorableType() == relevant_type;
     };
@@ -481,8 +488,8 @@ void FormStructureRationalizer::RationalizeCreditCardNumberOffsets(
   // element.
   auto may_be_group = [](Group group) {
     DCHECK_GE(group.size(), 1u);
-    DCHECK(base::ranges::all_of(
-        group.subspan(0, group.size() - 1), [](const auto& f) {
+    DCHECK(
+        base::ranges::all_of(group.first(group.size() - 1), [](const auto& f) {
           return f->ComputedType().GetStorableType() == CREDIT_CARD_NUMBER;
         }));
     size_t last = group.size() - 1;
@@ -502,7 +509,7 @@ void FormStructureRationalizer::RationalizeCreditCardNumberOffsets(
   // 2. there are at least 2 non-overflow fields.
   auto has_reasonable_length = [](Group group) {
     DCHECK(!group.empty());
-    DCHECK(base::ranges::all_of(group.subspan(0, group.size() - 1),
+    DCHECK(base::ranges::all_of(group.first(group.size() - 1),
                                 [group](const auto& f) {
                                   return f->max_length == group[0]->max_length;
                                 }));
@@ -621,8 +628,8 @@ void FormStructureRationalizer::RationalizePhoneNumberTrunkTypes(
   // Changes the `field`'s type to `new_type` if it isn't `new_type` already.
   // If the type is changed, logs to `log_manager`.
   auto change_type_and_log =
-      [&](AutofillField& field, ServerFieldType new_type) {
-        ServerFieldType current_type = field.ComputedType().GetStorableType();
+      [&](AutofillField& field, FieldType new_type) {
+        FieldType current_type = field.ComputedType().GetStorableType();
         if (current_type == new_type) {
           return;
         }
@@ -637,7 +644,7 @@ void FormStructureRationalizer::RationalizePhoneNumberTrunkTypes(
   // Indicates whether the previous field was a phone country code.
   bool preceding_phone_country_code = false;
   for (const std::unique_ptr<AutofillField>& field : *fields_) {
-    ServerFieldType type = field->ComputedType().GetStorableType();
+    FieldType type = field->ComputedType().GetStorableType();
     if (type == PHONE_HOME_CITY_AND_NUMBER ||
         type == PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX) {
       change_type_and_log(*field,
@@ -667,7 +674,7 @@ void FormStructureRationalizer::RationalizePhoneNumbersInSection(
 
 void FormStructureRationalizer::ApplyRationalizationsToFieldAndLog(
     size_t field_index,
-    ServerFieldType new_type,
+    FieldType new_type,
     FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   if (field_index >= fields_->size())
@@ -739,10 +746,10 @@ void FormStructureRationalizer::RationalizeAddressLineFields(
 
 void FormStructureRationalizer::ApplyRationalizationsToHiddenSelects(
     size_t field_index,
-    ServerFieldType new_type,
+    FieldType new_type,
     FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
-  ServerFieldType old_type = (*fields_)[field_index]->Type().GetStorableType();
+  FieldType old_type = (*fields_)[field_index]->Type().GetStorableType();
 
   // Walk on the unfocusable select fields right after the field_index which
   // share the same type with the field_index, and apply the rationalization to
@@ -779,8 +786,8 @@ void FormStructureRationalizer::ApplyRationalizationsToHiddenSelects(
 bool FormStructureRationalizer::HeuristicsPredictionsAreApplicable(
     size_t upper_index,
     size_t lower_index,
-    ServerFieldType first_type,
-    ServerFieldType second_type) {
+    FieldType first_type,
+    FieldType second_type) {
   // The predictions are applicable if one field has one of the two types, and
   // the other has the other type.
   if ((*fields_)[upper_index]->heuristic_type() ==
@@ -797,8 +804,8 @@ bool FormStructureRationalizer::HeuristicsPredictionsAreApplicable(
 void FormStructureRationalizer::ApplyRationalizationsToFields(
     size_t upper_index,
     size_t lower_index,
-    ServerFieldType upper_type,
-    ServerFieldType lower_type,
+    FieldType upper_type,
+    FieldType lower_type,
     FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // Unfocusable fields are ignored during the rationalization, but unfocusable
@@ -824,7 +831,7 @@ bool FormStructureRationalizer::FieldShouldBeRationalizedToCountry(
   // is a country.
   for (int field_index = upper_index - 1; field_index >= 0; --field_index) {
     if ((*fields_)[field_index]->IsFocusable() &&
-        GroupTypeOfServerFieldType(
+        GroupTypeOfFieldType(
             (*fields_)[field_index]->Type().GetStorableType()) ==
             FieldTypeGroup::kAddress &&
         (*fields_)[field_index]->section == (*fields_)[upper_index]->section) {
@@ -998,14 +1005,14 @@ void FormStructureRationalizer::RationalizeFieldTypePredictions(
 void FormStructureRationalizer::RationalizeTypeRelationships(
     LogManager* log_manager) {
   // Create a local set of all the types for faster lookup.
-  ServerFieldTypeSet types;
+  FieldTypeSet types;
   for (const auto& field : *fields_) {
     types.insert(field->Type().GetStorableType());
   }
 
   for (const auto& field : *fields_) {
-    ServerFieldType field_type = field->Type().GetStorableType();
-    ServerFieldTypeSet necessary_types = GetNecessaryTypesFor(field_type);
+    FieldType field_type = field->Type().GetStorableType();
+    FieldTypeSet necessary_types = GetNecessaryTypesFor(field_type);
     if (!necessary_types.empty() && !types.contains_any(necessary_types)) {
       // We have relationship rules for this type, but no `necessary_type` was
       // found. Disabling Autofill for this field.
@@ -1022,13 +1029,15 @@ void FormStructureRationalizer::RationalizeByRationalizationEngine(
     const GeoIpCountryCode& client_country,
     const LanguageCode& language_code,
     LogManager* log_manager) {
-  absl::optional<PatternSource> pattern_source = GetActivePatternSource();
+  std::optional<PatternSource> pattern_source = GetActivePatternSource();
   if (!pattern_source.has_value()) {
     pattern_source = PatternSource::kLegacy;
   }
 
-  rationalization::ApplyRationalizationEngineRules(
-      client_country, language_code, *pattern_source, *fields_, log_manager);
+  ParsingContext context(client_country, language_code, *pattern_source);
+
+  rationalization::ApplyRationalizationEngineRules(context, *fields_,
+                                                   log_manager);
 }
 
 }  // namespace autofill

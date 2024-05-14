@@ -52,6 +52,8 @@ class ExecutionContext;
 class LocalDOMWindow;
 class MessagePort;
 class Node;
+class Observable;
+class ObservableEventListenerOptions;
 class PortalHost;
 class ScriptState;
 class ServiceWorker;
@@ -146,6 +148,12 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   virtual PortalHost* ToPortalHost();
 
   static EventTarget* Create(ScriptState*);
+
+  // Returns an Observable whose native subscription algorithm adds an event
+  // listener of type `event_type` to `this`. See
+  // https://wicg.github.io/observable/.
+  Observable* on(const AtomicString& event_type,
+                 const ObservableEventListenerOptions*);
 
   bool addEventListener(const AtomicString& event_type, V8EventListener*);
   bool addEventListener(

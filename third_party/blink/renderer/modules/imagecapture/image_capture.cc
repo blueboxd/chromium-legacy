@@ -65,6 +65,7 @@ enum class ImageCapture::MediaTrackConstraintSetType {
 namespace {
 
 using BackgroundBlurMode = media::mojom::blink::BackgroundBlurMode;
+using EyeGazeCorrectionMode = media::mojom::blink::EyeGazeCorrectionMode;
 using FillLightMode = media::mojom::blink::FillLightMode;
 using MeteringMode = media::mojom::blink::MeteringMode;
 using RedEyeReduction = media::mojom::blink::RedEyeReduction;
@@ -196,6 +197,9 @@ void CopyCommonMembers(const T* source,
   }
   if (source->hasBackgroundBlur()) {
     destination->setBackgroundBlur(source->backgroundBlur());
+  }
+  if (source->hasEyeGazeCorrection()) {
+    destination->setEyeGazeCorrection(source->eyeGazeCorrection());
   }
   if (source->hasFaceFraming()) {
     destination->setFaceFraming(source->faceFraming());
@@ -514,6 +518,10 @@ BackgroundBlurMode ParseBackgroundBlur(bool blink_mode) {
   return blink_mode ? BackgroundBlurMode::BLUR : BackgroundBlurMode::OFF;
 }
 
+EyeGazeCorrectionMode ParseEyeGazeCorrection(bool blink_mode) {
+  return blink_mode ? EyeGazeCorrectionMode::ON : EyeGazeCorrectionMode::OFF;
+}
+
 MeteringMode ParseFaceFraming(bool blink_mode) {
   return blink_mode ? MeteringMode::CONTINUOUS : MeteringMode::NONE;
 }
@@ -545,6 +553,17 @@ bool ToBooleanMode(BackgroundBlurMode mode) {
     case BackgroundBlurMode::OFF:
       return false;
     case BackgroundBlurMode::BLUR:
+      return true;
+  }
+  NOTREACHED_NORETURN();
+}
+
+bool ToBooleanMode(EyeGazeCorrectionMode mode) {
+  switch (mode) {
+    case EyeGazeCorrectionMode::OFF:
+      return false;
+    case EyeGazeCorrectionMode::ON:
+    case EyeGazeCorrectionMode::STARE:
       return true;
   }
   NOTREACHED_NORETURN();
@@ -1056,7 +1075,7 @@ MediaSettingsRange* ApplyIdealValueConstraint(
     bool* has_setting_ptr,
     double* setting_ptr,
     MediaSettingsRange* effective_capability,
-    absl::optional<double> ideal_constraint,
+    std::optional<double> ideal_constraint,
     double current_setting) {
   // Clamp and update the setting.
   *has_setting_ptr = true;
@@ -1232,8 +1251,8 @@ MediaSettingsRange* ApplyValueConstraint(
           has_setting_ptr, setting_ptr, new_effective_capability,
           (dictionary_constraint->hasIdeal() &&
            constraint_set_type == MediaTrackConstraintSetType::kBasic)
-              ? absl::make_optional(dictionary_constraint->ideal())
-              : absl::nullopt,
+              ? std::make_optional(dictionary_constraint->ideal())
+              : std::nullopt,
           current_setting);
     }
   }
@@ -1374,7 +1393,7 @@ void ApplyValueConstraint(bool* has_setting_ptr,
 // As a substitute, we use `MediaTrackSettings` and its `pointsOfInterest`
 // field to convey restrictions placed by previous exact `pointsOfInterest`
 // constraints.
-absl::optional<HeapVector<Member<Point2D>>> ApplyValueConstraint(
+std::optional<HeapVector<Member<Point2D>>> ApplyValueConstraint(
     bool* has_setting_ptr,
     Vector<media::mojom::blink::Point2DPtr>* setting_ptr,
     const HeapVector<Member<Point2D>>* effective_setting,
@@ -1384,7 +1403,7 @@ absl::optional<HeapVector<Member<Point2D>>> ApplyValueConstraint(
       CheckValueConstraint(effective_setting, constraint, constraint_set_type));
   if (!IsValueConstraint(constraint, constraint_set_type)) {
     // Keep the effective capability intact.
-    return absl::nullopt;
+    return std::nullopt;
   }
   using ContentType =
       V8UnionConstrainPoint2DParametersOrPoint2DSequence::ContentType;
@@ -1401,7 +1420,7 @@ absl::optional<HeapVector<Member<Point2D>>> ApplyValueConstraint(
       DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
       ApplyValueConstraint(has_setting_ptr, setting_ptr, effective_setting,
                            constraint->GetAsPoint2DSequence());
-      return absl::nullopt;
+      return std::nullopt;
     case ContentType::kConstrainPoint2DParameters: {
       DCHECK_NE(constraint_set_type,
                 MediaTrackConstraintSetType::kFirstAdvanced);
@@ -1418,7 +1437,7 @@ absl::optional<HeapVector<Member<Point2D>>> ApplyValueConstraint(
       DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
       ApplyValueConstraint(has_setting_ptr, setting_ptr, effective_setting,
                            dictionary_constraint->ideal());
-      return absl::nullopt;
+      return std::nullopt;
     }
   }
 }
@@ -1587,9 +1606,12 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+ScriptPromiseTyped<ImageBitmap> ImageCapture::grabFrame(
+    ScriptState* script_state) {
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolverTyped<ImageBitmap>>(
+          script_state);
+  auto promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -2018,7 +2040,7 @@ void ImageCapture::ApplyMediaTrackConstraintSetToSettings(
   if (constraint_set->hasPointsOfInterest()) {
     // There is no |settings->has_points_of_interest|.
     bool has_points_of_interest = !settings->points_of_interest.empty();
-    absl::optional new_effective_setting = ApplyValueConstraint(
+    std::optional new_effective_setting = ApplyValueConstraint(
         &has_points_of_interest, &settings->points_of_interest,
         effective_settings->hasPointsOfInterest()
             ? &effective_settings->pointsOfInterest()
@@ -2130,6 +2152,18 @@ void ImageCapture::ApplyMediaTrackConstraintSetToSettings(
       settings->background_blur_mode = ParseBackgroundBlur(setting);
     }
   }
+  if (constraint_set->hasEyeGazeCorrection() &&
+      effective_capabilities->hasEyeGazeCorrection()) {
+    bool has_setting = false;
+    bool setting;
+    effective_capabilities->setEyeGazeCorrection(ApplyValueConstraint(
+        &has_setting, &setting, effective_capabilities->eyeGazeCorrection(),
+        constraint_set->eyeGazeCorrection(), constraint_set_type));
+    if (has_setting) {
+      settings->eye_gaze_correction_mode.emplace(
+          ParseEyeGazeCorrection(setting));
+    }
+  }
   if (constraint_set->hasFaceFraming() &&
       effective_capabilities->hasFaceFraming()) {
     bool has_setting = false;
@@ -2152,7 +2186,7 @@ bool ImageCapture::CheckMediaTrackConstraintSet(
     const MediaTrackConstraintSet* constraint_set,
     MediaTrackConstraintSetType constraint_set_type,
     ScriptPromiseResolver* resolver) const {
-  if (absl::optional<const char*> name =
+  if (std::optional<const char*> name =
           GetConstraintWithCapabilityExistenceMismatch(constraint_set,
                                                        constraint_set_type)) {
     MaybeRejectWithOverconstrainedError(resolver, name.value(),
@@ -2312,6 +2346,16 @@ bool ImageCapture::CheckMediaTrackConstraintSet(
     MaybeRejectWithOverconstrainedError(
         resolver, "backgroundBlur",
         "backgroundBlur setting value not supported");
+    return false;
+  }
+  if (constraint_set->hasEyeGazeCorrection() &&
+      effective_capabilities->hasEyeGazeCorrection() &&
+      !CheckValueConstraint(effective_capabilities->eyeGazeCorrection(),
+                            constraint_set->eyeGazeCorrection(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(
+        resolver, "eyeGazeCorrection",
+        "eyeGazeCorrection setting value not supported");
     return false;
   }
   if (constraint_set->hasFaceFraming() &&
@@ -2591,12 +2635,31 @@ void ImageCapture::UpdateMediaTrackSettingsAndCapabilities(
   if (photo_state->supported_background_blur_modes &&
       !photo_state->supported_background_blur_modes->empty()) {
     Vector<bool> supported_background_blur_modes;
-    for (auto mode : *photo_state->supported_background_blur_modes)
-      supported_background_blur_modes.push_back(ToBooleanMode(mode));
+    for (auto mode : *photo_state->supported_background_blur_modes) {
+      bool boolean_mode = ToBooleanMode(mode);
+      if (!base::Contains(supported_background_blur_modes, boolean_mode)) {
+        supported_background_blur_modes.push_back(boolean_mode);
+      }
+    }
     capabilities_->setBackgroundBlur(
         std::move(supported_background_blur_modes));
     settings_->setBackgroundBlur(
         ToBooleanMode(photo_state->background_blur_mode));
+  }
+
+  if (photo_state->supported_eye_gaze_correction_modes &&
+      !photo_state->supported_eye_gaze_correction_modes->empty()) {
+    Vector<bool> supported_eye_gaze_correction_modes;
+    for (const auto& mode : *photo_state->supported_eye_gaze_correction_modes) {
+      bool boolean_mode = ToBooleanMode(mode);
+      if (!base::Contains(supported_eye_gaze_correction_modes, boolean_mode)) {
+        supported_eye_gaze_correction_modes.push_back(boolean_mode);
+      }
+    }
+    capabilities_->setEyeGazeCorrection(
+        std::move(supported_eye_gaze_correction_modes));
+    settings_->setEyeGazeCorrection(
+        ToBooleanMode(photo_state->current_eye_gaze_correction_mode));
   }
 
   if (photo_state->supported_face_framing_modes &&
@@ -2665,7 +2728,7 @@ const String& ImageCapture::SourceId() const {
   return stream_track_->Component()->Source()->Id();
 }
 
-const absl::optional<const char*>
+const std::optional<const char*>
 ImageCapture::GetConstraintWithCapabilityExistenceMismatch(
     const MediaTrackConstraintSet* constraint_set,
     MediaTrackConstraintSetType constraint_set_type) const {
@@ -2789,6 +2852,13 @@ ImageCapture::GetConstraintWithCapabilityExistenceMismatch(
           constraint_set_type)) {
     return "backgroundBlur";
   }
+  if (constraint_set->hasEyeGazeCorrection() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->eyeGazeCorrection(),
+          CapabilityExists(capabilities_->hasEyeGazeCorrection()),
+          constraint_set_type)) {
+    return "eyeGazeCorrection";
+  }
   if (constraint_set->hasFaceFraming() &&
       !CheckIfCapabilityExistenceSatisfiesConstraint(
           constraint_set->faceFraming(),
@@ -2796,7 +2866,7 @@ ImageCapture::GetConstraintWithCapabilityExistenceMismatch(
           constraint_set_type)) {
     return "faceFraming";
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 ImageCapture* ImageCapture::Clone() const {

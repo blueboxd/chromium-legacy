@@ -36,7 +36,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
              const gfx::Rect& rect,
              const ExtraParams& extra,
              ColorScheme color_scheme,
-             const absl::optional<SkColor>& accent_color) const override;
+             const std::optional<SkColor>& accent_color) const override;
 
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
@@ -100,13 +100,14 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   ~NativeThemeBase() override;
 
   // Draw the arrow. Used by scrollbar and inner spin button.
-  virtual void PaintArrowButton(cc::PaintCanvas* gc,
-                                const ColorProvider* color_provider,
-                                const gfx::Rect& rect,
-                                Part direction,
-                                State state,
-                                ColorScheme color_scheme,
-                                const ScrollbarArrowExtraParams& arrow) const;
+  virtual void PaintArrowButton(
+      cc::PaintCanvas* gc,
+      const ColorProvider* color_provider,
+      const gfx::Rect& rect,
+      Part direction,
+      State state,
+      ColorScheme color_scheme,
+      const ScrollbarArrowExtraParams& extra_params) const;
   // Paint the scrollbar track. Done before the thumb so that it can contain
   // alpha.
   virtual void PaintScrollbarTrack(
@@ -141,7 +142,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                      const gfx::Rect& rect,
                      const ButtonExtraParams& button,
                      ColorScheme color_scheme,
-                     const absl::optional<SkColor>& accent_color) const;
+                     const std::optional<SkColor>& accent_color) const;
 
   void PaintRadio(cc::PaintCanvas* canvas,
                   const ColorProvider* color_provider,
@@ -149,7 +150,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                   const gfx::Rect& rect,
                   const ButtonExtraParams& button,
                   ColorScheme color_scheme,
-                  const absl::optional<SkColor>& accent_color) const;
+                  const std::optional<SkColor>& accent_color) const;
 
   void PaintButton(cc::PaintCanvas* canvas,
                    const ColorProvider* color_provider,
@@ -199,7 +200,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                         const gfx::Rect& rect,
                         const SliderExtraParams& slider,
                         ColorScheme color_scheme,
-                        const absl::optional<SkColor>& accent_color) const;
+                        const std::optional<SkColor>& accent_color) const;
 
   void PaintSliderThumb(cc::PaintCanvas* canvas,
                         const ColorProvider* color_provider,
@@ -207,7 +208,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                         const gfx::Rect& rect,
                         const SliderExtraParams& slider,
                         ColorScheme color_scheme,
-                        const absl::optional<SkColor>& accent_color) const;
+                        const std::optional<SkColor>& accent_color) const;
 
   virtual void PaintInnerSpinButton(
       cc::PaintCanvas* canvas,
@@ -223,7 +224,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                         const gfx::Rect& rect,
                         const ProgressBarExtraParams& progress_bar,
                         ColorScheme color_scheme,
-                        const absl::optional<SkColor>& accent_color) const;
+                        const std::optional<SkColor>& accent_color) const;
 
   virtual void PaintFrameTopArea(cc::PaintCanvas* canvas,
                                  State state,
@@ -326,7 +327,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       bool is_checkbox,
       const SkScalar border_radius,
       ColorScheme color_scheme,
-      const absl::optional<SkColor>& accent_color) const;
+      const std::optional<SkColor>& accent_color) const;
 
   SkColor ControlsBackgroundColorForState(
       State state,

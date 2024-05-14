@@ -131,7 +131,7 @@ bool WaylandWindowDragController::StartDragSession(
     return false;
   }
 
-  VLOG(1) << "Starting DND session. serial=" << serial->value
+  VLOG(1) << "Starting Window Drag session. tracker_id=" << serial->value
           << ", data_source="
           << (drag_source == DragEventSource::kMouse ? "mouse" : "touch")
           << ", serial tracker=" << connection_->serial_tracker().ToString();
@@ -679,14 +679,14 @@ std::ostream& operator<<(std::ostream& out,
   return out << static_cast<int>(state);
 }
 
-absl::optional<wl::Serial> WaylandWindowDragController::GetSerial(
+std::optional<wl::Serial> WaylandWindowDragController::GetSerial(
     DragEventSource drag_source,
     WaylandToplevelWindow* origin) {
   auto* focused = drag_source == DragEventSource::kMouse
                       ? window_manager_->GetCurrentPointerFocusedWindow()
                       : window_manager_->GetCurrentTouchFocusedWindow();
   if (!origin || focused != origin) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return connection_->serial_tracker().GetSerial(
       drag_source == DragEventSource::kMouse ? wl::SerialType::kMousePress

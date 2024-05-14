@@ -766,6 +766,13 @@ def hacks_and_patches(install_root: str, script_dir: str, arch: str) -> None:
         lib_path = os.path.join(install_root, "lib", TRIPLES[arch], lib)
         reversion_glibc.reversion_glibc(lib_path)
 
+    # GTK4 is provided by bookworm (12), but pango is provided by bullseye
+    # (11).  Fix the GTK4 pkgconfig file to relax the pango version
+    # requirement.
+    gtk4_pc = os.path.join(pkgconfig_dir, 'gtk4.pc')
+    replace_in_file(gtk4_pc, r"pango [>=0-9. ]*", "pango")
+    replace_in_file(gtk4_pc, r"pangocairo [>=0-9. ]*", "pangocairo")
+
 
 def replace_in_file(file_path: str, search_pattern: str,
                     replace_pattern: str) -> None:
@@ -858,11 +865,17 @@ def cleanup_jail_symlinks(install_root: str) -> None:
 
                 # Check if the symlink is absolute and points inside the
                 # install_root.
-                if os.path.isabs(target_path) and target_path.startswith(
-                        install_root):
-                    # Compute the relative path from the symlink to the target
-                    relative_path = os.path.relpath(target_path,
-                                                    os.path.dirname(full_path))
+                if os.path.isabs(target_path):
+                    # Compute the relative path from the symlink to the target.
+                    relative_path = os.path.relpath(
+                        os.path.join(install_root, target_path.strip("/")),
+                        os.path.dirname(full_path))
+                    # Verify that the target exists inside the install_root.
+                    joined_path = os.path.join(os.path.dirname(full_path),
+                                               relative_path)
+                    if not os.path.exists(joined_path):
+                        raise Exception(
+                            f"Link target doesn't exist: {joined_path}")
                     os.remove(full_path)
                     os.symlink(relative_path, full_path)
 

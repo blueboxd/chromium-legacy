@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/extension_web_request_event_router.h"
 
 #include <algorithm>
+#include <string_view>
 
 #include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
@@ -36,6 +37,7 @@
 #include "extensions/browser/process_map.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/mojom/event_dispatcher.mojom.h"
 
 using content::BrowserThread;
@@ -169,9 +171,9 @@ void LogRequestAction(RequestAction action) {
 // Returns the corresponding EventTypes for the given |event_name|. If
 // |event_name| is an invalid event, returns EventTypes::kInvalidEvent.
 WebRequestEventRouter::EventTypes GetEventTypeFromEventName(
-    base::StringPiece event_name) {
+    std::string_view event_name) {
   constexpr auto kRequestStageMap = base::MakeFixedFlatMap<
-      base::StringPiece, WebRequestEventRouter::EventTypes>(
+      std::string_view, WebRequestEventRouter::EventTypes>(
       {{keys::kOnBeforeRequest, WebRequestEventRouter::kOnBeforeRequest},
        {keys::kOnBeforeSendHeaders,
         WebRequestEventRouter::kOnBeforeSendHeaders},
@@ -198,7 +200,7 @@ WebRequestEventRouter::EventTypes GetEventTypeFromEventName(
                                       : it->second;
 }
 
-bool IsWebRequestEvent(base::StringPiece event_name) {
+bool IsWebRequestEvent(std::string_view event_name) {
   return GetEventTypeFromEventName(event_name) !=
          WebRequestEventRouter::kInvalidEvent;
 }
@@ -219,7 +221,7 @@ bool IsRequestFromExtension(const WebRequestInfo& request,
   }
 
   // Treat hosted apps as normal web pages (crbug.com/526413).
-  for (const std::string& extension_id : extension_ids) {
+  for (const ExtensionId& extension_id : extension_ids) {
     const Extension* extension =
         ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
             extension_id);
@@ -239,7 +241,7 @@ bool IsRequestFromExtension(const WebRequestInfo& request,
 // |event_details| is passed to the event listener.
 void SendOnMessageEventOnUI(
     content::BrowserContext* browser_context,
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     bool is_web_view_guest,
     int web_view_instance_id,
     std::unique_ptr<WebRequestEventDetails> event_details) {
@@ -678,7 +680,7 @@ base::Value::Dict SummarizeResponseDelta(
   if (delta.cancel) {
     details.Set(activity_log::kCancelKey, true);
   }
-  if (!delta.new_url.is_empty()) {
+  if (delta.new_url.is_valid()) {
     details.Set(activity_log::kNewUrlKey, delta.new_url.spec());
   }
 
@@ -780,7 +782,7 @@ bool WebRequestEventRouter::RequestFilter::InitFromValue(
 }
 
 WebRequestEventRouter::EventResponse::EventResponse(
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     const base::Time& extension_install_time)
     : extension_id(extension_id),
       extension_install_time(extension_install_time),
@@ -834,7 +836,7 @@ WebRequestEventRouter::BrowserContextData::~BrowserContextData() = default;
 
 WebRequestEventRouter::EventListener::ID::ID(
     content::BrowserContext* browser_context,
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     const std::string& sub_event_name,
     int render_process_id,
     int web_view_instance_id,
@@ -915,7 +917,7 @@ int WebRequestEventRouter::OnBeforeRequest(
   // May be null for browser-initiated requests such as navigations.
   if (request->initiator) {
     const std::string& scheme = request->initiator->scheme();
-    const std::string& extension_id = request->initiator->host();
+    const ExtensionId& extension_id = request->initiator->host();
     const GURL& request_url = request->url;
     if (scheme == extensions::kExtensionScheme) {
       ExtensionsBrowserClient::Get()->NotifyExtensionRemoteHostContacted(
@@ -1527,7 +1529,10 @@ void WebRequestEventRouter::DispatchEventToListeners(
         // regular event dispatching code for this case, as well?
         EventRouter::Get(id.browser_context)
             ->DispatchEventToSender(
-                render_process, id.browser_context, listener->id.extension_id,
+                render_process, id.browser_context,
+                /*host_id=*/
+                mojom::HostID(mojom::HostID::HostType::kExtensions,
+                              listener->id.extension_id),
                 listener->histogram_value, listener->id.sub_event_name,
                 listener->id.worker_thread_id,
                 listener->id.service_worker_version_id,
@@ -1559,7 +1564,7 @@ void WebRequestEventRouter::DispatchEventToListeners(
 
 void WebRequestEventRouter::OnEventHandled(
     content::BrowserContext* browser_context,
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64_t request_id,
@@ -1602,7 +1607,7 @@ void WebRequestEventRouter::OnEventHandled(
 
 bool WebRequestEventRouter::AddEventListener(
     content::BrowserContext* browser_context,
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     const std::string& extension_name,
     const std::string& event_name,
     const std::string& sub_event_name,
@@ -2193,7 +2198,7 @@ void WebRequestEventRouter::GetMatchingListenersForRequest(
 
 void WebRequestEventRouter::DecrementBlockCount(
     content::BrowserContext* browser_context,
-    const std::string& extension_id,
+    const ExtensionId& extension_id,
     const std::string& event_name,
     uint64_t request_id,
     std::unique_ptr<EventResponse> response,

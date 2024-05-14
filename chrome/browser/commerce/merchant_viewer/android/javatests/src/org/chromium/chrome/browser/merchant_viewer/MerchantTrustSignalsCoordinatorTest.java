@@ -41,6 +41,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics.BottomSheetOpenedSource;
@@ -49,7 +50,6 @@ import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinat
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.commerce.core.ShoppingService.MerchantInfo;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -208,7 +208,6 @@ public class MerchantTrustSignalsCoordinatorTest {
                 .getSiteEngagementScore(any(Profile.class), any(String.class));
         doReturn(mMockPrefService).when(mCoordinator).getPrefService();
         doReturn(mMockDrawable).when(mCoordinator).getStoreIconDrawable();
-        doReturn(false).when(mCoordinator).isStoreInfoFeatureEnabled();
         doReturn(true).when(mCoordinator).isOnSecureWebsite(any(WebContents.class));
     }
 
@@ -575,7 +574,6 @@ public class MerchantTrustSignalsCoordinatorTest {
     @SmallTest
     @Test
     public void testMaybeShowStoreIcon() {
-        doReturn(true).when(mCoordinator).isStoreInfoFeatureEnabled();
         mCoordinator.setOmniboxIconController(mMockIconController);
 
         mCoordinator.maybeShowStoreIcon(null, true);

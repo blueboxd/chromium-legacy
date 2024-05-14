@@ -132,20 +132,7 @@ bool IsLazyWebUILoadingEnabled() {
         ash::prefs::kLoginScreenWebUILazyLoading);
   }
 
-  // Feature override.
-  if (base::FeatureList::GetInstance()->IsFeatureOverridden(
-          features::kEnableLazyLoginWebUILoading.name)) {
-    return base::FeatureList::IsEnabled(features::kEnableLazyLoginWebUILoading);
-  }
-
-  // Disable for stable and beta.
-  if ((chrome::GetChannel() == version_info::Channel::STABLE) ||
-      (chrome::GetChannel() == version_info::Channel::BETA)) {
-    return false;
-  }
-
-  // Enable for dev builds.
-  return true;
+  return base::FeatureList::IsEnabled(features::kEnableLazyLoginWebUILoading);
 }
 
 void UpdatePinAuthAvailability(const AccountId& account_id) {
@@ -356,6 +343,8 @@ void LoginDisplayHostMojo::OnLocalAuthenticationCompleted(
     bool success,
     std::unique_ptr<UserContext> user_context) {
   if (!success) {
+    // TODO: pass flow to WizardController, suggest to
+    // remove & re-create user in case of Recovery flow.
     existing_user_controller_->OnLocalAuthenticationCancelled();
     // While dialog itself is already hidden, this call should
     // correctly reset all associated data.
@@ -743,7 +732,6 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
     LOG(FATAL) << "Incorrect Active Directory user type "
                << user_context.GetUserType();
-    user_context.SetIsUsingOAuth(false);
   }
 
   existing_user_controller_->Login(user_context, SigninSpecifics());
@@ -803,7 +791,7 @@ void LoginDisplayHostMojo::HandleLaunchPublicSession(
     const AccountId& account_id,
     const std::string& locale,
     const std::string& input_method) {
-  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, account_id);
+  UserContext context(user_manager::UserType::kPublicAccount, account_id);
   context.SetPublicSessionLocale(locale);
   context.SetPublicSessionInputMethod(input_method);
   existing_user_controller_->Login(context, SigninSpecifics());

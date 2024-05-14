@@ -14,7 +14,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/base_export.h"
-#include "base/cancelable_callback.h"
+#include "base/callback_list.h"
 #include "base/containers/circular_deque.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
@@ -37,6 +37,7 @@
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_queue_selector.h"
 #include "base/task/sequence_manager/thread_controller.h"
+#include "base/task/sequence_manager/work_tracker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -133,6 +134,8 @@ class BASE_EXPORT SequenceManagerImpl
   TaskQueue::QueuePriority GetPriorityCount() const override;
 
   // SequencedTaskSource implementation:
+  void SetRunTaskSynchronouslyAllowed(
+      bool can_run_tasks_synchronously) override;
   absl::optional<SelectedTask> SelectNextTask(
       LazyNow& lazy_now,
       SelectTaskOption option = SelectTaskOption::kDefault) override;
@@ -141,7 +144,8 @@ class BASE_EXPORT SequenceManagerImpl
       LazyNow* lazy_now,
       SelectTaskOption option = SelectTaskOption::kDefault) override;
   bool HasPendingHighResolutionTasks() override;
-  bool OnSystemIdle() override;
+  void OnBeginWork() override;
+  bool OnIdle() override;
   void MaybeEmitTaskDetails(
       perfetto::EventContext& ctx,
       const SequencedTaskSource::SelectedTask& selected_task) const override;
@@ -150,11 +154,13 @@ class BASE_EXPORT SequenceManagerImpl
       CurrentThread::DestructionObserver* destruction_observer);
   void RemoveDestructionObserver(
       CurrentThread::DestructionObserver* destruction_observer);
-  void RegisterOnNextIdleCallback(OnceClosure on_next_idle_callback);
-  // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
+  [[nodiscard]] CallbackListSubscription RegisterOnNextIdleCallback(
+      OnceClosure on_next_idle_callback);
+
+  // Sets / returns the default TaskRunner. Thread-safe.
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
-  // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
   scoped_refptr<SingleThreadTaskRunner> GetTaskRunner();
+
   bool IsBoundToCurrentThread() const;
   MessagePump* GetMessagePump() const;
   bool IsType(MessagePumpType type) const;
@@ -322,7 +328,7 @@ class BASE_EXPORT SequenceManagerImpl
     //   internal scheduling code does not expect queues to be pulled
     //   from underneath.
 
-    std::set<internal::TaskQueueImpl*> active_queues;
+    std::set<raw_ptr<internal::TaskQueueImpl, SetExperimental>> active_queues;
 
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
         queues_to_delete;
@@ -342,15 +348,16 @@ class BASE_EXPORT SequenceManagerImpl
     ObserverList<CurrentThread::DestructionObserver>::Unchecked
         destruction_observers;
 
-    // If non-null, invoked the next time OnSystemIdle() completes without
-    // scheduling additional work.
-    OnceClosure on_next_idle_callback;
+    // Notified the next time `OnIdle()` completes without scheduling additional
+    // work.
+    OnceClosureList on_next_idle_callbacks;
   };
 
   void CompleteInitializationOnBoundThread();
 
   // TaskQueueSelector::Observer:
   void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
+  void OnWorkAvailable() override;
 
   // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;
@@ -361,9 +368,16 @@ class BASE_EXPORT SequenceManagerImpl
   // class was created on.
   void SetNextWakeUp(LazyNow* lazy_now, absl::optional<WakeUp> wake_up);
 
-  // Called by the task queue to inform this SequenceManager of a task that's
-  // about to be queued. This SequenceManager may use this opportunity to add
-  // metadata to |pending_task| before it is moved into the queue.
+  // Called before TaskQueue requests to reload its empty immediate work queue.
+  void WillRequestReloadImmediateWorkQueue();
+
+  // Returns a valid `SyncWorkAuthorization` if a call to `RunOrPostTask` on a
+  // `SequencedTaskRunner` bound to this `SequenceManager` may run its task
+  // synchronously.
+  SyncWorkAuthorization TryAcquireSyncWorkAuthorization();
+
+  // Called when a task is about to be queued. May add metadata to the task and
+  // emit trace events.
   void WillQueueTask(Task* pending_task);
 
   // Enqueues onto delayed WorkQueues all delayed tasks which must run now
@@ -396,7 +410,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   // Calls |TakeImmediateIncomingQueueTasks| on all queues with their reload
   // flag set in |empty_queues_to_reload_|.
-  void ReloadEmptyWorkQueues() const;
+  void ReloadEmptyWorkQueues();
 
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec);
@@ -456,6 +470,8 @@ class BASE_EXPORT SequenceManagerImpl
   const Settings settings_;
 
   const MetricRecordingSettings metric_recording_settings_;
+
+  WorkTracker work_tracker_;
 
   // Whether to add the queue time to tasks.
   base::subtle::Atomic32 add_queue_time_to_tasks_;

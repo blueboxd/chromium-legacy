@@ -11,13 +11,13 @@
 
 namespace autofill {
 
-absl::optional<AccountInfo> GetPrimaryAccountInfoFromBrowserContext(
+std::optional<AccountInfo> GetPrimaryAccountInfoFromBrowserContext(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   CoreAccountInfo core_account =
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);

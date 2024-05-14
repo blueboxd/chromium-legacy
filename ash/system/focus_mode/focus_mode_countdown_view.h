@@ -29,28 +29,29 @@ class ASH_EXPORT FocusModeCountdownView : public views::FlexLayoutView {
   METADATA_HEADER(FocusModeCountdownView, views::FlexLayoutView)
 
  public:
-  FocusModeCountdownView(bool include_end_button);
+  explicit FocusModeCountdownView(bool include_end_button);
   FocusModeCountdownView(const FocusModeCountdownView&) = delete;
   FocusModeCountdownView& operator=(const FocusModeCountdownView&) = delete;
   ~FocusModeCountdownView() override = default;
 
   // Updates the timers and progress bar. This must be called from this view's
   // parent's `OnTimerTick()` and when the view is first created.
-  void UpdateUI();
+  void UpdateUI(const FocusModeSession::Snapshot& session_snapshot);
 
  private:
   friend class FocusModeCountdownViewTest;
+  friend class FocusModeTrayTest;
 
   // The main timer label, displays the amount of time left in the focus
   // session.
-  raw_ptr<views::Label, ExperimentalAsh> time_remaining_label_ = nullptr;
+  raw_ptr<views::Label> time_remaining_label_ = nullptr;
 
   // The timer on the left of the bar, displays the amount of time that has
   // already passed during the focus session.
-  raw_ptr<views::Label, ExperimentalAsh> time_elapsed_label_ = nullptr;
+  raw_ptr<views::Label> time_elapsed_label_ = nullptr;
 
   // The timer on the right of the bar, displays the total session duration.
-  raw_ptr<views::Label, ExperimentalAsh> time_total_label_ = nullptr;
+  raw_ptr<views::Label> time_total_label_ = nullptr;
 
   // The timer progress bar.
   raw_ptr<views::ProgressBar> progress_bar_ = nullptr;
@@ -60,6 +61,8 @@ class ASH_EXPORT FocusModeCountdownView : public views::FlexLayoutView {
 
   // Whether to create the "End" button to end the focus session.
   const bool include_end_button_;
+  // The `End` button.
+  raw_ptr<PillButton> end_button_ = nullptr;
 };
 
 }  // namespace ash

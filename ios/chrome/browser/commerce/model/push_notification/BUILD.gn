@@ -16,6 +16,7 @@ static_library("push_notification") {
     "//components/commerce/core:feature_list",
     "//components/commerce/core:proto",
     "//components/commerce/core:shopping_service",
+    "//components/optimization_guide/core:core",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/variations/service",
     "//components/variations/service:service",
@@ -23,11 +24,8 @@ static_library("push_notification") {
     "//ios/chrome/browser/commerce/model:shopping_service",
     "//ios/chrome/browser/optimization_guide/model",
     "//ios/chrome/browser/push_notification/model:push_notification_client",
-    "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
-    "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
-    "//ios/chrome/browser/url_loading/model",
     "//url:url",
   ]
 
@@ -51,6 +49,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/bookmarks/model:model",
     "//ios/chrome/browser/commerce/model:session_proto_db",
     "//ios/chrome/browser/commerce/model:shopping_service",
+    "//ios/chrome/browser/optimization_guide/model:model",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser/test:test_support",

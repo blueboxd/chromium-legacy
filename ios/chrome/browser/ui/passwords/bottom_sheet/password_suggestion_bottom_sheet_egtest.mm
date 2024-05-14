@@ -31,7 +31,7 @@
 #import "ios/chrome/test/scoped_eg_traits_overrider.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/earl_grey/matchers.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "net/test/embedded_test_server/default_handlers.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -138,6 +138,16 @@ void CheckPasswordDetailsVisitMetricCount(int count) {
   config.features_enabled.push_back(
       password_manager::features::kIOSPasswordBottomSheet);
 
+  if ([self isRunningTest:@selector(testOpenPasswordBottomOnAutofocus)]) {
+    config.features_enabled.push_back(
+        password_manager::features::kIOSPasswordBottomSheetAutofocus);
+  }
+
+  if ([self isRunningTest:@selector(testOpenKeyboardOnAutofocus)]) {
+    config.features_disabled.push_back(
+        password_manager::features::kIOSPasswordBottomSheetAutofocus);
+  }
+
   if ([self isRunningTest:@selector
             (testOpenPasswordBottomSheetOpenPasswordDetails)] ||
       [self
@@ -176,6 +186,20 @@ void CheckPasswordDetailsVisitMetricCount(int count) {
   // Loads simple page. It is on localhost so it is considered a secure context.
   [ChromeEarlGrey
       loadURL:self.testServer->GetURL("/simple_login_form_empty.html")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Login form."];
+}
+
+- (void)loadLoginAutofocusPage {
+  // Loads simple page. It is on localhost so it is considered a secure context.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(
+                              "/simple_login_form_empty_autofocus.html")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Login form."];
+}
+
+- (void)loadLoginPasskeyPage {
+  // Loads simple page. It is on localhost so it is considered a secure context.
+  [ChromeEarlGrey
+      loadURL:self.testServer->GetURL("/simple_login_form_empty_passkey.html")];
   [ChromeEarlGrey waitForWebStateContainingText:"Login form."];
 }
 
@@ -252,6 +276,59 @@ id<GREYMatcher> OpenKeyboardButton() {
   [self verifyPasswordFieldsHaveBeenFilled:@"user"];
 }
 
+// This test verifies that the bottom sheet opens on autofocus events, when the
+// kIOSPasswordBottomSheetAutofocus feature is enabled.
+- (void)testOpenPasswordBottomOnAutofocus {
+  [PasswordManagerAppInterface
+      storeCredentialWithUsername:@"user"
+                         password:@"password"
+                              URL:net::NSURLWithGURL(self.testServer->GetURL(
+                                      "/simple_login_form_empty_autofocus."
+                                      "html"))];
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+  [self loadLoginAutofocusPage];
+
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:UsePasswordButton()];
+}
+
+// This test verifies that the keyboard opens on autofocus events, when the
+// kIOSPasswordBottomSheetAutofocus feature is disabled.
+- (void)testOpenKeyboardOnAutofocus {
+  [PasswordManagerAppInterface
+      storeCredentialWithUsername:@"user"
+                         password:@"password"
+                              URL:net::NSURLWithGURL(self.testServer->GetURL(
+                                      "/simple_login_form_empty_autofocus."
+                                      "html"))];
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+
+  [self loadLoginAutofocusPage];
+
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
+}
+
+// This test verifies that the password bottom sheet does not open when the
+// webpage has enabled passkey login.
+- (void)testOpenKeyboardOnPasskey {
+  [PasswordManagerAppInterface
+      storeCredentialWithUsername:@"user"
+                         password:@"password"
+                              URL:net::NSURLWithGURL(self.testServer->GetURL(
+                                      "/simple_login_form_empty_passkey."
+                                      "html"))];
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+
+  [self loadLoginPasskeyPage];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
+
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
+}
+
 // This test will allow us to know if we're using a coherent browser state to
 // open the bottom sheet in incognito mode.
 - (void)testOpenPasswordBottomSheetUsePasswordIncognito {
@@ -301,7 +378,7 @@ id<GREYMatcher> OpenKeyboardButton() {
   [[EarlGrey selectElementWithMatcher:OpenKeyboardButton()]
       performAction:grey_tap()];
 
-  WaitForKeyboardToAppear();
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 }
 
 - (void)testOpenPasswordBottomSheetOpenPasswordManager {
@@ -673,17 +750,9 @@ id<GREYMatcher> OpenKeyboardButton() {
   [ChromeEarlGrey
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user")];
 
+  // Tapping the single item doesn't change anything.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"user")]
       performAction:grey_tap()];
-
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:1
-             forBucket:YES
-          forHistogram:
-              @"IOS.PasswordBottomSheet.UsernameTapped.MinimizedState"],
-      @"Unexpected histogram error for password bottom sheet username tapped "
-      @"minimized state");
 
   [[EarlGrey selectElementWithMatcher:UsePasswordButton()]
       performAction:grey_tap()];
@@ -709,20 +778,9 @@ id<GREYMatcher> OpenKeyboardButton() {
   [ChromeEarlGrey
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user2")];
 
+  // Select the second item.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"user2")]
       performAction:grey_tap()];
-  // Tap again on the same credential, to trigger the UsernameTapped metric.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"user2")]
-      performAction:grey_tap()];
-
-  GREYAssertNil(
-      [MetricsAppInterface
-           expectCount:1
-             forBucket:NO
-          forHistogram:
-              @"IOS.PasswordBottomSheet.UsernameTapped.MinimizedState"],
-      @"Unexpected histogram error for password bottom sheet username tapped "
-      @"minimized state");
 
   [[EarlGrey selectElementWithMatcher:UsePasswordButton()]
       performAction:grey_tap()];
@@ -810,7 +868,7 @@ id<GREYMatcher> OpenKeyboardButton() {
   [[EarlGrey selectElementWithMatcher:OpenKeyboardButton()]
       performAction:grey_tap()];
 
-  WaitForKeyboardToAppear();
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 
   // Dismiss #2.
   [self loadLoginPage];
@@ -824,7 +882,7 @@ id<GREYMatcher> OpenKeyboardButton() {
   [[EarlGrey selectElementWithMatcher:OpenKeyboardButton()]
       performAction:grey_tap()];
 
-  WaitForKeyboardToAppear();
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 
   // Dismiss #3.
   [self loadLoginPage];
@@ -838,13 +896,13 @@ id<GREYMatcher> OpenKeyboardButton() {
   [[EarlGrey selectElementWithMatcher:OpenKeyboardButton()]
       performAction:grey_tap()];
 
-  WaitForKeyboardToAppear();
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 
   // Verify that keyboard is shown.
   [self loadLoginPage];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
-  WaitForKeyboardToAppear();
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 }
 
 // TODO(crbug.com/1474949): Fix flaky test & re-enable.
@@ -882,7 +940,7 @@ id<GREYMatcher> OpenKeyboardButton() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
 
-  WaitForKeyboardToAppear();
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 }
 
 // Tests that the Password Bottom Sheet appears when tapping on a password

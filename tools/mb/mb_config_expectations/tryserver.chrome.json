@@ -204,6 +204,7 @@
       "is_chromeos_device": true,
       "is_official_build": true,
       "is_skylab": true,
+      "symbol_level": 0,
       "use_remoteexec": true
     }
   },
@@ -217,6 +218,7 @@
       "is_chromeos_device": true,
       "is_official_build": true,
       "is_skylab": true,
+      "symbol_level": 0,
       "use_remoteexec": true
     }
   },
@@ -398,6 +400,17 @@
       "use_remoteexec": true
     }
   },
+  "linux-chromeos-chrome-with-lacros": {
+    "gn_args": {
+      "also_build_lacros_chrome": true,
+      "exclude_unwind_tables": false,
+      "is_chrome_branded": true,
+      "is_official_build": true,
+      "symbol_level": 1,
+      "target_os": "chromeos",
+      "use_remoteexec": true
+    }
+  },
   "linux-chromeos-compile-chrome": {
     "gn_args": {
       "exclude_unwind_tables": false,
@@ -412,6 +425,18 @@
     "gn_args": {
       "is_chrome_branded": true,
       "is_official_build": true,
+      "use_remoteexec": true
+    }
+  },
+  "linux-lacros-chrome": {
+    "gn_args": {
+      "also_build_ash_chrome": true,
+      "chromeos_is_browser_only": true,
+      "exclude_unwind_tables": false,
+      "is_chrome_branded": true,
+      "is_official_build": true,
+      "symbol_level": 1,
+      "target_os": "chromeos",
       "use_remoteexec": true
     }
   },

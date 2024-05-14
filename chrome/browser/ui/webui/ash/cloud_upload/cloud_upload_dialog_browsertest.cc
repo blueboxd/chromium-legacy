@@ -23,6 +23,7 @@
 #include "base/test/bind.h"
 #include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_open_metrics.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
@@ -53,6 +55,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test.h"
@@ -199,6 +202,11 @@ class FileHandlerDialogBrowserTest : public InProcessBrowserTest {
         {});
   }
 
+  explicit FileHandlerDialogBrowserTest(int num_tasks)
+      : FileHandlerDialogBrowserTest() {
+    num_tasks_ = num_tasks;
+  }
+
   FileHandlerDialogBrowserTest(const FileHandlerDialogBrowserTest&) = delete;
   FileHandlerDialogBrowserTest& operator=(const FileHandlerDialogBrowserTest&) =
       delete;
@@ -237,7 +245,7 @@ class FileHandlerDialogBrowserTest : public InProcessBrowserTest {
     SetUpCommandLineForNonManagedUser(command_line);
   }
 
-  const int num_tasks_ = 3;
+  int num_tasks_ = 3;
   std::vector<std::string> urls_;
   std::vector<file_manager::file_tasks::TaskDescriptor> tasks_;
   std::vector<storage::FileSystemURL> files_;
@@ -247,8 +255,7 @@ class FileHandlerDialogBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Tests that a new Files app window is created if no modal parent window is
-// passed in.
+// Tests that a new Files app window is created if no Files app window exists.
 IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, NewModalParentCreated) {
   file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
 
@@ -263,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, NewModalParentCreated) {
 
   // Launch File Handler dialog.
   ASSERT_TRUE(CloudOpenTask::Execute(
-      profile(), files_, CloudProvider::kGoogleDrive, nullptr,
+      profile(), files_, CloudProvider::kGoogleDrive,
       std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive,
                                          /*file_count=*/1)));
 
@@ -273,59 +280,12 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, NewModalParentCreated) {
 
   browser = FindSystemWebAppBrowser(profile(), SystemWebAppType::FILE_MANAGER);
   ASSERT_NE(nullptr, browser);
-}
-
-// Tests that a new Files app window is created even if there is a Files app
-// window open, but it's not the window that was passed in to CloudOpenTask.
-IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest,
-                       NewModalParentCreatedWithExisting) {
-  file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
-
-  Browser* browser =
-      FindSystemWebAppBrowser(profile(), SystemWebAppType::FILE_MANAGER);
-  ASSERT_EQ(nullptr, browser);
-
-  // Open a files app window.
-  base::RunLoop run_loop;
-  file_manager::util::ShowItemInFolder(
-      profile(), files_.at(0).path(),
-      base::BindLambdaForTesting(
-          [&run_loop](platform_util::OpenOperationResult result) {
-            EXPECT_EQ(platform_util::OpenOperationResult::OPEN_SUCCEEDED,
-                      result);
-            run_loop.Quit();
-          }));
-  run_loop.Run();
-  Browser* first_files_app = ui_test_utils::WaitForBrowserToOpen();
-
-  browser = FindSystemWebAppBrowser(profile(), SystemWebAppType::FILE_MANAGER);
-  ASSERT_NE(nullptr, browser);
-  ASSERT_EQ(first_files_app, browser);
-
-  // Watch for File Handler dialog URL chrome://cloud-upload.
-  content::TestNavigationObserver navigation_observer_dialog(
-      (GURL(chrome::kChromeUICloudUploadURL)));
-  navigation_observer_dialog.StartWatchingNewWebContents();
-
-  // Launch File Handler dialog.
-  ASSERT_TRUE(CloudOpenTask::Execute(
-      profile(), files_, CloudProvider::kGoogleDrive, nullptr,
-      std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive,
-                                         /*file_count=*/1)));
-  // Check that a new browser opened.
-  Browser* new_browser = ui_test_utils::WaitForBrowserToOpen();
-  ASSERT_NE(new_browser, first_files_app);
-  ASSERT_TRUE(
-      IsBrowserForSystemWebApp(new_browser, SystemWebAppType::FILE_MANAGER));
-
-  // Wait for File Handler dialog to open at chrome://cloud-upload.
-  navigation_observer_dialog.Wait();
-  ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
 }
 
 // Tests that a new Files app window is not created when there is a Files app
-// window already open, and it's passed in as the modal parent.
-IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, ModalParentProvided) {
+// window already open.
+IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest,
+                       ExistingWindowUsedAsModalParent) {
   file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
 
   Browser* browser =
@@ -335,16 +295,10 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, ModalParentProvided) {
   // Open a files app window.
   ui_test_utils::BrowserChangeObserver browser_added_observer(
       nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
-  base::RunLoop run_loop;
-  file_manager::util::ShowItemInFolder(
-      profile(), files_.at(0).path(),
-      base::BindLambdaForTesting(
-          [&run_loop](platform_util::OpenOperationResult result) {
-            EXPECT_EQ(platform_util::OpenOperationResult::OPEN_SUCCEEDED,
-                      result);
-            run_loop.Quit();
-          }));
-  run_loop.Run();
+  base::test::TestFuture<platform_util::OpenOperationResult> future;
+  file_manager::util::ShowItemInFolder(profile(), files_.at(0).path(),
+                                       future.GetCallback());
+  EXPECT_EQ(future.Get(), platform_util::OpenOperationResult::OPEN_SUCCEEDED);
   browser_added_observer.Wait();
 
   browser = FindSystemWebAppBrowser(profile(), SystemWebAppType::FILE_MANAGER);
@@ -358,7 +312,6 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, ModalParentProvided) {
   // Launch File Handler dialog.
   ASSERT_TRUE(CloudOpenTask::Execute(
       profile(), files_, CloudProvider::kGoogleDrive,
-      browser->window()->GetNativeWindow(),
       std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive,
                                          /*file_count=*/1)));
 
@@ -391,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, CancelFileHandlerDialog) {
 
   // Launch File Handler dialog.
   ASSERT_TRUE(CloudOpenTask::Execute(profile(), files_,
-                                     CloudProvider::kGoogleDrive, nullptr,
+                                     CloudProvider::kGoogleDrive,
                                      std::move(cloud_open_metrics)));
 
   // Wait for File Handler dialog to open at chrome://cloud-upload.
@@ -442,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OpenFileTaskFromDialog) {
 
   // Launch File Handler dialog.
   ASSERT_TRUE(CloudOpenTask::Execute(profile(), files_,
-                                     CloudProvider::kGoogleDrive, nullptr,
+                                     CloudProvider::kGoogleDrive,
                                      std::move(cloud_open_metrics)));
 
   // Wait for File Handler dialog to open at chrome://cloud-upload.
@@ -455,9 +408,8 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OpenFileTaskFromDialog) {
 
   // Get the `tasks` member from the `FileHandlerPageElement` which are all of
   // the observed local file tasks.
-  bool dialog_init_complete = false;
   base::Value::List observed_app_ids;
-  while (!dialog_init_complete) {
+  ASSERT_TRUE(base::test::RunUntil([&] {
     // It is possible that the `FileHandlerPageElement` element still hasn't
     // been initiated yet. It is completed when the `localTasks` member is
     // non-empty.
@@ -466,11 +418,11 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OpenFileTaskFromDialog) {
                         "document.querySelector('file-handler-page')"
                         ".localTasks.map(task => task.appId)");
     if (!eval_result.error.empty()) {
-      continue;
+      return false;
     }
     observed_app_ids = eval_result.ExtractList().TakeList();
-    dialog_init_complete = !observed_app_ids.empty();
-  }
+    return !observed_app_ids.empty();
+  }));
 
 // Check QuickOffice was observed by the dialog as it should always be shown.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -573,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, DefaultSetForDocsOnly) {
 
   // Launch File Handler dialog.
   ASSERT_TRUE(CloudOpenTask::Execute(
-      profile(), files_, CloudProvider::kGoogleDrive, nullptr,
+      profile(), files_, CloudProvider::kGoogleDrive,
       std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive,
                                          /*file_count=*/1)));
 
@@ -586,9 +538,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, DefaultSetForDocsOnly) {
   content::WebContents* web_contents = GetWebContentsFromCloudUploadDialog();
 
   // Wait for local tasks to be filled in, which indicates the dialog is ready.
-  bool dialog_init_complete = false;
-  base::Value::List observed_app_ids;
-  while (!dialog_init_complete) {
+  ASSERT_TRUE(base::test::RunUntil([&] {
     // It is possible that the `FileHandlerPageElement` element still hasn't
     // been initiated yet. It is completed when the `localTasks` member is
     // non-empty.
@@ -597,11 +547,10 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, DefaultSetForDocsOnly) {
                         "document.querySelector('file-handler-page')"
                         ".localTasks.map(task => task.appId)");
     if (!eval_result.error.empty()) {
-      continue;
+      return false;
     }
-    observed_app_ids = eval_result.ExtractList().TakeList();
-    dialog_init_complete = !observed_app_ids.empty();
-  }
+    return !eval_result.ExtractList().TakeList().empty();
+  }));
 
   // Check that there is not a default task for doc/x files.
   ASSERT_FALSE(file_manager::file_tasks::GetDefaultTaskFromPrefs(
@@ -675,6 +624,139 @@ gfx::NativeWindow LaunchFilesAppAndWait(Profile* profile) {
                                params);
   Browser* files_app = ui_test_utils::WaitForBrowserToOpen();
   return files_app->window()->GetNativeWindow();
+}
+
+class CloudUploadDialogNoTasksBrowserTest
+    : public FileHandlerDialogBrowserTest {
+ public:
+  CloudUploadDialogNoTasksBrowserTest()
+      : FileHandlerDialogBrowserTest(/*num_tasks=*/0) {}
+};
+
+class CloudUploadDialogHandlerDisabledBrowserTest
+    : public CloudUploadDialogNoTasksBrowserTest,
+      public testing::WithParamInterface<bool> {};
+
+// Suite with `true` means that `prefs::GoogleWorkspaceCloudUpload` is `allowed`
+// and `prefs::MicrosoftOfficeCloudUpload` is `disallowed`. Suite with `false`
+// means that `prefs::GoogleWorkspaceCloudUpload` is `disallowed` and
+// `prefs::MicrosoftOfficeCloudUpload` is `allowed`.
+// Tests that when only one handler is available (Google or Microsoft) in
+// absence of local tasks, the user is brought directly to the move confirmation
+// page instead of file handling dialog.
+IN_PROC_BROWSER_TEST_P(CloudUploadDialogHandlerDisabledBrowserTest,
+                       FileHandlingDialogSkipped) {
+  const bool google_workspace_test = GetParam();
+  auto* prefs = profile()->GetPrefs();
+  if (google_workspace_test) {
+    // Disable Microsoft365.
+    prefs->SetString(prefs::kGoogleWorkspaceCloudUpload,
+                     chromeos::cloud_upload::kCloudUploadPolicyAllowed);
+    prefs->SetString(prefs::kMicrosoftOfficeCloudUpload,
+                     chromeos::cloud_upload::kCloudUploadPolicyDisallowed);
+  } else {
+    // Disable Google Workspace.
+    prefs->SetString(prefs::kGoogleWorkspaceCloudUpload,
+                     chromeos::cloud_upload::kCloudUploadPolicyDisallowed);
+    prefs->SetString(prefs::kMicrosoftOfficeCloudUpload,
+                     chromeos::cloud_upload::kCloudUploadPolicyAllowed);
+
+    // Perform the necessary OneDrive & Microsoft365 setup.
+    file_manager::test::CreateFakeProvidedFileSystemOneDrive(profile());
+    file_manager::test::AddFakeWebApp(
+        web_app::kMicrosoft365AppId, kDocMimeType, kDocFileExtension, "", true,
+        apps::AppServiceProxyFactory::GetForProfile(profile()));
+  }
+
+  // Watch for File Handler dialog URL chrome://cloud-upload.
+  content::TestNavigationObserver navigation_observer_dialog(
+      (GURL(chrome::kChromeUICloudUploadURL)));
+  navigation_observer_dialog.StartWatchingNewWebContents();
+
+  const auto& doc_file = files_[0];
+  ASSERT_EQ(doc_file.path().Extension(), ".docx");
+
+  // Launch File Handler dialog.
+  const CloudProvider cloud_provider = google_workspace_test
+                                           ? CloudProvider::kGoogleDrive
+                                           : CloudProvider::kOneDrive;
+  ASSERT_TRUE(CloudOpenTask::Execute(
+      profile(), {doc_file}, cloud_provider,
+      std::make_unique<CloudOpenMetrics>(cloud_provider, /*file_count=*/1)));
+
+  // Wait for File Handler dialog to open at chrome://cloud-upload.
+  navigation_observer_dialog.Wait();
+  ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
+
+  // Get the web contents of the dialog to be able to query
+  // 'move-confirmation-page'.
+  content::WebContents* web_contents = GetWebContentsFromCloudUploadDialog();
+
+  // Check that the move confirmation page is displayed.
+  ASSERT_TRUE(base::test::RunUntil([&] {
+    return content::EvalJs(web_contents,
+                           "!!document.querySelector('move-confirmation-page')")
+        .ExtractBool();
+  }));
+
+  constexpr char kGetProviderNameScript[] = R"(
+    (async () => {
+      const page = document.querySelector('move-confirmation-page');
+      return page.getProviderName(page.cloudProvider);
+    })();
+  )";
+
+  // Validate that the confirmation page is displayed for the correct drive.
+  ASSERT_EQ(content::EvalJs(web_contents, kGetProviderNameScript),
+            l10n_util::GetStringUTF8(
+                google_workspace_test ? IDS_OFFICE_CLOUD_PROVIDER_GOOGLE_DRIVE
+                                      : IDS_OFFICE_CLOUD_PROVIDER_ONEDRIVE));
+}
+
+INSTANTIATE_TEST_SUITE_P(/**/,
+                         CloudUploadDialogHandlerDisabledBrowserTest,
+                         testing::Bool());
+
+// Tests that when only Microsoft365 is available in absence of local tasks and
+// the fixup flow is required, the user is brought to the M365 setup page.
+IN_PROC_BROWSER_TEST_F(
+    CloudUploadDialogNoTasksBrowserTest,
+    OneDriveSetupDialogShownWhenFixupFlowIsNecessaryForMicrosoft365) {
+  auto* prefs = profile()->GetPrefs();
+  prefs->SetString(prefs::kGoogleWorkspaceCloudUpload,
+                   chromeos::cloud_upload::kCloudUploadPolicyDisallowed);
+  prefs->SetString(prefs::kMicrosoftOfficeCloudUpload,
+                   chromeos::cloud_upload::kCloudUploadPolicyAllowed);
+
+  // Watch for File Handler dialog URL chrome://cloud-upload.
+  content::TestNavigationObserver navigation_observer_dialog(
+      (GURL(chrome::kChromeUICloudUploadURL)));
+  navigation_observer_dialog.StartWatchingNewWebContents();
+
+  const auto& doc_file = files_[0];
+  ASSERT_EQ(doc_file.path().Extension(), ".docx");
+
+  // ODFS and O365 App are not installed, so fixup will be required.
+
+  // Launch File Handler dialog.
+  ASSERT_TRUE(CloudOpenTask::Execute(
+      profile(), {doc_file}, CloudProvider::kOneDrive,
+      std::make_unique<CloudOpenMetrics>(CloudProvider::kOneDrive,
+                                         /*file_count=*/1)));
+
+  // Wait for File Handler dialog to open at chrome://cloud-upload.
+  navigation_observer_dialog.Wait();
+  ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
+
+  // Get the web contents of the dialog to be able to query `cloud-upload`.
+  content::WebContents* web_contents = GetWebContentsFromCloudUploadDialog();
+
+  // Check that the M365 setup page is displayed.
+  ASSERT_TRUE(base::test::RunUntil([&] {
+    return content::EvalJs(web_contents,
+                           "!!document.querySelector('cloud-upload')")
+        .ExtractBool();
+  }));
 }
 
 // Runs each test in four configurations (Google And Microsoft prefs
@@ -792,6 +874,8 @@ class FileHandlerDialogBrowserTestWithAutomatedFlow
     auto* prefs = profile()->GetPrefs();
     prefs->SetString(prefs::kGoogleWorkspaceCloudUpload,
                      google_workspace_cloud_upload);
+    prefs->SetString(prefs::kMicrosoftOneDriveMount,
+                     microsoft_office_cloud_upload);
     prefs->SetString(prefs::kMicrosoftOfficeCloudUpload,
                      microsoft_office_cloud_upload);
   }
@@ -827,7 +911,7 @@ IN_PROC_BROWSER_TEST_P(FileHandlerDialogBrowserTestWithAutomatedFlow,
           ? CloudProvider::kGoogleDrive
           : CloudProvider::kOneDrive;
   ASSERT_TRUE(CloudOpenTask::Execute(
-      profile(), files_, cloud_provider, nullptr,
+      profile(), files_, cloud_provider,
       std::make_unique<CloudOpenMetrics>(cloud_provider, /*file_count=*/1)));
 
   // Wait for File Handler dialog to open at chrome://cloud-upload.
@@ -1026,7 +1110,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest,
 
     auto cloud_open_task = base::WrapRefCounted(
         new CloudOpenTask(profile(), files_, CloudProvider::kGoogleDrive,
-                          nullptr, std::move(cloud_open_metrics)));
+                          std::move(cloud_open_metrics)));
     cloud_open_task->SetTasksForTest(tasks_);
 
     for (int selected_task = 0; selected_task < num_tasks_; selected_task++) {
@@ -1061,7 +1145,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OnDialogCompleteNoCrash) {
   {
     auto cloud_open_task = base::WrapRefCounted(
         new CloudOpenTask(profile(), files_, CloudProvider::kGoogleDrive,
-                          nullptr, std::move(cloud_open_metrics)));
+                          std::move(cloud_open_metrics)));
     cloud_open_task->SetTasksForTest(tasks_);
 
     int out_of_range_task = num_tasks_;
@@ -1107,15 +1191,7 @@ class FixUpFlowBrowserTest : public InProcessBrowserTest {
   }
 
   void AddFakeODFS() {
-    auto fake_provider =
-        ash::file_system_provider::FakeExtensionProvider::Create(
-            extension_misc::kODFSExtensionId);
-    const auto kProviderId = fake_provider->GetId();
-    auto* service = file_system_provider::Service::Get(profile());
-    service->RegisterProvider(std::move(fake_provider));
-    service->MountFileSystem(kProviderId,
-                             ash::file_system_provider::MountOptions(
-                                 "test-filesystem", "Test FileSystem"));
+    file_manager::test::CreateFakeProvidedFileSystemOneDrive(profile());
   }
 
   void AddFakeOfficePWA() {
@@ -1158,10 +1234,9 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest, FixUpFlowWhenODFSNotMounted) {
       (GURL(chrome::kChromeUICloudUploadURL)));
   navigation_observer_dialog.StartWatchingNewWebContents();
 
-  gfx::NativeWindow modal_parent = LaunchFilesAppAndWait(browser()->profile());
+  LaunchFilesAppAndWait(browser()->profile());
 
   CloudOpenTask::Execute(profile(), files_, CloudProvider::kOneDrive,
-                         modal_parent,
                          std::make_unique<CloudOpenMetrics>(
                              CloudProvider::kOneDrive, /*file_count=*/1));
 
@@ -1205,10 +1280,9 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest,
       (GURL(chrome::kChromeUICloudUploadURL)));
   navigation_observer_dialog.StartWatchingNewWebContents();
 
-  gfx::NativeWindow modal_parent = LaunchFilesAppAndWait(browser()->profile());
+  LaunchFilesAppAndWait(browser()->profile());
 
   CloudOpenTask::Execute(profile(), files_, CloudProvider::kOneDrive,
-                         modal_parent,
                          std::make_unique<CloudOpenMetrics>(
                              CloudProvider::kOneDrive, /*file_count=*/1));
 
@@ -1266,15 +1340,14 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest,
   AddFakeOfficePWA();
 
   auto cloud_open_task = base::WrapRefCounted(
-      new CloudOpenTask(profile(), files_, CloudProvider::kOneDrive, nullptr,
+      new CloudOpenTask(profile(), files_, CloudProvider::kOneDrive,
                         std::make_unique<CloudOpenMetrics>(
                             CloudProvider::kOneDrive, /*file_count=*/1)));
   mojom::DialogArgsPtr args =
-      cloud_open_task->CreateDialogArgs(mojom::DialogPage::kOneDriveSetup);
+      cloud_open_task->CreateDialogArgs(DialogPage::kOneDriveSetup);
   // Self-deleted on close.
   CloudUploadDialog* dialog =
-      new CloudUploadDialog(std::move(args), base::DoNothing(),
-                            mojom::DialogPage::kOneDriveSetup, false);
+      new CloudUploadDialog(std::move(args), base::DoNothing(), false);
 
   // Watch for OneDrive Setup dialog URL chrome://cloud-upload.
   content::TestNavigationObserver navigation_observer_dialog(
@@ -1342,15 +1415,14 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest,
   AddFakeOfficePWA();
 
   auto cloud_open_task = base::WrapRefCounted(
-      new CloudOpenTask(profile(), files_, CloudProvider::kOneDrive, nullptr,
+      new CloudOpenTask(profile(), files_, CloudProvider::kOneDrive,
                         std::make_unique<CloudOpenMetrics>(
                             CloudProvider::kOneDrive, /*file_count=*/1)));
   mojom::DialogArgsPtr args =
-      cloud_open_task->CreateDialogArgs(mojom::DialogPage::kOneDriveSetup);
+      cloud_open_task->CreateDialogArgs(DialogPage::kOneDriveSetup);
   // Self-deleted on close.
   CloudUploadDialog* dialog =
-      new CloudUploadDialog(std::move(args), base::DoNothing(),
-                            mojom::DialogPage::kOneDriveSetup, false);
+      new CloudUploadDialog(std::move(args), base::DoNothing(), false);
 
   // Watch for OneDrive Setup dialog URL chrome://cloud-upload.
   content::TestNavigationObserver navigation_observer_dialog(
@@ -1413,7 +1485,7 @@ class CloudOpenTaskBrowserTest : public InProcessBrowserTest {
 
     upload_task_ = base::WrapRefCounted(new ash::cloud_upload::CloudOpenTask(
         profile(), source_files_,
-        ash::cloud_upload::CloudProvider::kGoogleDrive, nullptr,
+        ash::cloud_upload::CloudProvider::kGoogleDrive,
         std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive,
                                            /*file_count=*/1)));
   }
@@ -1428,7 +1500,7 @@ class CloudOpenTaskBrowserTest : public InProcessBrowserTest {
 
     upload_task_ = base::WrapRefCounted(new ash::cloud_upload::CloudOpenTask(
         profile(), source_files_,
-        ash::cloud_upload::CloudProvider::kGoogleDrive, nullptr,
+        ash::cloud_upload::CloudProvider::kGoogleDrive,
         std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive,
                                            /*file_count=*/1)));
   }
@@ -1443,7 +1515,7 @@ class CloudOpenTaskBrowserTest : public InProcessBrowserTest {
 
     upload_task_ = base::WrapRefCounted(new ash::cloud_upload::CloudOpenTask(
         profile(), source_files_,
-        ash::cloud_upload::CloudProvider::kGoogleDrive, nullptr,
+        ash::cloud_upload::CloudProvider::kGoogleDrive,
         std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive,
                                            /*file_count=*/1)));
   }
@@ -1458,7 +1530,6 @@ class CloudOpenTaskBrowserTest : public InProcessBrowserTest {
 
     upload_task_ = base::WrapRefCounted(new ash::cloud_upload::CloudOpenTask(
         profile(), source_files_, ash::cloud_upload::CloudProvider::kOneDrive,
-        nullptr,
         std::make_unique<CloudOpenMetrics>(CloudProvider::kOneDrive,
                                            /*file_count=*/1)));
   }
@@ -1473,7 +1544,6 @@ class CloudOpenTaskBrowserTest : public InProcessBrowserTest {
 
     upload_task_ = base::WrapRefCounted(new ash::cloud_upload::CloudOpenTask(
         profile(), source_files_, ash::cloud_upload::CloudProvider::kOneDrive,
-        nullptr,
         std::make_unique<CloudOpenMetrics>(CloudProvider::kOneDrive,
                                            /*file_count=*/1)));
   }
@@ -1488,7 +1558,6 @@ class CloudOpenTaskBrowserTest : public InProcessBrowserTest {
 
     upload_task_ = base::WrapRefCounted(new ash::cloud_upload::CloudOpenTask(
         profile(), source_files_, ash::cloud_upload::CloudProvider::kOneDrive,
-        nullptr,
         std::make_unique<CloudOpenMetrics>(CloudProvider::kOneDrive,
                                            /*file_count=*/1)));
   }

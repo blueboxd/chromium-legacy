@@ -338,6 +338,13 @@ void AuctionMetricsRecorder::SetNumOwnersWithInterestGroups(
       num_owners_with_interest_groups);
 }
 
+void AuctionMetricsRecorder::SetNumOwnersWithoutInterestGroups(
+    int64_t num_excluded) {
+  // TODO(crbug.com/1523674) Investigate adding this to UKM.
+  base::UmaHistogramCounts100(
+      "Ads.InterestGroup.Auction.NumOwnersWithoutInterestGroups", num_excluded);
+}
+
 void AuctionMetricsRecorder::SetNumSellersWithBidders(
     int64_t num_sellers_with_bidders) {
   builder_.SetNumSellersWithBidders(
@@ -589,7 +596,7 @@ void AuctionMetricsRecorder::SetNumAndMaybeMeanLatency(
 
 void AuctionMetricsRecorder::MaybeRecordGenerateBidDependencyLatency(
     GenerateBidDependencyCriticalPath::Dependency dependency,
-    absl::optional<base::TimeDelta> latency,
+    std::optional<base::TimeDelta> latency,
     LatencyAggregator& aggregator,
     GenerateBidDependencyCriticalPath& critical_path) {
   if (latency) {
@@ -637,7 +644,7 @@ void AuctionMetricsRecorder::RecordGenerateBidDependencyLatencyCriticalPath(
 
 void AuctionMetricsRecorder::MaybeRecordScoreAdDependencyLatency(
     ScoreAdDependencyCriticalPath::Dependency dependency,
-    absl::optional<base::TimeDelta> latency,
+    std::optional<base::TimeDelta> latency,
     LatencyAggregator& aggregator,
     ScoreAdDependencyCriticalPath& critical_path) {
   if (latency) {

@@ -10,6 +10,7 @@ load("//lib/builders.star", "cpu", "os", "reclient", "siso")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
+load("//lib/xcode.star", "xcode")
 load("//project.star", "settings")
 
 luci.bucket(
@@ -64,20 +65,21 @@ ci.defaults.set(
     siso_enabled = True,
 )
 
-luci.console_view(
+consoles.console_view(
     name = "chromium.build",
     repo = "https://chromium.googlesource.com/chromium/src",
 )
 
 def cq_build_perf_builder(description_html, **kwargs):
     # Use CQ reclient instance and high reclient jobs/cores to simulate CQ builds.
+    if not kwargs.get("siso_configs"):
+        kwargs["siso_configs"] = ["builder"]
     return ci.builder(
         description_html = description_html + "<br>Build stats is show in http://shortn/_gaAdI3x6o6.",
         reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
         reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
         siso_project = siso.project.DEFAULT_UNTRUSTED,
         use_clang_coverage = True,
-        siso_configs = ["builder"],
         **kwargs
     )
 
@@ -145,7 +147,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(configs = ["try/android-arm64-rel", "no_reclient", "siso"]),
+        "builtin": gn_args.config(configs = ["try/android-arm64-rel", "no_reclient"]),
         "reproxy": "try/android-arm64-rel",
     },
     os = os.LINUX_DEFAULT,
@@ -171,6 +173,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.LINUX,
         ),
     ),
     gn_args = "try/linux-rel",
@@ -200,10 +203,11 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.LINUX,
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(configs = ["try/linux-rel", "no_reclient", "siso"]),
+        "builtin": gn_args.config(configs = ["try/linux-rel", "no_reclient"]),
         "reproxy": "try/linux-rel",
     },
     os = os.LINUX_DEFAULT,
@@ -229,6 +233,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.WIN,
         ),
     ),
     gn_args = "try/win-rel",
@@ -258,15 +263,11 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.WIN,
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(
-            args = {
-                "use_goma": False,
-            },
-            configs = ["try/win-rel", "no_reclient", "siso"],
-        ),
+        "builtin": gn_args.config(configs = ["try/win-rel", "no_reclient"]),
         "reproxy": "try/win-rel",
     },
     os = os.WINDOWS_DEFAULT,
@@ -295,6 +296,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.CHROMEOS,
         ),
     ),
     gn_args = "try/linux-chromeos-rel",
@@ -325,15 +327,11 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.CHROMEOS,
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(
-            args = {
-                "use_goma": False,
-            },
-            configs = ["try/linux-chromeos-rel", "no_reclient", "siso"],
-        ),
+        "builtin": gn_args.config(configs = ["try/linux-chromeos-rel", "no_reclient"]),
         "reproxy": "try/linux-chromeos-rel",
     },
     os = os.LINUX_DEFAULT,
@@ -398,9 +396,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(
-            configs = ["try/mac-rel", "no_reclient", "siso"],
-        ),
+        "builtin": gn_args.config(configs = ["try/mac-rel", "no_reclient"]),
         "reproxy": "try/mac-rel",
     },
     os = os.MAC_DEFAULT,
@@ -449,8 +445,9 @@ This builder measures build performance for Android developer builds, by simulat
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(configs = ["android_developer", "siso"]),
-        "reproxy": gn_args.config(configs = ["android_developer", "reclient"]),
+        "ninja": gn_args.config(configs = ["android_developer", "reclient", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["android_developer", "reclient"]),
+        "siso_native": gn_args.config(configs = ["android_developer"]),
     },
     os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
@@ -477,11 +474,13 @@ This builder measures build performance for Linux developer builds, by simulatin
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.LINUX,
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(configs = ["developer", "siso"]),
-        "reproxy": gn_args.config(configs = ["developer", "reclient"]),
+        "ninja": gn_args.config(configs = ["developer", "reclient", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["developer", "reclient"]),
+        "siso_native": gn_args.config(configs = ["developer"]),
     },
     os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
@@ -508,11 +507,13 @@ This builder measures build performance for Windows developer builds, by simulat
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.WIN,
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(configs = ["developer", "siso"]),
-        "reproxy": gn_args.config(configs = ["developer", "reclient"]),
+        "ninja": gn_args.config(configs = ["developer", "reclient", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["developer", "reclient"]),
+        "siso_native": gn_args.config(configs = ["developer"]),
     },
     os = os.WINDOWS_DEFAULT,
     console_view_entry = consoles.console_view_entry(
@@ -539,11 +540,13 @@ This builder measures build performance for Mac developer builds, by simulating 
             apply_configs = [
                 "mb",
             ],
+            target_platform = builder_config.target_platform.MAC,
         ),
     ),
     gn_args = {
-        "builtin": gn_args.config(configs = ["developer", "siso"]),
-        "reproxy": gn_args.config(configs = ["developer", "reclient"]),
+        "ninja": gn_args.config(configs = ["developer", "reclient", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["developer", "reclient"]),
+        "siso_native": gn_args.config(configs = ["developer"]),
     },
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
@@ -552,4 +555,42 @@ This builder measures build performance for Mac developer builds, by simulating 
         short_name = "dev",
     ),
     reclient_jobs = 800,
+)
+
+developer_build_perf_builder(
+    name = "ios-build-perf-developer",
+    description_html = """\
+This builder measures build performance for iOS developer builds, by simulating developer build scenarios on a bot.\
+""",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+            apply_configs = [
+                "siso_latest",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "mac_toolchain",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.IOS,
+        ),
+    ),
+    gn_args = {
+        "ninja": gn_args.config(configs = ["ios_developer", "reclient", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["ios_developer", "reclient"]),
+        "siso_native": gn_args.config(configs = ["ios_developer"]),
+    },
+    os = os.MAC_DEFAULT,
+    cpu = cpu.ARM64,
+    console_view_entry = consoles.console_view_entry(
+        category = "ios",
+        short_name = "dev",
+    ),
+    reclient_jobs = 800,
+    xcode = xcode.xcode_default,
 )

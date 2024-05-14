@@ -13,11 +13,12 @@ import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.
 import {assert} from '//resources/js/assert.js';
 import {rgbToSkColor, skColorToRgba} from '//resources/js/color_utils.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
-import {SkColor} from '//resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
+import {listenOnce} from '//resources/js/util.js';
+import type {SkColor} from '//resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
-import {ReadAnythingToolbarElement} from './read_anything_toolbar.js';
+import type {ReadAnythingToolbarElement} from './read_anything_toolbar.js';
 
 const ReadAnythingElementBase = WebUiListenerMixin(PolymerElement);
 
@@ -66,6 +67,8 @@ const yellowThemeSelectionColor = 'var(--google-blue-100)';
 
 const previousReadHighlightClass = 'previous-read-highlight';
 
+const linkDataAttribute = 'link';
+
 // A two-way map where each key is unique and each value is unique. The keys are
 // DOM nodes and the values are numbers, representing AXNodeIDs.
 class TwoWayMap<K, V> extends Map<K, V> {
@@ -101,6 +104,12 @@ if (chrome.readingMode) {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateContent();
+  };
+
+  chrome.readingMode.updateLinks = () => {
+    const readAnythingApp = document.querySelector('read-anything-app');
+    assert(readAnythingApp);
+    readAnythingApp.updateLinks();
   };
 
   chrome.readingMode.updateSelection = () => {
@@ -143,6 +152,7 @@ if (chrome.readingMode) {
 export interface ReadAnythingElement {
   $: {
     toolbar: ReadAnythingToolbarElement,
+    flexParent: HTMLElement,
   };
 }
 
@@ -195,16 +205,36 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   synth = window.speechSynthesis;
 
-  // State for speech synthesis needs to be tracked separately because there
-  // are bugs with window.speechSynthesis.paused and
+  private selectedVoice: SpeechSynthesisVoice|undefined;
+
+  private availableVoices: SpeechSynthesisVoice[];
+  // If a preview is playing, this is set to the voice the preview is playing.
+  // Otherwise, this is undefined.
+  private previewVoicePlaying: SpeechSynthesisVoice|null;
+
+  // State for speech synthesis paused/play state needs to be tracked explicitly
+  // because there are bugs with window.speechSynthesis.paused and
   // window.speechSynthesis.speaking on some platforms.
-  private voice: SpeechSynthesisVoice|undefined;
   paused = true;
+
+  // Voice and speed changes take effect on the next call of syntch.play(), but
+  // not on .resume(). In order to be responsive to the user's settings changes,
+  // we call synth.cancel() and synth.play(). However, as currently implemented,
+  // synth.cancel() and synth.play() plays from the beginning of the current
+  // utterance, even if parts of it had been spoken already. This can be
+  // disruptive to users who are toggling the play/pause button expecting for
+  // speech to resume from where the speech left off. This flag tracks the
+  // source of the pause to know whether to call synth.cancel()/synth.play() vs
+  // synth.paused()/synth.resume().
+  // TODO(crbug.com/1474951): Remove this when word level callbacks are enabled
+  pausedFromPlayClickButton = false;
   speechStarted = false;
   maxSpeechLength = 175;
 
-  // TODO(crbug.com/1474951): Make this the screen reader default speed if a
-  // TTS speed has been set
+  // The node id of the first text node that should be used by Read Aloud.
+  // -1 if the node is not set.
+  firstTextNodeSetForReadAloud = -1;
+
   rate: number = 1;
 
   constructor() {
@@ -216,6 +246,15 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
+
+    // Wait until the side panel is fully rendered before showing the side
+    // panel. This follows Side Panel best practices and prevents loading
+    // artifacts from showing if the side panel is shown before content is
+    // ready.
+    listenOnce(this.$.flexParent, 'dom-change', () => {
+      setTimeout(() => chrome.readingMode.shouldShowUI(), 0);
+    });
+
     this.isReadAloudEnabled_ = chrome.readingMode.isReadAloudEnabled;
     if (chrome.readingMode) {
       chrome.readingMode.onConnected();
@@ -261,6 +300,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   private buildSubtree_(nodeId: number): Node {
     let htmlTag = chrome.readingMode.getHtmlTag(nodeId);
+    const dataAttributes = new Map<string, string>();
 
     // Text nodes do not have an html tag.
     if (!htmlTag.length) {
@@ -280,13 +320,24 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       htmlTag = 'div';
     }
 
+    const url = chrome.readingMode.getUrl(nodeId);
+
+    if (!this.shouldShowLinks() && htmlTag === 'a') {
+      htmlTag = 'span';
+      dataAttributes.set(linkDataAttribute, url ?? '');
+    }
+
     const element = document.createElement(htmlTag);
+    // Add required data attributes.
+    for (const [attr, val] of dataAttributes) {
+      element.dataset[attr] = val;
+    }
     this.domNodeToAxNodeIdMap_.set(element, nodeId);
     const direction = chrome.readingMode.getTextDirection(nodeId);
     if (direction) {
       element.setAttribute('dir', direction);
     }
-    const url = chrome.readingMode.getUrl(nodeId);
+
     if (url && element.nodeName === 'A') {
       element.setAttribute('href', url);
       element.onclick = () => {
@@ -302,6 +353,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     return element;
   }
 
+  // TODO(crbug.com/1442693): Potentially hide links during distillation.
+  private shouldShowLinks(): boolean {
+    // Links should only show when Read Aloud is paused.
+    return chrome.readingMode.linksEnabled && this.paused;
+  }
+
   private appendChildSubtrees_(node: Node, nodeId: number) {
     for (const childNodeId of chrome.readingMode.getChildren(nodeId)) {
       const childNode = this.buildSubtree_(childNodeId);
@@ -310,6 +367,16 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   private createTextNode_(nodeId: number): Node {
+    // When creating text nodes, save the first text node id. We need this
+    // node id to call InitAXPosition in playSpeech. If it's not saved here,
+    // we have to retrieve it through a DOM search such as createTreeWalker,
+    // which can be computationally expensive.
+    // However, since updateContent may be called after speech starts playing,
+    // don't call InitAXPosition from here to avoid interrupting current speech.
+    if (this.firstTextNodeSetForReadAloud < 0) {
+      this.firstTextNodeSetForReadAloud = nodeId;
+    }
+
     const textContent = chrome.readingMode.getTextContent(nodeId);
     const textNode = document.createTextNode(textContent);
     this.domNodeToAxNodeIdMap_.set(textNode, nodeId);
@@ -366,13 +433,17 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     this.hasContent_ = false;
     if (this.isReadAloudEnabled_) {
       this.synth.cancel();
-      this.onSpeechStopped();
+      this.clearReadAloudState();
     }
   }
 
   // TODO(crbug.com/1474951): Handle focus changes for speech, including
   // updating speech state.
   updateContent() {
+    // Each time we rebuild the subtree, we should clear the node id of the
+    // first text node.
+    this.firstTextNodeSetForReadAloud = -1;
+
     const shadowRoot = this.shadowRoot;
     assert(shadowRoot);
     const container = shadowRoot.getElementById('container');
@@ -437,15 +508,33 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     startElement.scrollIntoViewIfNeeded();
   }
 
+  updateLinks() {
+    if (!this.shadowRoot) {
+      return;
+    }
+
+    const selector = this.shouldShowLinks() ? 'span[data-link]' : 'a';
+    const elements = this.shadowRoot.querySelectorAll(selector);
+
+    for (const elem of elements) {
+      assert(elem instanceof HTMLElement);
+      const nodeId = this.domNodeToAxNodeIdMap_.get(elem);
+      assert(nodeId !== undefined);
+      const replacement = this.buildSubtree_(nodeId);
+      this.replaceElement(elem, replacement);
+    }
+  }
+
   onSpeechRateChange(rate: number) {
     this.rate = rate;
+    this.resetSpeechPostSettingChange_();
   }
 
   getSpeechSynthesisVoice(): SpeechSynthesisVoice|undefined {
-    if (!this.voice) {
-      this.voice = this.defaultVoice();
+    if (!this.selectedVoice) {
+      this.selectedVoice = this.defaultVoice();
     }
-    return this.voice;
+    return this.selectedVoice;
   }
 
   defaultVoice(): SpeechSynthesisVoice|undefined {
@@ -458,11 +547,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // TODO(crbug.com/1474951): Ensure various locales are handled such as
     // "en-US" vs. "en-UK." This should be fixed by using page language instead
     // of browser language.
-    const voices = this.synth.getVoices().filter(
-        voice => voice.lang.startsWith(languageCode));
+    const voices =
+        this.getVoices().filter(voice => voice.lang.startsWith(languageCode));
+
     if (!voices || (voices.length === 0)) {
       // If no voices in the given language are found, use the default voice.
-      return this.synth.getVoices().find(
+      return this.getVoices().find(
           ({default: isDefaultVoice}) => isDefaultVoice);
     }
 
@@ -476,10 +566,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     return voice;
   }
 
-  getVoices(): VoicesByLanguage {
+  private getVoicesByLanguage(): VoicesByLanguage {
     // TODO(crbug.com/1474951): Filter by localService. Doing this now prevents
     // voices from loading on Linux, which slows down development.
-    return this.synth.getVoices().reduce(
+    return this.getVoices().reduce(
         (voicesByLang: VoicesByLanguage, voice: SpeechSynthesisVoice) => {
           (voicesByLang[voice.lang] = voicesByLang[voice.lang] || [])
               .push(voice);
@@ -488,18 +578,36 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         {});
   }
 
-  setSpeechSynthesisVoice(voice: SpeechSynthesisVoice|undefined) {
-    this.voice = voice;
+  private getVoices(): SpeechSynthesisVoice[] {
+    if (!this.availableVoices) {
+      this.availableVoices = this.synth.getVoices();
+    }
+    return this.availableVoices;
   }
 
-  previewSpeechSynthesisVoice(voice: SpeechSynthesisVoice) {
+  private replaceElement(current: HTMLElement, replacer: Node) {
+    const nodeId = this.domNodeToAxNodeIdMap_.get(current);
+    assert(nodeId !== undefined);
+    // Update map.
+    this.domNodeToAxNodeIdMap_.delete(current);
+    this.domNodeToAxNodeIdMap_.set(replacer, nodeId);
+    // Replace element in DOM.
+    current.replaceWith(replacer);
+  }
+
+  private onPreviewVoice_(
+      event: CustomEvent<{previewVoice: SpeechSynthesisVoice}>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.stopSpeech();
+
     const defaultUtteranceSettings = this.defaultUtteranceSettings();
 
     // TODO(crbug.com/1474951): Finalize the default voice preview text.
-    // TODO(crbug.com/1474951): Call this.synth.cancel() to interrupt reading
-    // and reset the play icon.
     const utterance = new SpeechSynthesisUtterance(
         loadTimeData.getString('readingModeVoicePreviewText'));
+    const voice = event.detail.previewVoice;
     utterance.voice = voice;
     utterance.lang = defaultUtteranceSettings.lang;
     utterance.volume = defaultUtteranceSettings.volume;
@@ -508,27 +616,57 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     // TODO(crbug.com/1474951): Add tests for pause button
     utterance.onstart = event => {
-      this.$.toolbar.showVoicePreviewPlaying(event.utterance.voice);
+      this.previewVoicePlaying = event.utterance.voice;
     };
 
     utterance.onend = () => {
-      this.$.toolbar.showVoicePreviewDone();
+      this.previewVoicePlaying = null;
     };
 
     this.synth.speak(utterance);
   }
 
-  stopSpeech() {
-    // TODO(crbug.com/1474951): When pausing, can we pause on the previous
-    // word so that speech doesn't resume in the middle of the word?
-    this.synth.pause();
+  private onVoiceMenuClose_(
+      event: CustomEvent<{voicePlayingWhenMenuOpened: boolean}>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // TODO(b/323912186) Handle when menu is closed mid-preview and the user
+    // presses play/pause button.
+    if (this.paused && event.detail.voicePlayingWhenMenuOpened) {
+      this.playSpeech();
+    }
+  }
+
+  stopSpeech(pausedFromPlayClickButton: boolean = false) {
+    // TODO(crbug.com/1474951): When pausing, can we pause on a word boundary
+    // and continue playing from the previous word?
     this.paused = true;
+    this.pausedFromPlayClickButton = pausedFromPlayClickButton;
+
+    if (pausedFromPlayClickButton) {
+      this.synth.pause();
+    } else {
+      // Canceling clears all the Utterances that are queued up via synth.play()
+      this.synth.cancel();
+    }
+
+    // Restore links if they're enabled when speech pauses. Don't restore links
+    // if it's paused from a non-pause button (e.g. voice previews) so the links
+    // don't flash off and on.
+    if (chrome.readingMode.linksEnabled && pausedFromPlayClickButton) {
+      this.updateLinks();
+      this.highlightNodes(chrome.readingMode.getCurrentText());
+    }
   }
 
   playNextGranularity() {
     this.synth.cancel();
-    if (!this.playNextMessage()) {
-      this.onSpeechStopped();
+    this.resetPreviousHighlight();
+    chrome.readingMode.movePositionToNextGranularity();
+
+    if (!this.highlightAndPlayMessage()) {
+      this.onSpeechFinished();
     }
   }
 
@@ -536,92 +674,126 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   //  previous granularity.
   playPreviousGranularity() {
     this.synth.cancel();
-    this.playPreviousMessage();
+    this.resetPreviousHighlightAndRemoveCurrentHighlight();
+    chrome.readingMode.movePositionToPreviousGranularity();
+
+    if (!this.highlightAndPlayMessage()) {
+      this.onSpeechFinished();
+    }
   }
 
   playSpeech() {
-    if (this.speechStarted && this.paused) {
-      this.synth.resume();
-      this.paused = false;
-      return;
-    }
     const shadowRoot = this.shadowRoot;
     assert(shadowRoot);
     const container = shadowRoot.getElementById('container');
     assert(container);
+    if (this.speechStarted && this.paused) {
+      if (this.pausedFromPlayClickButton) {
+        this.synth.resume();
+      } else {
+        this.highlightAndPlayMessage();
+      }
+
+      const pausedFromPlayClickButton = this.pausedFromPlayClickButton;
+      this.paused = false;
+      this.pausedFromPlayClickButton = false;
+
+      // Hide links when speech resumes. We only hide links when the page was
+      // paused from the play/pause button.
+      if (chrome.readingMode.linksEnabled && pausedFromPlayClickButton) {
+        this.updateLinks();
+      }
+
+      // If the current read highlight has been cleared from a call to
+      // updateContent, such as for links being toggled on or off via a Read
+      // Aloud play / pause or via a preference change, rehighlight the nodes
+      // after a pause.
+      if (!container.querySelector('.current-read-highlight')) {
+        // TODO(crbug.com/1474951): Investigate adding a mock voice in tests
+        // to make this testable.
+        this.highlightNodes(chrome.readingMode.getCurrentText());
+      }
+
+      return;
+    }
     if (container.textContent) {
       this.paused = false;
+      this.pausedFromPlayClickButton = false;
+      // Hide links when speech begins playing.
+      if (chrome.readingMode.linksEnabled) {
+        this.updateLinks();
+      }
 
-      // Gather all the messages that can be played. We need nodes, rather
-      // than just text because we need to add a span to the current sentence
-      // in order to use css styling to highlight the text as it's spoken.
-      // Since this modifies the nodes, and we can't do that while we're
-      // iterating over the tree, we gather them first, then speak them.
-      // TODO(crbug.com/1474951): Better handle if a sentence is split across
-      // multiple nodes (e.g. if some text is linked). Right now it will just
-      // sound choppy.
-      const treeRoot = container.firstChild;
-      assert(treeRoot);
-      const treeWalker =
-          document.createTreeWalker(treeRoot, NodeFilter.SHOW_TEXT);
-      treeWalker.nextNode();
-      const axNode = this.domNodeToAxNodeIdMap_.get(treeWalker.currentNode);
       // TODO(crbug.com/1474951): There should be a way to use AXPosition so
       // that this step can be skipped.
-      if (axNode) {
-        chrome.readingMode.initAXPositionWithNode(axNode);
-        this.playNextMessage();
+      if (this.firstTextNodeSetForReadAloud > 0) {
+        chrome.readingMode.initAXPositionWithNode(
+            this.firstTextNodeSetForReadAloud);
+        this.highlightAndPlayMessage();
       }
     }
   }
 
-  playNextMessage(): boolean {
-    const maxTextLength = this.maxSpeechLength;
-
-    // getNextText returns a list of triples of AXNodeIds and start / end text
-    // indices, represented as a double array.
-    const nextTextIds: number[][] =
-        chrome.readingMode.getNextText(maxTextLength);
-    return this.playCurrentMessage(nextTextIds);
-  }
-
-  playPreviousMessage(): boolean {
-    const maxTextLength = this.maxSpeechLength;
-    const previousTextIds: number[][] =
-        chrome.readingMode.getPreviousText(maxTextLength);
-    return this.playCurrentMessage(previousTextIds);
-  }
-
+  // Play text of these axNodeIds. When finished, read and highlight to read the
+  // following text.
   // TODO (crbug.com/1474951): Investigate using AXRange.GetText to get text
   // between start node / end nodes and their offsets.
-  playCurrentMessage(nextTextIds: number[][]): boolean {
-    if (nextTextIds.length === 0) {
-      return false;
-    }
-    let utterance: string = '';
-    for (let i = 0; i < nextTextIds.length; i++) {
-      assert(nextTextIds[i].length === 3);
-      const node = nextTextIds[i][0];
-      const startIndex = nextTextIds[i][1];
-      const index = nextTextIds[i][2];
-      const element = this.domNodeToAxNodeIdMap_.keyFrom(node);
-      if (!element) {
-        continue;
-      }
-      const content =
-          chrome.readingMode.getTextContent(node).substring(startIndex, index);
-      if (content) {
-        // Add all of the text from the current nodes into a single utterance.
-        utterance += ' ' + content;
-      }
-    }
+  highlightAndPlayMessage(): boolean {
+    // getCurrentText gets the AX Node IDs of text that should be spoken and
+    // highlighted.
+    const axNodeIds: number[] = chrome.readingMode.getCurrentText();
 
+    const utteranceText = this.extractTextOf(axNodeIds);
     // Return if the utterance is empty or null.
-    if (!utterance) {
+    if (!utteranceText) {
       return false;
     }
 
-    const message = new SpeechSynthesisUtterance(utterance);
+    this.playText(utteranceText);
+    this.highlightNodes(axNodeIds);
+    return true;
+  }
+
+  // Gets the accessible text boundary for the given string.
+  getAccessibleTextLength(utteranceText: string): number {
+    // Splicing on commas won't work for all locales, but since this is a
+    // simple strategy for splicing text in languages that do use commas
+    // that reduces the need for calling getAccessibleBoundary.
+    // TODO(crub.com/1474951): Investigate if we can utilize comma splices
+    // directly in the utils methods called by #getAccessibleBoundary.
+    const lastCommaIndex =
+        utteranceText.substring(0, this.maxSpeechLength).lastIndexOf(',');
+
+    // To prevent infinite looping, only use the lastCommaIndex if it's not the
+    // first character. Otherwise, use getAccessibleBoundary to prevent
+    // repeatedly splicing on the first comma of the same substring.
+    if (lastCommaIndex > 0) {
+      return lastCommaIndex;
+    }
+
+    // TODO(crbug.com/1474951): getAccessibleBoundary breaks on the nearest
+    // word boundary, but if there's some type of punctuation (such as a comma),
+    // it would be preferable to break on the punctuation so the pause in
+    // speech sounds more natural.
+    return chrome.readingMode.getAccessibleBoundary(
+        utteranceText, this.maxSpeechLength);
+  }
+
+  private playText(utteranceText: string) {
+    // This check is needed due limits of TTS audio for remote voices. See
+    // crbug.com/1176078 for more details.
+    // Since the TTS bug only impacts remote voices, no need to check for
+    // maximum text length if we're using a local voice. If we do somehow
+    // attempt to speak text that's too long, this will be able to be handled
+    // by listening for a text-too-long error in message.onerror.
+    const isTextTooLong = this.selectedVoice?.localService ?
+        false :
+        utteranceText.length > this.maxSpeechLength;
+    const endBoundary = isTextTooLong ?
+        this.getAccessibleTextLength(utteranceText) :
+        utteranceText.length;
+    const message =
+        new SpeechSynthesisUtterance(utteranceText.substring(0, endBoundary));
 
     message.onerror = (error) => {
       // TODO(crbug.com/1474951): Add more sophisticated error handling.
@@ -633,46 +805,30 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     };
 
     message.onend = () => {
-      // TODO(crbug.com/1474951): Add toggle to turn off highlight.
+      if (isTextTooLong) {
+        // Since our previous utterance was too long, continue speaking pieces
+        // of the current utterance until the utterance is complete. The entire
+        // utterance is highlighted, so there's no need to update highlighting
+        // until the utterance substring is an acceptable size.
+        this.playText(utteranceText.substring(endBoundary));
+        return;
+      }
       // TODO(crbug.com/1474951): Handle already selected text.
       // TODO(crbug.com/1474951): Return text to its original style once
       // the document has finished.
       this.resetPreviousHighlight();
 
+      // Now that we've finiished reading this utterance, update the Granularity
+      // state to point to the next one
+      chrome.readingMode.movePositionToNextGranularity();
       // Continue speaking with the next block of text.
-      if (!this.playNextMessage()) {
-        this.onSpeechStopped();
+      if (!this.highlightAndPlayMessage()) {
+        this.onSpeechFinished();
       }
     };
 
     // TODO(crbug.com/1474951): Add word callbacks for word highlighting.
 
-    this.highlightNodes(nextTextIds);
-    this.speakMessage(message);
-    return true;
-  }
-
-  // TODO(crbug.com/1474951): Handle previous highlighting.
-  highlightNodes(nextTextIds: number[][]) {
-    // implementation based off of #highlightCurrentText below
-    assert(nextTextIds.length > 0);
-    for (let i = 0; i < nextTextIds.length; i++) {
-      const element = this.domNodeToAxNodeIdMap_.keyFrom(nextTextIds[i][0]);
-      if (!element) {
-        continue;
-      }
-      const start = nextTextIds[i][1];
-      const end = nextTextIds[i][2];
-      let text = element.textContent;
-      if (text) {
-        text = text.substring(start, end);
-      }
-      const newElement: Node = this.highlightCurrentText_(start, end, element);
-      this.domNodeToAxNodeIdMap_.set(newElement, nextTextIds[i][0]);
-    }
-  }
-
-  speakMessage(message: SpeechSynthesisUtterance) {
     const voice = this.getSpeechSynthesisVoice();
     if (!voice) {
       // TODO(crbug.com/1474951): Handle when no voices are available.
@@ -689,6 +845,53 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     this.speechStarted = true;
     this.synth.speak(message);
+  }
+
+  private extractTextOf(axNodeIds: number[]): string {
+    let utteranceText: string = '';
+    for (let i = 0; i < axNodeIds.length; i++) {
+      assert(axNodeIds[i]);
+      const nodeId = axNodeIds[i];
+      const startIndex = chrome.readingMode.getCurrentTextStartIndex(nodeId);
+      const endIndex = chrome.readingMode.getCurrentTextEndIndex(nodeId);
+      const element = this.domNodeToAxNodeIdMap_.keyFrom(nodeId);
+      if (!element || startIndex < 0 || endIndex < 0) {
+        continue;
+      }
+      const content = chrome.readingMode.getTextContent(nodeId).substring(
+          startIndex, endIndex);
+      if (content) {
+        // Add all of the text from the current nodes into a single utterance.
+        utteranceText += ' ' + content;
+      }
+    }
+    return utteranceText;
+  }
+
+  highlightNodes(nextTextIds: number[]) {
+    if (nextTextIds.length === 0) {
+      return;
+    }
+
+    for (let i = 0; i < nextTextIds.length; i++) {
+      const nodeId = nextTextIds[i];
+      const element = this.domNodeToAxNodeIdMap_.keyFrom(nodeId);
+      if (!element) {
+        continue;
+      }
+      const start = chrome.readingMode.getCurrentTextStartIndex(nodeId);
+      const end = chrome.readingMode.getCurrentTextEndIndex(nodeId);
+      if ((start < 0) || (end < 0)) {
+        // If the start or end index is invalid, don't use this node.
+        continue;
+      }
+      let text = element.textContent;
+      if (text) {
+        text = text.substring(start, end);
+      }
+      const newElement: Node = this.highlightCurrentText_(start, end, element);
+      this.domNodeToAxNodeIdMap_.set(newElement, nodeId);
+    }
   }
 
   private defaultUtteranceSettings(): UtteranceSettings {
@@ -759,10 +962,49 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     return parentOfHighlight;
   }
 
-  private onSpeechStopped() {
+  private onSpeechFinished() {
+    this.clearReadAloudState();
+
+    // Hide links when speech finishes playing.
+    if (chrome.readingMode.linksEnabled) {
+      this.updateLinks();
+    }
+  }
+
+  private clearReadAloudState() {
     this.speechStarted = false;
+    this.paused = true;
+    this.pausedFromPlayClickButton = false;
     this.previousHighlight_ = [];
-    this.$.toolbar.updateUiForPausing();
+  }
+
+  private onSelectVoice_(
+      event: CustomEvent<{selectedVoice: SpeechSynthesisVoice}>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.selectedVoice = event.detail.selectedVoice;
+    chrome.readingMode.onVoiceChange(
+        this.selectedVoice.name, this.selectedVoice.lang.split('-')[0]);
+
+    this.resetSpeechPostSettingChange_();
+  }
+
+  private resetSpeechPostSettingChange_() {
+    // Don't call stopSpeech() if initAXPositionWithNode hasn't been called
+    if (!this.speechStarted) {
+      return;
+    }
+
+    const playSpeechOnChange = !this.paused;
+
+    // Cancel the queued up Utterance using the old speech settings
+    this.stopSpeech();
+
+    // If speech was playing when a setting was changed, continue playing speech
+    if (playSpeechOnChange) {
+      this.playSpeech();
+    }
   }
 
   // TODO(b/1465029): Once the IsReadAnythingWebUIEnabled flag is removed
@@ -816,6 +1058,15 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
   }
 
+  private resetPreviousHighlightAndRemoveCurrentHighlight() {
+    const lastElement = this.previousHighlight_.pop();
+    if (lastElement) {
+      lastElement.className = '';
+    }
+
+    this.resetPreviousHighlight();
+  }
+
   private resetPreviousHighlight() {
     this.previousHighlight_.forEach((element) => {
       if (element) {
@@ -864,15 +1115,16 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   private restoreVoiceFromPrefs_() {
     const storedLang = chrome.readingMode.speechSynthesisLanguageCode;
     const storedVoice = chrome.readingMode.getStoredVoice(storedLang);
+
     if (!storedVoice) {
-      this.setSpeechSynthesisVoice(this.defaultVoice());
+      this.selectedVoice = this.defaultVoice();
       return;
     }
 
     // TODO(crbug.com/1474951): Ensure various locales are handled such as
     // "en-US" vs. "en-UK." This should be fixed by using page language instead
     // of browser language.
-    const voices: VoicesByLanguage = this.getVoices();
+    const voices: VoicesByLanguage = this.getVoicesByLanguage();
     const entry =
         Object.entries(voices).find(([key, _]) => key.startsWith(storedLang));
     let voice;
@@ -882,8 +1134,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         voice = voicesForLang.find(voice => voice.name === storedVoice);
       }
     }
-    this.setSpeechSynthesisVoice(
-        (voice === null) ? this.defaultVoice() : voice);
+    this.selectedVoice = (voice === null) ? this.defaultVoice() : voice;
   }
 
   updateLineSpacing(newLineHeight: number) {

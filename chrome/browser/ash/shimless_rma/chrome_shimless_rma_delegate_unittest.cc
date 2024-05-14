@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/services/qrcode_generator/public/cpp/qrcode_generator_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
@@ -36,6 +35,7 @@
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
 namespace ash::shimless_rma {
 namespace {
@@ -50,33 +50,12 @@ const char kTestWrongExtId[] = "neacocmolncbbnnameegalgmoedgpfpk";
 const char kFakeIwaPath[] = "fake_iwa_path.swbn";
 }  // namespace
 
-// Test-fake implementation of QRImageGenerator; the real implementation
-// can't be used in these tests because it may require spawning a service
-// process.
-void GenerateFakeQRCode(
-    qrcode_generator::mojom::GenerateQRCodeRequestPtr request,
-    qrcode_generator::QRImageGenerator::ResponseCallback callback) {
-  qrcode_generator::mojom::GenerateQRCodeResponsePtr response =
-      qrcode_generator::mojom::GenerateQRCodeResponse::New();
-  response->error_code = qrcode_generator::mojom::QRCodeGeneratorError::NONE;
-  response->bitmap.allocN32Pixels(16, 16);
-
-  std::move(callback).Run(std::move(response));
-}
-
 class ChromeShimlessRmaDelegateTest : public testing::Test {
  public:
   ChromeShimlessRmaDelegateTest()
       : chrome_shimless_rma_delegate_(ChromeShimlessRmaDelegate(nullptr)),
         task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
   ~ChromeShimlessRmaDelegateTest() override = default;
-
-  void SetUp() override {
-    chrome_shimless_rma_delegate_.SetQRCodeServiceForTesting(
-        base::BindRepeating(&GenerateFakeQRCode));
-  }
-
-  void TearDown() override {}
 
  protected:
   ChromeShimlessRmaDelegate chrome_shimless_rma_delegate_;
@@ -131,7 +110,7 @@ class FakeWebAppCommandScheduler : public web_app::WebAppCommandScheduler {
   void InstallIsolatedWebApp(
       const web_app::IsolatedWebAppUrlInfo& url_info,
       const web_app::IsolatedWebAppLocation& location,
-      const absl::optional<base::Version>& expected_version,
+      const std::optional<base::Version>& expected_version,
       std::unique_ptr<ScopedKeepAlive> keep_alive,
       std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
       web_app::WebAppCommandScheduler::InstallIsolatedWebAppCallback callback,
@@ -330,12 +309,36 @@ TEST_F(ChromeShimlessRmaDelegatePrepareDiagnosticsAppProfileTest,
   EXPECT_EQ(result.error(), k3pDiagErrorCannotActivateExtension);
 }
 
-// Verify that IWA with permission policy will be blocked.
+// Verify that IWA with allowlisted permission policy will be installed.
 TEST_F(ChromeShimlessRmaDelegatePrepareDiagnosticsAppProfileTest,
-       IWACannotHavePermissionsPolicy) {
+       IWACanHaveAllowlistedPermissionsPolicy) {
   fake_diagnostics_app_profile_helper_delegate_->web_app().SetPermissionsPolicy(
       blink::ParsedPermissionsPolicy{
-          {blink::ParsedPermissionsPolicyDeclaration{}}});
+          {blink::ParsedPermissionsPolicyDeclaration{
+               blink::mojom::PermissionsPolicyFeature::kCamera},
+           blink::ParsedPermissionsPolicyDeclaration{
+               blink::mojom::PermissionsPolicyFeature::kFullscreen},
+           blink::ParsedPermissionsPolicyDeclaration{
+               blink::mojom::PermissionsPolicyFeature::kMicrophone},
+           blink::ParsedPermissionsPolicyDeclaration{
+               blink::mojom::PermissionsPolicyFeature::kHid}}});
+
+  auto result = PrepareDiagnosticsAppBrowserContext(
+      base::PathService::CheckedGet(base::DIR_SRC_TEST_DATA_ROOT)
+          .Append(kTestCrxPath));
+
+  EXPECT_TRUE(result.has_value());
+}
+
+// Verify that IWA with not-allowlisted permission policy will be blocked.
+TEST_F(ChromeShimlessRmaDelegatePrepareDiagnosticsAppProfileTest,
+       IWACannotHavePermissionsPolicyOutsideAllowlist) {
+  fake_diagnostics_app_profile_helper_delegate_->web_app().SetPermissionsPolicy(
+      blink::ParsedPermissionsPolicy{
+          blink::ParsedPermissionsPolicyDeclaration{
+              blink::mojom::PermissionsPolicyFeature::kCamera},
+          {blink::ParsedPermissionsPolicyDeclaration{
+              blink::mojom::PermissionsPolicyFeature::kNotFound}}});
 
   auto result = PrepareDiagnosticsAppBrowserContext(
       base::PathService::CheckedGet(base::DIR_SRC_TEST_DATA_ROOT)

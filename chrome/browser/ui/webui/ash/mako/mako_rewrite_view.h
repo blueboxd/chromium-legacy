@@ -13,10 +13,10 @@ namespace ash {
 
 // A view to contain the Mako rewrite UI.
 class MakoRewriteView : public WebUIBubbleDialogView {
- public:
-  METADATA_HEADER(MakoRewriteView);
+  METADATA_HEADER(MakoRewriteView, WebUIBubbleDialogView)
 
-  MakoRewriteView(BubbleContentsWrapper* contents_wrapper,
+ public:
+  MakoRewriteView(WebUIContentsWrapper* contents_wrapper,
                   const gfx::Rect& caret_bounds);
   MakoRewriteView(const MakoRewriteView&) = delete;
   MakoRewriteView& operator=(const MakoRewriteView&) = delete;
@@ -30,7 +30,6 @@ class MakoRewriteView : public WebUIBubbleDialogView {
       const content::NativeWebKeyboardEvent& event) override;
 
  private:
-  views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
   gfx::Rect caret_bounds_;
 };
 

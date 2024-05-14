@@ -7,19 +7,20 @@
  * permission to allow precise timezone resolution.
  */
 
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import 'chrome://resources/cr_components/localized_link/localized_link.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
+import 'chrome://resources/ash/common/cr_elements/localized_link/localized_link.js';
 import '../settings_shared.css.js';
 
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {CrDialogElement} from 'chrome://resources/ash/common/cr_elements/cr_dialog/cr_dialog.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {castExists} from '../assert_extras.js';
-import {GeolocationAccessLevel} from './privacy_hub_geolocation_subpage.js';
 
 import {getTemplate} from './privacy_hub_geolocation_dialog.html.js';
+import {GEOLOCATION_ACCESS_LEVEL_ENUM_SIZE, GeolocationAccessLevel} from './privacy_hub_geolocation_subpage.js';
+import {LOCATION_PERMISSION_CHANGE_FROM_DIALOG_HISTOGRAM_NAME} from './privacy_hub_metrics_util.js';
 
 const PrivacyHubGeolocationDialogBase = PrefsMixin(PolymerElement);
 
@@ -34,7 +35,7 @@ class PrivacyHubGeolocationDialog extends
   }
 
   /**
-   * Closes the warning dialog and transitions to the disabling dialog.
+   * Enables geolocation usage for system services.
    */
   private onEnableClicked_(): void {
     // Send the new state immediately, this will also toggle the underlying
@@ -42,6 +43,11 @@ class PrivacyHubGeolocationDialog extends
     this.setPrefValue(
         'ash.user.geolocation_access_level',
         GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM);
+    chrome.metricsPrivate.recordEnumerationValue(
+        LOCATION_PERMISSION_CHANGE_FROM_DIALOG_HISTOGRAM_NAME,
+        GeolocationAccessLevel.ONLY_ALLOWED_FOR_SYSTEM,
+        GEOLOCATION_ACCESS_LEVEL_ENUM_SIZE);
+
     this.getDialog_().close();
   }
 

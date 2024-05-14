@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -125,7 +126,7 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   ~XRRuntimeManagerImpl() override;
 
-  void InitializeProviders();
+  void InitializeProviders(VRServiceImpl* initializing_service);
   bool AreAllProvidersInitialized();
 
   bool IsInitializedOnCompatibleAdapter(BrowserXRRuntimeImpl* runtime);
@@ -135,6 +136,9 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   // Gets the system default immersive-ar runtime if available.
   BrowserXRRuntimeImpl* GetImmersiveArRuntime();
+
+  // Gets the system default inline runtime if available.
+  BrowserXRRuntimeImpl* GetInlineRuntime();
 
   XRProviderList providers_;
 
@@ -154,7 +158,7 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 #endif
 
   content::WebXrLoggerManager logger_manager_;
-  std::set<VRServiceImpl*> services_;
+  std::set<raw_ptr<VRServiceImpl, SetExperimental>> services_;
 
   THREAD_CHECKER(thread_checker_);
 };

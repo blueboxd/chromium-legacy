@@ -35,47 +35,6 @@
       'vr_android_unittests': {},
     },
 
-    'android_ddready_vr_gtests': {
-      'chrome_public_test_vr_apk-ddready-cardboard': {
-        'test': 'chrome_public_test_vr_apk',
-        'mixins': [
-          'vr_instrumentation_test',
-        ],
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'chrome_public_test_vr_apk-ddready-ddview': {
-        'test': 'chrome_public_test_vr_apk',
-        'mixins': [
-          'skia_gold_test',
-          'vr_instrumentation_test',
-        ],
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-      },
-      'chrome_public_test_vr_apk-ddready-don-enabled': {
-        'test': 'chrome_public_test_vr_apk',
-        'mixins': [
-          'vr_instrumentation_test',
-        ],
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
-          '--annotation=Restriction=VR_DON_Enabled',
-          '--vr-don-enabled',
-        ],
-      },
-    },
-
     'android_emulator_specific_chrome_public_tests': {
       'chrome_public_test_apk': {
         'mixins': [
@@ -93,6 +52,18 @@
         'swarming': {
           'shards': 4,
         },
+      },
+    },
+
+    'android_emulator_specific_network_enabled_content_browsertests': {
+      'content_browsertests_with_emulator_network': {
+        'test': 'content_browsertests',
+        'mixins': [
+          'emulator-enable-network',
+        ],
+        'args': [
+          '--gtest_filter=QuicConnectionMigrationTest.*',
+        ],
       },
     },
 
@@ -137,7 +108,11 @@
 
     'android_pie_rel_reduced_capacity_gtests': {
       'android_browsertests': {},
-      'blink_platform_unittests': {},
+      'blink_platform_unittests': {
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
       'cc_unittests': {},
       'content_browsertests': {
         'swarming': {
@@ -388,7 +363,6 @@
 
     'chrome_finch_smoke_tests': {
       'variations_desktop_smoke_tests': {
-        'test': 'variations_desktop_smoke_tests',
         'mixins': [
           'skia_gold_test',
           'has_native_resultdb_integration',
@@ -412,7 +386,6 @@
         },
       },
       'variations_smoke_tests': {
-        'test': 'variations_smoke_tests',
         'mixins': [
           'skia_gold_test',
         ],
@@ -607,13 +580,11 @@
     },
 
     'chromeos_device_only_gtests': {
-      'base_unittests': {
-      },
+      'base_unittests': {},
     },
 
     'chromeos_integration_tests': {
-      'chromeos_integration_tests': {
-      },
+      'chromeos_integration_tests': {},
     },
 
     'chromeos_isolated_scripts': {
@@ -653,7 +624,7 @@
       'chromeos_js_code_coverage_browser_tests': {
         'test': 'browser_tests',
         'swarming': {
-          'shards': 16,
+          'shards': 20,
         },
       },
     },
@@ -734,16 +705,35 @@
       'rust_gtest_interop_unittests': {},
       'sql_unittests': {},
       'url_unittests': {},
-      'vaapi_unittest': {
+      'video_decode_accelerator_tests': {
         'args': [
-          '--stop-ui',
           '--env-var',
           'LIBVA_DRIVERS_PATH',
           './',
           '--env-var',
           'LIBVA_DRIVER_NAME',
           'libfake',
-          '--gtest_filter="VaapiTest.*"',
+          '../../media/test/data/test-25fps.vp9',
+          '../../media/test/data/test-25fps.vp9.json',
+        ],
+        'ci_only': True,
+        'experiment_percentage': 100,
+      },
+    },
+
+    'chromeos_vaapi_fakelib_gtests': {
+      'vaapi_unittest': {
+        'mixins': [
+          'vaapi_unittest_args',
+          'vaapi_unittest_libfake_args',
+        ],
+      },
+    },
+
+    'chromeos_vaapi_gtests': {
+      'vaapi_unittest': {
+        'mixins': [
+          'vaapi_unittest_args',
         ],
       },
     },
@@ -766,20 +756,6 @@
 
     'chromium_dev_android_gtests': {
       'chrome_public_smoke_test': {},
-    },
-
-    'chromium_dev_desktop_gtests': {
-      'base_unittests': {},
-      'content_browsertests': {
-        'swarming': {
-          'shards': 4,
-        },
-      },
-      'content_unittests': {},
-      'interactive_ui_tests': {},
-      'net_unittests': {},
-      'rust_gtest_interop_unittests': {},
-      'unit_tests': {},
     },
 
     'chromium_dev_linux_gtests': {
@@ -838,6 +814,32 @@
       },
     },
 
+    'chromium_dev_mac_gtests': {
+      'base_unittests': {},
+      'content_unittests': {},
+      'net_unittests': {},
+      'rust_gtest_interop_unittests': {},
+      'unit_tests': {},
+    },
+
+    'chromium_dev_win_gtests': {
+      'base_unittests': {},
+      'content_browsertests': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'content_unittests': {},
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
+      'net_unittests': {},
+      'rust_gtest_interop_unittests': {},
+      'unit_tests': {},
+    },
+
     'chromium_gtests': {
       'absl_hardening_tests': {},
       'angle_unittests': {
@@ -849,7 +851,11 @@
       'base_unittests': {},
       'blink_common_unittests': {},
       'blink_heap_unittests': {},
-      'blink_platform_unittests': {},
+      'blink_platform_unittests': {
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
       'capture_unittests': {
@@ -965,7 +971,7 @@
         'test': 'interactive_ui_tests',
         'args': [
           '--windows-virtual-display-driver',
-          '--gtest_filter=*MultiScreen*:*VirtualDisplayWinUtil*',
+          '--gtest_filter=*MultiScreen*:*VirtualDisplayUtilWin*',
         ],
         'swarming': {
           'dimensions': {
@@ -1405,6 +1411,55 @@
       },
     },
 
+    'chromium_web_tests_graphite_isolated_scripts': {
+      'graphite_enabled_blink_web_tests': {
+        'test': 'blink_web_tests',
+        'results_handler': 'layout tests',
+        'mixins': [
+          'has_native_resultdb_integration',
+          'blink_tests_write_run_histories',
+        ],
+        'args': [
+          '--flag-specific=enable-skia-graphite',
+          '--skipped=always',
+          '--timeout-ms=20000',
+          '--num-retries=3',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'merge': {
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+          'args': [
+            '--verbose',
+          ],
+        },
+      },
+      'graphite_enabled_blink_wpt_tests': {
+        'test': 'blink_wpt_tests',
+        'results_handler': 'layout tests',
+        'mixins': [
+          'has_native_resultdb_integration',
+          'blink_tests_write_run_histories',
+        ],
+        'args': [
+          '--flag-specific=enable-skia-graphite',
+          '--skipped=always',
+          '--timeout-ms=20000',
+          '--num-retries=3',
+        ],
+        'swarming': {
+          'shards': 7,
+        },
+        'merge': {
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+          'args': [
+            '--verbose',
+          ],
+        },
+      },
+    },
+
     'chromium_web_tests_high_dpi_isolated_scripts': {
       'high_dpi_blink_web_tests': {
         'test': 'blink_web_tests',
@@ -1454,7 +1509,6 @@
 
     'chromium_webkit_isolated_scripts': {
       'blink_web_tests': {
-        'test': 'blink_web_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -1474,7 +1528,6 @@
         },
       },
       'blink_wpt_tests': {
-        'test': 'blink_wpt_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -1509,7 +1562,6 @@
 
     'chromium_wpt_tests_isolated_scripts': {
       'chrome_wpt_tests': {
-        'test': 'chrome_wpt_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -1522,6 +1574,57 @@
           'print-reftest',
         ],
         'swarming': {
+          'shards': 20,
+        },
+        'merge': {
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+          'args': [
+            '--verbose',
+          ],
+        },
+      },
+      'chrome_wpt_tests_headful': {
+        'test': 'chrome_wpt_tests',
+        'results_handler': 'layout tests',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--no-retry-failures',
+          '--exit-after-n-crashes-or-timeouts=500',
+          '--no-headless',
+          '--test-type',
+          'testharness',
+          'reftest',
+          'crashtest',
+          'print-reftest',
+        ],
+        'swarming': {
+          'shards': 30,
+        },
+        'merge': {
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+          'args': [
+            '--verbose',
+          ],
+        },
+        'experiment_percentage': 10,
+      },
+      'chrome_wpt_tests_old_headless': {
+        'test': 'chrome_wpt_tests',
+        'results_handler': 'layout tests',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--test-type',
+          'testharness',
+          'reftest',
+          'crashtest',
+          'print-reftest',
+          '--additional-driver-flag=--headless',
+        ],
+        'swarming': {
           'shards': 15,
         },
         'merge': {
@@ -1530,6 +1633,7 @@
             '--verbose',
           ],
         },
+        'experiment_percentage': 100,
       },
     },
 
@@ -1771,24 +1875,6 @@
 
     'cronet_gtests': {
       'cronet_sample_test_apk': {},
-      'cronet_smoketests_missing_native_library_instrumentation_apk': {},
-      'cronet_smoketests_platform_only_instrumentation_apk': {},
-      'cronet_test_instrumentation_apk': {
-        'mixins': [
-          'emulator-enable-network',
-        ],
-      },
-      'cronet_tests_android': {},
-      'cronet_unittests_android': {},
-      'net_unittests': {
-        'swarming': {
-          'shards': 4,
-        },
-      },
-    },
-
-    'cronet_gtests_and_proguarded_smoketest': {
-      'cronet_sample_test_apk': {},
       'cronet_smoketests_apk': {},
       'cronet_smoketests_missing_native_library_instrumentation_apk': {},
       'cronet_smoketests_platform_only_instrumentation_apk': {},
@@ -1796,6 +1882,9 @@
         'mixins': [
           'emulator-enable-network',
         ],
+        'swarming': {
+          'shards': 3,
+        },
       },
       'cronet_tests_android': {},
       'cronet_unittests_android': {},
@@ -1861,7 +1950,6 @@
         },
       },
       'blink_web_tests': {
-        'test': 'blink_web_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -1881,7 +1969,6 @@
         },
       },
       'blink_wpt_tests': {
-        'test': 'blink_wpt_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -1978,7 +2065,6 @@
 
     'devtools_webkit_and_tab_target_isolated_scripts': {
       'blink_web_tests': {
-        'test': 'blink_web_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -2020,7 +2106,6 @@
         },
       },
       'blink_wpt_tests': {
-        'test': 'blink_wpt_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -2043,7 +2128,6 @@
 
     'devtools_webkit_isolated_scripts': {
       'blink_web_tests': {
-        'test': 'blink_web_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -2063,7 +2147,6 @@
         },
       },
       'blink_wpt_tests': {
-        'test': 'blink_wpt_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -2152,7 +2235,6 @@
 
     'fuchsia_chrome_small_gtests': {
       'courgette_unittests': {},
-      'extensions_unittests': {},
       'headless_unittests': {},
       'message_center_unittests': {},
       'views_examples_unittests': {
@@ -2175,7 +2257,11 @@
       'blink_common_unittests': {},
       'blink_fuzzer_unittests': {},
       'blink_heap_unittests': {},
-      'blink_platform_unittests': {},
+      'blink_platform_unittests': {
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
       'blink_unittests': {},
       'blink_unittests_v2': {},
       'boringssl_crypto_tests': {},
@@ -2317,25 +2403,6 @@
       'content_unittests': {},
     },
 
-    'goma_mac_gtests': {
-      'base_unittests': {
-        'swarming': {
-          'dimensions': {
-            'cpu': 'x86-64',
-            'os': 'Mac-13',
-          },
-        },
-      },
-      'content_unittests': {
-        'swarming': {
-          'dimensions': {
-            'cpu': 'x86-64',
-            'os': 'Mac-13',
-          },
-        },
-      },
-    },
-
     'gpu_angle_fuchsia_unittests_isolated_scripts': {
       'angle_unittests': {
         'mixins': [
@@ -2453,6 +2520,7 @@
         ],
         'chromeos_args': [
           '--stop-ui',
+          '$$MAGIC_SUBSTITUTION_ChromeOSGtestFilterFile',
         ],
         'desktop_args': [
           '--use-gpu-in-tests',
@@ -2539,6 +2607,9 @@
           '--no-xvfb',
         ],
         'ci_only': True,
+        'android_swarming': {
+          'shards': 2,
+        },
       },
       'dawn_end2end_skip_validation_tests': {
         'test': 'dawn_end2end_tests',
@@ -2551,6 +2622,9 @@
         'linux_args': [
           '--no-xvfb',
         ],
+        'android_swarming': {
+          'shards': 2,
+        },
       },
       'dawn_end2end_tests': {
         'mixins': [
@@ -2559,6 +2633,9 @@
         'linux_args': [
           '--no-xvfb',
         ],
+        'android_swarming': {
+          'shards': 2,
+        },
       },
       'dawn_end2end_wire_tests': {
         'test': 'dawn_end2end_tests',
@@ -2571,6 +2648,9 @@
         'linux_args': [
           '--no-xvfb',
         ],
+        'android_swarming': {
+          'shards': 2,
+        },
       },
     },
 
@@ -2666,7 +2746,6 @@
 
     'gpu_dawn_webgpu_blink_web_tests': {
       'webgpu_blink_web_tests': {
-        'test': 'webgpu_blink_web_tests',
         'mixins': [
           'has_native_resultdb_integration',
           'webgpu_cts',
@@ -2720,7 +2799,7 @@
           'webgpu_telemetry_cts',
         ],
         'args': [
-          '--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-webgpu-developer-features',
+          '--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-features=WebGPUExperimentalFeatures',
         ],
         'swarming': {
           'shards': 14,
@@ -2766,6 +2845,20 @@
     },
 
     'gpu_dawn_webgpu_cts_asan': {
+      'webgpu_cts_fxc_tests': {
+        'telemetry_test_name': 'webgpu_cts',
+        'mixins': [
+          'has_native_resultdb_integration',
+          'webgpu_telemetry_cts',
+          'linux_vulkan',
+        ],
+        'args': [
+          '--use-fxc',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
       'webgpu_cts_tests': {
         'telemetry_test_name': 'webgpu_cts',
         'mixins': [
@@ -2779,8 +2872,8 @@
       },
     },
 
-    'gpu_dawn_webgpu_cts_dxc': {
-      'webgpu_cts_dxc_tests': {
+    'gpu_dawn_webgpu_cts_fxc': {
+      'webgpu_cts_fxc_tests': {
         'telemetry_test_name': 'webgpu_cts',
         'mixins': [
           'has_native_resultdb_integration',
@@ -2788,14 +2881,14 @@
           'linux_vulkan',
         ],
         'args': [
-          '--use-dxc',
+          '--use-fxc',
         ],
         'ci_only': True,
         'swarming': {
           'shards': 14,
         },
       },
-      'webgpu_cts_dxc_with_validation_tests': {
+      'webgpu_cts_fxc_with_validation_tests': {
         'telemetry_test_name': 'webgpu_cts',
         'mixins': [
           'has_native_resultdb_integration',
@@ -2804,7 +2897,7 @@
         ],
         'args': [
           '--enable-dawn-backend-validation',
-          '--use-dxc',
+          '--use-fxc',
         ],
         'ci_only': True,
         'swarming': {
@@ -2825,7 +2918,6 @@
 
     'gpu_default_and_optional_win_specific_gtests': {
       'xr_browser_tests': {
-        'test': 'xr_browser_tests',
         'args': [
           '--ignore-runtime-requirements=*',
         ],
@@ -2993,56 +3085,6 @@
       },
     },
 
-    'gpu_mediapipe_passthrough_telemetry_tests': {
-      'mediapipe_passthrough_tests': {
-        'telemetry_test_name': 'mediapipe',
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'args': [
-          '--extra-browser-args=--force_higher_performance_gpu --use-cmd-decoder=passthrough --use-gl=angle',
-        ],
-        'android_args': [
-          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
-        ],
-        'chromeos_args': [
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-        ],
-        'lacros_args': [
-          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
-          '--xvfb',
-          '--no-xvfb',
-          '--use-weston',
-          '--weston-use-gl',
-        ],
-      },
-    },
-
-    'gpu_mediapipe_validating_telemetry_tests': {
-      'mediapipe_validating_tests': {
-        'telemetry_test_name': 'mediapipe',
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'args': [
-          '--extra-browser-args=--force_higher_performance_gpu --use-cmd-decoder=validating',
-        ],
-        'android_args': [
-          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
-        ],
-        'chromeos_args': [
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-        ],
-        'lacros_args': [
-          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
-          '--xvfb',
-          '--no-xvfb',
-          '--use-weston',
-          '--weston-use-gl',
-        ],
-      },
-    },
-
     'gpu_metal_passthrough_ganesh_telemetry_tests': {
       'context_lost_metal_passthrough_ganesh_tests': {
         'telemetry_test_name': 'context_lost',
@@ -3176,6 +3218,34 @@
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
+      },
+    },
+
+    'gpu_passthrough_graphite_telemetry_tests': {
+      'screenshot_sync_passthrough_graphite_tests': {
+        'telemetry_test_name': 'screenshot_sync',
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle  --enable-features=SkiaGraphite',
+        ],
+        'android_args': [
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
+        ],
+        'ci_only': True,
       },
     },
 
@@ -4053,11 +4123,24 @@
       'angle_unittests': {
         'use_isolated_scripts_api': True,
       },
-      'base_unittests': {},
+      'base_unittests': {
+        'args': [
+          '--test-launcher-bot-mode',
+          '--test-launcher-filter-file=testing/buildbot/filters/ios.base_unittests.filter',
+        ],
+      },
       'blink_common_unittests': {},
       'blink_fuzzer_unittests': {},
       'blink_heap_unittests': {},
-      'blink_platform_unittests': {},
+      'blink_platform_unittests': {
+        'mixins': [
+          'skia_gold_test',
+        ],
+        'args': [
+          '--test-launcher-bot-mode',
+          '--test-launcher-filter-file=testing/buildbot/filters/ios.blink_platform_unittests.filter',
+        ],
+      },
       'blink_unittests': {},
       'blink_unittests_v2': {},
       'boringssl_crypto_tests': {},
@@ -4065,7 +4148,6 @@
       'capture_unittests': {},
       'cast_unittests': {},
       'cc_unittests': {
-        'test': 'cc_unittests',
         'args': [
           '--test-launcher-bot-mode',
           '--test-launcher-filter-file=testing/buildbot/filters/ios.cc_unittests.filter',
@@ -4074,14 +4156,12 @@
       },
       'components_browsertests': {},
       'components_unittests': {
-        'test': 'components_unittests',
         'args': [
           '--test-launcher-bot-mode',
           '--test-launcher-filter-file=testing/buildbot/filters/ios.use_blink.components_unittests.filter',
         ],
       },
       'compositor_unittests': {
-        'test': 'compositor_unittests',
         'args': [
           '--test-launcher-bot-mode',
           '--test-launcher-filter-file=testing/buildbot/filters/ios.compositor_unittests.filter',
@@ -4100,7 +4180,6 @@
         },
       },
       'content_unittests': {
-        'test': 'content_unittests',
         'args': [
           '--test-launcher-bot-mode',
           '--test-launcher-filter-file=testing/buildbot/filters/ios.content_unittests.filter',
@@ -4117,7 +4196,12 @@
       'gin_unittests': {},
       'gl_unittests': {},
       'google_apis_unittests': {},
-      'gpu_unittests': {},
+      'gpu_unittests': {
+        'args': [
+          '--test-launcher-bot-mode',
+          '--test-launcher-filter-file=testing/buildbot/filters/ios.gpu_unittests.filter',
+        ],
+      },
       'gwp_asan_unittests': {},
       'ipc_tests': {},
       'latency_unittests': {},
@@ -4164,7 +4248,6 @@
       'ui_unittests': {},
       'url_unittests': {},
       'viz_unittests': {
-        'test': 'viz_unittests',
         'args': [
           '--test-launcher-bot-mode',
           '--test-launcher-filter-file=testing/buildbot/filters/ios.viz_unittests.filter',
@@ -4241,7 +4324,6 @@
           'shards': 2,
         },
       },
-      'ios_showcase_eg2tests_module': {},
     },
 
     'ios_remoting_fyi_unittests': {
@@ -4281,31 +4363,13 @@
       },
     },
 
-    'lacros_cq_tast_tests_eve': {
-      'lacros_cq_tast_tests_eve': {
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'idempotent': False,
-        },
-        'experiment_percentage': 5,
-      },
-    },
-
     'lacros_device_or_vm_gtests': {
       'cc_unittests': {},
       'ozone_unittests': {},
       'vaapi_unittest': {
-        'args': [
-          '--stop-ui',
-          '--env-var',
-          'LIBVA_DRIVERS_PATH',
-          './',
-          '--env-var',
-          'LIBVA_DRIVER_NAME',
-          'libfake',
-          '--gtest_filter="VaapiTest.*"',
+        'mixins': [
+          'vaapi_unittest_args',
+          'vaapi_unittest_libfake_args',
         ],
       },
     },
@@ -4331,7 +4395,6 @@
         ],
         'timeout_sec': 10800,
         'shards': 2,
-        'experiment_percentage': 100,
       },
     },
 
@@ -4476,7 +4539,6 @@
 
     'linux_lacros_chrome_browsertests_non_version_skew': {
       'lacros_chrome_browsertests': {
-        'test': 'lacros_chrome_browsertests',
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
         ],
@@ -4497,9 +4559,26 @@
       },
     },
 
+    'linux_lacros_chrome_gtests': {
+      'browser_tests': {
+        'swarming': {
+          'shards': 33,
+        },
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'lacros_chrome_browsertests': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+    },
+
     'linux_lacros_chrome_interactive_ui_tests_version_skew': {
       'interactive_ui_tests': {
-        'test': 'interactive_ui_tests',
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
         ],
@@ -4510,7 +4589,6 @@
     },
 
     'linux_lacros_specific_gtests': {
-      'lacros_chrome_unittests': {},
       'ozone_unittests': {},
     },
 
@@ -4579,9 +4657,7 @@
     },
 
     'linux_specific_xr_gtests': {
-      'xr_browser_tests': {
-        'test': 'xr_browser_tests',
-      },
+      'xr_browser_tests': {},
     },
 
     'mac_lsan_fyi_gtests': {
@@ -4590,7 +4666,11 @@
       'app_shell_unittests': {},
       'base_unittests': {},
       'blink_heap_unittests': {},
-      'blink_platform_unittests': {},
+      'blink_platform_unittests': {
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
       'blink_unittests': {},
       'blink_unittests_v2': {},
       'cc_unittests': {},
@@ -4606,9 +4686,7 @@
       'power_sampler_unittests': {},
       'sandbox_unittests': {},
       'updater_tests': {},
-      'xr_browser_tests': {
-        'test': 'xr_browser_tests',
-      },
+      'xr_browser_tests': {},
     },
 
     'mac_specific_isolated_scripts': {
@@ -4655,7 +4733,7 @@
         ],
         'swarming': {
           'dimensions': {
-            'os': 'Ubuntu-18.04',
+            'os': 'Ubuntu-22.04',
             'cpu': 'x86-64',
             'device_os': None,
             'device_os_flavor': None,
@@ -4811,6 +4889,32 @@
       },
     },
 
+    'ondevice_stability_tests': {
+      'ondevice_stability_tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'linux_args': [
+          '--chromedriver',
+          'chromedriver',
+          '--binary',
+          'chrome',
+        ],
+        'mac_args': [
+          '--chromedriver',
+          'chromedriver',
+          '--binary',
+          'Google Chrome.app/Contents/MacOS/Google Chrome',
+        ],
+        'win_args': [
+          '--chromedriver',
+          'chromedriver.exe',
+          '--binary',
+          'Chrome.exe',
+        ],
+      },
+    },
+
     'optimization_guide_android_gtests': {
       'optimization_guide_components_unittests': {
         'test': 'components_unittests',
@@ -4820,7 +4924,12 @@
       },
     },
 
-    'optimization_guide_gtests': {
+    'optimization_guide_gpu_gtests': {
+      'optimization_guide_gpu_unittests': {},
+    },
+
+    'optimization_guide_nogpu_gtests': {
+      'chrome_ml_unittests': {},
       'optimization_guide_browser_tests': {
         'test': 'browser_tests',
         'args': [
@@ -4944,12 +5053,6 @@
       'private_code_failure_test': {},
     },
 
-    'public_build_scripts': {
-      'checkbins': {
-        'script': 'checkbins.py',
-      },
-    },
-
     'pytype_tests': {
       'blink_pytype': {
         'mixins': [
@@ -4988,18 +5091,12 @@
       'mojo_rust_integration_unittests': {},
       'mojo_rust_unittests': {},
       'rust_gtest_interop_unittests': {},
-      'test_cpp_including_rust_unittests': {
-        'test': 'test_cpp_including_rust_unittests',
-      },
-      'test_serde_json_lenient': {
-        'test': 'test_serde_json_lenient',
-      },
+      'test_cpp_including_rust_unittests': {},
+      'test_serde_json_lenient': {},
     },
 
     'rust_native_tests': {
-      'build_rust_tests': {
-        'test': 'build_rust_tests',
-      },
+      'build_rust_tests': {},
     },
 
     'site_isolation_android_fyi_gtests': {
@@ -5262,8 +5359,7 @@
     },
 
     'telemetry_perf_unittests_isolated_scripts_android': {
-      'telemetry_perf_unittests': {
-        'test': 'telemetry_perf_unittests_android_chrome',
+      'telemetry_perf_unittests_android_chrome': {
         'args': [
           '--extra-browser-args=--enable-crashpad',
         ],
@@ -5355,10 +5451,6 @@
 
     'vr_android_specific_chromium_tests': {
       'chrome_public_test_vr_apk': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
         'swarming': {
           'shards': 2,
         },
@@ -5487,9 +5579,19 @@
       },
     },
 
+    'webrtc_chromium_without_baremetal_gtests': {
+      'capture_unittests': {
+        'args': [
+          '--enable-logging',
+          '--v=1',
+          '--test-launcher-jobs=1',
+          '--test-launcher-print-test-stdio=always',
+        ],
+      },
+    },
+
     'webrtc_chromium_wpt_tests': {
       'blink_wpt_tests': {
-        'test': 'blink_wpt_tests',
         'results_handler': 'layout tests',
         'mixins': [
           'has_native_resultdb_integration',
@@ -5603,6 +5705,14 @@
         'swarming': {
           'shards': 2,
         },
+      },
+    },
+
+    'webview_trichrome_64_cts_hostside_tests': {
+      'webview_trichrome_64_cts_hostside_tests': {
+        'mixins': [
+          'webview_cts_archive',
+        ],
       },
     },
 
@@ -5727,7 +5837,7 @@
           '--no-wpt-internal',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 36,
           'expiration': 18000,
           'hard_timeout': 14400,
         },
@@ -5781,6 +5891,7 @@
             '--verbose',
           ],
         },
+        'experiment_percentage': 100,
       },
     },
 
@@ -5821,6 +5932,7 @@
             '--verbose',
           ],
         },
+        'experiment_percentage': 100,
       },
     },
 
@@ -5842,6 +5954,7 @@
             '--verbose',
           ],
         },
+        'experiment_percentage': 100,
       },
     },
   },
@@ -5850,8 +5963,8 @@
 
     'android_10_rel_gtests': [
       'android_ar_gtests',
-      'android_ddready_vr_gtests',
       'android_trichrome_smoke_tests',
+      'vr_android_specific_chromium_tests',
     ],
 
     'android_12_dbg_emulator_gtests': [
@@ -5871,6 +5984,7 @@
 
     'android_oreo_emulator_gtests': [
       'android_emulator_specific_chrome_public_tests',
+      'android_emulator_specific_network_enabled_content_browsertests',
       'android_monochrome_smoke_tests',
       'android_smoke_tests',
       'android_specific_chromium_gtests',
@@ -5885,10 +5999,10 @@
 
     'android_oreo_gtests': [
       'android_ar_gtests',
-      'android_ddready_vr_gtests',
       'android_monochrome_smoke_tests',
       'android_oreo_standard_gtests',
       'android_smoke_tests',
+      'vr_android_specific_chromium_tests',
     ],
 
     'android_pie_coverage_instrumentation_tests': [
@@ -5901,10 +6015,10 @@
 
     'android_pie_gtests': [
       'android_ar_gtests',
-      'android_ddready_vr_gtests',
       'android_monochrome_smoke_tests',
       'android_smoke_tests',
       'chromium_tracing_gtests',
+      'vr_android_specific_chromium_tests',
     ],
 
     'android_pie_rel_emulator_gtests': [
@@ -5959,6 +6073,7 @@
     'chromeos_vm_gtests': [
       'chromeos_integration_tests',
       'chromeos_system_friendly_gtests',
+      'chromeos_vaapi_fakelib_gtests',
     ],
 
     'chromeos_vm_gtests_and_tast': [
@@ -5966,6 +6081,7 @@
       'chromeos_browser_integration_tests',
       'chromeos_integration_tests',
       'chromeos_system_friendly_gtests',
+      'chromeos_vaapi_fakelib_gtests',
     ],
 
     'chromeos_vm_tast': [
@@ -6028,12 +6144,6 @@
       'chromium_webkit_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
       'vulkan_swiftshader_isolated_scripts',
-    ],
-
-    'chromium_linux_cast_audio_gtests': [
-      'cast_audio_specific_chromium_gtests',
-      'chromium_gtests',
-      'linux_flavor_specific_chromium_gtests',
     ],
 
     'chromium_linux_cast_video_gtests': [
@@ -6107,7 +6217,6 @@
       'chromedriver_py_tests_isolated_scripts',
       'chromium_web_tests_brfetch_isolated_scripts',
       'chromium_web_tests_high_dpi_isolated_scripts',
-      'chromium_wpt_tests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
       'desktop_once_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
@@ -6407,10 +6516,15 @@
       'gpu_dawn_webgpu_cts',
     ],
 
+    'gpu_dawn_telemetry_tests_fxc': [
+      'gpu_dawn_web_platform_webgpu_cts_force_swiftshader',
+      'gpu_dawn_webgpu_cts_fxc',
+    ],
+
     'gpu_dawn_telemetry_win_x64_tests': [
       'gpu_dawn_web_platform_webgpu_cts_force_swiftshader',
       'gpu_dawn_webgpu_cts',
-      'gpu_dawn_webgpu_cts_dxc',
+      'gpu_dawn_webgpu_cts_fxc',
     ],
 
     'gpu_dawn_tsan_gtests': [
@@ -6448,22 +6562,19 @@
     ],
 
     'gpu_fyi_chromeos_release_gtests': [
-      'gpu_common_gtests_validating',
+      'gpu_common_gtests_passthrough',
     ],
 
     'gpu_fyi_chromeos_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_validating_telemetry_tests',
-      'gpu_validating_telemetry_tests',
-      'gpu_webcodecs_validating_telemetry_test',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_webcodecs_telemetry_test',
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_validating_telemetry_tests',
-      'gpu_webgl_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_lacros_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webcodecs_telemetry_test',
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
@@ -6491,7 +6602,6 @@
 
     'gpu_fyi_linux_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
@@ -6499,7 +6609,6 @@
 
     'gpu_fyi_linux_release_vulkan_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_skia_renderer_vulkan_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
@@ -6517,7 +6626,6 @@
     'gpu_fyi_mac_nvidia_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_gl_passthrough_ganesh_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test',
       'gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests',
@@ -6542,7 +6650,6 @@
 
     'gpu_fyi_mac_release_telemetry_tests': [
       'gpu_gl_passthrough_ganesh_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_metal_passthrough_ganesh_telemetry_tests',
       'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test',
       'gpu_webcodecs_metal_passthrough_ganesh_telemetry_test',
@@ -6557,7 +6664,6 @@
     'gpu_fyi_only_mac_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_gl_passthrough_ganesh_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_metal_passthrough_ganesh_telemetry_tests',
       'gpu_metal_passthrough_graphite_telemetry_tests',
       'gpu_webcodecs_gl_passthrough_ganesh_telemetry_test',
@@ -6573,7 +6679,6 @@
 
     'gpu_fyi_win_amd_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webcodecs_telemetry_test',
       'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
@@ -6602,7 +6707,6 @@
 
     'gpu_fyi_win_intel_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webcodecs_telemetry_test',
       'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
@@ -6627,8 +6731,6 @@
 
     'gpu_nexus5x_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
-      'gpu_mediapipe_validating_telemetry_tests',
       'gpu_validating_telemetry_tests',
       'gpu_webcodecs_validating_telemetry_test',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
@@ -6642,10 +6744,20 @@
       'gpu_webgl_conformance_validating_telemetry_tests',
     ],
 
-    'gpu_pixel_4_and_6_telemetry_tests': [
+    'gpu_pixel_4_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
-      'gpu_mediapipe_validating_telemetry_tests',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_validating_telemetry_tests',
+      'gpu_webcodecs_validating_telemetry_test',
+      'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_validating_telemetry_tests',
+    ],
+
+    'gpu_pixel_6_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_passthrough_graphite_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_validating_telemetry_tests',
       'gpu_webcodecs_validating_telemetry_test',
@@ -6735,6 +6847,11 @@
     'webrtc_chromium_tests_with_baremetal_tests': [
       'webrtc_chromium_baremetal_gtests',
       'webrtc_chromium_gtests',
+    ],
+
+    'webrtc_chromium_tests_without_baremetal_tests': [
+      'webrtc_chromium_gtests',
+      'webrtc_chromium_without_baremetal_gtests',
     ],
 
     'webview_bot_all_gtests': [
@@ -6849,6 +6966,25 @@
       'webview_ui_instrumentation_tests': {},
     },
 
+    'android_14_emulator_gtests': {
+      'android_emulator_specific_chrome_public_tests': {},
+      'android_smoke_tests': {},
+      'android_specific_chromium_gtests': {},
+      'android_trichrome_smoke_tests': {},
+      'chromium_gtests': {},
+      'chromium_gtests_for_devices_with_graphical_output': {},
+      'linux_flavor_specific_chromium_gtests': {},
+      'system_webview_shell_instrumentation_tests': {},
+      'webview_trichrome_64_cts_tests': {
+        'variants': [
+          'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
+          'WEBVIEW_TRICHROME_INSTANT_CTS_TESTS',
+        ],
+      },
+      'webview_trichrome_64_cts_tests_no_field_trial': {},
+      'webview_ui_instrumentation_tests': {},
+    },
+
     'android_fieldtrial_rel_webview_tests': {
       'fieldtrial_android_tests': {},
       'system_webview_shell_instrumentation_tests': {
@@ -6897,12 +7033,17 @@
           'CROS_BRYA_RELEASE_ASH_LKGM',
         ],
       },
-      'chromeos_device_only_gtests': {
+      'chromeos_integration_tests': {
         'variants': [
           'CROS_BRYA_RELEASE_ASH_LKGM',
         ],
       },
-      'chromeos_integration_tests': {
+      'chromeos_system_friendly_gtests': {
+        'variants': [
+          'CROS_BRYA_RELEASE_ASH_LKGM',
+        ],
+      },
+      'chromeos_vaapi_gtests': {
         'variants': [
           'CROS_BRYA_RELEASE_ASH_LKGM',
         ],
@@ -6912,6 +7053,7 @@
     'chromeos_jacuzzi_rel_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
           'chromeos-jacuzzi-skylab-chrome-all-tast-tests',
         ],
         'variants': [
@@ -6919,11 +7061,22 @@
         ],
       },
       'chromeos_chrome_criticalstaging_tast_tests': {
+        'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
+        ],
         'variants': [
           'CROS_JACUZZI_CQ_PUBLIC_LKGM',
         ],
       },
       'chromeos_chrome_disabled_tast_tests': {
+        'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
+        ],
+        'variants': [
+          'CROS_JACUZZI_CQ_PUBLIC_LKGM',
+        ],
+      },
+      'chromeos_device_only_gtests': {
         'variants': [
           'CROS_JACUZZI_CQ_PUBLIC_LKGM',
         ],
@@ -6949,6 +7102,11 @@
           'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
         ],
       },
+      'chromeos_device_only_gtests': {
+        'variants': [
+          'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
+        ],
+      },
       'chromeos_integration_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
@@ -6958,6 +7116,24 @@
 
     'chromeos_octopus_rel_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
+        'mixins': [
+          'chromeos-tast-fieldtrial-enabled',
+        ],
+        'variants': [
+          'CROS_OCTOPUS_PUBLIC_LKGM',
+        ],
+      },
+      'chromeos_chrome_criticalstaging_tast_tests': {
+        'variants': [
+          'CROS_OCTOPUS_PUBLIC_LKGM',
+        ],
+      },
+      'chromeos_chrome_disabled_tast_tests': {
+        'variants': [
+          'CROS_OCTOPUS_PUBLIC_LKGM',
+        ],
+      },
+      'chromeos_device_only_gtests': {
         'variants': [
           'CROS_OCTOPUS_PUBLIC_LKGM',
         ],
@@ -6970,6 +7146,11 @@
           'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
         ],
       },
+      'chromeos_device_only_gtests': {
+        'variants': [
+          'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
+        ],
+      },
     },
 
     'chromeos_trogdor_skylab_tests': {
@@ -6977,6 +7158,11 @@
         'mixins': [
           'chromeos-trogdor-skylab-chrome-all-tast-tests',
         ],
+        'variants': [
+          'CROS_TROGDOR_RELEASE_ASH_LKGM',
+        ],
+      },
+      'chromeos_device_only_gtests': {
         'variants': [
           'CROS_TROGDOR_RELEASE_ASH_LKGM',
         ],
@@ -7000,6 +7186,11 @@
         ],
       },
       'chromeos_chrome_disabled_tast_tests': {
+        'variants': [
+          'CROS_VOLTEER_RELEASE_ASH_LKGM',
+        ],
+      },
+      'chromeos_device_only_gtests': {
         'variants': [
           'CROS_VOLTEER_RELEASE_ASH_LKGM',
         ],
@@ -7038,24 +7229,19 @@
       'gpu_angle_ios_end2end_gtests': {
         'variants': [
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'gpu_angle_ios_white_box_gtests': {
         'variants': [
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
     },
 
     'gpu_fyi_chromeos_release_telemetry_tests_jacuzzi_skylab': {
       'gpu_common_and_optional_telemetry_tests': {
-        'variants': [
-          'CROS_JACUZZI_RELEASE_LKGM',
-        ],
-      },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
@@ -7084,11 +7270,6 @@
 
     'gpu_fyi_chromeos_release_telemetry_tests_volteer_skylab': {
       'gpu_common_and_optional_telemetry_tests': {
-        'variants': [
-          'CROS_VOLTEER_PUBLIC_RELEASE_ASH_LKGM',
-        ],
-      },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'CROS_VOLTEER_PUBLIC_RELEASE_ASH_LKGM',
         ],
@@ -7229,8 +7410,8 @@
     'ios17_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
         ],
       },
       'ios_crash_xcuitests': {
@@ -7238,8 +7419,8 @@
           'xcodebuild_sim_runner',
         ],
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7248,8 +7429,8 @@
           'record_failed_tests',
         ],
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
         ],
       },
       'ios_eg2_tests': {
@@ -7258,15 +7439,15 @@
           'record_failed_tests',
         ],
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
-          'SIM_IPHONE_SE_3RD_GEN_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
+          'SIM_IPHONE_SE_3RD_GEN_17_4',
         ],
       },
     },
@@ -7274,8 +7455,8 @@
     'ios17_sdk_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7283,8 +7464,8 @@
           'xcodebuild_sim_runner',
         ],
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
         ],
       },
       'ios_eg2_tests': {
@@ -7292,15 +7473,15 @@
           'xcodebuild_sim_runner',
         ],
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_2',
-          'SIM_IPHONE_14_17_2',
-          'SIM_IPHONE_SE_3RD_GEN_17_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_4',
+          'SIM_IPHONE_14_17_4',
+          'SIM_IPHONE_SE_3RD_GEN_17_4',
         ],
       },
     },
@@ -7323,7 +7504,7 @@
     'ios_blink_dbg_tests': {
       'ios_blink_tests': {
         'variants': [
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
     },
@@ -7348,9 +7529,9 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
           'SIM_IPHONE_14_PLUS_16_4',
-          'SIM_IPHONE_14_PLUS_17_0',
+          'SIM_IPHONE_14_PLUS_17_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7359,11 +7540,11 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_eg2_tests': {
@@ -7372,17 +7553,17 @@
         ],
         'variants': [
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
     },
@@ -7391,7 +7572,7 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7401,13 +7582,13 @@
         ],
         'variants': [
           'SIM_IPAD_10TH_GEN_16_4',
-          'SIM_IPAD_10TH_GEN_17_0',
+          'SIM_IPAD_10TH_GEN_17_2',
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_eg2_tests': {
@@ -7416,20 +7597,20 @@
           'record_failed_tests',
         ],
         'variants': [
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
           'SIM_IPHONE_14_PRO_MAX_16_4',
-          'SIM_IPHONE_14_PRO_MAX_17_0',
+          'SIM_IPHONE_14_PRO_MAX_17_2',
           'SIM_IPHONE_SE_3RD_GEN_16_4',
-          'SIM_IPHONE_SE_3RD_GEN_17_0',
+          'SIM_IPHONE_SE_3RD_GEN_17_2',
         ],
       },
     },
@@ -7438,7 +7619,7 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_14_PLUS_16_4',
-          'SIM_IPHONE_14_PLUS_17_0',
+          'SIM_IPHONE_14_PLUS_17_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7447,11 +7628,11 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_eg2_tests': {
@@ -7460,17 +7641,17 @@
         ],
         'variants': [
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
     },
@@ -7479,7 +7660,7 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7488,7 +7669,7 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
         ],
       },
       'ios_eg2_tests': {
@@ -7497,13 +7678,13 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
         ],
       },
     },
@@ -7516,7 +7697,7 @@
         'variants': [
           'SIM_IPHONE_13_15_5',
           'SIM_IPHONE_SE_3RD_GEN_16_4',
-          'SIM_IPHONE_SE_3RD_GEN_17_0',
+          'SIM_IPHONE_SE_3RD_GEN_17_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7526,7 +7707,7 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPHONE_13_15_5',
         ],
       },
@@ -7537,7 +7718,7 @@
         ],
         'variants': [
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_13_15_5',
         ],
       },
@@ -7545,14 +7726,14 @@
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_15_5',
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_PLUS_16_4',
-          'SIM_IPHONE_14_PLUS_17_0',
+          'SIM_IPHONE_14_PLUS_17_2',
           'SIM_IPHONE_SE_3RD_GEN_15_5',
           'SIM_IPHONE_SE_3RD_GEN_16_4',
-          'SIM_IPHONE_SE_3RD_GEN_17_0',
+          'SIM_IPHONE_SE_3RD_GEN_17_2',
         ],
       },
     },
@@ -7561,7 +7742,7 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7570,15 +7751,15 @@
         ],
         'variants': [
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPAD_PRO_6TH_GEN_16_4',
-          'SIM_IPAD_PRO_6TH_GEN_17_0',
+          'SIM_IPAD_PRO_6TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
     },
@@ -7587,9 +7768,9 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -7598,9 +7779,9 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_eg2_tests': {
@@ -7609,17 +7790,17 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
     },
@@ -7628,9 +7809,9 @@
       'ios_remoting_fyi_unittests': {
         'variants': [
           'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_2',
           'SIM_IPHONE_14_16_4',
-          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_14_17_2',
         ],
       },
     },
@@ -7652,24 +7833,16 @@
       'chromeos_integration_tests': {
         'variants': [
           'LACROS_AMD64_GENERIC',
-          'LACROS_EVE',
         ],
       },
       'lacros_all_tast_tests': {
         'variants': [
           'LACROS_AMD64_GENERIC',
-          'LACROS_EVE',
-        ],
-      },
-      'lacros_cq_tast_tests_eve': {
-        'variants': [
-          'LACROS_EVE',
         ],
       },
       'lacros_device_or_vm_gtests': {
         'variants': [
           'LACROS_AMD64_GENERIC',
-          'LACROS_EVE',
         ],
       },
       'lacros_vm_gtests': {
@@ -7696,7 +7869,6 @@
       'lacros_skylab_tests': {
         'variants': [
           'CROS_BRYA_RELEASE_LKGM',
-          'CROS_DEDEDE_RELEASE_LKGM',
           'CROS_FIZZ_RELEASE_LKGM',
           'CROS_GUYBRUSH_RELEASE_LKGM',
           'CROS_PUFF_RELEASE_LKGM',
@@ -7707,9 +7879,6 @@
           'CROS_BRYA_RELEASE_BETA',
           'CROS_BRYA_RELEASE_DEV',
           'CROS_BRYA_RELEASE_STABLE',
-          'CROS_DEDEDE_RELEASE_BETA',
-          'CROS_DEDEDE_RELEASE_DEV',
-          'CROS_DEDEDE_RELEASE_STABLE',
           'CROS_FIZZ_RELEASE_BETA',
           'CROS_FIZZ_RELEASE_DEV',
           'CROS_FIZZ_RELEASE_STABLE',
@@ -7724,7 +7893,6 @@
       'lacros_skylab_tests_with_gtests': {
         'variants': [
           'CROS_BRYA_RELEASE_LKGM',
-          'CROS_DEDEDE_RELEASE_LKGM',
           'CROS_FIZZ_RELEASE_LKGM',
           'CROS_GUYBRUSH_RELEASE_LKGM',
           'CROS_PUFF_RELEASE_LKGM',
@@ -7735,9 +7903,6 @@
           'CROS_BRYA_RELEASE_BETA',
           'CROS_BRYA_RELEASE_DEV',
           'CROS_BRYA_RELEASE_STABLE',
-          'CROS_DEDEDE_RELEASE_BETA',
-          'CROS_DEDEDE_RELEASE_DEV',
-          'CROS_DEDEDE_RELEASE_STABLE',
           'CROS_FIZZ_RELEASE_BETA',
           'CROS_FIZZ_RELEASE_DEV',
           'CROS_FIZZ_RELEASE_STABLE',
@@ -7757,6 +7922,22 @@
           'CROS_VOLTEER_PUBLIC_LKGM',
         ],
       },
+      'lacros_skylab_tests': {
+        'variants': [
+          'CROS_VOLTEER_PUBLIC_LKGM',
+        ],
+      },
+    },
+
+    'lacros_skylab_tests_amd64_generic_rel_gtest': {
+      'chromeos_integration_tests': {
+        'variants': [
+          'CROS_VOLTEER_PUBLIC_LKGM',
+        ],
+      },
+    },
+
+    'lacros_skylab_tests_amd64_generic_rel_tast': {
       'lacros_skylab_tests': {
         'variants': [
           'CROS_VOLTEER_PUBLIC_LKGM',
@@ -7793,25 +7974,8 @@
       'non_android_chromium_gtests': {},
     },
 
-    'linux_lacros_version_skew_tests': {
-      'linux_lacros_chrome_interactive_ui_tests_version_skew': {
-        'variants': [
-          'LACROS_VERSION_SKEW_BETA',
-          'LACROS_VERSION_SKEW_CANARY',
-          'LACROS_VERSION_SKEW_DEV',
-          'LACROS_VERSION_SKEW_STABLE',
-        ],
-      },
-    },
-
     'linux_optional_gpu_tests_rel_gpu_telemetry_tests': {
       'gpu_common_and_optional_telemetry_tests': {
-        'variants': [
-          'LINUX_INTEL_UHD_630_STABLE',
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
@@ -7858,13 +8022,6 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-        ],
-      },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_metal_passthrough_ganesh_telemetry_tests': {
@@ -7942,11 +8099,81 @@
       },
     },
 
-    'model_validation_tests_full': {
+    'optimization_guide_linux_gtests': {
+      'optimization_guide_gpu_gtests': {
+        'variants': [
+          'INTEL_UHD_630',
+        ],
+      },
+      'optimization_guide_nogpu_gtests': {
+        'mixins': [
+          'gce',
+        ],
+      },
+    },
+
+    'optimization_guide_linux_script_tests': {
+      'model_validation_tests': {
+        'mixins': [
+          'gce',
+        ],
+        'variants': [
+          'MODEL_VALIDATION_BASE',
+          'MODEL_VALIDATION_TRUNK',
+        ],
+      },
+      'ondevice_stability_tests': {
+        'variants': [
+          'INTEL_UHD_630',
+        ],
+      },
+    },
+
+    'optimization_guide_mac_gtests': {
+      'optimization_guide_gpu_gtests': {},
+      'optimization_guide_nogpu_gtests': {},
+    },
+
+    'optimization_guide_mac_script_tests': {
       'model_validation_tests': {
         'variants': [
           'MODEL_VALIDATION_BASE',
           'MODEL_VALIDATION_TRUNK',
+        ],
+      },
+      'ondevice_stability_tests': {},
+    },
+
+    'optimization_guide_win_gtests': {
+      'optimization_guide_gpu_gtests': {
+        'variants': [
+          'AMD_RADEON_RX_5500_XT',
+          'INTEL_UHD_630',
+          'NVIDIA_GEFORCE_GTX_1660',
+        ],
+      },
+      'optimization_guide_nogpu_gtests': {
+        'mixins': [
+          'gce',
+        ],
+      },
+    },
+
+    'optimization_guide_win_script_tests': {
+      'model_validation_tests': {
+        'mixins': [
+          'gce',
+        ],
+        'variants': [
+          'MODEL_VALIDATION_BASE',
+          'MODEL_VALIDATION_TRUNK',
+        ],
+      },
+      'ondevice_stability_tests': {
+        'variants': [
+          'AMD_RADEON_RX_5500_XT',
+          'INTEL_UHD_630',
+          'NVIDIA_GEFORCE_GTX_1660',
         ],
       },
     },
@@ -7960,14 +8187,17 @@
       },
     },
 
-    'win_optional_gpu_tests_rel_gpu_telemetry_tests': {
-      'gpu_common_and_optional_telemetry_tests': {
+    'webview_trichrome_64_cts_hostside_gtests': {
+      'webview_trichrome_64_cts_hostside_tests': {
         'variants': [
-          'WIN10_INTEL_UHD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
+          'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
+          'WEBVIEW_TRICHROME_INSTANT_CTS_TESTS',
         ],
       },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
+    },
+
+    'win_optional_gpu_tests_rel_gpu_telemetry_tests': {
+      'gpu_common_and_optional_telemetry_tests': {
         'variants': [
           'WIN10_INTEL_UHD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',

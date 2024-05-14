@@ -92,6 +92,9 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     // service negotiation.
     virtual void OnTermsRetryClicked() = 0;
 
+    // Called when terms of service page is loaded or fails to load.
+    virtual void OnTermsLoadResult(bool success) = 0;
+
    protected:
     virtual ~TermsOfServiceDelegate() = default;
   };
@@ -116,6 +119,9 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
 
     // Called when network tests link on error page is clicked.
     virtual void OnRunNetworkTestsClicked() = 0;
+
+    // Called when error page is shown.
+    virtual void OnErrorPageShown(bool network_tests_shown) = 0;
 
    protected:
     virtual ~ErrorDelegate() = default;
@@ -220,14 +226,14 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
 
   void DisconnectMessageHost();
 
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
+  const raw_ptr<Profile> profile_;
   RequestOpenAppCallback request_open_app_callback_;
 
   // Not owned.
-  raw_ptr<TermsOfServiceDelegate, ExperimentalAsh> tos_delegate_ = nullptr;
+  raw_ptr<TermsOfServiceDelegate> tos_delegate_ = nullptr;
 
   // Not owned.
-  raw_ptr<ErrorDelegate, ExperimentalAsh> error_delegate_ = nullptr;
+  raw_ptr<ErrorDelegate> error_delegate_ = nullptr;
 
   // True, if ARC support app is requested to start, but the connection is not
   // yet established. Reset to false, when the app is started and the
@@ -235,7 +241,7 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   bool app_start_pending_ = false;
 
   // The instance is created and managed by Chrome.
-  raw_ptr<arc::ArcSupportMessageHost, ExperimentalAsh> message_host_ = nullptr;
+  raw_ptr<arc::ArcSupportMessageHost> message_host_ = nullptr;
 
   std::optional<display::ScopedOptionalDisplayObserver> display_observer_;
 

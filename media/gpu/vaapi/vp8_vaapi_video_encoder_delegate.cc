@@ -35,10 +35,11 @@ constexpr uint8_t kMinQP = 4;
 // resolution (180p).
 constexpr uint8_t kMaxQP = 117;
 
-// WebRTC's default qp values are 15 and 106 for screen sharing, respectively,
-// Set smaller qp values for zero hertz tab sharing, which is triggered when qp
-// values are consecutively less than or equal to 15.
-constexpr uint8_t kScreenMinQP = 8;
+// WebRTC's default quantizer values are 12 and 56 for screen sharing,
+// respectively; the corresponding quantization parameters are 15 and 106 for
+// screen sharing. Set smaller min qp value, 12, for zero hertz tab sharing,
+// which is triggered when qp values are consecutively less than or equal to 15.
+constexpr uint8_t kScreenMinQP = 12;
 constexpr uint8_t kScreenMaxQP = 106;
 
 // Convert Qindex, whose range is 0-127, to the quantizer parameter used in
@@ -103,6 +104,7 @@ libvpx::VP8RateControlRtcConfig CreateRateControlConfig(
   rc_cfg.max_intra_bitrate_pct = MaxSizeOfKeyframeAsPercentage(
       rc_cfg.buf_optimal_sz, encode_params.framerate);
   rc_cfg.framerate = encode_params.framerate;
+  rc_cfg.is_screen = encode_params.is_screen;
 
   // Fill temporal layers variables.
   rc_cfg.ts_number_layers = num_temporal_layers;
@@ -113,6 +115,7 @@ libvpx::VP8RateControlRtcConfig CreateRateControlConfig(
     rc_cfg.ts_rate_decimator[tid] = 1u << (num_temporal_layers - tid - 1);
   }
 
+  rc_cfg.frame_drop_thresh = encode_params.drop_frame_thresh;
   return rc_cfg;
 }
 
@@ -254,7 +257,6 @@ bool VP8TLEncodingIsEnabled() {
 
 VP8VaapiVideoEncoderDelegate::EncodeParams::EncodeParams()
     : kf_period_frames(kKFPeriod),
-      framerate(0),
       min_qp(kMinQP),
       max_qp(kMaxQP) {}
 
@@ -328,7 +330,10 @@ bool VP8VaapiVideoEncoderDelegate::Initialize(
       VideoEncodeAccelerator::Config::ContentType::kDisplay) {
     current_params_.min_qp = kScreenMinQP;
     current_params_.max_qp = kScreenMaxQP;
+    current_params_.is_screen = true;
   }
+
+  current_params_.drop_frame_thresh = config.drop_frame_thresh_percentage;
 
   // |rate_ctrl_| might be injected for tests.
   if (!rate_ctrl_) {
@@ -361,7 +366,8 @@ std::vector<gfx::Size> VP8VaapiVideoEncoderDelegate::GetSVCLayerResolutions() {
   return {visible_size_};
 }
 
-bool VP8VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
+VaapiVideoEncoderDelegate::PrepareEncodeJobResult
+VP8VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (encode_job.IsKeyframeRequested())
@@ -378,37 +384,45 @@ bool VP8VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
   // We only use |last_frame| for a reference frame. This follows the behavior
   // of libvpx encoder in chromium webrtc use case.
   std::array<bool, kNumVp8ReferenceBuffers> ref_frames_used;
-  SetFrameHeader(frame_num_, *picture, ref_frames_used);
+  if (auto result = SetFrameHeader(frame_num_, *picture, ref_frames_used);
+      result != PrepareEncodeJobResult::kSuccess) {
+    return result;
+  }
+
   DCHECK(!picture->frame_hdr->IsKeyframe() ||
          !base::Contains(ref_frames_used, true));
 
   if (!SubmitFrameParameters(encode_job, current_params_, picture,
                              reference_frames_, ref_frames_used)) {
     LOG(ERROR) << "Failed submitting frame parameters";
-    return false;
+    return PrepareEncodeJobResult::kFail;
   }
 
   UpdateReferenceFrames(picture);
 
   frame_num_ = (frame_num_ + 1) % current_params_.kf_period_frames;
 
-  return true;
+  return PrepareEncodeJobResult::kSuccess;
 }
 
 BitstreamBufferMetadata VP8VaapiVideoEncoderDelegate::GetMetadata(
     const EncodeJob& encode_job,
     size_t payload_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   auto metadata =
       VaapiVideoEncoderDelegate::GetMetadata(encode_job, payload_size);
+  CHECK(metadata.end_of_picture);
+  if (metadata.dropped_frame()) {
+    // BitstreamBufferMetadata should not have a codec specific metadata,
+    // when a frame is dropped.
+    return metadata;
+  }
+
   auto picture = GetVP8Picture(encode_job);
   DCHECK(picture);
-
   metadata.vp8 = picture->metadata_for_encoding;
   metadata.qp =
       base::strict_cast<int32_t>(picture->frame_hdr->quantization_hdr.y_ac_qi);
-
   return metadata;
 }
 
@@ -422,7 +436,7 @@ void VP8VaapiVideoEncoderDelegate::BitrateControlUpdate(
   DVLOGF(4) << "temporal_idx="
             << (metadata.vp8 ? metadata.vp8->temporal_idx : 0)
             << ", encoded chunk size=" << metadata.payload_size_bytes;
-
+  CHECK_NE(metadata.payload_size_bytes, 0u);
   rate_ctrl_->PostEncodeUpdate(metadata.payload_size_bytes);
 }
 
@@ -474,7 +488,8 @@ bool VP8VaapiVideoEncoderDelegate::UpdateRates(
   return true;
 }
 
-void VP8VaapiVideoEncoderDelegate::SetFrameHeader(
+VaapiVideoEncoderDelegate::PrepareEncodeJobResult
+VP8VaapiVideoEncoderDelegate::SetFrameHeader(
     size_t frame_num,
     VP8Picture& picture,
     std::array<bool, kNumVp8ReferenceBuffers>& ref_frames_used) {
@@ -515,7 +530,11 @@ void VP8VaapiVideoEncoderDelegate::SetFrameHeader(
           ? picture.metadata_for_encoding->temporal_idx
           : 0;
 
-  rate_ctrl_->ComputeQP(frame_params);
+  if (rate_ctrl_->ComputeQP(frame_params) == libvpx::FrameDropDecision::kDrop) {
+    CHECK(!keyframe);
+    DVLOGF(3) << "Drop frame";
+    return PrepareEncodeJobResult::kDrop;
+  }
   picture.frame_hdr->quantization_hdr.y_ac_qi = rate_ctrl_->GetQP();
   picture.frame_hdr->loopfilter_hdr.level =
       base::checked_cast<uint8_t>(rate_ctrl_->GetLoopfilterLevel());
@@ -528,6 +547,7 @@ void VP8VaapiVideoEncoderDelegate::SetFrameHeader(
                     ? " temporal id=" +
                           base::NumberToString(frame_params.temporal_layer_id)
                     : "");
+  return PrepareEncodeJobResult::kSuccess;
 }
 
 void VP8VaapiVideoEncoderDelegate::UpdateReferenceFrames(

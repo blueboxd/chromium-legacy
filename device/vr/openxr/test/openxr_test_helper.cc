@@ -144,18 +144,17 @@ void OpenXrTestHelper::OnPresentedFrame() {
     const device::OpenXrViewConfiguration& view_config =
         GetViewConfigInfo(view_config_type);
     if (view_config.Active()) {
-      const std::vector<XrViewConfigurationView>& view_properties =
+      const std::vector<device::OpenXrViewProperties>& view_properties =
           view_config.Properties();
       for (uint32_t i = 0; i < view_properties.size(); i++) {
-        const XrViewConfigurationView& properties = view_properties[i];
+        const device::OpenXrViewProperties& properties = view_properties[i];
         device::ViewData& data = submitted_views.emplace_back();
         data.viewport =
-            gfx::Rect(current_x, 0, properties.recommendedImageRectWidth,
-                      properties.recommendedImageRectHeight);
+            gfx::Rect(current_x, 0, properties.Width(), properties.Height());
         data.eye = GetEyeForIndex(i, view_properties.size());
 
         CopyTextureDataIntoFrameData(current_x, data);
-        current_x += properties.recommendedImageRectWidth;
+        current_x += properties.Width();
       }
     }
   }
@@ -597,10 +596,11 @@ void OpenXrTestHelper::AddDimensions(
     const device::OpenXrViewConfiguration& view_config,
     uint32_t& width,
     uint32_t& height) const {
-  const std::vector<XrViewConfigurationView>& views = view_config.Properties();
-  for (const XrViewConfigurationView& view : views) {
-    width += view.recommendedImageRectWidth;
-    height = std::max(height, view.recommendedImageRectHeight);
+  const std::vector<device::OpenXrViewProperties>& views =
+      view_config.Properties();
+  for (const device::OpenXrViewProperties& view : views) {
+    width += view.Width();
+    height = std::max(height, view.Height());
   }
 }
 
@@ -911,7 +911,7 @@ void OpenXrTestHelper::UpdateEventQueue() {
   }
 }
 
-absl::optional<gfx::Transform> OpenXrTestHelper::GetPose() {
+std::optional<gfx::Transform> OpenXrTestHelper::GetPose() {
   base::AutoLock lock(lock_);
   if (test_hook_) {
     device::PoseFrameData pose_data = test_hook_->WaitGetPresentingPose();
@@ -919,15 +919,15 @@ absl::optional<gfx::Transform> OpenXrTestHelper::GetPose() {
       return PoseFrameDataToTransform(pose_data);
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<device::DeviceConfig> OpenXrTestHelper::GetDeviceConfig() {
+std::optional<device::DeviceConfig> OpenXrTestHelper::GetDeviceConfig() {
   base::AutoLock lock(lock_);
   if (test_hook_) {
     return test_hook_->WaitGetDeviceConfig();
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool OpenXrTestHelper::GetCanCreateSession() {
@@ -1001,6 +1001,7 @@ void OpenXrTestHelper::UpdateInteractionProfile(
       break;
     case device::mojom::OpenXrInteractionProfileType::kInvalid:
     case device::mojom::OpenXrInteractionProfileType::kAndroidHandGestures:
+    case device::mojom::OpenXrInteractionProfileType::kMetaHandAim:
       NOTREACHED() << "Invalid EventData interaction_profile type";
       break;
   }
@@ -1009,7 +1010,7 @@ void OpenXrTestHelper::UpdateInteractionProfile(
 void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   DCHECK_NE(pose, nullptr);
   *pose = device::PoseIdentity();
-  absl::optional<gfx::Transform> transform = absl::nullopt;
+  std::optional<gfx::Transform> transform = std::nullopt;
 
   if (reference_spaces_.count(space) == 1) {
     if (reference_spaces_.at(space).compare(kStageReferenceSpacePath) == 0) {
@@ -1041,7 +1042,7 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   }
 
   if (transform) {
-    absl::optional<gfx::DecomposedTransform> decomposed_transform =
+    std::optional<gfx::DecomposedTransform> decomposed_transform =
         transform->Decompose();
     DCHECK(decomposed_transform);
 
@@ -1081,8 +1082,8 @@ bool OpenXrTestHelper::UpdateViews(XrViewConfigurationType view_config_type,
   RETURN_IF(size != 1 && size != 2, XR_ERROR_VALIDATION_FAILURE,
             "UpdateViews only supports view configurations with 1 or 2 views");
 
-  absl::optional<gfx::Transform> pose = GetPose();
-  absl::optional<device::DeviceConfig> config = GetDeviceConfig();
+  std::optional<gfx::Transform> pose = GetPose();
+  std::optional<device::DeviceConfig> config = GetDeviceConfig();
 
   if (!pose.has_value() && !config.has_value()) {
     return true;

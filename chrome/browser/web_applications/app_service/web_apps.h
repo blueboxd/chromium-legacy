@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APPS_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -25,7 +26,6 @@
 #include "components/services/app_service/public/cpp/menu.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/resource/resource_scale_factor.h"
 #include "url/gurl.h"
 
@@ -50,9 +50,8 @@ class WebApp;
 class WebAppProvider;
 
 // An app publisher (in the App Service sense) of Web Apps.
-class WebApps : public apps::AppPublisher,
-                public WebAppPublisherHelper::Delegate,
-                public base::SupportsWeakPtr<WebApps> {
+class WebApps final : public apps::AppPublisher,
+                      public WebAppPublisherHelper::Delegate {
  public:
   explicit WebApps(apps::AppServiceProxy* proxy);
   WebApps(const WebApps&) = delete;
@@ -132,8 +131,8 @@ class WebApps : public apps::AppPublisher,
   void PublishWebApp(apps::AppPtr app) override;
   void ModifyWebAppCapabilityAccess(
       const std::string& app_id,
-      absl::optional<bool> accessing_camera,
-      absl::optional<bool> accessing_microphone) override;
+      std::optional<bool> accessing_camera,
+      std::optional<bool> accessing_microphone) override;
 
   std::vector<apps::AppPtr> CreateWebApps();
   void InitWebApps();
@@ -169,7 +168,7 @@ class WebApps : public apps::AppPublisher,
   bool is_ready_ = false;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const raw_ptr<apps::InstanceRegistry, ExperimentalAsh> instance_registry_;
+  const raw_ptr<apps::InstanceRegistry> instance_registry_;
 #endif
 
   WebAppPublisherHelper publisher_helper_;

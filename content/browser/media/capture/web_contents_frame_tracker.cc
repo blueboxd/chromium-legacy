@@ -37,7 +37,7 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #endif
 
@@ -58,13 +58,13 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
   ~WebContentsContext() override = default;
 
   // WebContextFrameTracker::Context overrides.
-  absl::optional<gfx::Rect> GetScreenBounds() override {
+  std::optional<gfx::Rect> GetScreenBounds() override {
     if (auto* view = GetCurrentView()) {
       // If we know the available size of the screen, we don't want to exceed
       // it as it may result in strange capture behavior in some cases.
       return view->GetScreenInfo().rect;
     }
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   WebContentsImpl::CaptureTarget GetCaptureTarget() override {
@@ -128,7 +128,7 @@ WebContentsFrameTracker::WebContentsFrameTracker(
     MouseCursorOverlayController* cursor_controller)
     : device_(std::move(device)),
       device_task_runner_(std::move(device_task_runner))
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
       ,
       cursor_controller_(cursor_controller->GetWeakPtr())
 #endif
@@ -139,7 +139,7 @@ WebContentsFrameTracker::WebContentsFrameTracker(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(device_task_runner_);
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   CHECK(cursor_controller_);
 #endif
 }
@@ -242,7 +242,7 @@ gfx::Size WebContentsFrameTracker::CalculatePreferredSize(
   // If we know the available size of the screen, we don't want to exceed
   // it as it may result in strange capture behavior in some cases.
   if (context_) {
-    const absl::optional<gfx::Rect> screen_bounds = context_->GetScreenBounds();
+    const std::optional<gfx::Rect> screen_bounds = context_->GetScreenBounds();
     if (screen_bounds) {
       if (screen_bounds->size().IsEmpty()) {
         return {};
@@ -444,8 +444,8 @@ void WebContentsFrameTracker::ApplySubCaptureTarget(
 
   sub_capture_target_ =
       target_token.is_zero()
-          ? absl::nullopt
-          : absl::make_optional<SubCaptureTargetInfo>(type, target_token);
+          ? std::nullopt
+          : std::make_optional<SubCaptureTargetInfo>(type, target_token);
 
   sub_capture_target_version_ = sub_capture_target_version;
 
@@ -506,7 +506,7 @@ void WebContentsFrameTracker::OnPossibleTargetChange() {
   // share-this-tab-instead is clicked.
   if (capture_target.sink_id != target_frame_sink_id_) {
     target_frame_sink_id_ = capture_target.sink_id;
-    absl::optional<viz::VideoCaptureTarget> target;
+    std::optional<viz::VideoCaptureTarget> target;
     if (capture_target.sink_id.is_valid()) {
       target =
           viz::VideoCaptureTarget(capture_target.sink_id, DeriveSubTarget());
@@ -532,7 +532,7 @@ void WebContentsFrameTracker::SetTargetView(gfx::NativeView view) {
     return;
   }
   target_native_view_ = view;
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if (cursor_controller_) {
     cursor_controller_->SetTargetView(view);
   }

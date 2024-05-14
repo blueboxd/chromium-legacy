@@ -18,6 +18,7 @@
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "components/app_launch_prefetch/app_launch_prefetch.h"
 #include "components/crash/core/app/crash_export_thunks.h"
 #include "components/crash/core/app/crash_reporter_client.h"
 #include "components/crash/core/app/crash_switches.h"
@@ -118,10 +119,9 @@ bool PlatformCrashpadInitialization(
         start_arguments.push_back(std::string("--user-data-dir=") +
                                   user_data_dir);
       }
-      // The prefetch argument added here has to be documented in
-      // chrome_switches.cc, below the kPrefetchArgument* constants. A constant
-      // can't be used here because crashpad can't depend on Chrome.
-      start_arguments.push_back("/prefetch:7");
+      start_arguments.push_back(
+          base::WideToUTF8(app_launch_prefetch::GetPrefetchSwitch(
+              app_launch_prefetch::SubprocessType::kCrashpad)));
     } else {
       base::FilePath exe_dir = exe_file.DirName();
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));

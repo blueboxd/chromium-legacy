@@ -10,19 +10,22 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_error_init.h"
 #include "third_party/blink/renderer/modules/webtransport/web_transport_error.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
 
 TEST(WebTransportErrorTest, DefaultConstruct) {
+  test::TaskEnvironment task_environment;
   auto* error = WebTransportError::Create(WebTransportErrorInit::Create());
 
   EXPECT_EQ(error->code(), 0);
-  EXPECT_EQ(error->streamErrorCode(), absl::nullopt);
+  EXPECT_EQ(error->streamErrorCode(), std::nullopt);
   EXPECT_EQ(error->message(), "");
   EXPECT_EQ(error->source(), "stream");
 }
 
 TEST(WebTransportErrorTest, ConstructWithStreamErrorCode) {
+  test::TaskEnvironment task_environment;
   auto* init = WebTransportErrorInit::Create();
   init->setStreamErrorCode(11);
   auto* error = WebTransportError::Create(init);
@@ -32,6 +35,7 @@ TEST(WebTransportErrorTest, ConstructWithStreamErrorCode) {
 }
 
 TEST(WebTransportErrorTest, ConstructWithMessage) {
+  test::TaskEnvironment task_environment;
   auto* init = WebTransportErrorInit::Create();
   init->setMessage("wow");
   auto* error = WebTransportError::Create(init);
@@ -40,6 +44,7 @@ TEST(WebTransportErrorTest, ConstructWithMessage) {
 }
 
 TEST(WebTransportErrorTest, InternalCreate) {
+  test::TaskEnvironment task_environment;
   V8TestingScope scope;
   auto* isolate = scope.GetIsolate();
   auto context = scope.GetContext();

@@ -11,6 +11,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -23,9 +24,11 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/view_observer.h"
 #include "url/gurl.h"
 
 class Browser;
+class FullscreenController;
 class Profile;
 
 namespace javascript_dialogs {
@@ -45,6 +48,10 @@ class WebContents;
 
 namespace gfx {
 class Rect;
+}
+
+namespace views {
+class View;
 }
 
 // A collections of functions designed for use with InProcessBrowserTest.
@@ -193,6 +200,65 @@ void WaitForAutocompleteDone(Browser* browser);
 // Waits until the window gets minimized.
 // Returns success or not.
 bool WaitForMinimized(Browser* browser);
+
+// Waits for fullscreen state to be updated.
+// There're two variation of fullscreen concepts, browser fullscreen and
+// tab fullscreen. Due to fullscreen implementation, fullscreen state may
+// be updated synchronously, while observer invocations and some other
+// following tasks are done asynchronously.
+// This class checks the condition on instance creation, then every
+// OnFullscreenStateChanged invocation to deal with the situation.
+// Once the condition is met, this class remembers the state, so following
+// Wait() will do nothing, even if the condition is changed once again.
+class FullscreenWaiter : public FullscreenObserver {
+ public:
+  // The conditions to be satisfied. std::nullopt means to ignore the
+  // value.
+  struct Expectation {
+    // Condition for IsFullscreenForBrowser() to satisfy.
+    std::optional<bool> browser_fullscreen;
+    // Condition for IsTabFullscreen() to satisfy.
+    std::optional<bool> tab_fullscreen;
+    // ID of the display to be used for the fullscreen.
+    std::optional<int64_t> display_id;
+  };
+  // Shortcut constant representing no fullscreen is enabled.
+  inline static constexpr Expectation kNoFullscreen = {
+      .browser_fullscreen = false,
+      .tab_fullscreen = false,
+  };
+
+  FullscreenWaiter(Browser* browser, Expectation expecation);
+
+  FullscreenWaiter(const FullscreenWaiter&) = delete;
+  FullscreenWaiter& operator=(const FullscreenWaiter&) = delete;
+  ~FullscreenWaiter() override;
+
+  // Waits for the fullscreen state(s) to be satisfied.
+  // Once it is satisfied after creation, this will do nothing,
+  // even if the state is changed once again, and does not satisfy
+  // the condition on calling Wait().
+  void Wait();
+
+  // FullscreenObserver:
+  void OnFullscreenStateChanged() override;
+
+ private:
+  // Checks whether the condition is satisfied now.
+  bool IsSatisfied() const;
+
+  const Expectation expectation_;
+  const raw_ptr<FullscreenController> controller_;
+  base::ScopedObservation<FullscreenController, FullscreenObserver>
+      observation_{this};
+  base::RunLoop run_loop_;
+
+  // Caches if the condition is satisfied even once.
+  bool satisfied_;
+};
+
+// Toggles browser fullscreen mode, then wait for its completion.
+void ToggleFullscreenModeAndWait(Browser* browser);
 
 // Send the given text to the omnibox and wait until it's updated.
 void SendToOmniboxAndSubmit(
@@ -470,6 +536,25 @@ class CheckWaiter {
   const base::TimeTicks timeout_;
   // The waiter's RunLoop quit closure.
   base::RepeatingClosure quit_;
+};
+
+// Used to wait for the view to contain non-empty bounds.
+class ViewBoundsWaiter : public views::ViewObserver {
+ public:
+  explicit ViewBoundsWaiter(views::View* observed_view);
+  ViewBoundsWaiter(const ViewBoundsWaiter&) = delete;
+  ViewBoundsWaiter& operator=(const ViewBoundsWaiter&) = delete;
+  ~ViewBoundsWaiter() override;
+
+  // Blocks until the view has non-empty bounds.
+  void WaitForNonEmptyBounds();
+
+ private:
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* observed_view) override;
+
+  const raw_ptr<views::View> observed_view_;
+  base::RunLoop run_loop_;
 };
 
 }  // namespace ui_test_utils

@@ -60,6 +60,12 @@ void ClearMetadataIfStoppedHelperOnModelThread(
   delegate->ClearMetadataIfStopped();
 }
 
+void ReportBridgeErrorOnModelThreadForTest(  // IN-TEST
+    base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  CHECK(delegate);
+  delegate->ReportBridgeErrorForTest();  // IN-TEST
+}
+
 // Rurns some task on the destination task runner (backend sequence), first
 // exercising |delegate_provider| *also* in the backend sequence.
 void RunModelTask(
@@ -68,8 +74,11 @@ void RunModelTask(
   base::WeakPtr<ModelTypeControllerDelegate> delegate = delegate_provider.Run();
   // TODO(mastiz): Migrate away from weak pointers, since there is no actual
   // need, provided that KeyedServices have proper dependencies.
-  DCHECK(delegate);
-  std::move(task).Run(delegate);
+  // TODO(crbug.com/1523624): switch to CHECK once all data types provide
+  // non-null delegates.
+  if (delegate) {
+    std::move(task).Run(delegate);
+  }
 }
 
 }  // namespace
@@ -123,6 +132,11 @@ void ProxyModelTypeControllerDelegate::RecordMemoryUsageAndCountsHistograms() {
 void ProxyModelTypeControllerDelegate::ClearMetadataIfStopped() {
   PostTask(FROM_HERE,
            base::BindOnce(&ClearMetadataIfStoppedHelperOnModelThread));
+}
+
+void ProxyModelTypeControllerDelegate::ReportBridgeErrorForTest() {
+  PostTask(FROM_HERE,
+           base::BindOnce(&ReportBridgeErrorOnModelThreadForTest));  // IN-TEST
 }
 
 void ProxyModelTypeControllerDelegate::PostTask(

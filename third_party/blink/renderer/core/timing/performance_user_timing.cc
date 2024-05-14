@@ -179,7 +179,7 @@ base::TimeTicks UserTiming::GetPerformanceMarkUnsafeTimeForTraces(
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                                         const AtomicString& measure_name,
                                         const V8UnionDoubleOrString* start,
-                                        const absl::optional<double>& duration,
+                                        const std::optional<double>& duration,
                                         const V8UnionDoubleOrString* end,
                                         const ScriptValue& detail,
                                         ExceptionState& exception_state,
@@ -217,13 +217,17 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
     WTF::AddFloatToHash(hash, start_time);
     WTF::AddFloatToHash(hash, end_time);
 
-    v8::Isolate* isolate = performance_->GetExecutionContext()->GetIsolate();
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     String serialized_detail = "";
-    if (!(detail.IsEmpty() || detail.V8Value()->IsNullOrUndefined())) {
-      v8::Local<v8::String> v8_string;
-      if (v8::JSON::Stringify(context, detail.V8Value()).ToLocal(&v8_string)) {
-        serialized_detail = ToCoreString(isolate, v8_string);
+    if (ExecutionContext* execution_context =
+            performance_->GetExecutionContext()) {
+      v8::Isolate* isolate = execution_context->GetIsolate();
+      v8::Local<v8::Context> context = isolate->GetCurrentContext();
+      if (!(detail.IsEmpty() || detail.V8Value()->IsNullOrUndefined())) {
+        v8::Local<v8::String> v8_string;
+        if (v8::JSON::Stringify(context, detail.V8Value())
+                .ToLocal(&v8_string)) {
+          serialized_detail = ToCoreString(isolate, v8_string);
+        }
       }
     }
 

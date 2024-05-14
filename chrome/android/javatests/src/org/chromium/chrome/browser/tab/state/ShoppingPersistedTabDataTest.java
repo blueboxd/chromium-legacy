@@ -29,9 +29,10 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcher;
-import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcherJni;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
@@ -42,9 +43,6 @@ import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.PriceDropMetricsLogger.MetricsResult;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.HintsProto;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -71,7 +69,6 @@ public class ShoppingPersistedTabDataTest {
 
     @Rule public TestRule mProcessor = new Features.InstrumentationProcessor();
 
-    @Mock protected EndpointFetcher.Natives mEndpointFetcherJniMock;
 
     @Mock protected OptimizationGuideBridge.Natives mOptimizationGuideBridgeJniMock;
 
@@ -87,7 +84,6 @@ public class ShoppingPersistedTabDataTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mMocker.mock(EndpointFetcherJni.TEST_HOOKS, mEndpointFetcherJniMock);
         mMocker.mock(OptimizationGuideBridgeJni.TEST_HOOKS, mOptimizationGuideBridgeJniMock);
         // Ensure native pointer is initialized
         doReturn(1L).when(mOptimizationGuideBridgeJniMock).init();
@@ -1116,9 +1112,6 @@ public class ShoppingPersistedTabDataTest {
     @SmallTest
     @Test
     public void testShoppingPersistedTabDataSupportedForMaintenance() {
-        MockTab mockTab =
-                MockTab.createAndInitialize(ShoppingPersistedTabDataTestUtils.TAB_ID, mProfileMock);
-        ShoppingPersistedTabData shoppingPersistedTabData = new ShoppingPersistedTabData(mockTab);
         Assert.assertTrue(
                 PersistedTabData.getSupportedMaintenanceClassesForTesting()
                         .contains(ShoppingPersistedTabData.class));

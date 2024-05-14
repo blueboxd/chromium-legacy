@@ -594,7 +594,6 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
 
   std::vector<std::unique_ptr<ZygoteForkDelegate>> zygote_fork_delegates;
   delegate->ZygoteStarting(&zygote_fork_delegates);
-  media::InitializeMediaLibrary();
 
   // This function call can return multiple times, once per fork().
   if (!ZygoteMain(std::move(zygote_fork_delegates))) {
@@ -645,6 +644,9 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
 
   base::allocator::PartitionAllocSupport::Get()
       ->ReconfigureAfterFeatureListInit(process_type);
+
+  // Ensure media library is initialized after feature list initialization.
+  media::InitializeMediaLibrary();
 
   MainFunctionParams main_params(command_line);
   main_params.zygote_child = true;
@@ -823,13 +825,17 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   [[maybe_unused]] base::GlobalDescriptors* g_fds =
       base::GlobalDescriptors::GetInstance();
 
-// On Android, the ipc_fd is passed through the Java service.
+// On Android, the shared descriptors are passed through the Java service,
+// which takes care of updating these mappings; otherwise, we need to update
+// the mappings explicitly.
 #if !BUILDFLAG(IS_ANDROID)
   g_fds->Set(kMojoIPCChannel,
              kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
-
   g_fds->Set(kFieldTrialDescriptor,
              kFieldTrialDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+  g_fds->Set(kHistogramSharedMemoryDescriptor,
+             kHistogramSharedMemoryDescriptor +
+                 base::GlobalDescriptors::kBaseDescriptor);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OPENBSD)
@@ -868,7 +874,7 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
 
   if (!GetContentClient())
     ContentClientCreator::Create(delegate_);
-  absl::optional<int> basic_startup_exit_code =
+  std::optional<int> basic_startup_exit_code =
       delegate_->BasicStartupComplete();
   if (basic_startup_exit_code.has_value())
     return basic_startup_exit_code.value();
@@ -1174,8 +1180,7 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
     const bool has_thread_pool =
         GetContentClient()->browser()->CreateThreadPool("Browser");
 
-    absl::optional<int> pre_browser_main_exit_code =
-        delegate_->PreBrowserMain();
+    std::optional<int> pre_browser_main_exit_code = delegate_->PreBrowserMain();
     if (pre_browser_main_exit_code.has_value())
       return pre_browser_main_exit_code.value();
 
@@ -1200,7 +1205,7 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
           variations::VariationsIdsProvider::Mode::kUseSignedInState);
     }
 
-    absl::optional<int> post_early_initialization_exit_code =
+    std::optional<int> post_early_initialization_exit_code =
         delegate_->PostEarlyInitialization(invoked_in_browser);
     if (post_early_initialization_exit_code.has_value())
       return post_early_initialization_exit_code.value();

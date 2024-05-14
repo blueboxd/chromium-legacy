@@ -9,11 +9,14 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/web/public/download/download_task_observer.h"
-#include "ios/web/public/web_state_observer.h"
+#import "base/memory/raw_ptr.h"
+#import "ios/web/public/download/download_task_observer.h"
+#import "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
 @protocol DownloadManagerTabHelperDelegate;
+@protocol SystemIdentity;
+
 namespace web {
 class DownloadTask;
 class WebState;
@@ -30,15 +33,24 @@ class DownloadManagerTabHelper
 
   ~DownloadManagerTabHelper() override;
 
-  // Asynchronously downloads a file using the given `task`.
-  virtual void Download(std::unique_ptr<web::DownloadTask> task);
+  // Set the current download task for this tab.
+  virtual void SetCurrentDownload(std::unique_ptr<web::DownloadTask> task);
 
   // Returns `true` after Download() was called, `false` after the task was
   // cancelled.
   bool has_download_task() const { return task_.get(); }
 
-  // Set the delegate. The tab helper will no-op if the delegate is nil.
+  // Returns the currently active download task.
+  web::DownloadTask* GetActiveDownloadTask();
+
+  // Sets the delegate. The tab helper will no-op if the delegate is nil.
   void SetDelegate(id<DownloadManagerTabHelperDelegate> delegate);
+
+  // Starts the current download task. Asserts that `task == task_`.
+  virtual void StartDownload(web::DownloadTask* task);
+
+  // Sets whether the Download toolbar should adapt to the fullscreen state.
+  virtual void AdaptToFullscreen(bool adapt_to_fullscreen);
 
  protected:
   // Allow subclassing from DownloadManagerTabHelper for testing purposes.
@@ -55,14 +67,13 @@ class DownloadManagerTabHelper
   // web::DownloadTaskObserver overrides:
   void OnDownloadUpdated(web::DownloadTask* task) override;
 
-  // Returns key for using with NetworkActivityIndicatorManager.
-  NSString* GetNetworkActivityKey() const;
-
   // Assigns `task` to `task_`; replaces the current download if exists;
   // instructs the delegate that download has started.
   void DidCreateDownload(std::unique_ptr<web::DownloadTask> task);
+  // Returns whether `task_` still needs to be saved to Drive.
+  bool WillDownloadTaskBeSavedToDrive() const;
 
-  web::WebState* web_state_ = nullptr;
+  raw_ptr<web::WebState> web_state_ = nullptr;
   __weak id<DownloadManagerTabHelperDelegate> delegate_ = nil;
   std::unique_ptr<web::DownloadTask> task_;
   bool delegate_started_ = false;

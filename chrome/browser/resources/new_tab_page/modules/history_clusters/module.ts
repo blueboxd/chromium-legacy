@@ -6,22 +6,22 @@ import '../module_header.js';
 import './suggest_tile.js';
 import '../../discount.mojom-webui.js';
 
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
+import type {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {listenOnce} from 'chrome://resources/js/util.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Cart} from '../../cart.mojom-webui.js';
-import {Cluster, URLVisit} from '../../history_cluster_types.mojom-webui.js';
+import type {Cart} from '../../cart.mojom-webui.js';
+import type {Cluster, URLVisit} from '../../history_cluster_types.mojom-webui.js';
 import {LayoutType} from '../../history_clusters_layout_type.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
 import {NewTabPageProxy} from '../../new_tab_page_proxy.js';
-import {InfoDialogElement} from '../info_dialog';
+import type {InfoDialogElement} from '../info_dialog';
 import {ModuleDescriptor} from '../module_descriptor.js';
 
 import {HistoryClustersProxyImpl} from './history_clusters_proxy.js';
 import {getTemplate} from './module.html.js';
-import {TileModuleElement} from './tile.js';
+import type {TileModuleElement} from './tile.js';
 
 export const LAYOUT_1_MIN_IMAGE_VISITS = 2;
 export const LAYOUT_1_MIN_VISITS = 2;
@@ -339,30 +339,25 @@ async function createElement(): Promise<HistoryClustersModuleElement|null> {
                          .length;
   const visitCount = element.cluster.visits.length;
   element.discounts = [];
-  if (loadTimeData.getBoolean('historyClustersModuleDiscountsEnabled')) {
-    const {discounts} = await HistoryClustersProxyImpl.getInstance()
-                            .handler.getDiscountsForCluster(clusters[0]);
-    for (const visit of clusters[0].visits) {
-      let discountInValue = '';
-      for (const [url, urlDiscounts] of discounts) {
-        if (url.url === visit.normalizedUrl.url && urlDiscounts.length > 0) {
-          // API is designed to support multiple discounts, but for now we only
-          // have one.
-          discountInValue = urlDiscounts[0].valueInText;
-          visit.normalizedUrl.url = urlDiscounts[0].annotatedVisitUrl.url;
-        }
+  const {discounts} = await HistoryClustersProxyImpl.getInstance()
+                          .handler.getDiscountsForCluster(clusters[0]);
+  for (const visit of clusters[0].visits) {
+    let discountInValue = '';
+    for (const [url, urlDiscounts] of discounts) {
+      if (url.url === visit.normalizedUrl.url && urlDiscounts.length > 0) {
+        // API is designed to support multiple discounts, but for now we only
+        // have one.
+        discountInValue = urlDiscounts[0].valueInText;
+        visit.normalizedUrl.url = urlDiscounts[0].annotatedVisitUrl.url;
       }
-      element.discounts.push(discountInValue);
     }
-    // For visits without discounts, discount string in corresponding index in
-    // `discounts` array is empty.
-    const hasDiscount =
-        element.discounts.some((discount) => discount.length > 0);
-    chrome.metricsPrivate.recordBoolean(
-        `NewTabPage.HistoryClusters.HasDiscount`, hasDiscount);
-  } else {
-    element.discounts = Array(visitCount).fill('');
+    element.discounts.push(discountInValue);
   }
+  // For visits without discounts, discount string in corresponding index in
+  // `discounts` array is empty.
+  const hasDiscount = element.discounts.some((discount) => discount.length > 0);
+  chrome.metricsPrivate.recordBoolean(
+      `NewTabPage.HistoryClusters.HasDiscount`, hasDiscount);
 
   // Calculate which layout to use.
   if (imageCount >= LAYOUT_3_MIN_IMAGE_VISITS) {

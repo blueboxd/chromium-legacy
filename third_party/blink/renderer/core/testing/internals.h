@@ -435,6 +435,7 @@ class Internals final : public ScriptWrappable {
 
   DOMRectList* draggableRegions(Document*, ExceptionState&);
   DOMRectList* nonDraggableRegions(Document*, ExceptionState&);
+  void SetSupportsAppRegion(bool supports_app_region);
 
   DOMArrayBuffer* serializeObject(v8::Isolate* isolate,
                                   const ScriptValue&,
@@ -501,8 +502,6 @@ class Internals final : public ScriptWrappable {
 
   void setFocused(bool);
   void setInitialFocus(bool);
-
-  Element* interestedElement();
 
   // Check if frame associated with current internals object is
   // active or not.

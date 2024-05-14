@@ -8,9 +8,9 @@
 #include "base/time/time.h"
 #include "base/types/id_type.h"
 #include "components/autofill/core/browser/autofill_granular_filling_utils.h"
+#include "components/autofill/core/browser/form_filler.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
-#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace autofill {
@@ -30,27 +30,6 @@ enum class OptionalBoolean : uint8_t {
 OptionalBoolean& operator|=(OptionalBoolean& a, OptionalBoolean b);
 OptionalBoolean ToOptionalBoolean(bool value);
 bool OptionalBooleanToBool(OptionalBoolean value);
-
-// Whether and why filling for a field was skipped during autofill.
-enum class FieldFillingSkipReason : uint8_t {
-  // Values are recorded as metrics and must not change or be reused.
-  kUnknown = 0,
-  kNotSkipped = 1,
-  kNotInFilledSection = 2,
-  kNotFocused = 3,
-  kFormChanged = 4,
-  kInvisibleField = 5,
-  kValuePrefilled = 6,
-  kUserFilledFields = 7,
-  kAutofilledFieldsNotRefill = 8,
-  kNoFillableGroup = 9,
-  kRefillNotInInitialFill = 10,
-  kExpiredCards = 11,
-  kFillingLimitReachedType = 12,
-  kUnrecognizedAutocompleteAttribute = 13,
-  kFieldDoesNotMatchTargetFieldsSet = 14,
-  kMaxValue = kFieldDoesNotMatchTargetFieldsSet
-};
 
 // Enum for different data types filled during autofill filling events,
 // including those of the SingleFieldFormFiller.
@@ -95,7 +74,7 @@ bool AreCollapsible(const AskForValuesToFillFieldLogEvent& event1,
 // Log the field that triggers the suggestion that the user selects to fill.
 struct TriggerFillFieldLogEvent {
   FillEventId fill_event_id = GetNextFillEventId();
-  // The type of filled data for the autofil event.
+  // The type of filled data for the Autofill event.
   FillDataType data_type = internal::IsRequired();
   // The country_code associated with the information filled. Only present for
   // autofill addresses (i.e. `AutofillEventType::kAutofillProfile`).
@@ -118,8 +97,9 @@ struct FillFieldLogEvent {
   // Whether the field was autofilled during this fill operation. If a fill
   // operation did not change the value of a field because the old value
   // matches the filled value, this is still recorded as a
-  // was_autofilled = true.
-  OptionalBoolean was_autofilled = internal::IsRequired();
+  // was_autofilled = true before checking the iframe security policy.
+  OptionalBoolean was_autofilled_before_security_policy =
+      internal::IsRequired();
   // Whether the field had a value after this fill operation.
   OptionalBoolean had_value_after_filling = internal::IsRequired();
   // The `AutofillFillingMethod` used to fill the field. This represents the
@@ -127,6 +107,16 @@ struct FillFieldLogEvent {
   // may lead to a different set of fields being filled. These sets/groups can
   // be either the full form, a group of related fields or a single field.
   AutofillFillingMethod filling_method = AutofillFillingMethod::kNone;
+  // Records whether filling was ever prevented because of the cross c
+  // autofill security policy that applies to credit cards.
+  OptionalBoolean filling_prevented_by_iframe_security_policy =
+      OptionalBoolean::kUndefined;
+  // The hash of the value that would have been filled if the field wasn't
+  // skipped because it was pre-filled on page load. In all other cases this
+  // member is set to `std::nullopt`.
+  std::optional<size_t>
+      value_that_would_have_been_filled_in_a_prefilled_field_hash =
+          std::nullopt;
 };
 
 bool AreCollapsible(const FillFieldLogEvent& event1,
@@ -142,7 +132,7 @@ bool AreCollapsible(const TypingFieldLogEvent& event1,
 
 // Events recorded after local heuristic prediction happened.
 struct HeuristicPredictionFieldLogEvent {
-  ServerFieldType field_type = internal::IsRequired();
+  FieldType field_type = internal::IsRequired();
   PatternSource pattern_source = internal::IsRequired();
   bool is_active_pattern_source = internal::IsRequired();
   size_t rank_in_field_signature_group = internal::IsRequired();
@@ -163,9 +153,11 @@ bool AreCollapsible(const AutocompleteAttributeFieldLogEvent& event1,
 
 // Events recorded after autofill server prediction happened.
 struct ServerPredictionFieldLogEvent {
-  ServerFieldType server_type1 = internal::IsRequired();
+  std::optional<FieldType> server_type1 =
+      static_cast<FieldType>(internal::IsRequired());
   FieldPrediction::Source prediction_source1 = internal::IsRequired();
-  ServerFieldType server_type2 = internal::IsRequired();
+  std::optional<FieldType> server_type2 =
+      static_cast<FieldType>(internal::IsRequired());
   FieldPrediction::Source prediction_source2 = internal::IsRequired();
   bool server_type_prediction_is_override = internal::IsRequired();
   size_t rank_in_field_signature_group = internal::IsRequired();
@@ -176,7 +168,7 @@ bool AreCollapsible(const ServerPredictionFieldLogEvent& event1,
 
 // Events recorded after rationalization happened.
 struct RationalizationFieldLogEvent {
-  ServerFieldType field_type = internal::IsRequired();
+  FieldType field_type = internal::IsRequired();
   size_t section_id = internal::IsRequired();
   bool type_changed = internal::IsRequired();
 };

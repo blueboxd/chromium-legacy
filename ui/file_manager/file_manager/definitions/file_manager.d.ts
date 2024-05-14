@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import type {FileManagerBase} from '../background/js/file_manager_base.js';
-import type {VolumeManager} from '../externs/volume_manager.js';
+import type {VolumeManager} from '../background/js/volume_manager.js';
 import type {MetadataModel} from '../foreground/js/metadata/metadata_model.js';
 import type {FileManagerUI} from '../foreground/js/ui/file_manager_ui.js';
 
@@ -22,7 +22,7 @@ interface FileManager {
   directoryModel: DirectoryModel;
   directoryTreeNamingController: DirectoryTreeNamingController;
   ui: FileManagerUI;
-  getLastVisitedURL(): string;
+  getLastVisitedUrl(): string;
   getTranslatedString(id: string): string;
   onUnloadForTest(): void;
 }
@@ -30,6 +30,7 @@ interface FileManager {
 interface AppState {
   currentDirectoryURL?: string;
   selectionURL?: string;
+  viewOptions?: any;
 }
 
 /**
@@ -42,17 +43,11 @@ declare global {
     IN_TEST: boolean;
     JSErrorCount: number;
     store: Store;
-    /** Log action data in the console for debugging purpose. */
-    DEBUG_STORE: boolean;
 
     /** Namespace used for test utils. */
     test: any;
 
     appState?: AppState;
-
-    webkitResolveLocalFileSystemURL(
-        url: string, successCallback: FileSystemEntryCallback,
-        errorCallback: ErrorCallback): void;
 
     // Only used for grid.ts
     cvox?: {
@@ -70,6 +65,10 @@ declare global {
     // For unit test.
     chrome: typeof chrome;
   }
+
+  function webkitResolveLocalFileSystemURL(
+      url: string, successCallback: FileSystemEntryCallback,
+      errorCallback: ErrorCallback): void;
 }
 
 export {};

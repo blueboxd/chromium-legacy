@@ -7,10 +7,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
-#include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
+#include "ash/system/input_device_settings/input_device_settings_metadata.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "ash/system/input_device_settings/input_device_tracker.h"
@@ -47,6 +47,25 @@ bool GetDefaultSwapRightValue(const mojom::MousePolicies& mouse_policies) {
   }
 
   return kDefaultSwapRight;
+}
+
+// Append all missing button remappings to the current list with default
+// remapping action.
+void UpdateButtonRemappingsWithCompleteList(
+    mojom::MouseButtonConfig mouse_button_config,
+    std::vector<mojom::ButtonRemappingPtr>& current_button_remappings) {
+  auto default_remappings =
+      GetButtonRemappingListForConfig(mouse_button_config);
+  for (auto& remapping : default_remappings) {
+    const auto iter = base::ranges::find(
+        current_button_remappings, *remapping->button,
+        [](const mojom::ButtonRemappingPtr& current_remapping) {
+          return *current_remapping->button;
+        });
+    if (iter == current_button_remappings.end()) {
+      current_button_remappings.push_back(std::move(remapping));
+    }
+  }
 }
 
 // GetMouseSettingsFromPrefs returns a mouse settings based on user prefs
@@ -334,8 +353,14 @@ void MousePrefHandlerImpl::InitializeMouseSettings(
     const auto* button_remappings_list =
         button_remappings_dict.FindList(mouse->device_key);
     if (button_remappings_list) {
-      mouse->settings->button_remappings = ConvertListToButtonRemappingArray(
+      auto button_remappings = ConvertListToButtonRemappingArray(
           *button_remappings_list, mouse->customization_restriction);
+      UpdateButtonRemappingsWithCompleteList(mouse->mouse_button_config,
+                                             button_remappings);
+      mouse->settings->button_remappings = std::move(button_remappings);
+    } else {
+      mouse->settings->button_remappings =
+          GetButtonRemappingListForConfig(mouse->mouse_button_config);
     }
   }
   DCHECK(mouse->settings);
@@ -394,6 +419,9 @@ void MousePrefHandlerImpl::InitializeLoginScreenMouseSettings(
     if (button_remappings_list) {
       mouse->settings->button_remappings = ConvertListToButtonRemappingArray(
           *button_remappings_list, mouse->customization_restriction);
+    } else {
+      mouse->settings->button_remappings =
+          GetButtonRemappingListForConfig(mouse->mouse_button_config);
     }
   }
 }
@@ -424,7 +452,8 @@ void MousePrefHandlerImpl::UpdateLoginScreenMouseSettings(
             account_id, button_remapping_list_pref,
             std::make_optional<base::Value>(ConvertButtonRemappingArrayToList(
                 mouse.settings->button_remappings,
-                mouse.customization_restriction)));
+                mouse.customization_restriction,
+                /*redact_button_names=*/true)));
   }
 }
 

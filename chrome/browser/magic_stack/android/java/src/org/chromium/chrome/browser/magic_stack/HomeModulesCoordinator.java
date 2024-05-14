@@ -1,0 +1,443 @@
+// Copyright 2024 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.magic_stack;
+
+import android.app.Activity;
+import android.graphics.Point;
+import android.os.SystemClock;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
+
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.magic_stack.ModuleRegistry.OnViewCreatedCallback;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.segmentation_platform.SegmentationPlatformServiceFactory;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
+import org.chromium.components.browser_ui.widget.displaystyle.DisplayStyleObserver;
+import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
+import org.chromium.components.segmentation_platform.ClassificationResult;
+import org.chromium.components.segmentation_platform.PredictionOptions;
+import org.chromium.components.segmentation_platform.SegmentationPlatformService;
+import org.chromium.components.segmentation_platform.prediction_status.PredictionStatus;
+import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
+import org.chromium.url.GURL;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/** Root coordinator which is responsible for showing modules on home surfaces. */
+public class HomeModulesCoordinator implements ModuleDelegate, OnViewCreatedCallback {
+    private final ModuleDelegateHost mModuleDelegateHost;
+    private final HomeModulesMediator mMediator;
+    private final SimpleRecyclerViewAdapter mAdapter;
+    private final RecyclerView mRecyclerView;
+    private final ModelList mModel;
+    private final HomeModulesContextMenuManager mHomeModulesContextMenuManager;
+    private final ObservableSupplier<Profile> mProfileSupplier;
+
+    private CirclePagerIndicatorDecoration mPageIndicatorDecoration;
+    private SnapHelper mSnapHelper;
+    private boolean mIsSnapHelperAttached;
+    private int mItemPerScreen;
+    private Set<Integer> mEnabledModuleList;
+    private HomeModulesConfigManager mHomeModulesConfigManager;
+    private HomeModulesConfigManager.HomeModulesStateListener mHomeModulesStateListener;
+    private SegmentationPlatformService mSegmentationPlatformService;
+
+    /** It is non-null for tablets. */
+    @Nullable private UiConfig mUiConfig;
+
+    /** It is non-null for tablets. */
+    @Nullable private DisplayStyleObserver mDisplayStyleObserver;
+
+    @Nullable private Callback<Profile> mOnProfileAvailableObserver;
+
+    /**
+     * @param activity The instance of {@link Activity}.
+     * @param moduleDelegateHost The home surface which owns the magic stack.
+     * @param parentView The parent view which holds the magic stack's RecyclerView.
+     * @param homeModulesConfigManager The manager class which handles the enabling states of
+     *     modules.
+     * @param profileSupplier The supplier of the profile in use.
+     */
+    public HomeModulesCoordinator(
+            @NonNull Activity activity,
+            @NonNull ModuleDelegateHost moduleDelegateHost,
+            @NonNull ViewGroup parentView,
+            @NonNull HomeModulesConfigManager homeModulesConfigManager,
+            @NonNull ObservableSupplier<Profile> profileSupplier) {
+        mModuleDelegateHost = moduleDelegateHost;
+        ModuleRegistry moduleRegistry = ModuleRegistry.getInstance();
+        mHomeModulesContextMenuManager =
+                new HomeModulesContextMenuManager(
+                        this, moduleDelegateHost.getContextMenuStartPoint(), moduleRegistry);
+        mProfileSupplier = profileSupplier;
+
+        mModel = new ModelList();
+        mAdapter = new SimpleRecyclerViewAdapter(mModel);
+        moduleRegistry.registerAdapter(mAdapter, this::onViewCreated);
+        mRecyclerView = parentView.findViewById(R.id.home_modules_recycler_view);
+
+        mRecyclerView.setAdapter(mAdapter);
+        LinearLayoutManager linearLayoutManager =
+                new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+
+        // Add pager indicator.
+        setupRecyclerView(activity);
+
+        mHomeModulesConfigManager = homeModulesConfigManager;
+        mHomeModulesStateListener = this::onModuleConfigChanged;
+        mHomeModulesConfigManager.addListener(mHomeModulesStateListener);
+        mEnabledModuleList = mHomeModulesConfigManager.getEnabledModuleList();
+
+        mMediator = new HomeModulesMediator(mModel, moduleRegistry);
+    }
+
+    private void setupRecyclerView(Activity activity) {
+        boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity);
+        mUiConfig = isTablet ? mModuleDelegateHost.getUiConfig() : null;
+        mPageIndicatorDecoration =
+                new CirclePagerIndicatorDecoration(
+                        activity,
+                        mModuleDelegateHost.getStartMargin(),
+                        SemanticColorUtils.getDefaultIconColorSecondary(activity),
+                        activity.getColor(
+                                org.chromium.components.browser_ui.styles.R.color
+                                        .color_primary_with_alpha_15),
+                        isTablet);
+        mRecyclerView.addItemDecoration(mPageIndicatorDecoration);
+        mSnapHelper =
+                new PagerSnapHelper() {
+                    @Override
+                    public void attachToRecyclerView(@Nullable RecyclerView recyclerView)
+                            throws IllegalStateException {
+                        super.attachToRecyclerView(recyclerView);
+                        mIsSnapHelperAttached = recyclerView != null;
+                    }
+                };
+
+        // Snap scroll is supported by the recyclerview if it shows a single item per screen. This
+        // happens on phones or small windows on tablets.
+        if (!isTablet) {
+            mSnapHelper.attachToRecyclerView(mRecyclerView);
+            return;
+        }
+
+        mItemPerScreen =
+                CirclePagerIndicatorDecoration.getItemPerScreen(mUiConfig.getCurrentDisplayStyle());
+        if (mItemPerScreen == 1) {
+            mSnapHelper.attachToRecyclerView(mRecyclerView);
+        }
+
+        // Setup an observer of mUiConfig on tablets.
+        mDisplayStyleObserver =
+                newDisplayStyle -> {
+                    mItemPerScreen =
+                            CirclePagerIndicatorDecoration.getItemPerScreen(newDisplayStyle);
+                    if (mItemPerScreen > 1) {
+                        // If showing multiple items per screen, we need to detach the snap
+                        // scroll helper from the recyclerview.
+                        if (mIsSnapHelperAttached) {
+                            mSnapHelper.attachToRecyclerView(null);
+                        }
+                    } else if (!mIsSnapHelperAttached) {
+                        // If showing a single item per screen and we haven't attached the snap
+                        // scroll helper to the recyclerview yet, attach it now.
+                        mSnapHelper.attachToRecyclerView(mRecyclerView);
+                    }
+
+                    // Notifies the CirclePageIndicatorDecoration.
+                    mPageIndicatorDecoration.onDisplayStyleChanged(
+                            mModuleDelegateHost.getStartMargin(), mItemPerScreen);
+
+                    // Redraws the recyclerview when display style is changed on tablets.
+                    mRecyclerView.invalidateItemDecorations();
+                };
+        mUiConfig.addObserver(mDisplayStyleObserver);
+        mPageIndicatorDecoration.onDisplayStyleChanged(
+                mModuleDelegateHost.getStartMargin(), mItemPerScreen);
+    }
+
+    /**
+     * Gets the module ranking list and shows the home modules.
+     *
+     * @param onHomeModulesShownCallback The callback called when the magic stack is shown.
+     */
+    public void show(Callback<Boolean> onHomeModulesShownCallback) {
+        if (mOnProfileAvailableObserver != null) {
+            // If the magic stack is waiting for the profile and show() is called again, early
+            // return here since showing is working in progress.
+            return;
+        }
+
+        if (mProfileSupplier.hasValue()) {
+            showImpl(onHomeModulesShownCallback);
+        } else {
+            long waitForProfileStartTimeMs = SystemClock.elapsedRealtime();
+            mOnProfileAvailableObserver =
+                    (profile) -> {
+                        onProfileAvailable(
+                                profile, onHomeModulesShownCallback, waitForProfileStartTimeMs);
+                    };
+
+            mProfileSupplier.addObserver(mOnProfileAvailableObserver);
+        }
+    }
+
+    /** Shows the magic stack with profile ready. */
+    private void showImpl(Callback<Boolean> onHomeModulesShownCallback) {
+        // Initializing segmentation service since profile is available.
+        assert mProfileSupplier.hasValue();
+        mSegmentationPlatformService =
+                SegmentationPlatformServiceFactory.getForProfile(mProfileSupplier.get());
+        if (mSegmentationPlatformService == null
+                || !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SEGMENTATION_PLATFORM_ANDROID_HOME_MODULE_RANKER)) {
+            onGotRankedModules(
+                    getFixedModuleList(), onHomeModulesShownCallback, /* durationMs= */ 0);
+            return;
+        }
+        getSegmentationRanking(onHomeModulesShownCallback);
+    }
+
+    private void onProfileAvailable(
+            Profile profile,
+            Callback<Boolean> onHomeModulesShownCallback,
+            long waitForProfileStartTimeMs) {
+        long delay = SystemClock.elapsedRealtime() - waitForProfileStartTimeMs;
+        showImpl(onHomeModulesShownCallback);
+
+        mProfileSupplier.removeObserver(mOnProfileAvailableObserver);
+        mOnProfileAvailableObserver = null;
+        HomeModulesMetricsUtils.recordProfileReadyDelay(getHostSurfaceType(), delay);
+    }
+
+    /** Reacts when the home modules' specific module type is disabled or enabled. */
+    void onModuleConfigChanged(@ModuleType int moduleType, boolean isEnabled) {
+        if (isEnabled) {
+            mEnabledModuleList.add(moduleType);
+        } else {
+            mEnabledModuleList.remove(moduleType);
+            removeModule(moduleType);
+        }
+    }
+
+    /** Hides the modules and cleans up. */
+    public void hide() {
+        mMediator.hide();
+    }
+
+    // ModuleDelegate implementation.
+
+    @Override
+    public void onDataReady(@ModuleType int moduleType, @NonNull PropertyModel propertyModel) {
+        mMediator.addToRecyclerViewOrCache(moduleType, propertyModel);
+    }
+
+    @Override
+    public void onDataFetchFailed(int moduleType) {
+        mMediator.addToRecyclerViewOrCache(moduleType, null);
+    }
+
+    @Override
+    public void onUrlClicked(@NonNull GURL gurl, @ModuleType int moduleType) {
+        mModuleDelegateHost.onUrlClicked(gurl);
+        onModuleClicked(moduleType);
+    }
+
+    @Override
+    public void onTabClicked(int tabId, @ModuleType int moduleType) {
+        mModuleDelegateHost.onTabSelected(tabId);
+        onModuleClicked(moduleType);
+    }
+
+    @Override
+    public void onModuleClicked(@ModuleType int moduleType) {
+        HomeModulesMetricsUtils.recordModuleClick(
+                mModuleDelegateHost.getHostSurfaceType(), moduleType);
+    }
+
+    @Override
+    public int getHostSurfaceType() {
+        return mModuleDelegateHost.getHostSurfaceType();
+    }
+
+    @Override
+    public void removeModule(@ModuleType int moduleType) {
+        boolean isModuleRemoved = mMediator.remove(moduleType);
+
+        if (isModuleRemoved && mModel.size() < mItemPerScreen) {
+            mRecyclerView.invalidateItemDecorations();
+        }
+    }
+
+    @Override
+    public void removeModuleAndDisable(int moduleType) {
+        mHomeModulesConfigManager.setPrefModuleTypeEnabled(moduleType, false);
+    }
+
+    @Override
+    public void customizeSettings() {
+        mModuleDelegateHost.customizeSettings();
+    }
+
+    @Override
+    public ModuleProvider getModuleProvider(int moduleType) {
+        return mMediator.getModuleProvider(moduleType);
+    }
+
+    // OnViewCreatedCallback implementation.
+
+    @Override
+    public void onViewCreated(@ModuleType int moduleType, @NonNull ViewGroup group) {
+        ModuleProvider moduleProvider = getModuleProvider(moduleType);
+        assert moduleProvider != null;
+
+        group.setOnLongClickListener(
+                view -> {
+                    Point offset = mHomeModulesContextMenuManager.getContextMenuOffset();
+                    return view.showContextMenu(offset.x, offset.y);
+                });
+        group.setOnCreateContextMenuListener(
+                (contextMenu, view, contextMenuInfo) -> {
+                    mHomeModulesContextMenuManager.createContextMenu(
+                            contextMenu, view, moduleProvider);
+                });
+        HomeModulesMetricsUtils.recordModuleShown(getHostSurfaceType(), moduleType);
+    }
+
+    /**
+     * Returns the instance of the home surface {@link ModuleDelegateHost} which owns the magic
+     * stack.
+     */
+    public ModuleDelegateHost getModuleDelegateHost() {
+        return mModuleDelegateHost;
+    }
+
+    public void destroy() {
+        if (mUiConfig != null) {
+            mUiConfig.removeObserver(mDisplayStyleObserver);
+            mUiConfig = null;
+        }
+        if (mHomeModulesConfigManager != null) {
+            mHomeModulesConfigManager.removeListener(mHomeModulesStateListener);
+            mHomeModulesConfigManager = null;
+        }
+    }
+
+    public boolean getIsSnapHelperAttachedForTesting() {
+        return mIsSnapHelperAttached;
+    }
+
+    /**
+     * This method returns the list of enabled modules based on surface (Start/NTP). The list
+     * returned is the intersection of modules that are enabled and available for the surface.
+     */
+    @VisibleForTesting
+    List<Integer> getFixedModuleList() {
+        List<Integer> generalModuleList = new ArrayList<Integer>();
+        boolean addAll = HomeModulesMetricsUtils.HOME_MODULES_SHOW_ALL_MODULES.getValue();
+        boolean isHomeSurface = mModuleDelegateHost.isHomeSurface();
+        generalModuleList.add(ModuleType.PRICE_CHANGE);
+        if (addAll || isHomeSurface) {
+            generalModuleList.add(ModuleType.SINGLE_TAB);
+        }
+        // Make tab resumption module NTP-only.
+        if (addAll
+                || (!isHomeSurface && ChromeFeatureList.sTabResumptionModuleAndroid.isEnabled())) {
+            generalModuleList.add(ModuleType.TAB_RESUMPTION);
+        }
+
+        List<Integer> moduleList = new ArrayList<>();
+        for (int i = 0; i < generalModuleList.size(); i++) {
+            @ModuleType int currentModuleType = generalModuleList.get(i);
+            if (mEnabledModuleList.contains(currentModuleType)) {
+                moduleList.add(currentModuleType);
+            }
+        }
+        return moduleList;
+    }
+
+    private void onGotRankedModules(
+            List<Integer> moduleList,
+            Callback<Boolean> onHomeModulesShownCallback,
+            long durationMs) {
+        // Record only if ranking is fetched from segmentation service.
+        if (durationMs > 0) {
+            HomeModulesMetricsUtils.recordSegmentationFetchRankingDuration(
+                    getHostSurfaceType(), durationMs);
+        }
+        if (moduleList == null) {
+            onHomeModulesShownCallback.onResult(false);
+            return;
+        }
+
+        mMediator.buildModulesAndShow(
+                moduleList,
+                this,
+                (isVisible) -> {
+                    onHomeModulesShownCallback.onResult(isVisible);
+                });
+    }
+
+    private void getSegmentationRanking(Callback<Boolean> onHomeModulesShownCallback) {
+        PredictionOptions options = new PredictionOptions(false);
+        long segmentationServiceCallTimeMs = SystemClock.elapsedRealtime();
+        mSegmentationPlatformService.getClassificationResult(
+                "android_home_module_ranker",
+                options,
+                /* inputContext= */ null,
+                result -> {
+                    onGotRankedModules(
+                            onGetClassificationResult(result),
+                            onHomeModulesShownCallback,
+                            SystemClock.elapsedRealtime() - segmentationServiceCallTimeMs);
+                });
+    }
+
+    @VisibleForTesting
+    List<Integer> onGetClassificationResult(ClassificationResult result) {
+        List<Integer> moduleList;
+        // If segmentation service fails, fallback to return fixed module list.
+        if (result.status != PredictionStatus.SUCCEEDED || result.orderedLabels.isEmpty()) {
+            moduleList = getFixedModuleList();
+        } else {
+            moduleList = filterEnabledModuleList(result.orderedLabels);
+        }
+        return moduleList;
+    }
+
+    /**
+     * This method gets the list of enabled modules based on surface (Start/NTP) and returns the
+     * list of modules which are present in both the previous list and the module list from the
+     * model.
+     */
+    private List<Integer> filterEnabledModuleList(List<String> orderedModuleLabels) {
+        List<Integer> localEnabledModuleList = getFixedModuleList();
+        List<Integer> moduleList = new ArrayList<>();
+        for (String label : orderedModuleLabels) {
+            @ModuleType
+            int currentModuleType = HomeModulesMetricsUtils.convertLabelToModuleType(label);
+            if (localEnabledModuleList.contains(currentModuleType)) {
+                moduleList.add(currentModuleType);
+            }
+        }
+        return moduleList;
+    }
+}

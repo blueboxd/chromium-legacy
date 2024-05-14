@@ -20,12 +20,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
+#include "chrome/browser/keyboard_accessory/android/accessory_sheet_enums.h"
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/browser/password_manager/android/password_generation_controller_impl.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/device_reauth/mock_device_authenticator.h"
@@ -196,6 +196,11 @@ std::u16string show_other_passwords_str() {
 std::u16string manage_passwords_str() {
   return l10n_util::GetStringUTF16(
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
+}
+
+std::u16string manage_passwords_and_passkeys_str() {
+  return l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_AND_PASSKEYS_LINK);
 }
 
 std::u16string generate_password_str() {
@@ -1203,10 +1208,10 @@ TEST_F(PasswordAccessoryControllerTest, ShowAndSelectHybridPasskeyOption) {
       controller()->GetSheetData(),
       AccessorySheetData::Builder(AccessoryTabType::PASSWORDS,
                                   passwords_empty_str(kExampleDomain))
-          .AppendFooterCommand(manage_passwords_str(),
-                               autofill::AccessoryAction::MANAGE_PASSWORDS)
           .AppendFooterCommand(cross_device_passkeys_str(),
                                autofill::AccessoryAction::CROSS_DEVICE_PASSKEY)
+          .AppendFooterCommand(manage_passwords_str(),
+                               autofill::AccessoryAction::MANAGE_PASSWORDS)
           .Build());
 
   EXPECT_CALL(*webauthn_credentials_delegate(), ShowAndroidHybridSignIn);
@@ -1243,7 +1248,7 @@ TEST_F(PasswordAccessoryControllerTest, ShowAndSelectPasskey) {
                                   passwords_title_str(kExampleDomain))
           .AddPasskeySection(kTestPasskey.username(),
                              kTestPasskey.credential_id())
-          .AppendFooterCommand(manage_passwords_str(),
+          .AppendFooterCommand(manage_passwords_and_passkeys_str(),
                                autofill::AccessoryAction::MANAGE_PASSWORDS)
           .Build());
 

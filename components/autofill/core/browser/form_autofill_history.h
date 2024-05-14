@@ -10,12 +10,13 @@
 #include <optional>
 #include <string>
 
-#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 
 namespace autofill {
+
+class AutofillField;
 
 // Holds history of Autofill filling operations so that they can be undone
 // later. The class is used to add, remove and access filling operations, which
@@ -30,7 +31,7 @@ class FormAutofillHistory {
         std::u16string field_value,
         bool field_is_autofilled,
         std::optional<std::string> field_autofill_source_profile_guid,
-        std::optional<ServerFieldType> field_autofilled_type);
+        std::optional<FieldType> field_autofilled_type);
 
     ~FieldFillingEntry();
     FieldFillingEntry(const FieldFillingEntry&);
@@ -58,7 +59,7 @@ class FormAutofillHistory {
     // an autofill operation, AutofillField does not store outdated information,
     // especially if the field is reverted with Undo to a previous autofilled
     // state.
-    std::optional<ServerFieldType> autofilled_type;
+    std::optional<FieldType> autofilled_type;
   };
 
   struct FormFillingEntry {

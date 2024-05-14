@@ -12,6 +12,8 @@ source_set("metadata") {
   deps = [ ":metadata_proto" ]
   public_deps = [
     "//base",
+    "//components/content_settings/core/common:features",
+    "//components/content_settings/core/common:mojo_bindings",
     "//net",
     "//third_party/abseil-cpp:absl",
     "//third_party/zlib/google:compression_utils",
@@ -54,5 +56,6 @@ source_set("unit_tests") {
     ":metadata_proto",
     ":test_support",
     "//base/test:test_support",
+    "//components/content_settings/core/common:features",
   ]
 }

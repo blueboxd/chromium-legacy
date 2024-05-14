@@ -88,7 +88,7 @@ class BLINK_PLATFORM_EXPORT URLLoaderClient {
   virtual void DidReceiveResponse(
       const WebURLResponse&,
       mojo::ScopedDataPipeConsumerHandle body,
-      absl::optional<mojo_base::BigBuffer> cached_metadata) {}
+      std::optional<mojo_base::BigBuffer> cached_metadata) {}
 
   // Called when a chunk of response data is received. |data_length| is the
   // number of bytes pointed to by |data|.
@@ -100,19 +100,12 @@ class BLINK_PLATFORM_EXPORT URLLoaderClient {
 
   // Called when the load completes successfully.
   // |total_encoded_data_length| may be equal to kUnknownEncodedDataLength.
-  //
-  // |should_report_corb_blocking| is used to measure blocked responses with
-  // event handlers.
-  // TODO(vogelheim, 1463725): Remove this once the ORB feature launches.
-
-  //
   // TODO(crbug.com/798625): use different callback for subresources
   // with responses blocked due to document protection.
   virtual void DidFinishLoading(base::TimeTicks finish_time,
                                 int64_t total_encoded_data_length,
                                 uint64_t total_encoded_body_length,
-                                int64_t total_decoded_body_length,
-                                bool should_report_corb_blocking) {}
+                                int64_t total_decoded_body_length) {}
 
   // Called when the load completes with an error.
   // |finish_time| indicating the time in which the response failed.

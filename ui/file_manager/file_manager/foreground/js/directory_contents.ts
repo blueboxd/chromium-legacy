@@ -5,26 +5,25 @@
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
+import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {mountGuest} from '../../common/js/api.js';
 import {AsyncQueue, ConcurrentQueue} from '../../common/js/async_util.js';
 import {createDOMError} from '../../common/js/dom_utils.js';
 import {isDriveRootType, isFakeEntry, readEntriesRecursively} from '../../common/js/entry_utils.js';
 import {isType} from '../../common/js/file_type.js';
-import {EntryList} from '../../common/js/files_app_entry_types.js';
+import {EntryList, FilesAppDirEntry, FilesAppEntry} from '../../common/js/files_app_entry_types.js';
 import {recordInterval, recordMediumCount, startInterval} from '../../common/js/metrics.js';
 import {getEarliestTimestamp} from '../../common/js/recent_date_bucket.js';
 import {createTrashReaders} from '../../common/js/trash.js';
 import {FileErrorToDomError} from '../../common/js/util.js';
 import {RootType, VolumeType} from '../../common/js/volume_manager_types.js';
-import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {SearchLocation, SearchOptions} from '../../externs/ts/state.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
 import {getDefaultSearchOptions} from '../../state/ducks/search.js';
+import {SearchLocation, type SearchOptions} from '../../state/state.js';
 import {getStore} from '../../state/store.js';
 
-import {constants} from './constants.js';
+import {ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES, CROSTINI_CONNECT_ERR, DLP_METADATA_PREFETCH_PROPERTY_NAMES, FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES, LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES} from './constants.js';
 import {FileListModel} from './file_list_model.js';
-import {MetadataItem} from './metadata/metadata_item.js';
+import {MetadataItem, type MetadataKey} from './metadata/metadata_item.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 
 
@@ -315,7 +314,7 @@ export class SearchV2ContentScanner extends ContentScanner {
     return new Promise<UniversalEntry[]>((resolve, reject) => {
       startInterval(`Search.${metricVariant}.Latency`);
       const collectedEntries: UniversalEntry[] = [];
-      let workLeft: number = 1;
+      let workLeft = 1;
       readEntriesRecursively(
           folder,
           // More entries found callback.
@@ -764,7 +763,7 @@ export class CrostiniMounter extends ContentScanner {
         console.warn(`Cannot mount Crostini volume: ${
             chrome.runtime.lastError.message}`);
         errorCallback(createDOMError(
-            constants.CROSTINI_CONNECT_ERR, chrome.runtime.lastError.message));
+            CROSTINI_CONNECT_ERR, chrome.runtime.lastError.message));
         return;
       }
       successCallback();
@@ -800,7 +799,7 @@ export class GuestOsMounter extends ContentScanner {
     } catch (error) {
       errorCallback(createDOMError(
           // TODO(crbug/1293229): Strings
-          constants.CROSTINI_CONNECT_ERR, JSON.stringify(error)));
+          CROSTINI_CONNECT_ERR, JSON.stringify(error)));
     }
   }
 }
@@ -944,7 +943,7 @@ export class FileFilter extends EventTarget {
         if (entry.fullPath) {
           const components = entry.fullPath.split('/');
           if (components[1] &&
-              DEFAULT_ANDROID_FOLDERS.indexOf(components[1]) == -1) {
+              DEFAULT_ANDROID_FOLDERS.indexOf(components[1]) === -1) {
             return false;
           }
         }
@@ -999,17 +998,17 @@ export class FileFilter extends EventTarget {
  */
 export class FileListContext {
   readonly fileList: FileListModel;
-  readonly prefetchPropertyNames: string[];
+  readonly prefetchPropertyNames: MetadataKey[];
 
   constructor(
       readonly fileFilter: FileFilter, readonly metadataModel: MetadataModel,
       readonly volumeManager: VolumeManager) {
     this.fileList = new FileListModel(metadataModel);
     this.prefetchPropertyNames = Array.from(new Set([
-      ...constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES,
-      ...constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES,
-      ...constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES,
-      ...constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES,
+      ...LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES,
+      ...ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES,
+      ...FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES,
+      ...DLP_METADATA_PREFETCH_PROPERTY_NAMES,
     ]));
   }
 }

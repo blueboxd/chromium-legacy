@@ -10,7 +10,6 @@
 #include "base/test/icu_test_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/icu/source/common/unicode/uclean.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace base {
@@ -18,32 +17,23 @@ namespace i18n {
 
 namespace {
 
-// Directory path to the tzdata configuration files.
-const char kTzDataDirPath[] = "/pkg/base/test/data/tzdata/icu/44/le";
+// Directory path to the tzdata configuration files, used in tests only.
+const char kTestTzDataDirPath[] = "/pkg/base/test/data/tzdata/icu/44/le";
 
 // File path to the text file containing the expected ICU library revision, for
-// example "2019c".
-const char kRevisionFilePath[] = "/config/data/tzdata/revision.txt";
+// example "2019c". This file is available in production.
+const char kTZDataRevisionFilePath[] = "/config/tzdata/icu/revision.txt";
 
 }  // namespace
 
 class TimeZoneDataTest : public testing::Test {
  protected:
   void TearDown() override {
-    ResetIcu();
+    ResetGlobalsForTesting();
 
     // ICU must be set back up in case e.g. a log statement that formats times
     // uses it.
     test::InitializeICUForTesting();
-  }
-
-  // Needed to enable loading of ICU config files that are different from what
-  // is available in Chromium.  Both icu_util and ICU library keep internal
-  // state so clear both.
-  void ResetIcu() {
-    // Clears the state in the reverse order of construction.
-    u_cleanup();
-    ResetGlobalsForTesting();
   }
 
   void GetActualRevision(std::string* icu_version) {
@@ -58,24 +48,15 @@ class TimeZoneDataTest : public testing::Test {
 // to load this configuration from the default path and compares the version it
 // obtained from the load with the expected version, failing on version
 // mismatch.
-//
-// In Fuchsia build bot setup, we ensure that the file revision.txt exists, so
-// that this test is not skipped. In Chromium build bot setup, this file may
-// not be present, in which case we skip running this test.
 TEST_F(TimeZoneDataTest, CompareSystemRevisionWithExpected) {
-  if (!base::PathExists(base::FilePath(kRevisionFilePath))) {
-    GTEST_SKIP() << "Skipped test because tzdata config is not present";
-  }
-
-  // ResetIcu() ensures that time zone data is loaded from the default location.
-  // This is done after the GTEST_SKIP() call above, since that may output a
-  // timestamp that requires ICU to be set up.
-  ResetIcu();
+  ASSERT_TRUE(base::PathExists(base::FilePath(kTZDataRevisionFilePath)));
+  ResetGlobalsForTesting();
 
   ASSERT_TRUE(InitializeICU());
   std::string expected;
-  EXPECT_TRUE(
-      base::ReadFileToString(base::FilePath(kRevisionFilePath), &expected));
+  ASSERT_TRUE(base::ReadFileToString(base::FilePath(kTZDataRevisionFilePath),
+                                     &expected))
+      << "Could not read from path: " << kTZDataRevisionFilePath;
   std::string actual;
   GetActualRevision(&actual);
   EXPECT_EQ(expected, actual);
@@ -88,9 +69,9 @@ TEST_F(TimeZoneDataTest, CompareSystemRevisionWithExpected) {
 // this could be a sign that all platforms Chromium runs on need to upgrade the
 // ICU library versions.
 TEST_F(TimeZoneDataTest, TestLoadingTimeZoneDataFromKnownConfigs) {
-  ASSERT_TRUE(base::DirectoryExists(base::FilePath(kTzDataDirPath)));
-  ResetIcu();
-  SetIcuTimeZoneDataDirForTesting(kTzDataDirPath);
+  ASSERT_TRUE(base::DirectoryExists(base::FilePath(kTestTzDataDirPath)));
+  ResetGlobalsForTesting();
+  SetIcuTimeZoneDataDirForTesting(kTestTzDataDirPath);
 
   ASSERT_TRUE(InitializeICU());
   std::string actual;
@@ -99,16 +80,14 @@ TEST_F(TimeZoneDataTest, TestLoadingTimeZoneDataFromKnownConfigs) {
                                 "version, tzdata version needs to be upgraded";
 }
 
-TEST_F(TimeZoneDataTest, DoesNotCrashWithInvalidPath) {
-  ResetIcu();
+using TimeZoneDataDeathTest = TimeZoneDataTest;
+
+TEST_F(TimeZoneDataDeathTest, CrashesWithNonexistentPath) {
+  ResetGlobalsForTesting();
   SetIcuTimeZoneDataDirForTesting("/some/nonexistent/path");
 
-  ASSERT_TRUE(InitializeICU());
-  std::string actual;
-  GetActualRevision(&actual);
-  EXPECT_TRUE(
-      base::StartsWith(actual, "20", base::CompareCase::INSENSITIVE_ASCII))
-      << "Got version: " << actual;
+  EXPECT_DEATH(InitializeICU(),
+               "Could not open directory: '/some/nonexistent/path'");
 }
 
 }  // namespace i18n

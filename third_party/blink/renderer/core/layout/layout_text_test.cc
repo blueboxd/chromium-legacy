@@ -69,7 +69,7 @@ class LayoutTextTest : public RenderingTest {
     stream << "<div style='font: 10px/10px Ahem;'>" << selection_text
            << "</div>";
     SetSelectionAndUpdateLayoutSelection(stream.str());
-    const Node* target = GetDocument().getElementById(AtomicString("target"));
+    const Node* target = GetElementById("target");
     const LayoutObject* layout_object =
         target ? target->GetLayoutObject() : FindFirstLayoutText();
     return layout_object->LocalSelectionVisualRect();
@@ -95,8 +95,9 @@ class LayoutTextTest : public RenderingTest {
     // accept out-of-bound offset but |IsAfterNonCollapsedCharacter()| doesn't.
     result[0] = layout_text.IsBeforeNonCollapsedCharacter(offset) ? 'B' : '-';
     result[1] = layout_text.ContainsCaretOffset(offset) ? 'C' : '-';
-    if (offset <= layout_text.TextLength())
+    if (offset <= layout_text.TransformedTextLength()) {
       result[2] = layout_text.IsAfterNonCollapsedCharacter(offset) ? 'A' : '-';
+    }
     return result;
   }
   static constexpr unsigned kIncludeSnappedWidth = 1;
@@ -593,7 +594,7 @@ TEST_F(LayoutTextTest, ContainsCaretOffsetWithTrailingSpace3) {
   const auto& text_a = *GetLayoutTextById("target");
   const auto& layout_br1 = *To<LayoutText>(text_a.NextSibling());
   const auto& text_space = *To<LayoutText>(layout_br1.NextSibling());
-  EXPECT_EQ(1u, text_space.TextLength());
+  EXPECT_EQ(1u, text_space.TransformedTextLength());
   const auto& layout_br2 = *To<LayoutText>(text_space.NextSibling());
   const auto& text_b = *To<LayoutText>(layout_br2.NextSibling());
   // Note: the last <br> doesn't have layout object.
@@ -1040,9 +1041,9 @@ TEST_F(LayoutTextTest, PhysicalLinesBoundingBox) {
   //     Box offset:0,-17 size:89x53
   //       Box offset:20,15 size:49x23
   //         Text offset:5,5 size:39x13 start: 8 end: 11
-  const Element& div = *GetDocument().getElementById(AtomicString("div"));
-  const Element& one = *GetDocument().getElementById(AtomicString("one"));
-  const Element& two = *GetDocument().getElementById(AtomicString("two"));
+  const Element& div = *GetElementById("div");
+  const Element& one = *GetElementById("one");
+  const Element& two = *GetElementById("two");
   EXPECT_EQ(PhysicalRect(3, 6, 52, 13),
             To<LayoutText>(div.firstChild()->GetLayoutObject())
                 ->PhysicalLinesBoundingBox());
@@ -1110,9 +1111,9 @@ TEST_F(LayoutTextTest, PhysicalLinesBoundingBoxVerticalRL) {
   )HTML");
   // Similar to the previous test, with logical coordinates converted to
   // physical coordinates.
-  const Element& div = *GetDocument().getElementById(AtomicString("div"));
-  const Element& one = *GetDocument().getElementById(AtomicString("one"));
-  const Element& two = *GetDocument().getElementById(AtomicString("two"));
+  const Element& div = *GetElementById("div");
+  const Element& one = *GetElementById("one");
+  const Element& two = *GetElementById("two");
   EXPECT_EQ(PhysicalRect(25, 3, 13, 52),
             To<LayoutText>(div.firstChild()->GetLayoutObject())
                 ->PhysicalLinesBoundingBox());
@@ -1572,8 +1573,9 @@ TEST_F(LayoutTextTest, SetTextWithOffsetDeleteWithBidiControl) {
   Text& text = To<Text>(*GetElementById("target")->firstChild());
   text.deleteData(0, 1, ASSERT_NO_EXCEPTION);  // remove "\n"
 
-  EXPECT_EQ("LayoutText has NeedsCollectInlines",
-            GetItemsAsString(*text.GetLayoutObject()));
+  // FirstLetterPseudoElement::FirstLetterLength() change (due to \n removed)
+  // makes ShouldUpdateLayoutByReattaching() (in text.cc) return true.
+  EXPECT_TRUE(text.GetForceReattachLayoutTree());
 }
 
 // http://crbug.com/1125262

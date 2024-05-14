@@ -118,7 +118,7 @@ class FileBrowserHandlerExecutor {
       const Extension* extension,
       int handler_pid);
 
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile> profile_;
   scoped_refptr<const Extension> extension_;
   const std::string action_id_;
   file_tasks::FileTaskFinishedCallback done_;
@@ -245,7 +245,9 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
   extensions::ExtensionHost* extension_host =
       manager->GetBackgroundHostForExtension(extension_->id());
 
-  const extensions::LazyContextId context_id(profile_, extension_->id());
+  const auto context_id =
+      extensions::LazyContextId::ForExtension(profile_, extension_.get());
+  CHECK(context_id.IsForBackgroundPage());
   extensions::LazyContextTaskQueue* task_queue = context_id.GetTaskQueue();
 
   if (task_queue->ShouldEnqueueTask(profile_, extension_.get())) {

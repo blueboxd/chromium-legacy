@@ -34,9 +34,9 @@ class Button;
 // delegate interface it uses to propagate user interactions.
 class ASH_EXPORT NetworkDetailedView : public TrayDetailedView,
                                        public NetworkInfoBubble::Delegate {
- public:
-  METADATA_HEADER(NetworkDetailedView);
+  METADATA_HEADER(NetworkDetailedView, TrayDetailedView)
 
+ public:
   // This class defines the interface that NetworkDetailedView will use to
   // propagate user interactions.
   class Delegate {
@@ -98,14 +98,14 @@ class ASH_EXPORT NetworkDetailedView : public TrayDetailedView,
   // Used to track the existence of the `NetworkInfoBubble`
   views::ViewTracker info_bubble_tracker_;
 
-  raw_ptr<TrayNetworkStateModel, ExperimentalAsh> model_;
+  raw_ptr<TrayNetworkStateModel> model_;
 
   int title_row_string_id_;
 
-  raw_ptr<views::Button, ExperimentalAsh> info_button_ = nullptr;
-  raw_ptr<views::Button, ExperimentalAsh> settings_button_ = nullptr;
+  raw_ptr<views::Button> info_button_ = nullptr;
+  raw_ptr<views::Button> settings_button_ = nullptr;
 
-  raw_ptr<Delegate, ExperimentalAsh> delegate_;
+  raw_ptr<Delegate> delegate_;
 
   base::WeakPtrFactory<NetworkDetailedView> weak_ptr_factory_{this};
 };

@@ -10,6 +10,7 @@
 
 #include "ash/shell_delegate.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "url/gurl.h"
@@ -76,6 +77,8 @@ class TestShellDelegate : public ShellDelegate {
       ShouldExitFullscreenCallback callback) override;
   bool ShouldWaitForTouchPressAck(gfx::NativeWindow window) override;
   int GetBrowserWebUITabStripHeight() override;
+  DeskProfilesDelegate* GetDeskProfilesDelegate() override;
+  void OpenMultitaskingSettings() override {}
   void BindMultiDeviceSetup(
       mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
           receiver) override;
@@ -87,7 +90,8 @@ class TestShellDelegate : public ShellDelegate {
       const WindowState& window_state) override {}
   const GURL& GetLastCommittedURLForWindowIfAny(aura::Window* window) override;
   void ForceSkipWarningUserOnClose(
-      const std::vector<aura::Window*>& windows) override {}
+      const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows)
+      override {}
 
   void SetCanGoBack(bool can_go_back);
   void SetShouldExitFullscreenBeforeLock(
@@ -128,10 +132,12 @@ class TestShellDelegate : public ShellDelegate {
   // True if window browser sessions are restoring.
   bool session_restore_in_progress_ = false;
 
+  std::unique_ptr<DeskProfilesDelegate> test_desk_profiles_delegate_;
+
   MultiDeviceSetupBinder multidevice_setup_binder_;
   UserEducationDelegateFactory user_education_delegate_factory_;
 
-  GURL last_committed_url_ = GURL::EmptyGURL();
+  GURL last_committed_url_;
 
   version_info::Channel channel_ = version_info::Channel::UNKNOWN;
 

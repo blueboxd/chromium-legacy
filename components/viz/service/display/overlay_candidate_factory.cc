@@ -76,11 +76,11 @@ gfx::OverlayTransform GetOverlayTransform(const gfx::Transform& quad_transform,
   else if (x_to == AXIS_POS_X && y_to == AXIS_NEG_Y)
     return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
   else if (x_to == AXIS_NEG_Y && y_to == AXIS_POS_X)
-    return gfx::OVERLAY_TRANSFORM_ROTATE_270;
+    return gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_270;
   else if (x_to == AXIS_NEG_X && y_to == AXIS_NEG_Y)
-    return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+    return gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_180;
   else if (x_to == AXIS_POS_Y && y_to == AXIS_NEG_X)
-    return gfx::OVERLAY_TRANSFORM_ROTATE_90;
+    return gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_90;
   else
     return gfx::OVERLAY_TRANSFORM_INVALID;
 }
@@ -112,32 +112,11 @@ OverlayCandidate::CandidateStatus GetReasonForTransformNotAxisAligned(
 
 // Returns true if the overlay candidate bounds rect overlap with at least one
 // of the rounded corners bounding rects.
-//
-// TODO(crbug.com/1462171): This method shares some logic with
-// DirectRenderer::ShouldApplyRoundedCorner(). Try to move it
-// to a shared location.
 bool ShouldApplyRoundedCorner(OverlayCandidate& candidate,
-                              const SharedQuadState* sqs) {
-  const gfx::MaskFilterInfo& mask_filter_info = sqs->mask_filter_info;
-  if (!mask_filter_info.HasRoundedCorners()) {
-    return false;
-  }
-
-  const gfx::RRectF& rounded_corner_bounds =
-      mask_filter_info.rounded_corner_bounds();
-
+                              const DrawQuad* quad) {
   const gfx::RectF target_rect =
       OverlayCandidate::DisplayRectInTargetSpace(candidate);
-
-  const gfx::RRectF::Corner corners[] = {
-      gfx::RRectF::Corner::kUpperLeft, gfx::RRectF::Corner::kUpperRight,
-      gfx::RRectF::Corner::kLowerRight, gfx::RRectF::Corner::kLowerLeft};
-  for (auto c : corners) {
-    if (rounded_corner_bounds.CornerBoundingRect(c).Intersects(target_rect)) {
-      return true;
-    }
-  }
-  return false;
+  return QuadRoundedCornersBoundsIntersects(quad, target_rect);
 }
 
 }  // namespace
@@ -215,7 +194,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuad(
   // TODO(https://crbug.com/1462171): Consider moving this code to
   // FromDrawQuadResource() that covers all of delegated compositing.
   if (context_.disable_wire_size_optimization ||
-      ShouldApplyRoundedCorner(candidate, sqs)) {
+      ShouldApplyRoundedCorner(candidate, quad)) {
     if (!context_.supports_mask_filter) {
       return CandidateStatus::kFailMaskFilterNotSupported;
     }
@@ -361,6 +340,8 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
   if (resource_id != kInvalidResourceId) {
     candidate.format = resource_provider_->GetBufferFormat(resource_id);
     candidate.color_space = resource_provider_->GetColorSpace(resource_id);
+    candidate.needs_detiling =
+        resource_provider_->GetNeedsDetiling(resource_id);
     candidate.hdr_metadata = resource_provider_->GetHDRMetadata(resource_id);
 
     if (!context_.is_delegated_context &&
@@ -402,7 +383,17 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
       TrackingIdData track_data{
           quad->rect,
           resource_provider_->GetSurfaceId(resource_id).frame_sink_id()};
-      candidate.tracking_id = base::Hash(&track_data, sizeof(track_data));
+      // Assert that there is no padding - otherwise the bytes-based hash below
+      // may differ for otherwise equal objects.
+      static_assert(sizeof(track_data) ==
+                    sizeof(decltype(track_data.rect)) +
+                        sizeof(decltype(track_data.frame_sink_id)));
+      // Intentionally throwing away the high bits (assuming that hash entropy
+      // is uniformly spread across all the bits).
+      size_t original_hash =
+          base::FastHash(base::as_bytes(base::span_from_ref(track_data)));
+      uint32_t narrow_hash = static_cast<uint32_t>(original_hash);
+      candidate.tracking_id = narrow_hash;
     }
   }
 
@@ -499,7 +490,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::DoGeometricClipping(
   }
 
   OverlayCandidate::ApplyClip(candidate, clip_to_apply);
-  candidate.clip_rect = absl::nullopt;
+  candidate.clip_rect = std::nullopt;
 
   return CandidateStatus::kSuccess;
 }
@@ -584,7 +575,12 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromVideoHoleQuad(
       !quad->ShouldDrawWithBlendingForReasonOtherThanMaskFilter();
 
   AssignDamage(quad, candidate);
-  candidate.tracking_id = base::FastHash(quad->overlay_plane_id.AsBytes());
+
+  // Intentionally throwing away the high bits (assuming that hash entropy is
+  // uniformly spread across all the bits).
+  size_t original_hash = base::FastHash(quad->overlay_plane_id.AsBytes());
+  uint32_t narrow_hash = static_cast<uint32_t>(original_hash);
+  candidate.tracking_id = narrow_hash;
 
   return CandidateStatus::kSuccess;
 }

@@ -51,8 +51,9 @@ constexpr char kGaiaURL[] = "chrome://oobe/gaia-signin";
 }  // namespace
 
 class OobeWebDialogView : public views::WebDialogView {
+  METADATA_HEADER(OobeWebDialogView, views::WebDialogView)
+
  public:
-  METADATA_HEADER(OobeWebDialogView);
   OobeWebDialogView(content::BrowserContext* context,
                     ui::WebDialogDelegate* delegate,
                     std::unique_ptr<WebContentsHandler> handler)
@@ -114,7 +115,7 @@ class OobeWebDialogView : public views::WebDialogView {
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 };
 
-BEGIN_METADATA(OobeWebDialogView, views::WebDialogView)
+BEGIN_METADATA(OobeWebDialogView)
 END_METADATA
 
 // View that controls size of OobeUIDialog.
@@ -133,8 +134,9 @@ END_METADATA
 // It is assumed that host view is always a full-screen view on a primary
 // display.
 class LayoutWidgetDelegateView : public views::WidgetDelegateView {
+  METADATA_HEADER(LayoutWidgetDelegateView, views::WidgetDelegateView)
+
  public:
-  METADATA_HEADER(LayoutWidgetDelegateView);
   LayoutWidgetDelegateView(OobeUIDialogDelegate* dialog_delegate,
                            OobeWebDialogView* oobe_view)
       : dialog_delegate_(dialog_delegate), oobe_view_(oobe_view) {
@@ -173,7 +175,7 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
   // views::WidgetDelegateView:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
 
-  void Layout() override {
+  void Layout(PassKey) override {
     if (fullscreen_) {
       oobe_view_->SetBoundsRect(GetContentsBounds());
       return;
@@ -192,10 +194,9 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
   View* GetInitiallyFocusedView() override { return oobe_view_; }
 
  private:
-  raw_ptr<OobeUIDialogDelegate, DanglingUntriaged | ExperimentalAsh>
-      dialog_delegate_ = nullptr;  // Owned by us.
-  raw_ptr<OobeWebDialogView, ExperimentalAsh> oobe_view_ =
-      nullptr;  // Owned by views hierarchy.
+  raw_ptr<OobeUIDialogDelegate, DanglingUntriaged> dialog_delegate_ =
+      nullptr;                                      // Owned by us.
+  raw_ptr<OobeWebDialogView> oobe_view_ = nullptr;  // Owned by views hierarchy.
   std::unique_ptr<ViewShadow> view_shadow_;
 
   // Indicates whether Oobe web view should fully occupy the hosting widget.
@@ -205,7 +206,7 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
   bool has_shelf_ = true;
 };
 
-BEGIN_METADATA(LayoutWidgetDelegateView, views::WidgetDelegateView)
+BEGIN_METADATA(LayoutWidgetDelegateView)
 ADD_PROPERTY_METADATA(bool, Fullscreen)
 ADD_PROPERTY_METADATA(bool, HasShelf)
 END_METADATA

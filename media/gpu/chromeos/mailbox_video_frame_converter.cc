@@ -4,6 +4,8 @@
 
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 
+#include <optional>
+
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -22,7 +24,6 @@
 #include "media/base/video_util.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -99,10 +100,10 @@ class GpuDelegateImpl : public MailboxVideoFrameConverter::GpuDelegate {
     return !!gpu_channel_;
   }
 
-  absl::optional<gpu::SharedImageCapabilities> GetCapabilities() override {
+  std::optional<gpu::SharedImageCapabilities> GetCapabilities() override {
     DCHECK(gpu_task_runner_->BelongsToCurrentThread());
     if (!gpu_channel_) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
@@ -555,7 +556,7 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   const gfx::Size shared_image_size =
       GetRectSizeFromOrigin(destination_visible_rect);
 
-  const absl::optional<gpu::SharedImageCapabilities> shared_image_caps =
+  const std::optional<gpu::SharedImageCapabilities> shared_image_caps =
       gpu_delegate_->GetCapabilities();
 
   if (!shared_image_caps.has_value()) {
@@ -569,7 +570,8 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
       gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
   if (video_frame->metadata().is_webgpu_compatible &&
       !shared_image_caps->disable_webgpu_shared_images) {
-    shared_image_usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU;
+    shared_image_usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_READ |
+                          gpu::SHARED_IMAGE_USAGE_WEBGPU_WRITE;
   }
 
   gpu::SharedImageStub::SharedImageDestructionCallback destroy_shared_image_cb;

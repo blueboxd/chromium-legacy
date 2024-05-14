@@ -5,6 +5,8 @@
 #ifndef UI_GFX_X_CONNECTION_H_
 #define UI_GFX_X_CONNECTION_H_
 
+#include <optional>
+
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
@@ -13,7 +15,6 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation_traits.h"
 #include "base/sequence_checker.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/event_observer.h"
 #include "ui/gfx/x/extension_manager.h"
@@ -32,6 +33,7 @@ class Event;
 class KeyboardState;
 class PropertyCache;
 class VisualManager;
+class WmSync;
 class WriteBuffer;
 
 enum WmState : uint32_t {
@@ -222,12 +224,21 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
     return shm_version_;
   }
 
+  ExtensionVersion sync_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return sync_version_;
+  }
+
   ExtensionVersion xinput_version() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return xinput_version_;
   }
 
   WindowEventManager& window_event_manager() { return window_event_manager_; }
+
+  // Indicates if the connection was able to successfully sync with the
+  // window manager.
+  bool synced_with_wm() const { return synced_with_wm_; }
 
   // Returns the underlying socket's FD if the connection is valid, or -1
   // otherwise.
@@ -311,9 +322,9 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   Future<void> SendEvent(const T& event, Window target, EventMask mask) {
     static_assert(T::type_id > 0, "T must be an *Event type");
     auto write_buffer = Write(event);
-    DUMP_WILL_BE_CHECK_EQ(write_buffer.GetBuffers().size(), 1ul);
+    CHECK_EQ(write_buffer.GetBuffers().size(), 1ul);
     auto& first_buffer = write_buffer.GetBuffers()[0];
-    DUMP_WILL_BE_CHECK_LE(first_buffer->size(), 32ul);
+    CHECK_LE(first_buffer->size(), 32ul);
     std::vector<uint8_t> event_bytes(32);
     memcpy(event_bytes.data(), first_buffer->data(), first_buffer->size());
 
@@ -348,8 +359,8 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
       return false;
     }
 
-    DUMP_WILL_BE_CHECK_EQ(response->format / CHAR_BIT * response->value_len,
-                          response->value->size());
+    CHECK_EQ(response->format / CHAR_BIT * response->value_len,
+             response->value->size());
     value->resize(response->value_len);
     if (response->value_len > 0) {
       memcpy(value->data(), response->value->data(), response->value->size());
@@ -511,6 +522,10 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
 
   bool WmSupportsEwmh() const;
 
+  void AttemptSyncWithWm();
+
+  void OnWmSynced();
+
   std::string display_string_;
   int default_screen_id_ = 0;
   std::unique_ptr<xcb_connection_t, void (*)(xcb_connection_t*)> connection_ = {
@@ -526,6 +541,7 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   ExtensionVersion render_version_ = {0, 0};
   ExtensionVersion screensaver_version_ = {0, 0};
   ExtensionVersion shm_version_ = {0, 0};
+  ExtensionVersion sync_version_ = {0, 0};
   ExtensionVersion xinput_version_ = {0, 0};
 
   Setup setup_;
@@ -550,8 +566,8 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   // the 0'th request is handled internally by XCB when opening the connection.
   SequenceType first_request_id_ = 1;
   // If any request in |requests_| will generate a reply, this is the ID of the
-  // latest one, otherwise this is absl::nullopt.
-  absl::optional<SequenceType> last_non_void_request_id_;
+  // latest one, otherwise this is std::nullopt.
+  std::optional<SequenceType> last_non_void_request_id_;
 
   using ErrorParser = std::unique_ptr<Error> (*)(RawError error_bytes);
   std::array<ErrorParser, 256> error_parsers_{};
@@ -566,6 +582,9 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   std::unique_ptr<VisualManager> visual_manager_;
 
   std::unique_ptr<AtomCache> atom_cache_;
+
+  std::unique_ptr<WmSync> wm_sync_;
+  bool synced_with_wm_ = false;
 
   std::unique_ptr<PropertyCache> root_props_;
   std::unique_ptr<PropertyCache> wm_props_;

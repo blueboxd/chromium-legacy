@@ -9,8 +9,8 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/system/message_center/ash_message_popup_collection.h"
-#include "ash/system/message_center/notification_grouping_controller.h"
+#include "ash/system/notification_center/ash_message_popup_collection.h"
+#include "ash/system/notification_center/notification_grouping_controller.h"
 #include "ash/system/notification_center/notification_center_bubble.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/notification_icons_controller.h"
@@ -34,9 +34,9 @@ class TrayBubbleView;
 // opens a bubble with a scrollable list of all current notifications.
 class ASH_EXPORT NotificationCenterTray : public TrayBackgroundView,
                                           public TrayItemView::Observer {
- public:
-  METADATA_HEADER(NotificationCenterTray);
+  METADATA_HEADER(NotificationCenterTray, TrayBackgroundView)
 
+ public:
   // Inherit from this class to be notified of events that happen for a specific
   // `NotificationCenterTray`.
   class Observer : public base::CheckedObserver {
@@ -126,8 +126,7 @@ class ASH_EXPORT NotificationCenterTray : public TrayBackgroundView,
       notification_icons_controller_;
 
   // Owned by the views hierarchy.
-  raw_ptr<PrivacyIndicatorsTrayItemView, ExperimentalAsh>
-      privacy_indicators_view_ = nullptr;
+  raw_ptr<PrivacyIndicatorsTrayItemView> privacy_indicators_view_ = nullptr;
 
   std::unique_ptr<NotificationCenterBubble> bubble_;
 

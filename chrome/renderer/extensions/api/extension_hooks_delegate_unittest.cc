@@ -10,7 +10,7 @@
 #include "content/public/common/content_constants.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_messages.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/mojom/message_port.mojom-shared.h"
 #include "extensions/renderer/api/messaging/message_target.h"
 #include "extensions/renderer/api/messaging/messaging_util.h"
@@ -56,8 +56,9 @@ class ExtensionHooksDelegateTest
     v8::HandleScope handle_scope(isolate());
     v8::Local<v8::Context> context = MainContext();
 
-    script_context_ = CreateScriptContext(context, mutable_extension.get(),
-                                          Feature::BLESSED_EXTENSION_CONTEXT);
+    script_context_ =
+        CreateScriptContext(context, mutable_extension.get(),
+                            mojom::ContextType::kPrivilegedExtension);
     script_context_->set_url(extension_->url());
     bindings_system()->UpdateBindingsForContext(script_context_);
   }
@@ -128,7 +129,7 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestDisabled) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = AddContext();
   ScriptContext* script_context = CreateScriptContext(
-      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+      context, extension.get(), mojom::ContextType::kPrivilegedExtension);
   script_context->set_url(extension->url());
   bindings_system()->UpdateBindingsForContext(script_context);
   ASSERT_TRUE(messaging_util::IsSendRequestDisabled(script_context));
@@ -198,16 +199,6 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
       content::kInvalidChildProcessUniqueId;
   external_connection_info.guest_render_frame_routing_id = 0;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  // Open a receiver for the message.
-  EXPECT_CALL(*ipc_message_sender(),
-              SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
-  messaging_service()->DispatchOnConnect(
-      script_context_set(), port_id, mojom::ChannelType::kSendRequest, kChannel,
-      tab_connection_info, external_connection_info, {}, {}, nullptr,
-      base::DoNothing());
-  ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
-#else
   // Open a receiver for the message.
   mojo::PendingAssociatedRemote<mojom::MessagePortHost> port_host_remote;
   auto port_host_receiver =
@@ -226,7 +217,6 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
   port_host_receiver.EnableUnassociatedUsage();
   port_remote.EnableUnassociatedUsage();
   EXPECT_TRUE(port_opened);
-#endif
   EXPECT_TRUE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
 

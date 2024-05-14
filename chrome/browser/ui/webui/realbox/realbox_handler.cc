@@ -8,6 +8,8 @@
 #include "base/base64url.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -133,7 +135,7 @@ const char* kJourneysIconResourceName =
     "//resources/cr_components/omnibox/icons/journeys.svg";
 const char* kPageIconResourceName =
     "//resources/cr_components/omnibox/icons/page.svg";
-constexpr char kPedalsIconResourceName[] = "//theme/current-channel-logo";
+const char* kPedalsIconResourceName = "//theme/current-channel-logo";
 const char* kSearchIconResourceName = "//resources/images/icon_search.svg";
 const char* kTabIconResourceName =
     "//resources/cr_components/omnibox/icons/tab.svg";
@@ -191,6 +193,8 @@ static void DefineChromeRefreshRealboxIcons() {
       "//resources/cr_components/omnibox/icons/journeys_cr23.svg";
   kPageIconResourceName =
       "//resources/cr_components/omnibox/icons/page_cr23.svg";
+  kPedalsIconResourceName =
+      "//resources/cr_components/omnibox/icons/chrome_product_cr23.svg";
   kSearchIconResourceName =
       "//resources/cr_components/omnibox/icons/search_cr23.svg";
   kTabIconResourceName = "//resources/cr_components/omnibox/icons/tab_cr23.svg";
@@ -224,6 +228,8 @@ CreateSuggestionGroupsMap(
     suggestion_group->header = base::UTF8ToUTF16(pair.second.header_text());
     suggestion_group->side_type =
         static_cast<omnibox::mojom::SideType>(pair.second.side_type());
+    suggestion_group->render_type =
+        static_cast<omnibox::mojom::RenderType>(pair.second.render_type());
     suggestion_group->hidden =
         result.IsSuggestionGroupHidden(prefs, pair.first);
     suggestion_group->show_group_a11y_label = l10n_util::GetStringFUTF16(
@@ -453,7 +459,7 @@ std::string GetBase64UrlVariations(Profile* profile) {
 
 // TODO(crbug.com/1431513): Consider inheriting from `ChromeOmniboxClient`
 //  to avoid reimplementation of methods like `OnBookmarkLaunched`.
-class RealboxOmniboxClient : public OmniboxClient {
+class RealboxOmniboxClient final : public OmniboxClient {
  public:
   RealboxOmniboxClient(LocationBarModel* location_bar_model,
                        Profile* profile,
@@ -495,12 +501,14 @@ class RealboxOmniboxClient : public OmniboxClient {
       const AutocompleteMatch& alternative_nav_match,
       IDNA2008DeviationCharacter deviation_char_in_hostname) override;
   LocationBarModel* GetLocationBarModel() override;
+  base::WeakPtr<OmniboxClient> AsWeakPtr() override;
 
  private:
   raw_ptr<LocationBarModel> location_bar_model_;
   raw_ptr<Profile> profile_;
   raw_ptr<content::WebContents> web_contents_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
+  base::WeakPtrFactory<RealboxOmniboxClient> weak_factory_{this};
 };
 
 RealboxOmniboxClient::RealboxOmniboxClient(LocationBarModel* location_bar_model,
@@ -611,6 +619,10 @@ LocationBarModel* RealboxOmniboxClient::GetLocationBarModel() {
   return location_bar_model_;
 }
 
+base::WeakPtr<OmniboxClient> RealboxOmniboxClient::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace
 
 // static
@@ -660,8 +672,7 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source,
 
   source->AddBoolean(
       "realboxLensSearch",
-      base::FeatureList::IsEnabled(ntp_features::kNtpRealboxLensSearch) &&
-          profile->GetPrefs()->GetBoolean(prefs::kLensDesktopNTPSearchEnabled));
+      profile->GetPrefs()->GetBoolean(prefs::kLensDesktopNTPSearchEnabled));
   source->AddString("realboxLensVariations", GetBase64UrlVariations(profile));
   source->AddBoolean(
       "realboxLensDirectUpload",
@@ -671,11 +682,19 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source,
       base::FeatureList::IsEnabled(
           ntp_features::kRealboxCr23ExpandedStateLayout) ||
           base::FeatureList::IsEnabled(ntp_features::kRealboxCr23All));
+  source->AddBoolean("realboxCr23ConsistentRowHeight",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kRealboxCr23ConsistentRowHeight));
   source->AddBoolean(
-      "realboxCr23ConsistentRowHeight",
-      base::FeatureList::IsEnabled(
-          ntp_features::kRealboxCr23ConsistentRowHeight) ||
+      "realboxCr23HoverFillShape",
+      base::FeatureList::IsEnabled(ntp_features::kRealboxCr23HoverFillShape) ||
           base::FeatureList::IsEnabled(ntp_features::kRealboxCr23All));
+  source->AddBoolean(
+      "realboxCr23Theming",
+      base::FeatureList::IsEnabled(ntp_features::kRealboxCr23Theming) ||
+          base::FeatureList::IsEnabled(ntp_features::kRealboxCr23All));
+  source->AddBoolean("realboxCr23SteadyStateShadow",
+                     ntp_features::kNtpRealboxCr23SteadyStateShadow.Get());
 }
 
 // static
@@ -931,11 +950,11 @@ void RealboxHandler::QueryAutocomplete(const std::u16string& input,
   autocomplete_input.set_prefer_keyword(false);
   autocomplete_input.set_allow_exact_keyword_match(false);
 
-  autocomplete_controller()->Start(autocomplete_input);
+  controller_->StartAutocomplete(autocomplete_input);
 }
 
 void RealboxHandler::StopAutocomplete(bool clear_result) {
-  autocomplete_controller()->Stop(clear_result);
+  controller_->StopAutocomplete(clear_result);
 }
 
 void RealboxHandler::OpenAutocompleteMatch(uint8_t line,
@@ -991,7 +1010,7 @@ void RealboxHandler::DeleteAutocompleteMatch(uint8_t line, const GURL& url) {
     // the web UI is referencing a stale match.
     return;
   }
-  autocomplete_controller()->Stop(false);
+  controller_->StopAutocomplete(/*clear_result=*/false);
   autocomplete_controller()->DeleteMatch(*match);
 }
 
@@ -1079,10 +1098,15 @@ omnibox::mojom::SelectionLineState ConvertLineState(
   return omnibox::mojom::SelectionLineState::kNormal;
 }
 
-void RealboxHandler::UpdateSelection(OmniboxPopupSelection selection) {
-  page_->UpdateSelection(omnibox::mojom::OmniboxPopupSelection::New(
-      selection.line, ConvertLineState(selection.state),
-      selection.action_index));
+void RealboxHandler::UpdateSelection(OmniboxPopupSelection old_selection,
+                                     OmniboxPopupSelection selection) {
+  page_->UpdateSelection(
+      omnibox::mojom::OmniboxPopupSelection::New(
+          old_selection.line, ConvertLineState(old_selection.state),
+          old_selection.action_index),
+      omnibox::mojom::OmniboxPopupSelection::New(
+          selection.line, ConvertLineState(selection.state),
+          selection.action_index));
 }
 
 // LocationBarModel:

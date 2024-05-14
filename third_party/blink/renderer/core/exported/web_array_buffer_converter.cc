@@ -41,7 +41,8 @@ v8::Local<v8::Value> WebArrayBufferConverter::ToV8Value(
     v8::Isolate* isolate) {
   if (!buffer)
     return v8::Local<v8::Value>();
-  return ToV8(*buffer, isolate->GetCurrentContext()->Global(), isolate);
+  return ToV8Traits<DOMArrayBuffer>::ToV8(
+      ScriptState::From(isolate->GetCurrentContext()), *buffer);
 }
 
 WebArrayBuffer* WebArrayBufferConverter::CreateFromV8Value(

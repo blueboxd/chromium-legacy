@@ -4,14 +4,18 @@
 
 #include <array>
 #include <string>
+#include <string_view>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/ash/http_auth_dialog.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/saml/fake_saml_idp_mixin.h"
 #include "chrome/browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.h"
@@ -24,9 +28,7 @@
 #include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/auth_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
@@ -67,7 +69,7 @@ constexpr char kEthServicePath[] = "/service/eth1";
 
 constexpr char kSAMLIdPCookieName[] = "saml";
 constexpr char kSAMLIdPCookieValue[] = "value";
-constexpr base::StringPiece kAffiliationID = "test id";
+constexpr std::string_view kAffiliationID = "test id";
 
 constexpr char kSAMLLink[] = "link";
 constexpr char kSAMLLinkedPageURLPattern[] =
@@ -259,6 +261,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, SamlSwitchToGaia) {
   reauth_dialog_helper->ClickChangeIdPButtonOnSamlScreen();
 
   reauth_dialog_helper->ExpectGaiaScreenVisible();
+  reauth_dialog_helper->ExpectGaiaButtonsVisible();
 }
 
 // Tests the cancel button in Verify Screen.
@@ -427,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, MAYBE_ScrapedMultiple) {
   signin_frame_js.TapOn("Submit");
 
   reauth_dialog_helper->ExpectSamlConfirmPasswordVisible();
-  reauth_dialog_helper->ExpectSamlScreenHidden();
+  reauth_dialog_helper->ExpectSigninWebviewHidden();
   reauth_dialog_helper->ExpectPasswordConfirmInputHidden();
 
   // Entering an unknown password should go back to the confirm password screen.
@@ -467,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, MAYBE_ScrapedNone) {
   signin_frame_js.TapOn("Submit");
 
   reauth_dialog_helper->ExpectSamlConfirmPasswordVisible();
-  reauth_dialog_helper->ExpectSamlScreenHidden();
+  reauth_dialog_helper->ExpectSigninWebviewHidden();
   reauth_dialog_helper->ExpectPasswordConfirmInputVisible();
 
   // Entering passwords that don't match will make us land again in the same
@@ -527,8 +530,8 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, MAYBE_VerifyAgainFlow) {
   ASSERT_TRUE(session_manager::SessionManager::Get()->IsScreenLocked());
 }
 
-// TODO(crbug.com/1414002): Flaky on ChromeOS MSAN.
-#if defined(MEMORY_SANITIZER)
+// TODO(b/276829737): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_ShowNetworkDialog DISABLED_ShowNetworkDialog
 #else
 #define MAYBE_ShowNetworkDialog ShowNetworkDialog
@@ -743,8 +746,11 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, MAYBE_LoadAbort) {
   Login();
 
   // Make gaia landing page unreachable
+  const GaiaUrls& gaia_urls = *GaiaUrls::GetInstance();
   fake_gaia_mixin()->fake_gaia()->SetFixedResponse(
-      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(),
+      features::IsGaiaReauthEndpointEnabled()
+          ? gaia_urls.embedded_reauth_chromeos_url()
+          : gaia_urls.embedded_setup_chromeos_url(),
       net::HTTP_NOT_FOUND);
 
   // Lock the screen and trigger the lock screen SAML reauth dialog.
@@ -805,8 +811,7 @@ class ProxyAuthLockscreenWebUiTest : public LockscreenWebUiTest {
  public:
   ProxyAuthLockscreenWebUiTest()
       : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
-                      base::FilePath()),
-        login_handler_(nullptr) {}
+                      base::FilePath()) {}
 
   ProxyAuthLockscreenWebUiTest(const ProxyAuthLockscreenWebUiTest&) = delete;
   ProxyAuthLockscreenWebUiTest& operator=(const ProxyAuthLockscreenWebUiTest&) =
@@ -825,15 +830,6 @@ class ProxyAuthLockscreenWebUiTest : public LockscreenWebUiTest {
     // corresponds to `kEthServicePath`
     SetDisconnected(kWifiServicePath);
     ConfigureNetworkBehindProxy();
-
-    // Proxy authentication will be required as soon as we request any url from
-    // lock screen's webview. This observer will notice it and allow us to
-    // access corresponding `LoginHandler` object.
-    auth_needed_observer_ =
-        std::make_unique<content::WindowedNotificationObserver>(
-            chrome::NOTIFICATION_AUTH_NEEDED,
-            base::BindRepeating(&ProxyAuthLockscreenWebUiTest::OnAuthRequested,
-                                base::Unretained(this)));
   }
 
   void SetUp() override {
@@ -841,10 +837,6 @@ class ProxyAuthLockscreenWebUiTest : public LockscreenWebUiTest {
     ASSERT_TRUE(proxy_server_.Start());
     LockscreenWebUiTest::SetUp();
   }
-
-  void WaitForLoginHandler() { auth_needed_observer_->Wait(); }
-
-  LoginHandler* login_handler() const { return login_handler_; }
 
  private:
   // Configure settings which are neccesarry for `NetworkStateInformer` to
@@ -863,17 +855,7 @@ class ProxyAuthLockscreenWebUiTest : public LockscreenWebUiTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  bool OnAuthRequested(const content::NotificationSource& /* source */,
-                       const content::NotificationDetails& details) {
-    login_handler_ =
-        content::Details<LoginNotificationDetails>(details)->handler();
-    return true;
-  }
-
   net::SpawnedTestServer proxy_server_;
-  std::unique_ptr<content::WindowedNotificationObserver> auth_needed_observer_;
-  // Used for proxy server authentication.
-  raw_ptr<LoginHandler, DanglingUntriaged | ExperimentalAsh> login_handler_;
 };
 
 IN_PROC_BROWSER_TEST_F(ProxyAuthLockscreenWebUiTest, SwitchToProxyNetwork) {
@@ -904,15 +886,14 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthLockscreenWebUiTest, SwitchToProxyNetwork) {
   reauth_dialog_helper->WaitForVerifyAccountScreen();
   reauth_dialog_helper->ClickVerifyButton();
 
-  reauth_dialog_helper->WaitForSamlScreen();
+  reauth_dialog_helper->WaitForSigninWebview();
   reauth_dialog_helper->ExpectVerifyAccountScreenHidden();
 
-  // Wait for proxy login handler and authenticate.
-  WaitForLoginHandler();
-  ASSERT_TRUE(login_handler());
-  ASSERT_EQ(login_handler()->web_contents()->GetOuterWebContents(),
-            reauth_dialog_helper->DialogWebContents());
-  login_handler()->SetAuth(u"foo", u"bar");
+  // Wait for http auth dialog and authenticate.
+  ASSERT_TRUE(base::test::RunUntil(
+      []() { return HttpAuthDialog::GetAllDialogsForTest().size() == 1; }));
+  HttpAuthDialog::GetAllDialogsForTest().front()->SupplyCredentialsForTest(
+      u"foo", u"bar");
 
   reauth_dialog_helper->WaitForIdpPageLoad();
 
@@ -926,6 +907,9 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthLockscreenWebUiTest, SwitchToProxyNetwork) {
   // Ensures that the re-auth dialog is closed.
   reauth_dialog_helper->WaitForReauthDialogToClose();
   ScreenLockerTester().WaitForUnlock();
+
+  // We should no longer be using the ash http auth dialog.
+  EXPECT_FALSE(HttpAuthDialog::IsEnabled());
 }
 
 // TODO(crbug.com/1414002): Flaky on ChromeOS MSAN.
@@ -951,22 +935,18 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthLockscreenWebUiTest,
   reauth_dialog_helper->WaitForVerifyAccountScreen();
   reauth_dialog_helper->ClickVerifyButton();
 
-  reauth_dialog_helper->WaitForSamlScreen();
+  reauth_dialog_helper->WaitForSigninWebview();
   reauth_dialog_helper->ExpectVerifyAccountScreenHidden();
 
-  // Appearance of login handler means that proxy authentication was requested
-  WaitForLoginHandler();
-  ASSERT_TRUE(login_handler());
-  ASSERT_EQ(login_handler()->web_contents()->GetOuterWebContents(),
-            reauth_dialog_helper->DialogWebContents());
-
-  content::WindowedNotificationObserver auth_cancelled_waiter(
-      chrome::NOTIFICATION_AUTH_CANCELLED,
-      content::NotificationService::AllSources());
+  // Appearance of http auth dialog means that proxy authentication was
+  // requested.
+  ASSERT_TRUE(base::test::RunUntil(
+      []() { return HttpAuthDialog::GetAllDialogsForTest().size() == 1; }));
 
   // Cancel proxy authentication
-  login_handler()->CancelAuth();
-  auth_cancelled_waiter.Wait();
+  HttpAuthDialog::GetAllDialogsForTest().front()->CancelForTest();
+  ASSERT_TRUE(base::test::RunUntil(
+      []() { return HttpAuthDialog::GetAllDialogsForTest().size() == 0; }));
 
   // Expect to end up on the network screen
   reauth_dialog_helper->WaitForNetworkDialogAndSetHandlers();

@@ -81,6 +81,8 @@ const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 const char kEnableCanvas2DLayers[] = "canvas-2d-layers";
 
 // Disables hardware acceleration of video decode, where available.
+// Warning: do not remove or rename this flag, as it is used inside ChromeOS
+// code to implement the DeviceHardwareVideoDecodingEnabled policy.
 const char kDisableAcceleratedVideoDecode[] =
     "disable-accelerated-video-decode";
 
@@ -937,13 +939,13 @@ const char kDisableScrollToTextFragment[] = "disable-scroll-to-text-fragment";
 const char kWebXrForceRuntime[] = "force-webxr-runtime";
 
 // Tell WebXr to assume that it does not support any runtimes.
-const char kWebXrRuntimeNone[] = "no-vr-runtime";
+const char kWebXrRuntimeNone[] = "no-xr-runtime";
 
 const char kWebXrRuntimeOrientationSensors[] = "orientation-sensors";
 
 // The following are the runtimes that WebXr supports.
+const char kWebXrRuntimeArCore[] = "arcore";
 const char kWebXrRuntimeCardboard[] = "cardboard";
-const char kWebXrRuntimeGVR[] = "gvr";
 const char kWebXrRuntimeOpenXr[] = "openxr";
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1019,30 +1021,6 @@ const char kLLVMProfileFile[] = "llvm-profile-file";
 #endif
 
 #if BUILDFLAG(IS_WIN)
-// /prefetch:# arguments to use when launching various process types. It has
-// been observed that when file reads are consistent for 3 process launches with
-// the same /prefetch:# argument, the Windows prefetcher starts issuing reads in
-// batch at process launch. Because reads depend on the process type, the
-// prefetcher wouldn't be able to observe consistent reads if no /prefetch:#
-// arguments were used. Note that the browser process has no /prefetch:#
-// argument; as such all other processes must have one in order to avoid
-// polluting its profile. Note: # must always be in [1, 8]; otherwise it is
-// ignored by the Windows prefetcher.
-const char kPrefetchArgumentRenderer[] = "/prefetch:1";
-const char kPrefetchArgumentGpu[] = "/prefetch:2";
-const char kPrefetchArgumentPpapi[] = "/prefetch:3";
-const char kPrefetchArgumentPpapiBroker[] = "/prefetch:4";
-// /prefetch:5, /prefetch:6 and /prefetch:7 are reserved for content embedders
-// and are not to be used by content itself.
-
-// /prefetch:# argument shared by all process types that don't have their own.
-// It is likely that the prefetcher won't work for these process types as it
-// won't be able to observe consistent file reads across launches. However,
-// having a valid prefetch argument for these process types is required to
-// prevent them from interfering with the prefetch profile of the browser
-// process.
-const char kPrefetchArgumentOther[] = "/prefetch:8";
-
 // Device scale factor passed to certain processes like renderers, etc.
 const char kDeviceScaleFactor[]     = "device-scale-factor";
 

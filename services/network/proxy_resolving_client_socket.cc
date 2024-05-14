@@ -5,6 +5,8 @@
 #include "services/network/proxy_resolving_client_socket.h"
 
 #include <stdint.h>
+
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -30,9 +32,7 @@
 #include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/socket/connect_job_factory.h"
 #include "net/socket/socket_tag.h"
-#include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -256,9 +256,8 @@ int ProxyResolvingClientSocket::DoProxyResolveComplete(int result) {
     // TODO(crbug.com/876885): Allow QUIC proxy once net::QuicProxyClientSocket
     // supports ReadIfReady() and CancelReadIfReady().
     proxy_info_.RemoveProxiesWithoutScheme(
-        net::ProxyServer::SCHEME_DIRECT | net::ProxyServer::SCHEME_HTTP |
-        net::ProxyServer::SCHEME_HTTPS | net::ProxyServer::SCHEME_SOCKS4 |
-        net::ProxyServer::SCHEME_SOCKS5);
+        net::ProxyServer::SCHEME_HTTP | net::ProxyServer::SCHEME_HTTPS |
+        net::ProxyServer::SCHEME_SOCKS4 | net::ProxyServer::SCHEME_SOCKS5);
 
     if (proxy_info_.is_empty()) {
       // No proxies/direct to choose from. This happens when we don't support
@@ -278,11 +277,10 @@ int ProxyResolvingClientSocket::DoInitConnection() {
 
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  absl::optional<net::NetworkTrafficAnnotationTag> proxy_annotation_tag =
-      proxy_info_.is_direct()
-          ? absl::nullopt
-          : absl::optional<net::NetworkTrafficAnnotationTag>(
-                proxy_info_.traffic_annotation());
+  std::optional<net::NetworkTrafficAnnotationTag> proxy_annotation_tag =
+      proxy_info_.is_direct() ? std::nullopt
+                              : std::optional<net::NetworkTrafficAnnotationTag>(
+                                    proxy_info_.traffic_annotation());
 
   // Now that the proxy is resolved, create and start a ConnectJob. Using an
   // empty NetworkAnonymizationKey means that tunnels over H2 or QUIC proxies
@@ -290,13 +288,12 @@ int ProxyResolvingClientSocket::DoInitConnection() {
   // of the consumer.
   //
   // TODO(mmenke): Investigate that.
-  net::SSLConfig ssl_config;
   connect_job_ = connect_job_factory_->CreateConnectJob(
       use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_chain(),
-      proxy_annotation_tag, &ssl_config, &ssl_config, /*force_tunnel=*/true,
-      net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
-      net::MAXIMUM_PRIORITY, net::SocketTag(), network_anonymization_key_,
-      net::SecureDnsPolicy::kAllow, common_connect_job_params_, this);
+      proxy_annotation_tag, /*force_tunnel=*/true, net::PRIVACY_MODE_DISABLED,
+      net::OnHostResolutionCallback(), net::MAXIMUM_PRIORITY, net::SocketTag(),
+      network_anonymization_key_, net::SecureDnsPolicy::kAllow,
+      common_connect_job_params_, this);
   return connect_job_->Connect();
 }
 

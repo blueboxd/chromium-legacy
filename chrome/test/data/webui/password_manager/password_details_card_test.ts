@@ -4,7 +4,8 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {EditPasswordDialogElement, Page, PasswordDetailsCardElement, PasswordManagerImpl, PasswordViewPageInteractions, Router, SyncBrowserProxyImpl} from 'chrome://password-manager/password_manager.js';
+import type {EditPasswordDialogElement, PasswordDetailsCardElement} from 'chrome://password-manager/password_manager.js';
+import {Page, PasswordManagerImpl, PasswordViewPageInteractions, Router, SyncBrowserProxyImpl} from 'chrome://password-manager/password_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -462,4 +463,33 @@ suite('PasswordDetailsCardTest', function() {
         card.shadowRoot!.querySelector('share-password-flow');
     assertFalse(!!sharePasswordFlow);
   });
+
+  test(
+      'clicking save password in account opens move password dialog',
+      async function() {
+        loadTimeData.overrideValues({enableButterOnDesktopFollowup: true});
+        passwordManager.data.isOptedInAccountStorage = true;
+        syncProxy.syncInfo = {
+          isEligibleForAccountStorage: true,
+          isSyncingPasswords: false,
+        };
+
+        const card = await createCardElement();
+        card.isUsingAccountStore = true;
+        await flushTasks();
+
+        const movePasswordLabel = card!.shadowRoot!.querySelector<HTMLElement>(
+            '.move-password-container div');
+        assertTrue(!!movePasswordLabel);
+        assertTrue(isVisible(movePasswordLabel));
+
+        movePasswordLabel!.click();
+        await flushTasks();
+
+        const moveDialog =
+            card.shadowRoot!.querySelector('move-single-password-dialog');
+        assertTrue(!!moveDialog);
+        const dialog = moveDialog!.shadowRoot!.querySelector('#dialog');
+        assertTrue(!!dialog);
+      });
 });

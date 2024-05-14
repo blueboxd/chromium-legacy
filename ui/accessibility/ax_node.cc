@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
@@ -41,6 +42,9 @@ AXNode::AXNode(AXTree* tree,
       index_in_parent_(index_in_parent),
       unignored_index_in_parent_(unignored_index_in_parent),
       parent_(parent) {
+  // TODO(accessibility): Change to CHECK(tree_) after https://crbug.com/1511053
+  // is fixed.
+  DCHECK(tree_);
   data_.id = id;
 }
 
@@ -50,7 +54,8 @@ AXNodeData&& AXNode::TakeData() {
   return std::move(data_);
 }
 
-const std::vector<AXNode*>& AXNode::GetAllChildren() const {
+const std::vector<raw_ptr<AXNode, VectorExperimental>>& AXNode::GetAllChildren()
+    const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   return children_;
 }
@@ -59,6 +64,17 @@ size_t AXNode::GetChildCount() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   return children_.size();
 }
+
+#if DCHECK_IS_ON()
+size_t AXNode::GetSubtreeCount() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
+  size_t count = 1;  // |this| counts as one.
+  for (AXNode* child : children_) {
+    count += child->GetSubtreeCount();
+  }
+  return count;
+}
+#endif  // DCHECK_IS_ON()
 
 size_t AXNode::GetChildCountCrossingTreeBoundary() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
@@ -685,7 +701,7 @@ AXNode* AXNode::GetLowestCommonAncestor(const AXNode& other) {
   return common_ancestor;
 }
 
-absl::optional<int> AXNode::CompareTo(const AXNode& other) const {
+std::optional<int> AXNode::CompareTo(const AXNode& other) const {
   if (this == &other)
     return 0;
 
@@ -702,7 +718,7 @@ absl::optional<int> AXNode::CompareTo(const AXNode& other) const {
   }
 
   if (!common_ancestor)
-    return absl::nullopt;
+    return std::nullopt;
   if (common_ancestor == this)
     return -1;
   if (common_ancestor == &other)
@@ -711,7 +727,7 @@ absl::optional<int> AXNode::CompareTo(const AXNode& other) const {
   if (our_ancestors.empty() || other_ancestors.empty()) {
     NOTREACHED() << "The common ancestor should be followed by two uncommon "
                     "children in the two corresponding lists of ancestors.";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   size_t this_uncommon_ancestor_index = our_ancestors.top()->GetIndexInParent();
@@ -772,7 +788,8 @@ void AXNode::UpdateUnignoredCachedValues() {
     UpdateUnignoredCachedValuesRecursive(0);
 }
 
-void AXNode::SwapChildren(std::vector<AXNode*>* children) {
+void AXNode::SwapChildren(
+    std::vector<raw_ptr<AXNode, VectorExperimental>>* children) {
   children->swap(children_);
 }
 
@@ -1275,43 +1292,43 @@ bool AXNode::IsTable() const {
   return IsTableLike(GetRole());
 }
 
-absl::optional<int> AXNode::GetTableColCount() const {
+std::optional<int> AXNode::GetTableColCount() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
   return static_cast<int>(table_info->col_count);
 }
 
-absl::optional<int> AXNode::GetTableRowCount() const {
+std::optional<int> AXNode::GetTableRowCount() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
   return static_cast<int>(table_info->row_count);
 }
 
-absl::optional<int> AXNode::GetTableAriaColCount() const {
+std::optional<int> AXNode::GetTableAriaColCount() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
-  return absl::make_optional(table_info->aria_col_count);
+    return std::nullopt;
+  return std::make_optional(table_info->aria_col_count);
 }
 
-absl::optional<int> AXNode::GetTableAriaRowCount() const {
+std::optional<int> AXNode::GetTableAriaRowCount() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
-  return absl::make_optional(table_info->aria_row_count);
+    return std::nullopt;
+  return std::make_optional(table_info->aria_row_count);
 }
 
-absl::optional<int> AXNode::GetTableCellCount() const {
+std::optional<int> AXNode::GetTableCellCount() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
   return static_cast<int>(table_info->unique_cell_ids.size());
 }
@@ -1410,7 +1427,8 @@ std::vector<AXNodeID> AXNode::GetTableUniqueCellIds() const {
   return std::vector<AXNodeID>(table_info->unique_cell_ids);
 }
 
-const std::vector<AXNode*>* AXNode::GetExtraMacNodes() const {
+const std::vector<raw_ptr<AXNode, VectorExperimental>>*
+AXNode::GetExtraMacNodes() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   // Should only be available on the table node itself, not any of its children.
   const AXTableInfo* table_info = tree_->GetTableInfo(this);
@@ -1442,17 +1460,17 @@ bool AXNode::IsTableRow() const {
   return ui::IsTableRow(GetRole());
 }
 
-absl::optional<int> AXNode::GetTableRowRowIndex() const {
+std::optional<int> AXNode::GetTableRowRowIndex() const {
   if (!IsTableRow())
-    return absl::nullopt;
+    return std::nullopt;
 
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
   const auto& iter = table_info->row_id_to_index.find(id());
   if (iter == table_info->row_id_to_index.end())
-    return absl::nullopt;
+    return std::nullopt;
   return static_cast<int>(iter->second);
 }
 
@@ -1478,13 +1496,13 @@ bool AXNode::IsTableColumn() const {
   return ui::IsTableColumn(GetRole());
 }
 
-absl::optional<int> AXNode::GetTableColColIndex() const {
+std::optional<int> AXNode::GetTableColColIndex() const {
   if (!IsTableColumn())
-    return absl::nullopt;
+    return std::nullopt;
 
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
   int index = 0;
   for (const AXNode* node : table_info->extra_mac_nodes) {
@@ -1505,56 +1523,56 @@ bool AXNode::IsTableCellOrHeader() const {
   return IsCellOrTableHeader(GetRole());
 }
 
-absl::optional<int> AXNode::GetTableCellIndex() const {
+std::optional<int> AXNode::GetTableCellIndex() const {
   if (!IsTableCellOrHeader())
-    return absl::nullopt;
+    return std::nullopt;
 
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
   const auto& iter = table_info->cell_id_to_index.find(id());
   if (iter != table_info->cell_id_to_index.end())
     return static_cast<int>(iter->second);
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<int> AXNode::GetTableCellColIndex() const {
+std::optional<int> AXNode::GetTableCellColIndex() const {
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
-  absl::optional<int> index = GetTableCellIndex();
+  std::optional<int> index = GetTableCellIndex();
   if (!index)
-    return absl::nullopt;
+    return std::nullopt;
 
   return static_cast<int>(table_info->cell_data_vector[*index].col_index);
 }
 
-absl::optional<int> AXNode::GetTableCellRowIndex() const {
+std::optional<int> AXNode::GetTableCellRowIndex() const {
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
   // If it's a table row, use the first cell within.
   if (IsTableRow()) {
     if (const AXNode* first_cell = table_info->GetFirstCellInRow(this)) {
       return first_cell->GetTableCellRowIndex();
     }
-    return absl::nullopt;
+    return std::nullopt;
   }
 
-  absl::optional<int> index = GetTableCellIndex();
+  std::optional<int> index = GetTableCellIndex();
   if (!index)
-    return absl::nullopt;
+    return std::nullopt;
 
   return static_cast<int>(table_info->cell_data_vector[*index].row_index);
 }
 
-absl::optional<int> AXNode::GetTableCellColSpan() const {
+std::optional<int> AXNode::GetTableCellColSpan() const {
   // If it's not a table cell, don't return a col span.
   if (!IsTableCellOrHeader())
-    return absl::nullopt;
+    return std::nullopt;
 
   // Otherwise, try to return a colspan, with 1 as the default if it's not
   // specified.
@@ -1564,10 +1582,10 @@ absl::optional<int> AXNode::GetTableCellColSpan() const {
   return 1;
 }
 
-absl::optional<int> AXNode::GetTableCellRowSpan() const {
+std::optional<int> AXNode::GetTableCellRowSpan() const {
   // If it's not a table cell, don't return a row span.
   if (!IsTableCellOrHeader())
-    return absl::nullopt;
+    return std::nullopt;
 
   // Otherwise, try to return a row span, with 1 as the default if it's not
   // specified.
@@ -1577,47 +1595,47 @@ absl::optional<int> AXNode::GetTableCellRowSpan() const {
   return 1;
 }
 
-absl::optional<int> AXNode::GetTableCellAriaColIndex() const {
+std::optional<int> AXNode::GetTableCellAriaColIndex() const {
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
-  absl::optional<int> index = GetTableCellIndex();
+  std::optional<int> index = GetTableCellIndex();
   if (!index)
-    return absl::nullopt;
+    return std::nullopt;
 
   int aria_col_index =
       static_cast<int>(table_info->cell_data_vector[*index].aria_col_index);
   // |aria-colindex| attribute is one-based, value less than 1 is invalid.
   // https://www.w3.org/TR/wai-aria-1.2/#aria-colindex
-  return (aria_col_index > 0) ? absl::optional<int>(aria_col_index)
-                              : absl::nullopt;
+  return (aria_col_index > 0) ? std::optional<int>(aria_col_index)
+                              : std::nullopt;
 }
 
-absl::optional<int> AXNode::GetTableCellAriaRowIndex() const {
+std::optional<int> AXNode::GetTableCellAriaRowIndex() const {
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return absl::nullopt;
+    return std::nullopt;
 
   // If it's a table row, use the first cell within.
   if (IsTableRow()) {
     if (const AXNode* first_cell = table_info->GetFirstCellInRow(this)) {
       return first_cell->GetTableCellAriaRowIndex();
     }
-    return absl::nullopt;
+    return std::nullopt;
   }
 
-  absl::optional<int> index = GetTableCellIndex();
+  std::optional<int> index = GetTableCellIndex();
   if (!index) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   int aria_row_index =
       static_cast<int>(table_info->cell_data_vector[*index].aria_row_index);
   // |aria-rowindex| attribute is one-based, value less than 1 is invalid.
   // https://www.w3.org/TR/wai-aria-1.2/#aria-rowindex
-  return (aria_row_index > 0) ? absl::optional<int>(aria_row_index)
-                              : absl::nullopt;
+  return (aria_row_index > 0) ? std::optional<int>(aria_row_index)
+                              : std::nullopt;
 }
 
 std::vector<AXNodeID> AXNode::GetTableCellColHeaderNodeIds() const {
@@ -1688,7 +1706,7 @@ void AXNode::IdVectorToNodeVector(const std::vector<AXNodeID>& ids,
   }
 }
 
-absl::optional<int> AXNode::GetHierarchicalLevel() const {
+std::optional<int> AXNode::GetHierarchicalLevel() const {
   int hierarchical_level =
       GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
 
@@ -1698,7 +1716,7 @@ absl::optional<int> AXNode::GetHierarchicalLevel() const {
   if (hierarchical_level > 0)
     return hierarchical_level;
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool AXNode::IsOrderedSetItem() const {
@@ -1723,12 +1741,12 @@ bool AXNode::IsOrderedSet() const {
 }
 
 // Uses AXTree's cache to calculate node's PosInSet.
-absl::optional<int> AXNode::GetPosInSet() const {
+std::optional<int> AXNode::GetPosInSet() const {
   return tree_->GetPosInSet(*this);
 }
 
 // Uses AXTree's cache to calculate node's SetSize.
-absl::optional<int> AXNode::GetSetSize() const {
+std::optional<int> AXNode::GetSetSize() const {
   return tree_->GetSetSize(*this);
 }
 

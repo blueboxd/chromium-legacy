@@ -1,4 +1,3 @@
-
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -311,7 +310,7 @@ class FileUploadDelegate::InitContext
     auto status_result =
         CheckResponseAndGetStatus(std::move(url_loader_), headers);
     if (!status_result.has_value()) {
-      Complete(base::unexpected(status_result.error()));
+      Complete(base::unexpected(std::move(status_result).error()));
       return;
     }
 
@@ -326,7 +325,7 @@ class FileUploadDelegate::InitContext
     // Just make sure granulatiy is returned, do not use it here.
     auto upload_granularity_result = GetChunkGranularity(headers);
     if (!upload_granularity_result.has_value()) {
-      Complete(base::unexpected(upload_granularity_result.error()));
+      Complete(base::unexpected(std::move(upload_granularity_result).error()));
       return;
     }
 
@@ -442,7 +441,7 @@ class FileUploadDelegate::NextStepContext
     auto status_result =
         CheckResponseAndGetStatus(std::move(url_loader_), headers);
     if (!status_result.has_value()) {
-      Complete(base::unexpected(status_result.error()));
+      Complete(base::unexpected(std::move(status_result).error()));
       return;
     }
 
@@ -485,7 +484,7 @@ class FileUploadDelegate::NextStepContext
 
     auto upload_granularity_result = GetChunkGranularity(headers);
     if (!upload_granularity_result.has_value()) {
-      Complete(base::unexpected(upload_granularity_result.error()));
+      Complete(base::unexpected(std::move(upload_granularity_result).error()));
       return;
     }
     auto upload_granularity = upload_granularity_result.value();
@@ -549,7 +548,7 @@ class FileUploadDelegate::NextStepContext
     }
 
     if (!buffer_result.has_value()) {
-      Complete(base::unexpected(buffer_result.error()));
+      Complete(base::unexpected(std::move(buffer_result).error()));
       return;
     }
 
@@ -728,11 +727,11 @@ class FileUploadDelegate::FinalContext
     auto status_result =
         CheckResponseAndGetStatus(std::move(url_loader_), headers);
     if (!status_result.has_value()) {
-      Complete(base::unexpected(status_result.error()));
+      Complete(base::unexpected(std::move(status_result).error()));
       return;
     }
 
-    const std::string upload_status = status_result.value();
+    const std::string& upload_status = status_result.value();
     if (base::EqualsCaseInsensitiveASCII(upload_status, "final")) {
       // All done.
       RespondOnFinal(headers);
@@ -785,7 +784,7 @@ class FileUploadDelegate::FinalContext
     auto status_result =
         CheckResponseAndGetStatus(std::move(url_loader_), headers);
     if (!status_result.has_value()) {
-      Complete(base::unexpected(status_result.error()));
+      Complete(base::unexpected(std::move(status_result).error()));
       return;
     }
 
@@ -831,7 +830,9 @@ FileUploadDelegate::FileUploadDelegate() {
 }
 
 FileUploadDelegate::~FileUploadDelegate() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Offset weak pointer factory invalidation to UI task runner.
+  ::content::GetUIThreadTaskRunner({})->DeleteSoon(
+      FROM_HERE, std::move(weak_ptr_factory_));
 }
 
 void FileUploadDelegate::InitializeOnce() {
@@ -937,9 +938,10 @@ void FileUploadDelegate::DoInitiate(
   if (!::content::BrowserThread::CurrentlyOn(::content::BrowserThread::UI)) {
     ::content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(&FileUploadDelegate::DoInitiate, GetWeakPtr(),
-                       std::string(origin_path), std::string(upload_parameters),
-                       std::move(result_cb)));
+        base::BindOnce(
+            &FileUploadDelegate::DoInitiate, GetWeakPtr(),
+            std::string(origin_path), std::string(upload_parameters),
+            base::BindPostTaskToCurrentDefault(std::move(result_cb))));
     return;
   }
 
@@ -965,7 +967,8 @@ void FileUploadDelegate::OnAccessTokenResult(
     StatusOr<std::string> access_token_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!access_token_result.has_value()) {
-    std::move(result_cb).Run(base::unexpected(access_token_result.error()));
+    std::move(result_cb).Run(
+        base::unexpected(std::move(access_token_result).error()));
     return;
   }
 
@@ -986,9 +989,10 @@ void FileUploadDelegate::DoNextStep(
   if (!::content::BrowserThread::CurrentlyOn(::content::BrowserThread::UI)) {
     ::content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(&FileUploadDelegate::DoNextStep, GetWeakPtr(), total,
-                       uploaded, std::string(session_token),
-                       std::move(scoped_reservation), std::move(result_cb)));
+        base::BindOnce(
+            &FileUploadDelegate::DoNextStep, GetWeakPtr(), total, uploaded,
+            std::string(session_token), std::move(scoped_reservation),
+            base::BindPostTaskToCurrentDefault(std::move(result_cb))));
     return;
   }
 
@@ -1006,9 +1010,10 @@ void FileUploadDelegate::DoFinalize(
         result_cb) {
   if (!::content::BrowserThread::CurrentlyOn(::content::BrowserThread::UI)) {
     ::content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FileUploadDelegate::DoFinalize, GetWeakPtr(),
-                       std::string(session_token), std::move(result_cb)));
+        FROM_HERE, base::BindOnce(&FileUploadDelegate::DoFinalize, GetWeakPtr(),
+                                  std::string(session_token),
+                                  base::BindPostTaskToCurrentDefault(
+                                      std::move(result_cb))));
     return;
   }
 
@@ -1025,6 +1030,7 @@ void FileUploadDelegate::DoDeleteFile(std::string_view origin_path) {
 }
 
 base::WeakPtr<FileUploadDelegate> FileUploadDelegate::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
+  CHECK(weak_ptr_factory_) << "Factory already invalidated.";
+  return weak_ptr_factory_->GetWeakPtr();
 }
 }  // namespace reporting

@@ -46,11 +46,12 @@ class ModelTypeController : public DataTypeController {
   std::unique_ptr<DataTypeActivationResponse> Connect() override;
   void Stop(SyncStopMetadataFate fate, StopCallback callback) override;
   State state() const override;
-  bool ShouldRunInTransportOnlyMode() const override;
+  bool ShouldRunInTransportOnlyMode() const final;
   void GetAllNodes(AllNodesCallback callback) override;
   void GetTypeEntitiesCount(base::OnceCallback<void(const TypeEntitiesCount&)>
                                 callback) const override;
   void RecordMemoryUsageAndCountsHistograms() override;
+  void ReportBridgeErrorForTest() override;
 
   ModelTypeControllerDelegate* GetDelegateForTesting(SyncMode sync_mode);
 

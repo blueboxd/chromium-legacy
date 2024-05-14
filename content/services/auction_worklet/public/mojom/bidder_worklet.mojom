@@ -62,6 +62,9 @@ struct KAnonKey {
 struct BidderWorkletNonSharedParams {
   string name;
 
+  blink.mojom.InterestGroup.TrustedBiddingSignalsSlotSizeMode
+      trusted_bidding_signals_slot_size_mode;
+
   bool enable_bidding_signals_prioritization;
   map<string, double>? priority_vector;
 
@@ -92,6 +95,10 @@ struct BiddingBrowserSignals {
 
   // Previous times the group won auctions.
   array<PreviousWin> prev_wins;
+
+  // Whether the browser is under lockout or the buyer's origin is under
+  // cooldown for sending forDebuggingOnly reports.
+  bool for_debugging_only_in_cooldown_or_lockout;
 };
 
 // The results of running a FLEDGE generateBid() script.
@@ -126,6 +133,19 @@ struct BidderWorkletBid {
 
   // How long it took to run the generateBid() script.
   mojo_base.mojom.TimeDelta bid_duration;
+};
+
+// Which auctions the bid is appropriate for, based on whether the auction
+// enforces k-anonymity or not.
+enum BidRole {
+  // Bid valid only for auctions that do not enforce k-anonymity.
+  kUnenforcedKAnon,
+
+  // Bid valid only for auctions that enforce k-anonymity.
+  kEnforcedKAnon,
+
+  // Bid valid regardless of whether the auction does k-anon enforcement.
+  kBothKAnonModes
 };
 
 struct BidderWorklerKAnonBidSameAsNonEnforced {};
@@ -232,11 +252,7 @@ interface GenerateBidClient {
   // wins per `kanon_mode` passed to GenerateBid.
   //
   // `bidding_signals_data_version` The value of the Data-Version header served
-  //  with the trusted bidding signals.
-  //
-  // `has_bidding_signals_data_version` True to indicate Data-Version header
-  //  was present in the HTTP response for the trusted bidding signals.
-  //  TODO(https://crbug.com/657632): Update when optional integers supported.
+  //  with the trusted bidding signals, if the header was present.
   //
   // `debug_loss_report_url` The URL to request if the auction runs to
   //  completion and this bid does not win. All bidders are allowed to send loss
@@ -252,15 +268,13 @@ interface GenerateBidClient {
   // `set_priority` The value of the updated priority for this interest group.
   //  This priority should be applied to the interest group after the auction.
   //  The priority is not changed if null.
-  //  TODO(https://crbug.com/657632): Update to use `double?` type if/when
-  //  optional integer support is added to Mojo.
   //
   // `update_priority_signals_overrides` A map of new values to be written to
   //  the interest group's priorityOverrides map. Null values mean to delete the
   //  corresponding value, if present. Values with keys not in the map are
   //  preserved.
   //  TODO(https://crbug.com/657632): Update to use `double?` type if/when
-  //  optional integer support is added to Mojo.
+  //  that's supported as a value in a Mojo map.
   //
   // `pa_requests` The various requests made to the Private Aggregation API.
   //
@@ -282,12 +296,10 @@ interface GenerateBidClient {
   OnGenerateBidComplete(
       BidderWorkletBid? bid,
       BidderWorkletKAnonEnforcedBid? kanon_bid,
-      uint32 bidding_signals_data_version,
-      bool has_bidding_signals_data_version,
+      uint32? bidding_signals_data_version,
       url.mojom.Url? debug_loss_report_url,
       url.mojom.Url? debug_win_report_url,
-      double set_priority,
-      bool has_set_priority,
+      double? set_priority,
       map<string, PrioritySignalsDouble?> update_priority_signals_overrides,
       array<PrivateAggregationRequest> pa_requests,
       array<PrivateAggregationRequest> non_kanon_pa_requests,
@@ -421,6 +433,11 @@ interface BidderWorklet {
   //  because requested size is optional in the originating auction
   //  configuration, and therefore not required to generate bids.
   //
+  // `multi_bid_limit` Limit on how many bids can be returned at once from
+  //  generateBid().  This is always at least 1.  It has no effect if the
+  //  support for returning more than one bid at once is disabled; and if it's
+  //  1, 2 bids can still be produced because of k-anon re-run.
+  //
   // `trace_id` ID of a nestable asynchronous trace event of category `fledge`
   //  to use with tracing calls.
   //
@@ -441,6 +458,7 @@ interface BidderWorklet {
       BiddingBrowserSignals bidding_browser_signals,
       mojo_base.mojom.Time auction_start_time,
       blink.mojom.AdSize? requested_ad_size,
+      uint16 multi_bid_limit,
       uint64 trace_id,
       pending_associated_remote<GenerateBidClient> generate_bid_client,
       pending_associated_receiver<GenerateBidFinalizer> bid_finalizer);

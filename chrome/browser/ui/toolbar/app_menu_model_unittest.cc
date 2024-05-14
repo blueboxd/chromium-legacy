@@ -141,36 +141,15 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
   }
 };
 
-class ExtensionsMenuModelTest : public AppMenuModelTest,
-                                public testing::WithParamInterface<bool> {
+class ExtensionsMenuModelTest : public AppMenuModelTest {
  public:
-  ExtensionsMenuModelTest() {
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-    if (GetParam()) {
-      enabled_features = {features::kExtensionsMenuInAppMenu};
-      disabled_features = {features::kChromeRefresh2023};
-    } else {
-      enabled_features = {};
-      disabled_features = {features::kExtensionsMenuInAppMenu,
-                           features::kChromeRefresh2023};
-    }
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
+  ExtensionsMenuModelTest() = default;
 
   ExtensionsMenuModelTest(const ExtensionsMenuModelTest&) = delete;
   ExtensionsMenuModelTest& operator=(const ExtensionsMenuModelTest&) = delete;
 
   ~ExtensionsMenuModelTest() override = default;
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
 };
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ExtensionsMenuModelTest,
-    /* features::kNewExtensionsTopLevelMenu enabled */ testing::Bool());
 
 class TestAppMenuModelCR2023 : public AppMenuModelTest {
  public:
@@ -294,14 +273,9 @@ TEST_F(AppMenuModelTest, Basics) {
 
   // Choose something from the bookmark submenu and make sure it makes it back
   // to the delegate as well.
-  size_t bookmarks_model_index = 0;
-  for (size_t i = 0; i < item_count; ++i) {
-    if (model.GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
-      // The bookmarks submenu comes after the Tabs and Downloads items.
-      bookmarks_model_index = i + (features::IsChromeRefresh2023() ? 3 : 2);
-      break;
-    }
-  }
+  size_t bookmarks_model_index =
+      model.GetIndexOfCommandId(IDC_BOOKMARKS_MENU).value();
+
   EXPECT_GT(bookmarks_model_index, 0u);
   ui::MenuModel* bookmarks_model =
       model.GetSubmenuModelAt(bookmarks_model_index);
@@ -349,23 +323,19 @@ TEST_F(AppMenuModelTest, GlobalError) {
 
 // Tests that extensions sub menu (when enabled) generates the correct elements
 // or does not generate its elements when disabled.
-TEST_P(ExtensionsMenuModelTest, ExtensionsMenu) {
+TEST_F(ExtensionsMenuModelTest, ExtensionsMenu) {
   AppMenuModel model(this, browser());
   model.Init();
 
-  if (GetParam()) {  // Menu enabled
-    ASSERT_TRUE(model.GetIndexOfCommandId(IDC_EXTENSIONS_SUBMENU));
-    ui::MenuModel* extensions_submenu = model.GetSubmenuModelAt(
-        model.GetIndexOfCommandId(IDC_EXTENSIONS_SUBMENU).value());
-    ASSERT_NE(extensions_submenu, nullptr);
-    ASSERT_EQ(2ul, extensions_submenu->GetItemCount());
-    EXPECT_EQ(IDC_EXTENSIONS_SUBMENU_MANAGE_EXTENSIONS,
-              extensions_submenu->GetCommandIdAt(0));
-    EXPECT_EQ(IDC_EXTENSIONS_SUBMENU_VISIT_CHROME_WEB_STORE,
-              extensions_submenu->GetCommandIdAt(1));
-  } else {
-    EXPECT_FALSE(model.GetIndexOfCommandId(IDC_EXTENSIONS_SUBMENU));
-  }
+  ASSERT_TRUE(model.GetIndexOfCommandId(IDC_EXTENSIONS_SUBMENU));
+  ui::MenuModel* extensions_submenu = model.GetSubmenuModelAt(
+      model.GetIndexOfCommandId(IDC_EXTENSIONS_SUBMENU).value());
+  ASSERT_NE(extensions_submenu, nullptr);
+  ASSERT_EQ(2ul, extensions_submenu->GetItemCount());
+  EXPECT_EQ(IDC_EXTENSIONS_SUBMENU_MANAGE_EXTENSIONS,
+            extensions_submenu->GetCommandIdAt(0));
+  EXPECT_EQ(IDC_EXTENSIONS_SUBMENU_VISIT_CHROME_WEB_STORE,
+            extensions_submenu->GetCommandIdAt(1));
 }
 
 TEST_F(AppMenuModelTest, PerformanceItem) {

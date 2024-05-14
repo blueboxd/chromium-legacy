@@ -95,7 +95,7 @@ void OnIsolatedWebAppUrlInfoCreated(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
   provider->scheduler().InstallIsolatedWebApp(
-      iwa_url_info, iwa_location, /*expected_version=*/absl::nullopt,
+      iwa_url_info, iwa_location, /*expected_version=*/std::nullopt,
       /*optional_keep_alive=*/nullptr, /*optional_profile_keep_alive=*/nullptr,
       base::BindOnce(&IsolatedWebAppInstallationDone, iwa_url_info.app_id(),
                      std::move(callback)));
@@ -341,6 +341,28 @@ void StandaloneBrowserTestController::SetWebAppSettingsPref(
 
   ProfileManager::GetPrimaryUserProfile()->GetPrefs()->SetList(
       prefs::kWebAppSettings, std::move(*result).TakeList());
+
+  std::move(callback).Run(/*success=*/true);
+}
+
+void StandaloneBrowserTestController::SetWebAppInstallForceListPref(
+    const std::string& policy,
+    SetWebAppInstallForceListPrefCallback callback) {
+  CHECK(callback);
+
+  auto result = base::JSONReader::ReadAndReturnValueWithError(
+      policy, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  if (!result.has_value()) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+  if (!result->is_list()) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  ProfileManager::GetPrimaryUserProfile()->GetPrefs()->SetList(
+      prefs::kWebAppInstallForceList, std::move(*result).TakeList());
 
   std::move(callback).Run(/*success=*/true);
 }

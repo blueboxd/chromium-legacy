@@ -6,9 +6,12 @@
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_TEST_MOCK_ATTRIBUTION_DATA_HOST_MANAGER_H_
 
 #include <stdint.h>
+
+#include <optional>
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "components/attribution_reporting/registration_eligibility.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
@@ -19,7 +22,6 @@
 #include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/trigger_verification.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-forward.h"
 #include "url/gurl.h"
@@ -30,7 +32,7 @@ class HttpResponseHeaders;
 
 namespace content {
 
-class MockAttributionDataHostManager : public AttributionDataHostManager {
+class MockAttributionDataHostManager final : public AttributionDataHostManager {
  public:
   MockAttributionDataHostManager();
   ~MockAttributionDataHostManager() override;
@@ -91,8 +93,8 @@ class MockAttributionDataHostManager : public AttributionDataHostManager {
                attribution_reporting::mojom::RegistrationEligibility,
                GlobalRenderFrameHostId,
                int64_t last_navigation_id,
-               absl::optional<blink::AttributionSrcToken>,
-               absl::optional<std::string> devtools_request_id),
+               std::optional<blink::AttributionSrcToken>,
+               std::optional<std::string> devtools_request_id),
               (override));
 
   MOCK_METHOD(bool,
@@ -112,7 +114,7 @@ class MockAttributionDataHostManager : public AttributionDataHostManager {
   MOCK_METHOD(void,
               NotifyFencedFrameReportingBeaconStarted,
               (BeaconId beacon_id,
-               absl::optional<int64_t> navigation_id,
+               std::optional<int64_t> navigation_id,
                attribution_reporting::SuitableOrigin source_origin,
                bool is_within_fenced_frame,
                AttributionInputEvent input_event,
@@ -128,6 +130,11 @@ class MockAttributionDataHostManager : public AttributionDataHostManager {
                const net::HttpResponseHeaders* headers,
                bool is_final_response),
               (override));
+
+  base::WeakPtr<AttributionDataHostManager> AsWeakPtr() override;
+
+ private:
+  base::WeakPtrFactory<MockAttributionDataHostManager> weak_factory_{this};
 };
 
 }  // namespace content

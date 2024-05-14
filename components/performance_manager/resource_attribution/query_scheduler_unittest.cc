@@ -24,8 +24,9 @@
 #include "components/performance_manager/public/resource_attribution/query_results.h"
 #include "components/performance_manager/public/resource_attribution/resource_contexts.h"
 #include "components/performance_manager/public/resource_attribution/resource_types.h"
-#include "components/performance_manager/public/resource_attribution/scoped_cpu_query.h"
+#include "components/performance_manager/resource_attribution/context_collection.h"
 #include "components/performance_manager/resource_attribution/cpu_measurement_monitor.h"
+#include "components/performance_manager/resource_attribution/performance_manager_aliases.h"
 #include "components/performance_manager/resource_attribution/query_params.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
@@ -36,7 +37,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace performance_manager::resource_attribution {
+namespace resource_attribution::internal {
 
 namespace {
 
@@ -44,8 +45,6 @@ using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::UnorderedElementsAre;
-using QueryParams = internal::QueryParams;
-using ResourceContextTypeId = internal::ResourceContextTypeId;
 
 std::unique_ptr<QueryParams> CreateQueryParams(
     ResourceTypeSet resource_types = {},
@@ -53,7 +52,7 @@ std::unique_ptr<QueryParams> CreateQueryParams(
     std::set<ResourceContextTypeId> all_context_types = {}) {
   auto params = std::make_unique<QueryParams>();
   params->resource_types = std::move(resource_types);
-  params->contexts = internal::ContextCollection::CreateForTesting(
+  params->contexts = ContextCollection::CreateForTesting(
       std::move(resource_contexts), std::move(all_context_types));
   return params;
 }
@@ -73,9 +72,10 @@ void ExpectQueryResult(QueryScheduler* scheduler,
 
 }  // namespace
 
-class ResourceAttrQuerySchedulerTest : public GraphTestHarness {
+class ResourceAttrQuerySchedulerTest
+    : public performance_manager::GraphTestHarness {
  protected:
-  using Super = GraphTestHarness;
+  using Super = performance_manager::GraphTestHarness;
 
   void SetUp() override {
     GetGraphFeatures().EnableResourceAttributionScheduler();
@@ -92,10 +92,12 @@ class ResourceAttrQuerySchedulerTest : public GraphTestHarness {
   FakeMemoryMeasurementDelegateFactory memory_delegate_factory_;
 };
 
-using ResourceAttrQuerySchedulerPMTest = PerformanceManagerTestHarness;
+using ResourceAttrQuerySchedulerPMTest =
+    performance_manager::PerformanceManagerTestHarness;
 
 TEST_F(ResourceAttrQuerySchedulerTest, AddRemoveQueries) {
-  MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());
+  performance_manager::MockMultiplePagesWithMultipleProcessesGraph mock_graph(
+      graph());
 
   // Install fake memory results for all processes.
   for (const ProcessNode* node :
@@ -173,7 +175,7 @@ TEST_F(ResourceAttrQuerySchedulerPMTest, CallWithScheduler) {
   EXPECT_TRUE(PerformanceManager::IsAvailable());
   QueryScheduler* scheduler_ptr = nullptr;
   Graph* graph_ptr = nullptr;
-  RunInGraph([&](Graph* graph) {
+  performance_manager::RunInGraph([&](Graph* graph) {
     auto scheduler = std::make_unique<QueryScheduler>();
     scheduler_ptr = scheduler.get();
     graph_ptr = graph;
@@ -196,7 +198,7 @@ TEST_F(ResourceAttrQuerySchedulerTest, CallWithScheduler) {
   // Tests that CallWithScheduler works from GraphTestHarness which doesn't set
   // up the PerformanceManager sequence. It's convenient to use GraphTestHarness
   // with mock graphs to test resource attribution queries.
-  EXPECT_FALSE(PerformanceManager::IsAvailable());
+  EXPECT_FALSE(performance_manager::PerformanceManager::IsAvailable());
   base::RunLoop run_loop;
   QueryScheduler::CallWithScheduler(
       base::BindLambdaForTesting([&](QueryScheduler* scheduler) {
@@ -206,4 +208,4 @@ TEST_F(ResourceAttrQuerySchedulerTest, CallWithScheduler) {
   run_loop.Run();
 }
 
-}  // namespace performance_manager::resource_attribution
+}  // namespace resource_attribution::internal

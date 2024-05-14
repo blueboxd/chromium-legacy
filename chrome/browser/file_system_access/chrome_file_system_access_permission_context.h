@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
@@ -65,6 +66,10 @@ class ChromeFileSystemAccessPermissionContext
 #endif
 {
  public:
+  using FileCreatedFromShowSaveFilePickerCallbackList =
+      base::RepeatingCallbackList<void(const GURL&,
+                                       const storage::FileSystemURL&)>;
+
   // Represents the type of persisted grant. This value should not be stored
   // and should only be used to check the state of persisted grants,
   // using the `GetPersistedGrantType()` method.
@@ -173,7 +178,6 @@ class ChromeFileSystemAccessPermissionContext
       base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
   bool CanObtainReadPermission(const url::Origin& origin) override;
   bool CanObtainWritePermission(const url::Origin& origin) override;
-
   void SetLastPickedDirectory(const url::Origin& origin,
                               const std::string& id,
                               const base::FilePath& path,
@@ -183,25 +187,31 @@ class ChromeFileSystemAccessPermissionContext
   base::FilePath GetWellKnownDirectoryPath(
       blink::mojom::WellKnownDirectory directory,
       const url::Origin& origin) override;
-
   std::u16string GetPickerTitle(
       const blink::mojom::FilePickerOptionsPtr& options) override;
-
   void NotifyEntryMoved(const url::Origin& origin,
                         const base::FilePath& old_path,
                         const base::FilePath& new_path) override;
+  void OnFileCreatedFromShowSaveFilePicker(
+      const GURL& file_picker_binding_context,
+      const storage::FileSystemURL& url) override;
+
+  // Registers a subscriber to be notified of file creation events originating
+  // from `window.showSaveFilePicker()` until the returned subscription is
+  // destroyed.
+  [[nodiscard]] base::CallbackListSubscription
+  AddFileCreatedFromShowSaveFilePickerCallback(
+      FileCreatedFromShowSaveFilePickerCallbackList::CallbackType callback);
 
   ContentSetting GetReadGuardContentSetting(const url::Origin& origin) const;
   ContentSetting GetWriteGuardContentSetting(const url::Origin& origin) const;
+
+  std::vector<base::FilePath> GetGrantedPaths(const url::Origin& origin);
 
   void SetMaxIdsPerOriginForTesting(unsigned int max_ids) {
     max_ids_per_origin_ = max_ids;
   }
 
-  // This method may only be called when the Persistent Permissions feature
-  // flag is enabled.
-  // TODO(crbug.com/1467574): Remove `kFileSystemAccessPersistentPermissions`
-  // flag after FSA Persistent Permissions feature launch.
   PersistedGrantStatus GetPersistedGrantStatusForTesting(
       const url::Origin& origin) {
     CHECK(base::FeatureList::IsEnabled(
@@ -223,6 +233,10 @@ class ChromeFileSystemAccessPermissionContext
   PersistedGrantType GetPersistedGrantTypeForTesting(
       const url::Origin& origin) {
     return GetPersistedGrantType(origin);
+  }
+
+  bool OriginHasExtendedPermissionForTesting(const url::Origin& origin) {
+    return OriginHasExtendedPermission(origin);
   }
 
   bool HasExtendedPermissionForTesting(const url::Origin& origin,
@@ -269,6 +283,11 @@ class ChromeFileSystemAccessPermissionContext
   // type.
   bool OriginHasReadAccess(const url::Origin& origin);
   bool OriginHasWriteAccess(const url::Origin& origin);
+
+  // Enable or disable extended permissions as a result of user
+  // interaction with the File System Access Page Info UI.
+  void SetOriginExtendedPermissionByUser(const url::Origin& origin);
+  void RemoveOriginExtendedPermissionByUser(const url::Origin& origin);
 
   // Called by FileSystemAccessTabHelper when a top-level frame was navigated
   // away from `origin` to some other origin. Is virtual for testing purposes.
@@ -436,6 +455,16 @@ class ChromeFileSystemAccessPermissionContext
   // Returns whether the origin has extended permission enabled via user
   // opt-in or by having an actively installed PWA.
   bool OriginHasExtendedPermission(const url::Origin& origin);
+  // Removes extended permissions for grants. Does not update the content
+  // setting type for extended permissions.
+  // This method should only be called for an origin that already has extended
+  // permissions.
+  void RemoveExtendedPermission(const url::Origin& origin);
+  // Upgrades permission grants to extended grants. Does not update the content
+  // setting type for extended permissions.
+  // This method should only be called for an origin that does not already
+  // have extended permissions.
+  void UpgradeToExtendedPermission(const url::Origin& origin);
 
   // Retrieve the persisted grant type for a given origin.
   PersistedGrantType GetPersistedGrantType(const url::Origin& origin);
@@ -456,7 +485,7 @@ class ChromeFileSystemAccessPermissionContext
 
   base::WeakPtr<ChromeFileSystemAccessPermissionContext> GetWeakPtr();
 
-  const raw_ptr<content::BrowserContext> profile_;
+  const raw_ptr<content::BrowserContext, DanglingUntriaged> profile_;
 
   // Permission state per origin.
   struct OriginState;
@@ -479,6 +508,11 @@ class ChromeFileSystemAccessPermissionContext
   size_t max_ids_per_origin_ = 32u;
 
   const raw_ptr<const base::Clock> clock_;
+
+  // Subscribers to notify of file creation events originating from
+  // `window.showSaveFilePicker()`.
+  FileCreatedFromShowSaveFilePickerCallbackList
+      file_created_from_show_save_file_picker_callback_list_;
 
   base::WeakPtrFactory<ChromeFileSystemAccessPermissionContext> weak_factory_{
       this};

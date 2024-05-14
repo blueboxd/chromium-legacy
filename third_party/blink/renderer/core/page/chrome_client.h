@@ -140,6 +140,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void SetWindowRect(const gfx::Rect&, LocalFrame&) = 0;
 
+  virtual void Minimize(LocalFrame&) = 0;
+  virtual void Maximize(LocalFrame&) = 0;
+  virtual void Restore(LocalFrame&) = 0;
   virtual void SetResizable(bool resizable, LocalFrame&) = 0;
 
   // For non-composited WebViews that exist to contribute to a "parent" WebView
@@ -173,6 +176,10 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void TakeFocus(mojom::blink::FocusType) = 0;
 
   virtual void SetKeyboardFocusURL(Element*) {}
+
+  // Returns true if the page should support drag regions via the app-region
+  // CSS property.
+  virtual bool SupportsAppRegion() = 0;
 
   // Allow document lifecycle updates to be run in order to produce composited
   // outputs. Updates are blocked from occurring during loading navigation in
@@ -214,7 +221,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // compositing.
   // Returns null if the compositing stack has not been initialized yet.
   // |frame| must be a local frame.
-  virtual absl::optional<int> GetMaxRenderBufferBounds(
+  virtual std::optional<int> GetMaxRenderBufferBounds(
       LocalFrame& frame) const = 0;
 
   // Start a system drag and drop operation.
@@ -498,6 +505,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
       HTMLElement*,
       WebFormRelatedChangeType) {}
   virtual void DidChangeValueInTextField(HTMLFormControlElement&) {}
+  virtual void DidUserChangeContentEditableContent(Element&) {}
   virtual void DidEndEditingOnTextField(HTMLInputElement&) {}
   virtual void HandleKeyboardEventOnTextField(HTMLInputElement&,
                                               KeyboardEvent&) {}
@@ -510,10 +518,12 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void SelectOrSelectListFieldOptionsChanged(HTMLFormControlElement&) {}
   virtual void AjaxSucceeded(LocalFrame*) {}
-  // Called when |element| is in autofilled state and the value has been changed
-  // by JavaScript. |old_value| contains the value before being changed.
-  virtual void JavaScriptChangedAutofilledValue(HTMLFormControlElement&,
-                                                const String& old_value) {}
+  // Called when the value of `element` has been changed by JavaScript.
+  // `old_value` contains the value before being changed.
+  // `was_autofilled` is the state of the field prior to the JS change.
+  virtual void JavaScriptChangedValue(HTMLFormControlElement&,
+                                      const String& old_value,
+                                      bool was_autofilled) {}
 
   // Input method editor related functions.
   virtual void ShowVirtualKeyboardOnElementFocus(LocalFrame&) {}

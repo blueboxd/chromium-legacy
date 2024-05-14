@@ -13,12 +13,12 @@
 #include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/table/layout_table_column.h"
 #include "third_party/blink/renderer/core/layout/table/table_borders.h"
-#include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/box_background_paint_context.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
+#include "third_party/blink/renderer/core/paint/box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
-#include "third_party/blink/renderer/core/paint/box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -546,7 +546,7 @@ void TablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
   // We paint collapsed-borders section-by-section for fragmentation purposes.
   // This means that we need to track the final row we've painted in each
   // section to avoid double painting.
-  absl::optional<wtf_size_t> previous_painted_row_index;
+  std::optional<wtf_size_t> previous_painted_row_index;
 
   for (const auto& child : fragment_.Children()) {
     if (!child->IsTableSection()) {
@@ -554,7 +554,7 @@ void TablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
     }
 
     const auto& section = To<PhysicalBoxFragment>(*child);
-    const absl::optional<wtf_size_t> section_start_row_index =
+    const std::optional<wtf_size_t> section_start_row_index =
         section.TableSectionStartRowIndex();
     if (!section_start_row_index)
       continue;
@@ -590,7 +590,7 @@ void TablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
       if (fragment_table_row >= section_row_offsets.size()) {
         // Store the final row which we painted (if it wasn't fragmented).
         if (is_end_row_fragmented)
-          previous_painted_row_index = absl::nullopt;
+          previous_painted_row_index = std::nullopt;
         else
           previous_painted_row_index = table_row - 1;
         break;
@@ -893,15 +893,16 @@ void TableCellPainter::PaintBackgroundForTablePart(
       GetCSSPropertyBackgroundColor());
   const FillLayer& background_layers = table_part.StyleRef().BackgroundLayers();
   if (background_layers.AnyLayerHasImage() || !color.IsFullyTransparent()) {
-    BackgroundImageGeometry geometry(
-        layout_table_cell,
-        table_cell_paint_offset - table_part_paint_rect.offset, table_part,
-        table_part_paint_rect.size);
     PhysicalRect cell_paint_rect(table_cell_paint_offset, fragment_.Size());
     TableCellBackgroundClipper clipper(paint_info.context, layout_table_cell,
                                        cell_paint_rect);
+    BoxBackgroundPaintContext bg_paint_context(
+        layout_table_cell,
+        table_cell_paint_offset - table_part_paint_rect.offset, table_part,
+        table_part_paint_rect.size);
     BoxFragmentPainter(fragment_).PaintFillLayers(
-        paint_info, color, background_layers, cell_paint_rect, geometry);
+        paint_info, color, background_layers, cell_paint_rect,
+        bg_paint_context);
   }
 }
 

@@ -31,15 +31,11 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
-#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
-#include "chrome/browser/nearby_sharing/common/nearby_share_resource_getter.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -259,140 +255,43 @@ void AddSharedSyncPageStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("syncErrorsHelpUrl", chrome::kSyncErrorsHelpURL);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(b/309864078): move `AddNearbyShareData` to multidevice section.
-void AddNearbyShareData(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"nearbyShareSetUpButtonTitle",
-       IDS_SETTINGS_NEARBY_SHARE_SET_UP_BUTTON_TITLE},
-      {"nearbyShareDeviceNameRowTitle",
-       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ROW_TITLE},
-      {"nearbyShareDeviceNameDialogTitle",
-       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_DIALOG_TITLE},
-      {"nearbyShareDeviceNameFieldLabel",
-       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_FIELD_LABEL},
-      {"nearbyShareEditDeviceName", IDS_SETTINGS_NEARBY_SHARE_EDIT_DEVICE_NAME},
-      {"fastInitiationNotificationToggleTitle",
-       IDS_SETTINGS_NEARBY_SHARE_FAST_INITIATION_NOTIFICATION_TOGGLE_TITLE},
-      {"fastInitiationNotificationToggleDescription",
-       IDS_SETTINGS_NEARBY_SHARE_FAST_INITIATION_NOTIFICATION_TOGGLE_DESCRIPTION},
-      {"fastInitiationNotificationToggleAriaLabel",
-       IDS_SETTINGS_NEARBY_SHARE_FAST_INITIATION_NOTIFICATION_TOGGLE_ARIA_LABEL},
-      {"nearbyShareDeviceNameAriaDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION},
-      {"nearbyShareConfirmDeviceName",
-       IDS_SETTINGS_NEARBY_SHARE_CONFIRM_DEVICE_NAME},
-      {"nearbyShareManageContactsLabel",
-       IDS_SETTINGS_NEARBY_SHARE_MANAGE_CONTACTS_LABEL},
-      {"nearbyShareManageContactsRowTitle",
-       IDS_SETTINGS_NEARBY_SHARE_MANAGE_CONTACTS_ROW_TITLE},
-      {"nearbyShareEditDataUsage", IDS_SETTINGS_NEARBY_SHARE_EDIT_DATA_USAGE},
-      {"nearbyShareUpdateDataUsage",
-       IDS_SETTINGS_NEARBY_SHARE_UPDATE_DATA_USAGE},
-      {"nearbyShareDataUsageDialogTitle",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DIALOG_TITLE},
-      {"nearbyShareDataUsageWifiOnlyLabel",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_LABEL},
-      {"nearbyShareDataUsageWifiOnlyDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_DESCRIPTION},
-      {"nearbyShareDataUsageDataLabel",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_LABEL},
-      {"nearbyShareDataUsageDataDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_DESCRIPTION},
-      {"nearbyShareDataUsageDataTooltip",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_TOOLTIP},
-      {"nearbyShareDataUsageOfflineLabel",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_LABEL},
-      {"nearbyShareDataUsageOfflineDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_DESCRIPTION},
-      {"nearbyShareDataUsageDataEditButtonDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_DATA_DESCRIPTION},
-      {"nearbyShareDataUsageWifiOnlyEditButtonDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_WIFI_ONLY_DESCRIPTION},
-      {"nearbyShareDataUsageOfflineEditButtonDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_EDIT_BUTTON_OFFLINE_DESCRIPTION},
-      {"nearbyShareContactVisibilityRowTitle",
-       IDS_SETTINGS_NEARBY_SHARE_CONTACT_VISIBILITY_ROW_TITLE},
-      {"nearbyShareEditVisibility", IDS_SETTINGS_NEARBY_SHARE_EDIT_VISIBILITY},
-      {"nearbyShareVisibilityDialogTitle",
-       IDS_SETTINGS_NEARBY_SHARE_VISIBILITY_DIALOG_TITLE},
-      {"nearbyShareDescription", IDS_SETTINGS_NEARBY_SHARE_DESCRIPTION},
-      {"nearbyShareHighVisibilityTitle",
-       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_TITLE},
-      {"nearbyShareHighVisibilityOn",
-       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_ON},
-      {"nearbyShareHighVisibilityOff",
-       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_OFF},
-      {"nearbyShareVisibilityDialogSave",
-       IDS_SETTINGS_NEARBY_SHARE_VISIBILITY_DIALOG_SAVE}};
-
-  html_source->AddLocalizedStrings(kLocalizedStrings);
-
-  const char localized_title_string[] = "nearbyShareTitle";
-
-  if (features::IsNameEnabled()) {
-    html_source->AddString(
-        localized_title_string,
-        NearbyShareResourceGetter::GetInstance()->GetStringWithFeatureName(
-            IDS_SETTINGS_NEARBY_SHARE_TITLE_PH));
-  } else {
-    html_source->AddLocalizedString(localized_title_string,
-                                    IDS_SETTINGS_NEARBY_SHARE_TITLE);
-  }
-
-  // To use lottie, the worker-src CSP needs to be updated for the web ui that
-  // is using it. Since as of now there are only a couple of webuis using
-  // lottie animations, this update has to be performed manually. As the usage
-  // increases, set this as the default so manual override is no longer
-  // required.
-  html_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc,
-      "worker-src blob: chrome://resources 'self';");
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 void AddSecureDnsStrings(content::WebUIDataSource* html_source) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  const bool kIsRevampEnabled =
-      ash::features::IsOsSettingsRevampWayfindingEnabled();
-#endif
-
   webui::LocalizedString kLocalizedStrings[] = {
-    {"secureDns", IDS_SETTINGS_SECURE_DNS},
-    {"secureDnsDescription", IDS_SETTINGS_SECURE_DNS_DESCRIPTION},
+      {"secureDns", IDS_SETTINGS_SECURE_DNS},
+      {"secureDnsDescription", IDS_SETTINGS_SECURE_DNS_DESCRIPTION},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"secureDnsOsSettingsTitle", kIsRevampEnabled
-                                     ? IDS_OS_SETTINGS_REVAMP_SECURE_DNS
-                                     : IDS_SETTINGS_SECURE_DNS},
-    {"secureDnsOsSettingsDescription",
-     kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DESCRIPTION
-                      : IDS_SETTINGS_SECURE_DNS_DESCRIPTION},
-    {"secureDnsWithIdentifiersDescription",
-     IDS_SETTINGS_SECURE_DNS_WITH_IDENTIFIERS_DESCRIPTION},
-    {"secureDnsDialogTitle", IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_TITLE},
-    {"secureDnsDialogBody", IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_BODY},
-    {"secureDnsDialogCancel", IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_CANCEL},
-    {"secureDnsDialogTurnOff",
-     IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_TURN_OFF},
+      {"secureDnsOsSettingsTitle", IDS_OS_SETTINGS_SECURE_DNS_TITLE},
+      {"secureDnsOsSettingsDescription",
+       IDS_OS_SETTINGS_SECURE_DNS_DESCRIPTION},
+      {"secureDnsWithIdentifiersDescription",
+       IDS_SETTINGS_SECURE_DNS_WITH_IDENTIFIERS_DESCRIPTION},
+      {"secureDnsDialogTitle", IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_TITLE},
+      {"secureDnsDialogBody", IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_BODY},
+      {"secureDnsDialogCancel",
+       IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_CANCEL},
+      {"secureDnsDialogTurnOff",
+       IDS_OS_SETTINGS_REVAMP_SECURE_DNS_DIALOG_TURN_OFF},
 #endif
-    {"secureDnsDisabledForManagedEnvironment",
-     IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_MANAGED_ENVIRONMENT},
-    {"secureDnsDisabledForParentalControl",
-     IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_PARENTAL_CONTROL},
-    {"secureDnsAutomaticModeDescription",
-     IDS_SETTINGS_AUTOMATIC_MODE_DESCRIPTION},
-    {"secureDnsCustomProviderDescription",
-     IDS_SETTINGS_SECURE_DNS_CUSTOM_DESCRIPTION},
-    {"secureDnsDropdownA11yLabel",
-     IDS_SETTINGS_SECURE_DNS_DROPDOWN_ACCESSIBILITY_LABEL},
-    {"secureDnsSecureDropdownModeDescription",
-     IDS_SETTINGS_SECURE_DROPDOWN_MODE_DESCRIPTION},
-    {"secureDnsSecureDropdownModePrivacyPolicy",
-     IDS_SETTINGS_SECURE_DROPDOWN_MODE_PRIVACY_POLICY},
-    {"secureDnsCustomPlaceholder", IDS_SETTINGS_SECURE_DNS_CUSTOM_PLACEHOLDER},
-    {"secureDnsCustomFormatError", IDS_SETTINGS_SECURE_DNS_CUSTOM_FORMAT_ERROR},
-    {"secureDnsCustomConnectionError",
-     IDS_SETTINGS_SECURE_DNS_CUSTOM_CONNECTION_ERROR},
+      {"secureDnsDisabledForManagedEnvironment",
+       IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_MANAGED_ENVIRONMENT},
+      {"secureDnsDisabledForParentalControl",
+       IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_PARENTAL_CONTROL},
+      {"secureDnsAutomaticModeDescription",
+       IDS_SETTINGS_AUTOMATIC_MODE_DESCRIPTION},
+      {"secureDnsCustomProviderDescription",
+       IDS_SETTINGS_SECURE_DNS_CUSTOM_DESCRIPTION},
+      {"secureDnsDropdownA11yLabel",
+       IDS_SETTINGS_SECURE_DNS_DROPDOWN_ACCESSIBILITY_LABEL},
+      {"secureDnsSecureDropdownModeDescription",
+       IDS_SETTINGS_SECURE_DROPDOWN_MODE_DESCRIPTION},
+      {"secureDnsSecureDropdownModePrivacyPolicy",
+       IDS_SETTINGS_SECURE_DROPDOWN_MODE_PRIVACY_POLICY},
+      {"secureDnsCustomPlaceholder",
+       IDS_SETTINGS_SECURE_DNS_CUSTOM_PLACEHOLDER},
+      {"secureDnsCustomFormatError",
+       IDS_SETTINGS_SECURE_DNS_CUSTOM_FORMAT_ERROR},
+      {"secureDnsCustomConnectionError",
+       IDS_SETTINGS_SECURE_DNS_CUSTOM_CONNECTION_ERROR},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }

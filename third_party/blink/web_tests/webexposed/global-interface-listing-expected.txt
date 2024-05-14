@@ -1137,11 +1137,15 @@ interface CanvasRenderingContext2D
     method createConicGradient
     method createImageData
     method createLinearGradient
+    method createMesh2DIndexBuffer
+    method createMesh2DUVBuffer
+    method createMesh2DVertexBuffer
     method createPattern
     method createRadialGradient
     method drawFocusIfNeeded
     method drawFormattedText
     method drawImage
+    method drawMesh
     method ellipse
     method endLayer
     method fill
@@ -1202,16 +1206,28 @@ interface CanvasRenderingContext2D
     setter textRendering
     setter wordSpacing
 interface CaptureController : EventTarget
+    static method getSupportedZoomLevels
     attribute @@toStringTag
     getter oncapturedmousechange
+    getter oncapturedzoomlevelchange
     method constructor
+    method getZoomLevel
+    method sendWheel
     method setFocusBehavior
+    method setZoomLevel
     setter oncapturedmousechange
+    setter oncapturedzoomlevelchange
 interface CapturedMouseEvent : Event
     attribute @@toStringTag
     getter surfaceX
     getter surfaceY
     method constructor
+interface CaretPosition
+    attribute @@toStringTag
+    getter offset
+    getter offsetNode
+    method constructor
+    method getClientRect
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
     method constructor
@@ -1979,6 +1995,7 @@ interface Document : Node
     method ariaNotify
     method browsingTopics
     method captureEvents
+    method caretPositionFromPoint
     method caretRangeFromPoint
     method clear
     method close
@@ -2017,6 +2034,7 @@ interface Document : Node
     method hasPrivateToken
     method hasRedemptionRecord
     method hasStorageAccess
+    method hasUnpartitionedCookieAccess
     method importNode
     method open
     method prepend
@@ -2262,6 +2280,7 @@ interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
     getter accessibleNode
+    getter anchorElement
     getter ariaActiveDescendantElement
     getter ariaAtomic
     getter ariaAutoComplete
@@ -2373,6 +2392,7 @@ interface Element : Node
     method getElementsByClassName
     method getElementsByTagName
     method getElementsByTagNameNS
+    method getHTML
     method getInnerHTML
     method hasAttribute
     method hasAttributeNS
@@ -2410,6 +2430,7 @@ interface Element : Node
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
+    setter anchorElement
     setter ariaActiveDescendantElement
     setter ariaAtomic
     setter ariaAutoComplete
@@ -2677,6 +2698,7 @@ interface EventTarget
     method addEventListener
     method constructor
     method dispatchEvent
+    method on
     method removeEventListener
 interface External
     attribute @@toStringTag
@@ -2891,6 +2913,7 @@ interface GPU
 interface GPUAdapter
     attribute @@toStringTag
     getter features
+    getter isCompatibilityMode
     getter isFallbackAdapter
     getter limits
     method constructor
@@ -2953,6 +2976,7 @@ interface GPUCommandEncoder
     method popDebugGroup
     method pushDebugGroup
     method resolveQuerySet
+    method writeTimestamp
     setter label
 interface GPUCompilationInfo
     attribute @@toStringTag
@@ -3160,6 +3184,7 @@ interface GPUSupportedLimits
     getter maxStorageBufferBindingSize
     getter maxStorageBuffersPerShaderStage
     getter maxStorageTexturesPerShaderStage
+    getter maxSubgroupSize
     getter maxTextureArrayLayers
     getter maxTextureDimension1D
     getter maxTextureDimension2D
@@ -3170,6 +3195,7 @@ interface GPUSupportedLimits
     getter maxVertexBufferArrayStride
     getter maxVertexBuffers
     getter minStorageBufferOffsetAlignment
+    getter minSubgroupSize
     getter minUniformBufferOffsetAlignment
     method constructor
 interface GPUTexture
@@ -3463,6 +3489,7 @@ interface HTMLBodyElement : HTMLElement
     getter onload
     getter onmessage
     getter onmessageerror
+    getter onmove
     getter onoffline
     getter ononline
     getter onpagehide
@@ -3493,6 +3520,7 @@ interface HTMLBodyElement : HTMLElement
     setter onload
     setter onmessage
     setter onmessageerror
+    setter onmove
     setter onoffline
     setter ononline
     setter onpagehide
@@ -3611,7 +3639,6 @@ interface HTMLDocument : Document
 interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
-    getter anchorElement
     getter attributeStyleMap
     getter autocapitalize
     getter autofocus
@@ -3747,6 +3774,7 @@ interface HTMLElement : Element
     getter title
     getter translate
     getter virtualKeyboardPolicy
+    getter writingSuggestions
     method attachInternals
     method blur
     method click
@@ -3756,7 +3784,6 @@ interface HTMLElement : Element
     method showPopover
     method togglePopover
     setter accessKey
-    setter anchorElement
     setter autocapitalize
     setter autofocus
     setter contentEditable
@@ -3884,6 +3911,7 @@ interface HTMLElement : Element
     setter title
     setter translate
     setter virtualKeyboardPolicy
+    setter writingSuggestions
 interface HTMLEmbedElement : HTMLElement
     attribute @@toStringTag
     getter align
@@ -4012,6 +4040,7 @@ interface HTMLFrameSetElement : HTMLElement
     getter onload
     getter onmessage
     getter onmessageerror
+    getter onmove
     getter onoffline
     getter ononline
     getter onpagehide
@@ -4038,6 +4067,7 @@ interface HTMLFrameSetElement : HTMLElement
     setter onload
     setter onmessage
     setter onmessageerror
+    setter onmove
     setter onoffline
     setter ononline
     setter onpagehide
@@ -4074,10 +4104,8 @@ interface HTMLHeadingElement : HTMLElement
     setter align
 interface HTMLHtmlElement : HTMLElement
     attribute @@toStringTag
-    getter blocking
     getter version
     method constructor
-    setter blocking
     setter version
 interface HTMLIFrameElement : HTMLElement
     attribute @@toStringTag
@@ -4923,10 +4951,15 @@ interface HTMLTemplateElement : HTMLElement
     attribute @@toStringTag
     getter content
     getter parseparts
-    getter shadowRoot
+    getter serializable
+    getter shadowRootClonable
+    getter shadowRootDelegatesFocus
     getter shadowRootMode
     method constructor
     setter parseparts
+    setter serializable
+    setter shadowRootClonable
+    setter shadowRootDelegatesFocus
     setter shadowRootMode
 interface HTMLTextAreaElement : HTMLElement
     attribute @@toStringTag
@@ -5622,6 +5655,8 @@ interface MLGraphBuilder
     attribute @@toStringTag
     method abs
     method add
+    method argMax
+    method argMin
     method averagePool2d
     method batchNormalization
     method build
@@ -5644,16 +5679,21 @@ interface MLGraphBuilder
     method gather
     method gemm
     method greater
+    method greaterOrEqual
+    method hardSigmoid
     method hardSwish
     method identity
     method input
     method instanceNormalization
+    method l2Pool2d
     method layerNormalization
     method leakyRelu
     method lesser
+    method lesserOrEqual
     method linear
     method log
     method logicalNot
+    method lstm
     method matmul
     method max
     method maxPool2d
@@ -5681,6 +5721,7 @@ interface MLGraphBuilder
     method sin
     method slice
     method softmax
+    method softplus
     method softsign
     method split
     method sqrt
@@ -6033,11 +6074,13 @@ interface MediaMetadata
     getter album
     getter artist
     getter artwork
+    getter chapterInfo
     getter title
     method constructor
     setter album
     setter artist
     setter artwork
+    setter chapterInfo
     setter title
 interface MediaQueryList : EventTarget
     attribute @@toStringTag
@@ -6202,6 +6245,15 @@ interface MerchantValidationEvent : Event
     getter validationURL
     method complete
     method constructor
+interface Mesh2DIndexBuffer
+    attribute @@toStringTag
+    method constructor
+interface Mesh2DUVBuffer
+    attribute @@toStringTag
+    method constructor
+interface Mesh2DVertexBuffer
+    attribute @@toStringTag
+    method constructor
 interface MessageChannel
     attribute @@toStringTag
     getter port1
@@ -6243,6 +6295,16 @@ interface MimeTypeArray
     method constructor
     method item
     method namedItem
+interface ModelGenericSession
+    attribute @@toStringTag
+    method constructor
+    method execute
+    method executeStreaming
+interface ModelManager
+    attribute @@toStringTag
+    method canCreateGenericSession
+    method constructor
+    method createGenericSession
 interface Mojo
     static method bindInterface
     static method createDataPipe
@@ -6503,6 +6565,7 @@ interface Navigator
     getter keyboard
     getter language
     getter languages
+    getter lockedMode
     getter locks
     getter login
     getter managed
@@ -6521,6 +6584,7 @@ interface Navigator
     getter presentation
     getter product
     getter productSub
+    getter protectedAudience
     getter scheduling
     getter serial
     getter serviceWorker
@@ -6681,12 +6745,16 @@ interface NodePart : Part
     attribute @@toStringTag
     getter node
     method constructor
+interface NotRestoredReasonDetails
+    attribute @@toStringTag
+    getter reason
+    method constructor
+    method toJSON
 interface NotRestoredReasons
     attribute @@toStringTag
     getter children
     getter id
     getter name
-    getter preventedBackForwardCache
     getter reasons
     getter src
     getter url
@@ -6729,7 +6797,10 @@ interface OTPCredential : Credential
 interface Observable
     attribute @@toStringTag
     method constructor
+    method forEach
     method subscribe
+    method takeUntil
+    method toArray
 interface OfflineAudioCompletionEvent : Event
     attribute @@toStringTag
     getter renderedBuffer
@@ -6799,9 +6870,13 @@ interface OffscreenCanvasRenderingContext2D
     method createConicGradient
     method createImageData
     method createLinearGradient
+    method createMesh2DIndexBuffer
+    method createMesh2DUVBuffer
+    method createMesh2DVertexBuffer
     method createPattern
     method createRadialGradient
     method drawImage
+    method drawMesh
     method ellipse
     method endLayer
     method fill
@@ -6897,6 +6972,10 @@ interface OverscrollEvent : Event
     attribute @@toStringTag
     getter deltaX
     getter deltaY
+    method constructor
+interface PageConcealEvent : Event
+    attribute @@toStringTag
+    getter activation
     method constructor
 interface PageRevealEvent : Event
     attribute @@toStringTag
@@ -7191,9 +7270,12 @@ interface PerformanceScriptTiming : PerformanceEntry
     attribute @@toStringTag
     getter executionStart
     getter forcedStyleAndLayoutDuration
+    getter invoker
+    getter invokerType
     getter pauseDuration
-    getter sourceLocation
-    getter type
+    getter sourceCharPosition
+    getter sourceFunctionName
+    getter sourceURL
     getter window
     getter windowAttribution
     method constructor
@@ -7420,9 +7502,14 @@ interface PromiseRejectionEvent : Event
     getter promise
     getter reason
     method constructor
+interface ProtectedAudience
+    attribute @@toStringTag
+    method constructor
+    method queryFeatureSupport
 interface PublicKeyCredential : Credential
     static method isConditionalMediationAvailable
     static method isUserVerifyingPlatformAuthenticatorAvailable
+    static method parseCreationOptionsFromJSON
     attribute @@toStringTag
     getter authenticatorAttachment
     getter rawId
@@ -9291,6 +9378,7 @@ interface ShadowRoot : DocumentFragment
     attribute @@toStringTag
     getter activeElement
     getter adoptedStyleSheets
+    getter clonable
     getter delegatesFocus
     getter fullscreenElement
     getter host
@@ -9300,6 +9388,7 @@ interface ShadowRoot : DocumentFragment
     getter pictureInPictureElement
     getter pointerLockElement
     getter registry
+    getter serializable
     getter slotAssignment
     getter styleSheets
     method constructor
@@ -9308,6 +9397,7 @@ interface ShadowRoot : DocumentFragment
     method elementFromPoint
     method elementsFromPoint
     method getAnimations
+    method getHTML
     method getInnerHTML
     method getSelection
     method setHTMLUnsafe
@@ -9315,6 +9405,7 @@ interface ShadowRoot : DocumentFragment
     setter fullscreenElement
     setter innerHTML
     setter onslotchange
+    setter serializable
 interface SharedStorage
     attribute @@toStringTag
     getter worklet
@@ -11641,6 +11732,11 @@ interface WebSocket : EventTarget
     setter onerror
     setter onmessage
     setter onopen
+interface WebSocketError : DOMException
+    attribute @@toStringTag
+    getter closeCode
+    getter reason
+    method constructor
 interface WebSocketStream
     attribute @@toStringTag
     getter closed
@@ -12543,6 +12639,7 @@ namespace console
     getter location
     getter locationbar
     getter menubar
+    getter model
     getter name
     getter navigation
     getter navigator
@@ -12613,9 +12710,11 @@ namespace console
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onmove
     getter onoffline
     getter ononline
     getter onoverscroll
+    getter onpageconceal
     getter onpagehide
     getter onpagereveal
     getter onpageshow
@@ -12843,9 +12942,11 @@ namespace console
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onmove
     setter onoffline
     setter ononline
     setter onoverscroll
+    setter onpageconceal
     setter onpagehide
     setter onpagereveal
     setter onpageshow

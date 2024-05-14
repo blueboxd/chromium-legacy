@@ -9,6 +9,7 @@
 #include <optional>
 #include <vector>
 #include "content/public/browser/global_routing_id.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
@@ -21,9 +22,7 @@ class NavigationHandle;
 class RenderFrameHost;
 }  // namespace content
 
-namespace extensions {
-
-namespace declarative_net_request {
+namespace extensions::declarative_net_request {
 struct RequestParams;
 
 // An abstract class for rule matchers. Overridden by different kinds of
@@ -38,14 +37,16 @@ class RulesetMatcherBase {
   virtual ~RulesetMatcherBase();
 
   // Returns the ruleset's highest priority matching RequestAction for the
-  // onBeforeRequest phase, or std::nullopt if the ruleset has no matching
-  // rule. Also takes into account any matching allowAllRequests rules for the
-  // ancestor frames.
-  std::optional<RequestAction> GetBeforeRequestAction(
-      const RequestParams& params) const;
+  // given ruleset matching `stage`, or std::nullopt if the ruleset has no
+  // matching rule. Also takes into account any matching allowAllRequests rules
+  // for the ancestor frames.
+  std::optional<RequestAction> GetAction(const RequestParams& params,
+                                         RulesetMatchingStage stage) const;
 
   // Returns a vector of RequestAction for all matching modifyHeaders rules
   // with priority greater than |min_priority| if specified.
+  // TODO(crbug.com/1141166): Add a version of this that matches modifyHeaders
+  // rules based on response headers too.
   virtual std::vector<RequestAction> GetModifyHeadersActions(
       const RequestParams& params,
       std::optional<uint64_t> min_priority) const = 0;
@@ -55,6 +56,14 @@ class RulesetMatcherBase {
 
   // Returns the number of rules in this matcher.
   virtual size_t GetRulesCount() const = 0;
+
+  // Returns the number of rules to be matched in the onBeforeRequest phase in
+  // this matcher.
+  virtual size_t GetBeforeRequestRulesCount() const = 0;
+
+  // Returns the number of rules to be matched in the onHeadersReceived phase in
+  // this matcher.
+  virtual size_t GetHeadersReceivedRulesCount() const = 0;
 
   // Returns the extension ID with which this matcher is associated.
   const ExtensionId& extension_id() const { return extension_id_; }
@@ -120,15 +129,18 @@ class RulesetMatcherBase {
   // std::nullopt if there is no corresponding matching rule. Only takes into
   // account the request |params| passed in. This doesn't take any account any
   // matching allowAllRequests rules for ancestor frames.
+  // TODO(crbug.com/1141166): Currently, this only examines allowAllRequest
+  // rules that are to be matched in onBeforeRequest.
   virtual std::optional<RequestAction> GetAllowAllRequestsAction(
       const RequestParams& params) const = 0;
 
   // Returns the ruleset's highest priority matching RequestAction for the
-  // onBeforeRequest phase, or std::nullopt if the ruleset has no matching
-  // rule. This doesn't take any account any matching allowAllRequests rules for
-  // ancestor frames.
-  virtual std::optional<RequestAction> GetBeforeRequestActionIgnoringAncestors(
-      const RequestParams& params) const = 0;
+  // specified ruleset matching `stage`, or std::nullopt if the ruleset has no
+  // matching rule. This doesn't take any account any matching allowAllRequests
+  // rules for ancestor frames.
+  virtual std::optional<RequestAction> GetActionIgnoringAncestors(
+      const RequestParams& params,
+      RulesetMatchingStage stage) const = 0;
 
   RequestAction CreateRequestAction(
       RequestAction::Type type,
@@ -149,7 +161,6 @@ class RulesetMatcherBase {
       allowlisted_frames_;
 };
 
-}  // namespace declarative_net_request
-}  // namespace extensions
+}  // namespace extensions::declarative_net_request
 
 #endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_BASE_H_

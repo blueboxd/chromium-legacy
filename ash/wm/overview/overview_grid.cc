@@ -8,16 +8,19 @@
 #include <string>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/saved_desk_delegate.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/system/toast/toast_manager_impl.h"
@@ -55,23 +58,30 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/splitview/faster_split_view.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_overview_session.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_restore/pine_contents_view.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_constants.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/containers/adapters.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor_observer.h"
@@ -85,6 +95,7 @@
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/animation/animation_builder.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -268,7 +279,7 @@ class ShutdownAnimationMetricsTrackerObserver : public OverviewObserver,
   }
 
  private:
-  raw_ptr<ui::Compositor, ExperimentalAsh> compositor_;
+  raw_ptr<ui::Compositor> compositor_;
   OverviewExitMetricsTracker metrics_tracker_;
 };
 
@@ -368,7 +379,7 @@ aura::Window::Windows GetWindowsAssociatedWithDragging(
 // Returns true if all the `windows` associated with the drag are not null and
 // have parent.
 bool AreDraggedWindowsValid(const aura::Window::Windows& windows) {
-  for (const auto* window : windows) {
+  for (const aura::Window* window : windows) {
     if (!window || !window->parent()) {
       return false;
     }
@@ -379,7 +390,7 @@ bool AreDraggedWindowsValid(const aura::Window::Windows& windows) {
 
 // Returns true if all the `windows` associated with the drag are maximized.
 bool AreAllWindowsMaximized(const aura::Window::Windows& windows) {
-  for (const auto* window : windows) {
+  for (const aura::Window* window : windows) {
     if (!WindowState::Get(window)->IsMaximized()) {
       return false;
     }
@@ -391,7 +402,7 @@ bool AreAllWindowsMaximized(const aura::Window::Windows& windows) {
 // Returns the total size of the `windows` associated with the drag.
 gfx::Size GetTotalDraggedWindowsSize(const aura::Window::Windows& windows) {
   gfx::Rect total_bounds;
-  for (auto* win : windows) {
+  for (aura::Window* win : windows) {
     total_bounds.Union(win->bounds());
   }
 
@@ -404,7 +415,7 @@ gfx::Size GetTotalDraggedWindowsSize(const aura::Window::Windows& windows) {
 gfx::SizeF GetTotalUnionSizeIncludingTransients(
     const aura::Window::Windows& windows) {
   gfx::RectF total_bounds;
-  for (auto* win : windows) {
+  for (aura::Window* win : windows) {
     total_bounds.Union(GetUnionScreenBoundsForWindow(win));
   }
 
@@ -421,7 +432,7 @@ gfx::SizeF GetTotalUnionSizeIncludingTransients(
 // Returns the maximum of the `aura::client::kTopViewInset` among the `windows`.
 int GetTopViewInset(const aura::Window::Windows& windows) {
   int inset = 0;
-  for (auto* win : windows) {
+  for (aura::Window* win : windows) {
     const int win_inset = win->GetProperty(aura::client::kTopViewInset);
     inset = std::max(inset, win_inset);
   }
@@ -473,9 +484,10 @@ bool ShouldImmediatelyInitDeskBar(OverviewGrid* grid) {
 
 }  // namespace
 
-OverviewGrid::OverviewGrid(aura::Window* root_window,
-                           const std::vector<aura::Window*>& windows,
-                           OverviewSession* overview_session)
+OverviewGrid::OverviewGrid(
+    aura::Window* root_window,
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows,
+    OverviewSession* overview_session)
     : root_window_(root_window),
       overview_session_(overview_session),
       split_view_drag_indicators_(
@@ -485,7 +497,7 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
       bounds_(GetGridBoundsInScreen(root_window)) {
   TRACE_EVENT0("ui", "OverviewGrid::OverviewGrid");
 
-  for (auto* window : windows) {
+  for (aura::Window* window : windows) {
     if (window->GetRootWindow() != root_window)
       continue;
 
@@ -588,6 +600,13 @@ void OverviewGrid::Shutdown(OverviewEnterExitType exit_type) {
 void OverviewGrid::PrepareForOverview() {
   if (ShouldImmediatelyInitDeskBar(this)) {
     MaybeInitDesksWidget();
+  }
+
+  if (root_window_ == Shell::GetPrimaryRootWindow() &&
+      overview_session_->enter_exit_overview_type() ==
+          OverviewEnterExitType::kPine) {
+    pine_widget_ = PineContentsView::Create(root_window_);
+    pine_widget_->ShowInactive();
   }
 
   for (const auto& item : item_list_) {
@@ -763,6 +782,8 @@ void OverviewGrid::PositionWindows(
   }
 
   UpdateSaveDeskButtons();
+  // Needed to include the toast when we init the grid.
+  UpdateFasterSplitViewWidget();
 
   // This is a no-op if the feature ContinuousOverviewScrollAnimation is not
   // enabled. Once windows are placed at their final positions, clear transforms
@@ -906,7 +927,6 @@ void OverviewGrid::RemoveItem(OverviewItemBase* overview_item,
             ? std::make_optional(
                   split_view_drag_indicators_->current_window_dragging_state())
             : std::nullopt,
-        /*divider_changed=*/false,
         /*account_for_hotseat=*/true);
     SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
   }
@@ -997,7 +1017,7 @@ void OverviewGrid::RearrangeDuringDrag(
   // Update the grid's bounds.
   const gfx::Rect wanted_grid_bounds = GetGridBoundsInScreen(
       root_window_, std::make_optional(window_dragging_state),
-      /*divider_changed=*/false, /*account_for_hotseat=*/true);
+      /*account_for_hotseat=*/true);
   if (bounds_ != wanted_grid_bounds) {
     base::flat_set<OverviewItemBase*> ignored_items;
     if (dragged_item)
@@ -1249,10 +1269,9 @@ void OverviewGrid::CalculateWindowListAnimationStates(
         split_view_controller->GetDefaultSnappedWindow()->GetBoundsInScreen());
     occluded_region.op(snapped_window_bounds, SkRegion::kUnion_Op);
 
-    auto* divider = split_view_controller->split_view_divider();
-    if (divider) {
-      aura::Window* divider_window =
-          divider->divider_widget()->GetNativeWindow();
+    if (auto* divider_widget =
+            split_view_controller->split_view_divider()->divider_widget()) {
+      aura::Window* divider_window = divider_widget->GetNativeWindow();
       SkIRect divider_bounds =
           gfx::RectToSkIRect(divider_window->GetBoundsInScreen());
       occluded_region.op(divider_bounds, SkRegion::kUnion_Op);
@@ -1567,7 +1586,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
 
   auto move_windows_to_target_desk = [&](Desk* target_desk) -> bool {
     bool did_any_window_move = false;
-    for (auto* dragged_window : dragged_item->GetWindows()) {
+    for (aura::Window* dragged_window : dragged_item->GetWindows()) {
       if (!desks_controller->MoveWindowFromActiveDeskTo(
               dragged_window, target_desk, root_window_,
               DesksMoveWindowFromActiveDeskSource::kDragAndDrop)) {
@@ -1579,7 +1598,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     return true;
   };
 
-  for (auto* mini_view : desks_bar_view_->mini_views()) {
+  for (ash::DeskMiniView* mini_view : desks_bar_view_->mini_views()) {
     if (!mini_view->IsPointOnMiniView(screen_location))
       continue;
 
@@ -1606,7 +1625,22 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
   desks_bar_view_->OnNewDeskButtonPressed(
       DesksCreationRemovalSource::kDragToNewDeskButton);
 
-  return move_windows_to_target_desk(desks_controller->desks().back().get());
+  auto* target_desk = desks_controller->desks().back().get();
+
+  // When creating a new desk by by dragging and dropping a lacros browser
+  // window to new desk button, set the desk's default profile based on the
+  // profile lacros window is logged into.
+  const auto windows = dragged_item->GetWindows();
+  if (chromeos::features::IsDeskProfilesEnabled() && windows.size() == 1) {
+    if (auto lacros_profile_id = windows[0]->GetProperty(ash::kLacrosProfileId);
+        lacros_profile_id != 0) {
+      target_desk->SetLacrosProfileId(
+          lacros_profile_id,
+          DeskProfilesSelectProfileSource::kNewDeskButtonDrop);
+    }
+  }
+
+  return move_windows_to_target_desk(target_desk);
 }
 
 void OverviewGrid::StartScroll() {
@@ -1737,7 +1771,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
 
       scale = ScopedOverviewTransformWindow::GetItemScale(
           target_size.height(), height, GetTopViewInset(dragged_windows),
-          kHeaderHeightDp);
+          kWindowMiniViewHeaderHeight);
     }
   }
 
@@ -1760,9 +1794,13 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
   // Get the bounds of the item if there is a snapped window or a window
   // about to be snapped. If the height is less than that of the header, there
   // is nothing from the original window to be shown and nothing to be clipped.
+  // Floated windows doesn't need this special handling (see b/323136574).
+  auto* window = item->GetWindow();
+  const bool is_floated = WindowState::Get(window)->IsFloated();
   std::optional<gfx::RectF> split_view_bounds =
       GetSplitviewBoundsMaintainingAspectRatio();
-  if (!split_view_bounds || split_view_bounds->height() < kHeaderHeightDp) {
+  if (is_floated || !split_view_bounds ||
+      split_view_bounds->height() < kWindowMiniViewHeaderHeight) {
     item->set_unclipped_size(std::nullopt);
     return width;
   }
@@ -1771,12 +1809,12 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
   // split view bounds aspect ratio, and vertical clipping otherwise.
   const float aspect_ratio =
       target_size.width() /
-      (target_size.height() -
-       item->GetWindow()->GetProperty(aura::client::kTopViewInset));
+      (target_size.height() - window->GetProperty(aura::client::kTopViewInset));
   const float target_aspect_ratio =
-      split_view_bounds->width() / split_view_bounds->height();
+      static_cast<float>(split_view_bounds->width()) /
+      split_view_bounds->height();
   const bool clip_horizontally = aspect_ratio > target_aspect_ratio;
-  const int window_height = height - kHeaderHeightDp;
+  const int window_height = height - kWindowMiniViewHeaderHeight;
   gfx::Size unclipped_size;
   if (clip_horizontally) {
     unclipped_size.set_width(width);
@@ -1790,15 +1828,16 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
 
     // Find the width so that it matches height and matches the aspect ratio of
     // |split_view_bounds|.
-    width = split_view_bounds->width() * window_height /
-            split_view_bounds->height();
+    // TODO(sammiequon): Check to see if we can unify this with the `width`
+    // calculation in the above branch where we do the clamp and the max.
+    width = target_aspect_ratio * window_height;
     // The unclipped height is the height which matches |width| but keeps the
     // aspect ratio of |target_bounds|. Clipping takes the overview header into
     // account, so add that back in.
     const int unclipped_height =
         width * target_size.height() / target_size.width();
     unclipped_size.set_width(width);
-    unclipped_size.set_height(unclipped_height + kHeaderHeightDp);
+    unclipped_size.set_height(unclipped_height + kWindowMiniViewHeaderHeight);
   }
 
   DCHECK(!unclipped_size.IsEmpty());
@@ -1951,7 +1990,7 @@ bool OverviewGrid::IsShowingSavedDeskLibrary() const {
 
 bool OverviewGrid::IsSavedDeskNameBeingModified() const {
   if (const SavedDeskLibraryView* library_view = GetSavedDeskLibraryView()) {
-    for (auto* grid_view : library_view->grid_views()) {
+    for (ash::SavedDeskGridView* grid_view : library_view->grid_views()) {
       if (grid_view->IsSavedDeskNameBeingModified()) {
         return true;
       }
@@ -1963,16 +2002,22 @@ bool OverviewGrid::IsSavedDeskNameBeingModified() const {
 void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
                                          bool animate,
                                          bool is_continuous_enter) {
-  // If `kFasterSplitScreenSetup` or `kSnapGroup` is enabled, hide the widget if
-  // we aren't in split view, otherwise hide the widget if there is an item in
-  // overview or the saved desk grid is visible.
-  // TODO(b/307812315): Rename to `faster_splitscreen_widget_` if we'll always
-  // show this.
-  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()
-          ? !RootWindowController::ForWindow(root_window())
-                 ->split_view_overview_session()
-          : !no_items || IsShowingSavedDeskLibrary()) {
+  // `no_windows_widget_` will show under two conditions:
+  // 1. In normal full overview, when there are no items and the saved desk
+  // library is not showing;
+  // 2. In faster split screen setup, the `no_windows_widget_` show to indicate
+  // either no windows available to pair or select a window to complete the
+  // window layout.
+  if (window_util::IsInFasterSplitScreenSetupSession(root_window_)) {
+    UpdateFasterSplitViewWidget();
+    return;
+  }
+
+  if (!no_items || IsShowingSavedDeskLibrary() ||
+      overview_session_->enter_exit_overview_type() ==
+          OverviewEnterExitType::kPine) {
     no_windows_widget_.reset();
+    faster_splitview_widget_.reset();
     return;
   }
 
@@ -1985,10 +2030,6 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
     params.rounding_dp = kNoItemsIndicatorRoundingDp;
     params.preferred_height = kNoItemsIndicatorHeightDp;
     params.message = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
-    if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
-      params.message =
-          no_items ? kFasterSplitScreenToastNoWindows : kFasterSplitScreenToast;
-    }
 
     params.parent =
         root_window_->GetChildById(desks_util::GetActiveDeskContainerId());
@@ -2018,25 +2059,6 @@ void OverviewGrid::RefreshNoWindowsWidgetBounds(bool animate) {
 
   const gfx::Rect grid_bounds(GetGridEffectiveBounds());
   no_windows_widget_->SetBoundsCenteredIn(grid_bounds, animate);
-
-  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
-    // If there are no windows, set it in the center of the grid.
-    if (item_list_.empty()) {
-      return;
-    }
-    // Position the widget under the bottom of the last overview item, but
-    // centered horizontally.
-    const gfx::RectF last_overview_item_bounds =
-        item_list_.back()->target_bounds();
-    const int center_x =
-        no_windows_widget_->GetBoundsCenteredIn(grid_bounds).x();
-    const gfx::Point available_origin(
-        center_x,
-        last_overview_item_bounds.bottom() + kFasterSplitScreenToastSpacingDp);
-    no_windows_widget_->SetBounds(
-        gfx::Rect(available_origin,
-                  no_windows_widget_->GetContentsView()->GetPreferredSize()));
-  }
 }
 
 void OverviewGrid::RefreshGridBounds(bool animate) {
@@ -2050,8 +2072,9 @@ void OverviewGrid::UpdateSaveDeskButtons() {
   // overview grid changes, i.e. switches between active desks and/or the
   // saved desk grid. This will be needed when we make it so that switching
   // desks keeps us in overview mode.
-  if (!saved_desk_util::IsSavedDesksEnabled())
+  if (!saved_desk_util::ShouldShowSavedDesksButtons()) {
     return;
+  }
 
   // If there is only one item and it is animating to close, hide the widget as
   // the closing window cannot be saved as part of a template.
@@ -2225,6 +2248,13 @@ bool OverviewGrid::IsSaveDeskForLaterButtonVisible() const {
          container->save_desk_for_later_button()->GetVisible();
 }
 
+void OverviewGrid::OnTabletModeChanged() {
+  // We may not show virtual desk bar in clamshell mode such as in faster split
+  // screen setup session, and the desk bar will be created in tablet mode
+  // either. In this case, we may need to init the virtual desk bar.
+  MaybeInitDesksWidget();
+}
+
 size_t OverviewGrid::GetNumWindows() const {
   size_t size = 0u;
   for (const std::unique_ptr<OverviewItemBase>& item : item_list_) {
@@ -2258,19 +2288,19 @@ OverviewGrid::GetSaveDeskButtonContainer() const {
              : nullptr;
 }
 
+FasterSplitView* OverviewGrid::GetFasterSplitView() {
+  return faster_splitview_widget_
+             ? views::AsViewClass<FasterSplitView>(
+                   faster_splitview_widget_->GetContentsView())
+             : nullptr;
+}
+
 void OverviewGrid::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
   // Do nothing if overview is being shutdown.
   OverviewController* overview_controller = OverviewController::Get();
   if (!overview_controller->InOverviewSession()) {
-    return;
-  }
-
-  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
-    // When an activated window is auto snapped, it will send a state change and
-    // try to end overview here. Ignore split view state when
-    // `kFasterSplitScreenSetup` or `kSnapGroup` is enabled.
     return;
   }
 
@@ -2289,7 +2319,10 @@ void OverviewGrid::OnSplitViewStateChanged(
       (split_view_controller->InClamshellSplitViewMode() &&
        overview_session_->IsEmpty())) {
     overview_session_->RestoreWindowActivation(false);
-    overview_controller->EndOverview(OverviewEndAction::kSplitView);
+    overview_controller->EndOverview(
+        state == SplitViewController::State::kBothSnapped
+            ? OverviewEndAction::kWindowActivating
+            : OverviewEndAction::kSplitView);
     return;
   }
 
@@ -2304,17 +2337,16 @@ void OverviewGrid::OnSplitViewStateChanged(
 }
 
 void OverviewGrid::OnSplitViewDividerPositionChanged() {
-  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
-    // If `IsFasterSplitScreenOrSnapGroupEnabledInClamshell()` is true,
+  if (overview_session_->is_shutting_down() ||
+      window_util::IsInFasterSplitScreenSetupSession(root_window_)) {
     // `SplitViewOverviewSession` will manually update the bounds so we don't
-    // need to update here.
+    // need to update here in faster split screen setup session.
     return;
   }
 
   SetBoundsAndUpdatePositions(
       GetGridBoundsInScreen(root_window_,
                             /*window_dragging_state=*/std::nullopt,
-                            /*divider_changed=*/true,
                             /*account_for_hotseat=*/true),
       /*ignored_items=*/{}, /*animate=*/false);
 }
@@ -2778,25 +2810,41 @@ void OverviewGrid::OnSaveDeskButtonContainerFadedOut() {
 }
 
 void OverviewGrid::UpdateNumSavedDeskUnsupportedWindows(
-    const std::vector<aura::Window*>& windows,
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows,
     bool increment) {
-  if (!saved_desk_util::IsSavedDesksEnabled())
+  if (!saved_desk_util::ShouldShowSavedDesksButtons()) {
     return;
+  }
 
   int addend = increment ? 1 : -1;
 
   // Track the number of unsupported and incognito windows. The saved desk
   // buttons are disabled if there are no supported or non-incognito windows.
-  for (auto* window : windows) {
+  for (aura::Window* window : windows) {
     if (IsUnsupportedWindow(window)) {
       num_unsupported_windows_ += addend;
     } else if (IsIncognitoWindow(window)) {
       num_incognito_windows_ += addend;
     }
-  }
 
-  CHECK_GE(num_unsupported_windows_, 0);
-  CHECK_GE(num_incognito_windows_, 0);
+    // TODO(b/319904368): Clean this up after we figure out which app changes
+    // its supported/incognito type and a proper fix is made.
+    if (num_unsupported_windows_ < 0) {
+      num_unsupported_windows_ = 0;
+      SCOPED_CRASH_KEY_NUMBER("OG_UNSDUW", "unsupported_app_type",
+                              window->GetProperty(aura::client::kAppType));
+      SCOPED_CRASH_KEY_STRING32("OG_UNSDUW", "unsupported_app_id",
+                                ::full_restore::GetAppId(window));
+      base::debug::DumpWithoutCrashing();
+    } else if (num_incognito_windows_ < 0) {
+      num_incognito_windows_ = 0;
+      SCOPED_CRASH_KEY_NUMBER("OG_UNSDUW", "incognito_app_type",
+                              window->GetProperty(aura::client::kAppType));
+      SCOPED_CRASH_KEY_STRING32("OG_UNSDUW", "incognito_app_id",
+                                ::full_restore::GetAppId(window));
+      base::debug::DumpWithoutCrashing();
+    }
+  }
 }
 
 int OverviewGrid::GetDesksBarHeight() const {
@@ -2831,6 +2879,65 @@ void OverviewGrid::AddDropTargetImpl(OverviewItemBase* dragged_item,
     ignored_items.insert(dragged_item);
   }
   PositionWindows(animate, ignored_items);
+}
+
+void OverviewGrid::OnSkipButtonPressed() {
+  // Destroys `this`.
+  // TODO(sophiewen): Consider adding another exit point metric.
+  OverviewController::Get()->EndOverview(OverviewEndAction::kKeyEscapeOrBack);
+}
+
+void OverviewGrid::OnSettingsButtonPressed() {
+  // Opens the OS Settings page, which causes a window activation change and
+  // `EndOverview()` and destroys `this`.
+  Shell::Get()->shell_delegate()->OpenMultitaskingSettings();
+}
+
+void OverviewGrid::UpdateFasterSplitViewWidget() {
+  if (!window_util::IsInFasterSplitScreenSetupSession(root_window_)) {
+    // If we weren't started by faster splitview, don't show the widget.
+    faster_splitview_widget_.reset();
+    return;
+  }
+
+  if (!faster_splitview_widget_) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.parent = desks_util::GetActiveDeskContainerForRoot(root_window_);
+    params.name = "FasterSplitViewWidget";
+    params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
+    params.init_properties_container.SetProperty(kOverviewUiKey, true);
+    faster_splitview_widget_ =
+        std::make_unique<views::Widget>(std::move(params));
+    faster_splitview_widget_->GetLayer()->SetFillsBoundsOpaquely(false);
+    faster_splitview_widget_->SetContentsView(std::make_unique<FasterSplitView>(
+        base::BindRepeating(&OverviewGrid::OnSkipButtonPressed,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&OverviewGrid::OnSettingsButtonPressed,
+                            weak_ptr_factory_.GetWeakPtr())));
+    faster_splitview_widget_->Show();
+  }
+
+  gfx::Rect centered_bounds(GetGridEffectiveBounds());
+  const gfx::Size preferred_size =
+      faster_splitview_widget_->GetContentsView()->GetPreferredSize();
+  centered_bounds.ClampToCenteredSize(preferred_size);
+
+  // If there are no windows, set it in the center of the grid.
+  if (item_list_.empty()) {
+    faster_splitview_widget_->SetBounds(centered_bounds);
+    return;
+  }
+
+  // Position the widget under the bottom of the last overview item, but
+  // centered horizontally.
+  const gfx::RectF last_overview_item_bounds =
+      item_list_.back()->target_bounds();
+  centered_bounds.set_y(last_overview_item_bounds.bottom() +
+                        kFasterSplitScreenToastSpacingDp);
+  faster_splitview_widget_->SetBounds(centered_bounds);
+
+  overview_session_->UpdateAccessibilityFocus();
 }
 
 }  // namespace ash

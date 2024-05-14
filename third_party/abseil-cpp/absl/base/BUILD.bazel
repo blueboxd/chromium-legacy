@@ -172,8 +172,6 @@ cc_library(
 
 cc_library(
     name = "core_headers",
-    srcs = [
-    ],
     hdrs = [
         "attributes.h",
         "const_init.h",
@@ -284,6 +282,7 @@ cc_library(
         ":cycleclock_internal",
         ":dynamic_annotations",
         ":log_severity",
+        ":nullability",
         ":raw_logging_internal",
         ":spinlock_wait",
         "//absl/meta:type_traits",
@@ -515,6 +514,7 @@ cc_library(
     deps = [
         ":base",
         ":base_internal",
+        ":no_destructor",
         ":raw_logging_internal",
         "//absl/synchronization",
         "@com_github_google_benchmark//:benchmark_main",
@@ -546,6 +546,7 @@ cc_library(
         ":base",
         ":config",
         ":core_headers",
+        ":nullability",
     ],
 )
 

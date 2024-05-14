@@ -4,9 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 
+#include <optional>
+
 #include "media/base/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data_copy_to_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data_init.h"
@@ -14,6 +15,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webcodecs/array_buffer_util.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -79,8 +81,8 @@ class AudioDataTest : public testing::Test {
   }
 
   AudioDataCopyToOptions* CreateCopyToOptions(int index,
-                                              absl::optional<uint32_t> offset,
-                                              absl::optional<uint32_t> count) {
+                                              std::optional<uint32_t> offset,
+                                              std::optional<uint32_t> count) {
     auto* copy_to_options = AudioDataCopyToOptions::Create();
     copy_to_options->setPlaneIndex(index);
 
@@ -94,8 +96,8 @@ class AudioDataTest : public testing::Test {
   }
 
   void VerifyAllocationSize(int plane_index,
-                            absl::optional<uint32_t> frame_offset,
-                            absl::optional<uint32_t> frame_count,
+                            std::optional<uint32_t> frame_offset,
+                            std::optional<uint32_t> frame_count,
                             bool should_throw,
                             int expected_size,
                             std::string description) {
@@ -113,6 +115,7 @@ class AudioDataTest : public testing::Test {
       EXPECT_EQ(allocations_size, expected_size);
     }
   }
+  test::TaskEnvironment task_environment_;
 };
 
 TEST_F(AudioDataTest, ConstructFromMediaBuffer) {
@@ -142,7 +145,7 @@ TEST_F(AudioDataTest, ConstructFromMediaBuffer) {
 
   frame->close();
   EXPECT_EQ(frame->data(), nullptr);
-  EXPECT_EQ(frame->format(), absl::nullopt);
+  EXPECT_EQ(frame->format(), std::nullopt);
   EXPECT_EQ(frame->sampleRate(), 0u);
   EXPECT_EQ(frame->numberOfFrames(), 0u);
   EXPECT_EQ(frame->numberOfChannels(), 0u);
@@ -194,29 +197,29 @@ TEST_F(AudioDataTest, AllocationSize) {
   constexpr int kTotalSizeInBytes = kFrames * sizeof(float);
 
   // Basic cases.
-  VerifyAllocationSize(0, absl::nullopt, absl::nullopt, false,
-                       kTotalSizeInBytes, "Default");
-  VerifyAllocationSize(1, absl::nullopt, absl::nullopt, false,
-                       kTotalSizeInBytes, "Valid index.");
+  VerifyAllocationSize(0, std::nullopt, std::nullopt, false, kTotalSizeInBytes,
+                       "Default");
+  VerifyAllocationSize(1, std::nullopt, std::nullopt, false, kTotalSizeInBytes,
+                       "Valid index.");
   VerifyAllocationSize(0, 0, kFrames, false, kTotalSizeInBytes,
                        "Specifying defaults");
 
   // Cases where we cover a subset of samples.
-  VerifyAllocationSize(0, kFrames / 2, absl::nullopt, false,
+  VerifyAllocationSize(0, kFrames / 2, std::nullopt, false,
                        kTotalSizeInBytes / 2, "Valid offset, no count");
   VerifyAllocationSize(0, kFrames / 2, kFrames / 4, false,
                        kTotalSizeInBytes / 4, "Valid offset and count");
-  VerifyAllocationSize(0, absl::nullopt, kFrames / 2, false,
+  VerifyAllocationSize(0, std::nullopt, kFrames / 2, false,
                        kTotalSizeInBytes / 2, "No offset, valid count");
 
   // Copying 0 frames is technically valid.
-  VerifyAllocationSize(0, absl::nullopt, 0, false, 0, "Frame count is 0");
+  VerifyAllocationSize(0, std::nullopt, 0, false, 0, "Frame count is 0");
 
   // Failures
-  VerifyAllocationSize(2, absl::nullopt, absl::nullopt, true, 0,
+  VerifyAllocationSize(2, std::nullopt, std::nullopt, true, 0,
                        "Invalid index.");
-  VerifyAllocationSize(0, kFrames, absl::nullopt, true, 0, "Offset too big");
-  VerifyAllocationSize(0, absl::nullopt, kFrames + 1, true, 0, "Count too big");
+  VerifyAllocationSize(0, kFrames, std::nullopt, true, 0, "Offset too big");
+  VerifyAllocationSize(0, std::nullopt, kFrames + 1, true, 0, "Count too big");
   VerifyAllocationSize(0, 1, kFrames, true, 0, "Count too big, with offset");
 }
 
@@ -224,8 +227,8 @@ TEST_F(AudioDataTest, CopyTo_DestinationTooSmall) {
   V8TestingScope scope;
   auto* frame =
       CreateDefaultAudioData(scope.GetScriptState(), scope.GetExceptionState());
-  auto* options = CreateCopyToOptions(/*index=*/0, /*offset=*/absl::nullopt,
-                                      /*count=*/absl::nullopt);
+  auto* options = CreateCopyToOptions(/*index=*/0, /*offset=*/std::nullopt,
+                                      /*count=*/std::nullopt);
 
   AllowSharedBufferSource* small_dest =
       MakeGarbageCollected<AllowSharedBufferSource>(
@@ -240,8 +243,8 @@ TEST_F(AudioDataTest, CopyTo_FullFrames) {
   V8TestingScope scope;
   auto* frame =
       CreateDefaultAudioData(scope.GetScriptState(), scope.GetExceptionState());
-  auto* options = CreateCopyToOptions(/*index=*/0, /*offset=*/absl::nullopt,
-                                      /*count=*/absl::nullopt);
+  auto* options = CreateCopyToOptions(/*index=*/0, /*offset=*/std::nullopt,
+                                      /*count=*/std::nullopt);
 
   DOMArrayBuffer* data_copy = DOMArrayBuffer::Create(kFrames, sizeof(float));
   AllowSharedBufferSource* dest =
@@ -259,8 +262,8 @@ TEST_F(AudioDataTest, CopyTo_PlaneIndex) {
   V8TestingScope scope;
   auto* frame =
       CreateDefaultAudioData(scope.GetScriptState(), scope.GetExceptionState());
-  auto* options = CreateCopyToOptions(/*index=*/1, /*offset=*/absl::nullopt,
-                                      /*count=*/absl::nullopt);
+  auto* options = CreateCopyToOptions(/*index=*/1, /*offset=*/std::nullopt,
+                                      /*count=*/std::nullopt);
 
   DOMArrayBuffer* data_copy = DOMArrayBuffer::Create(kFrames, sizeof(float));
   AllowSharedBufferSource* dest =
@@ -361,7 +364,7 @@ TEST_F(AudioDataTest, CopyTo_Offset) {
   auto* frame =
       CreateDefaultAudioData(scope.GetScriptState(), scope.GetExceptionState());
   auto* options =
-      CreateCopyToOptions(/*index=*/0, kOffset, /*count=*/absl::nullopt);
+      CreateCopyToOptions(/*index=*/0, kOffset, /*count=*/std::nullopt);
 
   // |data_copy| is bigger than what we need, and that's ok.
   DOMArrayBuffer* data_copy = DOMArrayBuffer::Create(kFrames, sizeof(float));
@@ -382,7 +385,7 @@ TEST_F(AudioDataTest, CopyTo_PartialFrames) {
 
   auto* frame =
       CreateDefaultAudioData(scope.GetScriptState(), scope.GetExceptionState());
-  auto* options = CreateCopyToOptions(/*index=*/0, /*offset=*/absl::nullopt,
+  auto* options = CreateCopyToOptions(/*index=*/0, /*offset=*/std::nullopt,
                                       kPartialFrameCount);
 
   DOMArrayBuffer* data_copy =

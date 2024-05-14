@@ -144,7 +144,7 @@ Text* Text::splitText(unsigned offset, ExceptionState& exception_state) {
 
   // [NewObject] must always create a new wrapper.  Check that a wrapper
   // does not exist yet.
-  DCHECK(DOMDataStore::GetWrapper(new_text, GetDocument().GetAgent().isolate())
+  DCHECK(DOMDataStore::GetWrapper(GetDocument().GetAgent().isolate(), new_text)
              .IsEmpty());
 
   return new_text;
@@ -269,7 +269,7 @@ static inline bool CanHaveWhitespaceChildren(
 
     return style.ShouldPreserveBreaks() ||
            !EndsWithWhitespace(
-               To<LayoutText>(context.previous_in_flow)->GetText());
+               To<LayoutText>(context.previous_in_flow)->TransformedText());
   }
   return true;
 }
@@ -314,7 +314,7 @@ bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
 
   if (context.previous_in_flow->IsText()) {
     return !EndsWithWhitespace(
-        To<LayoutText>(context.previous_in_flow)->GetText());
+        To<LayoutText>(context.previous_in_flow)->TransformedText());
   }
 
   return context.previous_in_flow->IsInline() &&
@@ -454,11 +454,20 @@ static bool ShouldUpdateLayoutByReattaching(const Text& text_node,
   // editing with the combination of -webkit-text-security in author styles on
   // other elements in combination with ::first-letter.
   // See crbug.com/1240988
-  if (text_layout_object->IsSecure())
+  if (text_layout_object->IsSecure()) {
     return false;
+  }
+  FirstLetterPseudoElement::Punctuation punctuation1 =
+      FirstLetterPseudoElement::Punctuation::kNotSeen;
+  FirstLetterPseudoElement::Punctuation punctuation2 =
+      FirstLetterPseudoElement::Punctuation::kNotSeen;
+  bool preserve_breaks = ShouldPreserveBreaks(
+      text_layout_object->StyleRef().GetWhiteSpaceCollapse());
   if (!FirstLetterPseudoElement::FirstLetterLength(
-          text_layout_object->GetText()) &&
-      FirstLetterPseudoElement::FirstLetterLength(text_node.data())) {
+          text_layout_object->TransformedText(), preserve_breaks,
+          punctuation1) &&
+      FirstLetterPseudoElement::FirstLetterLength(
+          text_node.data(), preserve_breaks, punctuation2)) {
     // We did not previously apply ::first-letter styles to this |text_node|,
     // and if there was no first formatted letter, but now is, we may need to
     // reattach.

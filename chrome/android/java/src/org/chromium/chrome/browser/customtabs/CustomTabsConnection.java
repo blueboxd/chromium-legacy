@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
+import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.page_load_metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
@@ -82,6 +83,7 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.variations.SyntheticTrialAnnotationMode;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -788,17 +790,16 @@ public class CustomTabsConnection {
                                             remoteViews, clickableIDs, pendingIntent));
         }
 
-        if (ChromeFeatureList.sCctBottomBarSwipeUpGesture.isEnabled()) {
-            PendingIntent pendingIntent = getSecondarySwipeToolbarSwipeUpGesture(bundle);
-            if (pendingIntent != null) {
-                result &=
-                        PostTask.runSynchronously(
-                                TaskTraits.UI_DEFAULT,
-                                () ->
-                                        handler.updateSecondaryToolbarSwipeUpPendingIntent(
-                                                pendingIntent));
-            }
+        PendingIntent pendingIntent = getSecondarySwipeToolbarSwipeUpGesture(bundle);
+        if (pendingIntent != null) {
+            result &=
+                    PostTask.runSynchronously(
+                            TaskTraits.UI_DEFAULT,
+                            () ->
+                                    handler.updateSecondaryToolbarSwipeUpPendingIntent(
+                                            pendingIntent));
         }
+
         logCall("updateVisuals()", result);
         return result;
     }
@@ -848,12 +849,6 @@ public class CustomTabsConnection {
         PostTask.postTask(
                 TaskTraits.UI_DEFAULT,
                 () -> {
-                    // If the API is not enabled, we don't set the post message origin, which will
-                    // avoid PostMessageHandler initialization and disallow postMessage calls.
-                    if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_POST_MESSAGE_API)) {
-                        return;
-                    }
-
                     // Attempt to verify origin synchronously. If successful directly initialize
                     // postMessage channel for session.
                     Uri verifiedOrigin = verifyOriginForSession(session, uid, postMessageOrigin);
@@ -1020,7 +1015,6 @@ public class CustomTabsConnection {
         if (!ChromeBrowserInitializer.getInstance().isFullBrowserInitialized()) {
             return;
         }
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REDIRECT_PRECONNECT)) return;
 
         // Conditions:
         // - There is a valid redirect endpoint.
@@ -1486,8 +1480,7 @@ public class CustomTabsConnection {
     @VisibleForTesting
     boolean areExperimentsSupported(
             List<String> enabledExperiments, List<String> disabledExperiments) {
-        return enabledExperiments != null
-                && enabledExperiments.contains(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS);
+        return false;
     }
 
     // TODO(https://crbug.com/1458640): Remove this and other dynamic feature related methods.
@@ -1499,8 +1492,6 @@ public class CustomTabsConnection {
      */
     public boolean isDynamicFeatureEnabled(String featureName) {
         if (mIsDynamicIntentFeatureOverridesEnabled) {
-            assert featureName.equals(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)
-                    : "Unsupported Feature";
             if (mDynamicEnabledFeatures != null && mDynamicEnabledFeatures.contains(featureName)) {
                 return true;
             }
@@ -1508,9 +1499,6 @@ public class CustomTabsConnection {
                     && mDynamicDisabledFeatures.contains(featureName)) {
                 return false;
             }
-        }
-        if (featureName.equals(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
-            return ChromeFeatureList.sCctRealTimeEngagementSignals.isEnabled();
         }
         Log.e(TAG, "Unsupported Feature!");
         return false;
@@ -1880,6 +1868,13 @@ public class CustomTabsConnection {
         return mTrustedPublisherUrlPackage;
     }
 
+    /**
+     * @return Whether the publisher of the URL from a trusted CDN can be shown.
+     */
+    public boolean isTrustedCdnPublisherUrlPackage(@Nullable String urlPackage) {
+        return urlPackage != null && urlPackage.equals(getTrustedCdnPublisherUrlPackage());
+    }
+
     void setTrustedPublisherUrlPackageForTest(@Nullable String packageName) {
         mTrustedPublisherUrlPackage = packageName;
     }
@@ -1941,10 +1936,8 @@ public class CustomTabsConnection {
             CustomTabsSessionToken sessionToken,
             EngagementSignalsCallback callback,
             Bundle extras) {
-        if (!isDynamicFeatureEnabled(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)
-                || !isEngagementSignalsApiAvailableInternal(sessionToken)) {
-            return false;
-        }
+        if (!isEngagementSignalsApiAvailableInternal(sessionToken)) return false;
+
         var engagementSignalsHandler =
                 mClientManager.getEngagementSignalsHandlerForSession(sessionToken);
         if (engagementSignalsHandler == null) return false;
@@ -1976,6 +1969,26 @@ public class CustomTabsConnection {
         return false;
     }
 
+    public PageInsightsIntentParams getPageInsightsIntentParams(
+            BrowserServicesIntentDataProvider intentData) {
+        return PageInsightsIntentParams.getDefaultInstance();
+    }
+
+    /** DEPRECATED - do not use. */
+    @Deprecated
+    public PageInsightsConfig getPageInsightsConfig(
+            BrowserServicesIntentDataProvider intentData,
+            @Nullable NavigationHandle navigationHandle,
+            Supplier<Profile> profileSupplier) {
+        // For all params, by default populate the most conservative values.
+        return PageInsightsConfig.newBuilder()
+                .setShouldAutoTrigger(false)
+                .setShouldXsurfaceLog(false)
+                .setIsInitialPage(false)
+                .setServerShouldNotLogOrPersonalize(true)
+                .build();
+    }
+
     /**
      * Returns how the Page Insights feature should be configured for the given params. Only applies
      * if {@link #shouldEnablePageInsightsForIntent(BrowserServicesIntentDataProvider)} returns
@@ -1983,17 +1996,21 @@ public class CustomTabsConnection {
      *
      * @param intentData {@link BrowserServicesIntentDataProvider} built from the Intent that
      *     launched this CCT.
-     * @param navigationHandle the {@link NavigationHandle} for the current page.
+     * @param navigationHandle the {@link NavigationHandle} for the current URL.
+     * @param navigationEntry the {@link NavigationEntry} for the current URL.
      * @param profileSupplier supplier of the current {@link Profile}.
      */
     public PageInsightsConfig getPageInsightsConfig(
             BrowserServicesIntentDataProvider intentData,
             @Nullable NavigationHandle navigationHandle,
+            @Nullable NavigationEntry navigationEntry,
             Supplier<Profile> profileSupplier) {
+        // For all params, by default populate the most conservative values.
         return PageInsightsConfig.newBuilder()
                 .setShouldAutoTrigger(false)
                 .setShouldXsurfaceLog(false)
-                .setShouldAttachGaiaToRequest(false)
+                .setIsInitialPage(false)
+                .setServerShouldNotLogOrPersonalize(true)
                 .build();
     }
 
@@ -2017,10 +2034,6 @@ public class CustomTabsConnection {
             CustomTabsSessionToken session,
             String stateKey,
             ArrayList<String> foundTextFragments) {}
-
-    protected boolean isCCTAPIDeprecated(String featureParamName) {
-        return true;
-    }
 
     /**
      * @return The CalledWarmup state for the session.

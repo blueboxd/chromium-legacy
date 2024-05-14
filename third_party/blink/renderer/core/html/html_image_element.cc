@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 
+#include "third_party/blink/public/common/loader/lcp_critical_path_predictor_util.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -120,7 +121,7 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       is_changed_shortly_after_mouseover_(false),
       is_auto_sized_(false),
       is_predicted_lcp_element_(false) {
-  if (base::FeatureList::IsEnabled(features::kLCPScriptObserver)) {
+  if (blink::LcppScriptObserverEnabled()) {
     if (LocalFrame* frame = document.GetFrame()) {
       if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
         if (LCPScriptObserver* script_observer = lcpp->lcp_script_observer()) {
@@ -533,16 +534,10 @@ LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
 void HTMLImageElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
   if (auto* layout_image = DynamicTo<LayoutImage>(GetLayoutObject())) {
-    LayoutImageResource* layout_image_resource = layout_image->ImageResource();
-    if (is_fallback_image_)
-      layout_image_resource->UseBrokenImage();
-
-    if (layout_image_resource->HasImage())
-      return;
-
-    if (!GetImageLoader().GetContent() && !layout_image_resource->CachedImage())
-      return;
-    layout_image_resource->SetImageResource(GetImageLoader().GetContent());
+    if (is_fallback_image_) {
+      layout_image->ImageResource()->UseBrokenImage();
+    }
+    GetImageLoader().OnAttachLayoutTree();
   }
 }
 
@@ -829,7 +824,6 @@ int HTMLImageElement::x() const {
   if (!r)
     return 0;
 
-  // FIXME: This doesn't work correctly with transforms.
   PhysicalOffset abs_pos =
       r->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms);
   return abs_pos.left.ToInt();
@@ -842,7 +836,6 @@ int HTMLImageElement::y() const {
   if (!r)
     return 0;
 
-  // FIXME: This doesn't work correctly with transforms.
   PhysicalOffset abs_pos =
       r->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms);
   return abs_pos.top.ToInt();
@@ -966,8 +959,8 @@ static SourceSizeValueResult SourceSizeValue(const Element* element,
   return result;
 }
 
-absl::optional<float> HTMLImageElement::GetResourceWidth() const {
-  absl::optional<float> resource_width;
+std::optional<float> HTMLImageElement::GetResourceWidth() const {
+  std::optional<float> resource_width;
   Element* element = source_.Get();
   const SourceSizeValueResult source_size_val_res =
       SourceSizeValue(element ? element : this, GetDocument());
@@ -1063,8 +1056,8 @@ void HTMLImageElement::EnsureCollapsedOrFallbackContent() {
     return;
 
   ImageResourceContent* image_content = GetImageLoader().GetContent();
-  absl::optional<ResourceError> error =
-      image_content ? image_content->GetResourceError() : absl::nullopt;
+  std::optional<ResourceError> error =
+      image_content ? image_content->GetResourceError() : std::nullopt;
   SetLayoutDisposition(error && error->ShouldCollapseInitiator()
                            ? LayoutDisposition::kCollapsed
                            : LayoutDisposition::kFallbackContent);

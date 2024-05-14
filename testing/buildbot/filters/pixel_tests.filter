@@ -13,7 +13,7 @@ AskGoogleForSuggestionsDialogTest.*
 BookmarkBubbleViewBrowserTest.*
 BookmarkEditorViewBrowserTest.*
 BubbleFrameViewBrowserTest.*
-ChromeLabsUiTest.*
+ChromeLabs*UiTest.*
 ConfirmBubbleTest.*
 ContentAnalysysDialogUiTest.*
 ContentSettingBubbleDialogTest.*
@@ -21,11 +21,13 @@ CookieControlsBubbleViewPixelTest.*
 OldCookieControlsBubbleViewTest.*
 *CreatePopupRowViewTest.*
 CryptoModulePasswordDialogTest.*
+*DataControlsDialogUiTest.*
 DeepScanningFailureModalDialogTest.*
 *DiceWebSigninInterceptionBubblePixelTest.InvokeUi_*
 *DiceWebSigninInterceptionBubbleV1SyncPromoPixelTest.InvokeUi_*
 *DiceWebSigninInterceptionBubbleV2PixelTest.InvokeUi_*
 DeleteAddressProfileDialogControllerImplTest.InvokeUi_*
+DocumentPictureInPicturePixelTest.*
 EditAddressProfileDialogControllerImplTest.InvokeUi_*
 ManagedUserNoticeUIDialogPixelTest.*
 ManagedUserNoticeUIWindowPixelTest.*
@@ -66,7 +68,10 @@ PageInfoBubbleViewIsolatedWebAppBrowserTest.*
 *PasswordAutomaticSaveBubbleBrowserTest.*
 *PasswordGenerationPopupViewBrowsertest.*
 *PasswordManagementRevampedBubbleInteractiveUiTest.*
+PasswordBubbleInteractiveUiTest.NavigateToManagementDetailsViewAndTakeScreenshot
+PasswordBubbleInteractiveUiTest.NavigateToManagementDetailsViewWithMoveFooterVisibleAndTakeScreenshot
 PasswordReuseModalWarningTest.*
+PerformanceToolbarButtonInteractiveUiTest.*
 PermissionRequestChipBrowserUiTest.*
 *PermissionPromptBubble*ViewBrowserTest.InvokeUi_*
 *PopupViewViewsBrowsertest*

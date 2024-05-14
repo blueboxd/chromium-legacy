@@ -366,9 +366,9 @@ void ArcAppQueueRestoreHandler::AddWindows(const std::string& app_id) {
   DCHECK(it != handler_->restore_data()->app_id_to_launch_list().end());
   const auto& launch_list = it->second;
   for (const auto& [window_id, app_restore_data] : launch_list) {
-    if (app_restore_data->activation_index.has_value()) {
-      windows_[app_restore_data->activation_index.value()] = {app_id,
-                                                              window_id};
+    if (app_restore_data->window_info.activation_index.has_value()) {
+      windows_[app_restore_data->window_info.activation_index.value()] = {
+          app_id, window_id};
     } else {
       no_stack_windows_.push_back({app_id, window_id});
     }
@@ -494,7 +494,7 @@ void ArcAppQueueRestoreHandler::PrepareAppLaunching(const std::string& app_id) {
 
 void ArcAppQueueRestoreHandler::OnMemoryPressure(
     ResourcedClient::PressureLevel level,
-    uint64_t reclaim_target_kb) {
+    memory_pressure::ReclaimTarget) {
   pressure_level_ = level;
 }
 

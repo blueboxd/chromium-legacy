@@ -45,9 +45,9 @@ class ASH_EXPORT AmbientAnimationView : public views::View,
                                         public views::ViewObserver,
                                         public GlanceableInfoView::Delegate,
                                         public MediaStringView::Delegate {
- public:
-  METADATA_HEADER(AmbientAnimationView);
+  METADATA_HEADER(AmbientAnimationView, views::View)
 
+ public:
   AmbientAnimationView(
       AmbientViewDelegateImpl* view_delegate,
       AmbientAnimationProgressTracker* progress_tracker,
@@ -89,12 +89,9 @@ class ASH_EXPORT AmbientAnimationView : public views::View,
   std::unique_ptr<AmbientAnimationAttributionProvider>
       animation_attribution_provider_;
 
-  raw_ptr<views::AnimatedImageView, ExperimentalAsh> animated_image_view_ =
-      nullptr;
-  raw_ptr<views::BoxLayoutView, ExperimentalAsh> glanceable_info_container_ =
-      nullptr;
-  raw_ptr<views::BoxLayoutView, ExperimentalAsh> media_string_container_ =
-      nullptr;
+  raw_ptr<views::AnimatedImageView> animated_image_view_ = nullptr;
+  raw_ptr<views::BoxLayoutView> glanceable_info_container_ = nullptr;
+  raw_ptr<views::BoxLayoutView> media_string_container_ = nullptr;
   std::unique_ptr<AmbientAnimationShieldController> shield_view_controller_;
   std::unique_ptr<AmbientAnimationPlayer> animation_player_;
   base::ScopedObservation<View, ViewObserver> animated_image_view_observer_{

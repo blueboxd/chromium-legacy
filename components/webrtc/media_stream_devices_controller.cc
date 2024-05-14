@@ -96,6 +96,9 @@ void MediaStreamDevicesController::RequestPermissions(
   content::PermissionController* permission_controller =
       web_contents->GetBrowserContext()->GetPermissionController();
 
+  std::vector<std::string> requested_audio_capture_device_ids;
+  std::vector<std::string> requested_video_capture_device_ids;
+
   if (controller->ShouldRequestAudio()) {
     content::PermissionResult permission_status =
         permission_controller->GetPermissionResultForCurrentDocument(
@@ -113,6 +116,7 @@ void MediaStreamDevicesController::RequestPermissions(
     }
 
     permission_types.push_back(blink::PermissionType::AUDIO_CAPTURE);
+    requested_audio_capture_device_ids = request.requested_audio_device_ids;
   }
   if (controller->ShouldRequestVideo()) {
     content::PermissionResult permission_status =
@@ -131,10 +135,11 @@ void MediaStreamDevicesController::RequestPermissions(
     }
 
     permission_types.push_back(blink::PermissionType::VIDEO_CAPTURE);
+    requested_video_capture_device_ids = request.requested_video_device_ids;
 
     bool has_pan_tilt_zoom_camera = controller->HasAvailableDevices(
         blink::PermissionType::CAMERA_PAN_TILT_ZOOM,
-        request.requested_video_device_id);
+        request.requested_video_device_ids);
 
     // Request CAMERA_PAN_TILT_ZOOM only if the website requested the
     // pan-tilt-zoom permission and there are suitable PTZ capable devices
@@ -154,6 +159,13 @@ void MediaStreamDevicesController::RequestPermissions(
     }
   }
 
+  content::PermissionRequestDescription permission_request_description{
+      permission_types, request.user_gesture};
+  permission_request_description.requested_audio_capture_device_ids =
+      requested_audio_capture_device_ids;
+  permission_request_description.requested_video_capture_device_ids =
+      requested_video_capture_device_ids;
+
   // It is OK to ignore `request.security_origin` because it will be calculated
   // from `render_frame_host` and we always ignore `requesting_origin` for
   // `AUDIO_CAPTURE` and `VIDEO_CAPTURE`.
@@ -162,9 +174,7 @@ void MediaStreamDevicesController::RequestPermissions(
   rfh->GetBrowserContext()
       ->GetPermissionController()
       ->RequestPermissionsFromCurrentDocument(
-          rfh,
-          content::PermissionRequestDescription(permission_types,
-                                                request.user_gesture),
+          rfh, permission_request_description,
           base::BindOnce(
               &MediaStreamDevicesController::PromptAnsweredGroupedRequest,
               std::move(controller)));
@@ -235,9 +245,9 @@ blink::mojom::StreamDevicesSetPtr MediaStreamDevicesController::GetDevices(
               blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
         DCHECK_EQ(blink::mojom::MediaStreamType::NO_SERVICE,
                   request_.video_type);
-        if (!request_.requested_audio_device_id.empty()) {
+        if (!request_.requested_audio_device_ids.empty()) {
           devices.audio_device = *enumerator_->GetRequestedAudioDevice(
-              request_.requested_audio_device_id);
+              request_.requested_audio_device_ids.front());
         } else {
           const blink::MediaStreamDevices& audio_devices =
               enumerator_->GetAudioCaptureDevices();
@@ -250,9 +260,9 @@ blink::mojom::StreamDevicesSetPtr MediaStreamDevicesController::GetDevices(
         DCHECK_EQ(blink::mojom::MediaStreamType::NO_SERVICE,
                   request_.audio_type);
         // Pepper API opens only one device at a time.
-        if (!request_.requested_video_device_id.empty()) {
+        if (!request_.requested_video_device_ids.empty()) {
           devices.video_device = *enumerator_->GetRequestedVideoDevice(
-              request_.requested_video_device_id);
+              request_.requested_video_device_ids.front());
         } else {
           const blink::MediaStreamDevices& video_devices =
               enumerator_->GetVideoCaptureDevices();
@@ -267,19 +277,19 @@ blink::mojom::StreamDevicesSetPtr MediaStreamDevicesController::GetDevices(
       bool get_default_video_device = video_allowed;
 
       // Get the exact audio or video device if an id is specified.
-      if (audio_allowed && !request_.requested_audio_device_id.empty()) {
+      if (audio_allowed && !request_.requested_audio_device_ids.empty()) {
         const blink::MediaStreamDevice* audio_device =
             enumerator_->GetRequestedAudioDevice(
-                request_.requested_audio_device_id);
+                request_.requested_audio_device_ids.front());
         if (audio_device) {
           devices.audio_device = *audio_device;
           get_default_audio_device = false;
         }
       }
-      if (video_allowed && !request_.requested_video_device_id.empty()) {
+      if (video_allowed && !request_.requested_video_device_ids.empty()) {
         const blink::MediaStreamDevice* video_device =
             enumerator_->GetRequestedVideoDevice(
-                request_.requested_video_device_id);
+                request_.requested_video_device_ids.front());
         if (video_device) {
           devices.video_device = *video_device;
           get_default_video_device = false;
@@ -362,12 +372,12 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     return CONTENT_SETTING_DEFAULT;
   }
 
-  std::string device_id;
+  std::vector<std::string> device_ids;
   if (permission == blink::PermissionType::AUDIO_CAPTURE)
-    device_id = request.requested_audio_device_id;
+    device_ids = request.requested_audio_device_ids;
   else
-    device_id = request.requested_video_device_id;
-  if (!HasAvailableDevices(permission, device_id)) {
+    device_ids = request.requested_video_device_ids;
+  if (!HasAvailableDevices(permission, device_ids)) {
     *denial_reason = blink::mojom::MediaStreamRequestResult::NO_HARDWARE;
     return CONTENT_SETTING_BLOCK;
   }
@@ -501,7 +511,7 @@ void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
 
 bool MediaStreamDevicesController::HasAvailableDevices(
     blink::PermissionType permission,
-    const std::string& device_id) const {
+    const std::vector<std::string>& device_ids) const {
   const MediaStreamDevices* devices = nullptr;
   if (permission == blink::PermissionType::AUDIO_CAPTURE) {
     devices = &enumerator_->GetAudioCaptureDevices();
@@ -521,14 +531,15 @@ bool MediaStreamDevicesController::HasAvailableDevices(
     return false;
 
   // If there are no particular device requirements, all devices will do.
-  if (device_id.empty() &&
+  if (device_ids.empty() &&
       permission != blink::PermissionType::CAMERA_PAN_TILT_ZOOM) {
     return true;
   }
 
   // Try to find a device which fulfils all device requirements.
   for (const blink::MediaStreamDevice& device : *devices) {
-    if (!device_id.empty() && device.id != device_id) {
+    if (!device_ids.empty() && std::find(device_ids.begin(), device_ids.end(),
+                                         device.id) == device_ids.end()) {
       continue;
     }
     if (permission == blink::PermissionType::CAMERA_PAN_TILT_ZOOM &&

@@ -488,6 +488,16 @@ _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('octane'),
     _GetBenchmarkConfig('speedometer2'),
 ])
+_WIN_11_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
+    'blink_perf.display_locking',
+    'v8.runtime_stats.top_25',
+])
+_WIN_11_EXECUTABLE_CONFIGS = frozenset([
+    _base_perftests(200),
+    _components_perftests(125),
+    _dawn_perf_tests(600),
+    _views_perftests(),
+])
 _ANDROID_GO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.memory_mobile'),
     _GetBenchmarkConfig('system_health.common_mobile'),
@@ -607,7 +617,7 @@ MAC_HIGH_END_LAPTOP = PerfPlatform(
     'mac-laptop_high_end-perf',
     'MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55',
     _MAC_HIGH_END_BENCHMARK_CONFIGS,
-    26,
+    23,
     'mac',
     executables=_MAC_HIGH_END_EXECUTABLE_CONFIGS)
 MAC_HIGH_END_LAPTOP_PGO = PerfPlatform(
@@ -622,7 +632,7 @@ MAC_LOW_END_LAPTOP = PerfPlatform(
     'mac-laptop_low_end-perf',
     'MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics',
     _MAC_LOW_END_BENCHMARK_CONFIGS,
-    20,
+    23,
     'mac',
     executables=_MAC_LOW_END_EXECUTABLE_CONFIGS)
 MAC_LOW_END_LAPTOP_PGO = PerfPlatform(
@@ -697,27 +707,28 @@ WIN_10_PGO = PerfPlatform(
     pinpoint_only=True)
 WIN_10_AMD_LAPTOP = PerfPlatform('win-10_amd_laptop-perf',
                                  'Windows 10 Laptop with AMD chipset.',
-                                 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS, 5, 'win')
+                                 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS, 3, 'win')
 WIN_10_AMD_LAPTOP_PGO = PerfPlatform('win-10_amd_laptop-perf-pgo',
                                      'Windows 10 Laptop with AMD chipset.',
                                      _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS,
-                                     5,
+                                     3,
                                      'win',
                                      pinpoint_only=True)
+WIN_11 = PerfPlatform('win-11-perf',
+                      'Windows Dell PowerEdge R350',
+                      _WIN_11_BENCHMARK_CONFIGS,
+                      20,
+                      'win',
+                      executables=_WIN_11_EXECUTABLE_CONFIGS)
+WIN_11_PGO = PerfPlatform('win-11-perf-pgo',
+                          'Windows Dell PowerEdge R350',
+                          _WIN_11_BENCHMARK_CONFIGS,
+                          26,
+                          'win',
+                          executables=_WIN_11_EXECUTABLE_CONFIGS,
+                          pinpoint_only=True)
 
 # Android
-ANDROID_GO = PerfPlatform('android-go-perf', 'Android O (gobo)',
-                          _ANDROID_GO_BENCHMARK_CONFIGS, 13, 'android')
-ANDROID_GO_PGO = PerfPlatform('android-go-perf-pgo',
-                              'Android O (gobo)',
-                              _ANDROID_GO_BENCHMARK_CONFIGS,
-                              13,
-                              'android',
-                              pinpoint_only=True)
-ANDROID_GO_WEBVIEW = PerfPlatform('android-go_webview-perf',
-                                  'Android OPM1.171019.021 (gobo)',
-                                  _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS, 8,
-                                  'android')
 ANDROID_PIXEL2 = PerfPlatform('android-pixel2-perf',
                               'Android OPM1.171019.021',
                               _ANDROID_PIXEL2_BENCHMARK_CONFIGS,

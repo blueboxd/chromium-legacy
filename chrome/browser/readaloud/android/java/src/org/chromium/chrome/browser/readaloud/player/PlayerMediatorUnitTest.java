@@ -21,6 +21,7 @@ import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.ERROR
 import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.PAUSED;
 import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.PLAYING;
 import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.STOPPED;
+import static org.chromium.chrome.modules.readaloud.PlaybackListener.State.UNKNOWN;
 
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -40,7 +41,9 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.Promise;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.readaloud.ReadAloudMetrics;
 import org.chromium.chrome.browser.readaloud.ReadAloudPrefs;
 import org.chromium.chrome.browser.readaloud.ReadAloudPrefsJni;
 import org.chromium.chrome.browser.readaloud.testing.MockPrefServiceHelper;
@@ -78,6 +81,25 @@ public class PlayerMediatorUnitTest {
     @Captor private ArgumentCaptor<PlaybackListener> mPlaybackListenerCaptor;
 
     private PropertyModel mModel;
+    private FakeClock mClock;
+
+    /** FakeClock for setting the time. */
+    static class FakeClock implements PlayerMediator.Clock {
+        private long mCurrentTimeMillis;
+
+        FakeClock() {
+            mCurrentTimeMillis = 0;
+        }
+
+        @Override
+        public long currentTimeMillis() {
+            return mCurrentTimeMillis;
+        }
+
+        void advanceCurrentTimeMillis(long millis) {
+            mCurrentTimeMillis += millis;
+        }
+    }
 
     private static class TestPlaybackData implements PlaybackListener.PlaybackData {
         public int mState;
@@ -133,7 +155,7 @@ public class PlayerMediatorUnitTest {
         doReturn(TITLE).when(mPlaybackMetadata).title();
         doReturn(PUBLISHER).when(mPlaybackMetadata).publisher();
         mVoicesSupplier = new ObservableSupplierImpl<>();
-        mVoicesSupplier.set(List.of(new PlaybackVoice("en", "a", "description")));
+        mVoicesSupplier.set(List.of(new PlaybackVoice("en", "a")));
         mSelectedVoiceIdSupplier = new ObservableSupplierImpl<>();
         mSelectedVoiceIdSupplier.set("a");
         mHighlightingEnabledSupplier = new ObservableSupplierImpl<>();
@@ -141,6 +163,7 @@ public class PlayerMediatorUnitTest {
         mJniMocker.mock(ReadAloudPrefsJni.TEST_HOOKS, mPrefsNative);
         mMockPrefServiceHelper = new MockPrefServiceHelper();
         mPlaybackData = new TestPlaybackData();
+        mClock = new FakeClock();
 
         doReturn(true).when(mDelegate).isHighlightingSupported();
         doReturn(mHighlightingEnabledSupplier).when(mDelegate).getHighlightingEnabledSupplier();
@@ -151,7 +174,9 @@ public class PlayerMediatorUnitTest {
         doReturn(mPreviewPromise).when(mDelegate).previewVoice(any());
 
         mModel = Mockito.spy(new PropertyModel.Builder(PlayerProperties.ALL_KEYS).build());
+        mModel.set(PlayerProperties.HIDDEN_AND_PLAYING, false);
         mMediator = new PlayerMediator(mPlayerCoordinator, mDelegate, mModel);
+        mMediator.setClockForTesting(mClock);
         mOnSeekBarChangeListener = mMediator.getSeekBarChangeListener();
     }
 
@@ -229,6 +254,104 @@ public class PlayerMediatorUnitTest {
     }
 
     @Test
+    public void testPlaybackDurationRecorded() {
+        final String histogramName = ReadAloudMetrics.TIME_SPENT_LISTENING;
+
+        var histogram = HistogramWatcher.newSingleRecordWatcher(histogramName, 123);
+
+        mMediator.setPlayback(mPlayback);
+        verify(mPlayback).addListener(mPlaybackListenerCaptor.capture());
+
+        mPlaybackData.mState = PLAYING;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        mClock.advanceCurrentTimeMillis(100);
+        mPlaybackData.mState = PAUSED;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+
+        mPlaybackData.mState = PLAYING;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        mClock.advanceCurrentTimeMillis(23);
+        mPlaybackData.mState = STOPPED;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+
+        mMediator.recordPlaybackDuration();
+
+        histogram.assertExpected();
+    }
+
+    @Test
+    public void testLockedPlaybackDurationRecorded() {
+        final String histogramName = ReadAloudMetrics.TIME_SPENT_LISTENING_LOCKED_SCREEN;
+
+        var histogram = HistogramWatcher.newSingleRecordWatcher(histogramName, 240);
+
+        mMediator.setPlayback(mPlayback);
+        verify(mPlayback).addListener(mPlaybackListenerCaptor.capture());
+        // this time shouldn't be added since the screen hasn't been set to locked
+        mClock.advanceCurrentTimeMillis(2000);
+        mMediator.onScreenStatusChanged(true);
+
+        mPlaybackData.mState = PLAYING;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        mClock.advanceCurrentTimeMillis(100);
+        mPlaybackData.mState = PAUSED;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        // this time shouldn't be added since playback is paused
+        mClock.advanceCurrentTimeMillis(2000);
+
+        mPlaybackData.mState = PLAYING;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        mClock.advanceCurrentTimeMillis(140);
+
+        mMediator.onScreenStatusChanged(false);
+        // this time shouldn't be added since the screen was set to unlocked
+        mClock.advanceCurrentTimeMillis(2000);
+
+        mPlaybackData.mState = STOPPED;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+
+        mMediator.recordPlaybackDuration();
+
+        histogram.assertExpected();
+    }
+
+    @Test
+    public void testLockedPlaybackDurationRecorded_NeverPlayed() {
+        final String histogramName = ReadAloudMetrics.TIME_SPENT_LISTENING_LOCKED_SCREEN;
+
+        var histogram = HistogramWatcher.newBuilder().expectNoRecords(histogramName).build();
+
+        mMediator.setPlayback(mPlayback);
+        verify(mPlayback).addListener(mPlaybackListenerCaptor.capture());
+        mPlaybackData.mState = PLAYING;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        // this time shouldn't be added since the screen hasn't been set to locked
+        mClock.advanceCurrentTimeMillis(2000);
+
+        // Pause first then lock screen
+        mPlaybackData.mState = PAUSED;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        mMediator.onScreenStatusChanged(true);
+
+        // this time shouldn't be added since the playback is paused
+        mClock.advanceCurrentTimeMillis(360);
+
+        // unlock screen then play
+        mMediator.onScreenStatusChanged(false);
+        mPlaybackData.mState = PLAYING;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+        // this time shouldn't be added since the screen was set to unlocked
+        mClock.advanceCurrentTimeMillis(2000);
+
+        mPlaybackData.mState = STOPPED;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+
+        mMediator.recordPlaybackDuration();
+
+        histogram.assertExpected();
+    }
+
+    @Test
     public void testPlayClicked() {
         mMediator.setPlayback(mPlayback);
         mMediator.setPlaybackState(PAUSED);
@@ -268,6 +391,12 @@ public class PlayerMediatorUnitTest {
     }
 
     @Test
+    public void testOnPublisherClick() {
+        mMediator.onPublisherClick();
+        verify(mDelegate).navigateToPlayingTab();
+    }
+
+    @Test
     public void testOnSeekBack() {
         // make sure nothing happens if playback hasn't been set yet
         mMediator.setPlayback(null);
@@ -288,7 +417,7 @@ public class PlayerMediatorUnitTest {
         mModel.set(PlayerProperties.DURATION_NANOS, 40 * 1_000_000_000L);
 
         mMediator.onSeekForwardClick();
-        verify(mPlayback).seekRelative(30 * 1_000_000_000L);
+        verify(mPlayback).seekRelative(10 * 1_000_000_000L);
     }
 
     @Test
@@ -320,7 +449,7 @@ public class PlayerMediatorUnitTest {
 
     @Test
     public void testOnVoiceSelected() {
-        PlaybackVoice voice = new PlaybackVoice("language", "voice", "description");
+        PlaybackVoice voice = new PlaybackVoice("language", "voice");
         mMediator.onVoiceSelected(voice);
         verify(mDelegate).setVoiceOverrideAndApplyToPlayback(eq(voice));
     }
@@ -350,13 +479,26 @@ public class PlayerMediatorUnitTest {
     }
 
     @Test
+    public void testOnStartStopTrackingTouch() {
+        int initialState = PLAYING;
+        mMediator.setPlaybackState(initialState);
+
+        // Should set playback state to paused
+        mOnSeekBarChangeListener.onStartTrackingTouch(mSeekbar);
+        assertEquals(mModel.get(PlayerProperties.PLAYBACK_STATE), PAUSED);
+
+        // Should set playback state to initial state
+        mOnSeekBarChangeListener.onStopTrackingTouch(mSeekbar);
+        assertEquals(mModel.get(PlayerProperties.PLAYBACK_STATE), initialState);
+    }
+
+    @Test
     public void testObserveVoiceList() {
         // Set up a Spanish voice pref that isn't the first in the list.
         MockPrefServiceHelper.setVoices(mPrefsNative, Map.of("es", "c"));
 
         // Setting the voice list here should trigger UI updates.
-        mVoicesSupplier.set(
-                List.of(new PlaybackVoice("es", "b", ""), new PlaybackVoice("es", "c", "")));
+        mVoicesSupplier.set(List.of(new PlaybackVoice("es", "b"), new PlaybackVoice("es", "c")));
 
         // Voice list is set in model.
         List<PlaybackVoice> voicesInModel = mModel.get(PlayerProperties.VOICES_LIST);
@@ -375,8 +517,7 @@ public class PlayerMediatorUnitTest {
     public void testObserveVoiceList_defaultVoiceSelection() {
         // Setting the voice list here should trigger UI updates. There's no voice ID
         // set for "es" so the first one should be displayed.
-        mVoicesSupplier.set(
-                List.of(new PlaybackVoice("es", "b", ""), new PlaybackVoice("es", "c", "")));
+        mVoicesSupplier.set(List.of(new PlaybackVoice("es", "b"), new PlaybackVoice("es", "c")));
         assertEquals("b", mModel.get(PlayerProperties.SELECTED_VOICE_ID));
     }
 
@@ -472,9 +613,29 @@ public class PlayerMediatorUnitTest {
     }
 
     @Test
-    public void testCloseExpandedPlayer() {
-        mMediator.onExpandedPlayerClose();
+    public void testShouldRestoreMiniPlayer_null() {
+        mMediator.onShouldRestoreMiniPlayer();
+        verify(mPlayerCoordinator, never()).restoreMiniPlayer();
+    }
+
+    @Test
+    public void testShouldRestoreMiniPlayer() {
+        mMediator.setPlayback(mPlayback);
+        mMediator.onShouldRestoreMiniPlayer();
         verify(mPlayerCoordinator).restoreMiniPlayer();
+    }
+
+    @Test
+    public void testShouldHideMiniPlayer_null() {
+        mMediator.onShouldHideMiniPlayer();
+        verify(mPlayerCoordinator, never()).hideMiniPlayer();
+    }
+
+    @Test
+    public void testShouldHideMiniPlayer() {
+        mMediator.setPlayback(mPlayback);
+        mMediator.onShouldHideMiniPlayer();
+        verify(mPlayerCoordinator).hideMiniPlayer();
     }
 
     @Test
@@ -498,6 +659,28 @@ public class PlayerMediatorUnitTest {
         verify(mPlayerCoordinator).voiceMenuClosed();
         assertEquals(STOPPED, mModel.get(PlayerProperties.VOICE_PREVIEW_PLAYBACK_STATE));
         verify(mPreviewPlayback).removeListener(eq(mPlaybackListenerCaptor.getValue()));
+    }
+
+    @Test
+    public void testNoStateUpdatesWhenHidden() {
+        mModel.set(PlayerProperties.HIDDEN_AND_PLAYING, true);
+        mMediator.setPlayback(mPlayback);
+        verify(mPlayback).addListener(mPlaybackListenerCaptor.capture());
+
+        assertEquals(UNKNOWN, (int) mModel.get(PlayerProperties.PLAYBACK_STATE));
+        assertEquals(0.0f, (float) mModel.get(PlayerProperties.PROGRESS), /* delta= */ 1e-8f);
+
+        mPlaybackData.mState = PLAYING;
+
+        mPlaybackData.mAbsolutePositionNanos = POSITION_NS;
+        mPlaybackData.mTotalDurationNanos = DURATION_NS;
+        mPlaybackListenerCaptor.getValue().onPlaybackDataChanged(mPlaybackData);
+
+        assertEquals(0.0f, (float) mModel.get(PlayerProperties.PROGRESS), /* delta= */ 1e-8f);
+
+        // Playback state is the exception: if it changes while hidden, UI should show
+        // the new state when it is restored.
+        assertEquals(PLAYING, (int) mModel.get(PlayerProperties.PLAYBACK_STATE));
     }
 
     private void resetPlayback() {

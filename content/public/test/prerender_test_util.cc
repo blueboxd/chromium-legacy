@@ -53,7 +53,7 @@ std::string ConvertEagernessToString(
 // Builds <script type="speculationrules"> element for prerendering.
 std::string BuildScriptElementSpeculationRules(
     const std::vector<GURL>& prerendering_urls,
-    absl::optional<blink::mojom::SpeculationEagerness> eagerness,
+    std::optional<blink::mojom::SpeculationEagerness> eagerness,
     const std::string& target_hint) {
   std::stringstream ss;
 
@@ -281,7 +281,7 @@ class PrerenderHostObserverImpl : public PrerenderHost::Observer {
   std::unique_ptr<PrerenderHostRegistryObserver> registry_observer_;
   bool was_activated_ = false;
   bool did_observe_ = false;
-  absl::optional<PrerenderFinalStatus> last_status_;
+  std::optional<PrerenderFinalStatus> last_status_;
 };
 
 PrerenderHostObserver::PrerenderHostObserver(WebContents& web_contents,
@@ -342,6 +342,12 @@ void PrerenderTestHelper::RegisterServerRequestMonitor(
   http_server->RegisterRequestMonitor(base::BindRepeating(
       &PrerenderTestHelper::MonitorResourceRequest, base::Unretained(this)));
 }
+void PrerenderTestHelper::RegisterServerRequestMonitor(
+    net::test_server::EmbeddedTestServer& test_server) {
+  EXPECT_FALSE(test_server.Started());
+  test_server.RegisterRequestMonitor(base::BindRepeating(
+      &PrerenderTestHelper::MonitorResourceRequest, base::Unretained(this)));
+}
 
 // static
 int PrerenderTestHelper::GetHostForUrl(WebContents& web_contents,
@@ -397,13 +403,13 @@ void PrerenderTestHelper::WaitForPrerenderLoadCompletion(const GURL& gurl) {
 
 int PrerenderTestHelper::AddPrerender(const GURL& prerendering_url,
                                       int32_t world_id) {
-  return AddPrerender(prerendering_url, /*eagerness=*/absl::nullopt,
+  return AddPrerender(prerendering_url, /*eagerness=*/std::nullopt,
                       /*target_hint=*/"", world_id);
 }
 
 int PrerenderTestHelper::AddPrerender(
     const GURL& prerendering_url,
-    absl::optional<blink::mojom::SpeculationEagerness> eagerness,
+    std::optional<blink::mojom::SpeculationEagerness> eagerness,
     const std::string& target_hint,
     int32_t world_id) {
   TRACE_EVENT("test", "PrerenderTestHelper::AddPrerender", "prerendering_url",
@@ -437,13 +443,12 @@ int PrerenderTestHelper::AddPrerender(
 
 void PrerenderTestHelper::AddPrerenderAsync(const GURL& prerendering_url,
                                             int32_t world_id) {
-  AddPrerendersAsync({prerendering_url}, absl::nullopt, std::string(),
-                     world_id);
+  AddPrerendersAsync({prerendering_url}, std::nullopt, std::string(), world_id);
 }
 
 void PrerenderTestHelper::AddPrerendersAsync(
     const std::vector<GURL>& prerendering_urls,
-    absl::optional<blink::mojom::SpeculationEagerness> eagerness,
+    std::optional<blink::mojom::SpeculationEagerness> eagerness,
     const std::string& target_hint,
     int32_t world_id) {
   TRACE_EVENT("test", "PrerenderTestHelper::AddPrerendersAsync",
@@ -549,15 +554,9 @@ void PrerenderTestHelper::NavigatePrimaryPage(WebContents& web_contents,
       content::TestNavigationObserver::WaitEvent::kLoadStopped);
   // Ignore the result of ExecJs().
   //
-  // Depending on timing, activation could destroy the current WebContents
-  // before ExecJs() gets a result from the frame that executed scripts. This
-  // results in execution failure even when the execution succeeded. See
-  // https://crbug.com/1156141 for details.
-  //
-  // This part will drastically be modified by the MPArch, so we take the
-  // approach just to ignore it instead of fixing the timing issue. When
-  // ExecJs() actually fails, the remaining test steps should fail, so it
-  // should be safe to ignore it.
+  // Depending on timing, activation could destroy a navigating frame before
+  // ExecJs() gets a result from the frame. This results in execution failure
+  // even when the navigation succeeded.
   std::ignore = ExecJs(web_contents.GetPrimaryMainFrame(),
                        JsReplace("location = $1", gurl));
   observer.Wait();
@@ -565,6 +564,12 @@ void PrerenderTestHelper::NavigatePrimaryPage(WebContents& web_contents,
 
 void PrerenderTestHelper::NavigatePrimaryPage(const GURL& gurl) {
   NavigatePrimaryPage(*GetWebContents(), gurl);
+}
+
+void PrerenderTestHelper::OpenNewWindowWithoutOpener(WebContents& web_contents,
+                                                     const GURL& url) {
+  std::string script = R"(window.open($1, "_blank", "noopener");)";
+  EXPECT_TRUE(ExecJs(&web_contents, JsReplace(script, url.spec())));
 }
 
 ::testing::AssertionResult PrerenderTestHelper::VerifyPrerenderingState(

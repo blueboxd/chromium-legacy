@@ -12,6 +12,7 @@ import "url/mojom/url.mojom";
 import "chrome/browser/ui/webui/tabs/tabs.mojom";
 
 enum TabOrganizationState {
+  kInitializing,
   kNotStarted,
   kInProgress,
   kSuccess,
@@ -229,8 +230,8 @@ interface PageHandler {
   // Remove the tab from the tab organization.
   RemoveTabFromOrganization(int32 session_id, int32 organization_id, Tab tab);
 
-  // Clear the current tab organization session state.
-  ResetSession();
+  // Clear the current tab organization session state and start a new request.
+  RestartSession();
 
   // Save a user's preference for the state of the expandable 'Recently Closed'
   // list section.
@@ -287,4 +288,14 @@ interface Page {
 
   // Callback when tabs are removed.
   TabsRemoved(TabsRemovedInfo tabsRemovedInfo);
+
+  // Called when the top level bubble tab should change.
+  TabSearchTabIndexChanged(int32 index);
+
+  // Called when state of whether the first run experience should be shown
+  // changes.
+  ShowFREChanged(bool show);
+
+  // Called when the tab organization feature should be enabled/disabled.
+  TabOrganizationEnabledChanged(bool enabled);
 };

@@ -12,8 +12,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/browser/first_run/model/first_run_metrics.h"
-#import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
@@ -208,7 +207,8 @@
     self.localPrefService->SetBoolean(metrics::prefs::kMetricsReportingEnabled,
                                       self.UMAReportingUserChoice);
     self.localPrefService->CommitPendingWrite();
-    base::UmaHistogramEnumeration("FirstRun.Stage", firstRunStage);
+    base::UmaHistogramEnumeration(first_run::kFirstRunStageHistogram,
+                                  firstRunStage);
     RecordFirstRunSignInMetrics(self.identityManager, self.attemptStatus,
                                 self.hadIdentitiesAtStartup);
   }

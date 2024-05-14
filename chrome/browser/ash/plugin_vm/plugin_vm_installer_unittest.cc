@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -43,7 +44,6 @@
 #include "google_apis/common/api_error_codes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace plugin_vm {
 
@@ -272,13 +272,12 @@ class PluginVmInstallerTestBase : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<PluginVmTestHelper> plugin_vm_test_helper_;
-  raw_ptr<PluginVmInstaller, DanglingUntriaged | ExperimentalAsh> installer_;
+  raw_ptr<PluginVmInstaller, DanglingUntriaged> installer_;
   std::unique_ptr<MockObserver> observer_;
 
   // A pointer to a singleton object which is valid until
   // ConciergeClient::Shutdown() is called.
-  raw_ptr<ash::FakeConciergeClient, DanglingUntriaged | ExperimentalAsh>
-      fake_concierge_client_;
+  raw_ptr<ash::FakeConciergeClient, DanglingUntriaged> fake_concierge_client_;
   ash::FakeDlcserviceClient fake_dlcservice_client_;
 
  private:
@@ -407,11 +406,9 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
     return fake_drive_service_ptr;
   }
 
-  raw_ptr<PluginVmDriveImageDownloadService,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<PluginVmDriveImageDownloadService, DanglingUntriaged>
       drive_download_service_;
-  raw_ptr<drive::FakeDriveService, DanglingUntriaged | ExperimentalAsh>
-      fake_drive_service_;
+  raw_ptr<drive::FakeDriveService, DanglingUntriaged> fake_drive_service_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
@@ -519,7 +516,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest, DownloadPluginVmImageParamsTest) {
   StartAndRunUntil(InstallingState::kDownloadingImage);
 
   std::string guid = installer_->GetCurrentDownloadGuid();
-  const absl::optional<download::DownloadParams>& params =
+  const std::optional<download::DownloadParams>& params =
       download_service_->GetDownload(guid);
   ASSERT_TRUE(params.has_value());
   EXPECT_EQ(guid, params->guid);

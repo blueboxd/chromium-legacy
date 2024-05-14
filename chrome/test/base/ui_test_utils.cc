@@ -37,6 +37,9 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -282,8 +285,9 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     same_tab_observer.set_expected_initial_url(url);
 
   std::set<Browser*> initial_browsers;
-  for (auto* initial_browser : *BrowserList::GetInstance())
+  for (Browser* initial_browser : *BrowserList::GetInstance()) {
     initial_browsers.insert(initial_browser);
+  }
 
   AllBrowserTabAddedWaiter tab_added_waiter;
 
@@ -480,6 +484,83 @@ bool WaitForMinimized(Browser* browser) {
   return minimize_waiter.Wait();
 }
 
+FullscreenWaiter::FullscreenWaiter(Browser* browser,
+                                   FullscreenWaiter::Expectation expectation)
+    : expectation_(std::move(expectation)),
+      controller_(browser->exclusive_access_manager()->fullscreen_controller()),
+      // Sometimes, the wait is called on a sequeunce, e.g.
+      // as a part of interactive_ui_tests's RunTestSequence.
+      // To handle that case, we can process pending task posted to the sequence
+      // in nested RunLoop.
+      run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
+      satisfied_(IsSatisfied()) {
+  observation_.Observe(controller_);
+}
+
+FullscreenWaiter::~FullscreenWaiter() = default;
+
+void FullscreenWaiter::Wait() {
+  if (satisfied_) {
+    return;
+  }
+  run_loop_.Run();
+}
+
+void FullscreenWaiter::OnFullscreenStateChanged() {
+  // Note: In Lacros, when full screen mode changes, FullscreenController
+  // triggers WindowFullscreenStateChanged twice for the same change
+  // asynchronously. If the test code toggles fullscreen mode on and off, there
+  // is a race between the second notification of fullscreen mode on and test
+  // code toggle fullscreen mode off. Wait until the fullscreen state changes to
+  // the expected mode. See details in crbug.com/1481727.
+  if (!IsSatisfied()) {
+    return;
+  }
+  satisfied_ = true;
+  if (run_loop_.running()) {
+    run_loop_.Quit();
+  }
+}
+
+bool FullscreenWaiter::IsSatisfied() const {
+  if (expectation_.browser_fullscreen.has_value() &&
+      expectation_.browser_fullscreen.value() !=
+          controller_->IsFullscreenForBrowser()) {
+    return false;
+  }
+
+  if (expectation_.tab_fullscreen.has_value() &&
+      expectation_.tab_fullscreen.value() != controller_->IsTabFullscreen()) {
+    return false;
+  }
+
+  if (expectation_.display_id.has_value()) {
+    // Display ID is valid iff the tab fullscreen mode is active.
+    if (!controller_->IsTabFullscreen()) {
+      return false;
+    }
+    if (expectation_.display_id.value() !=
+        FullscreenController::GetDisplayId(
+            *controller_->exclusive_access_tab())) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void ToggleFullscreenModeAndWait(Browser* browser) {
+  // The waiting condition is following the current implementation.
+  // If the mode is either browser/tab fullscreen, it will be existed.
+  // Otherwise, entering into browser fullscreen.
+  bool current = browser->exclusive_access_manager()->context()->IsFullscreen();
+  FullscreenWaiter waiter(browser, current ? FullscreenWaiter::kNoFullscreen
+                                           : FullscreenWaiter::Expectation{
+                                                 .browser_fullscreen = true});
+  chrome::ToggleFullscreenMode(browser);
+  waiter.Wait();
+}
+
 void SendToOmniboxAndSubmit(Browser* browser,
                             const std::string& input,
                             base::TimeTicks match_selection_timestamp) {
@@ -492,7 +573,7 @@ void SendToOmniboxAndSubmit(Browser* browser,
 }
 
 Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers) {
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if (excluded_browsers.find(browser) == excluded_browsers.end())
       return browser;
   }
@@ -877,6 +958,28 @@ bool CheckWaiter::Check() {
     std::move(quit_).Run();
   }
   return true;
+}
+
+ViewBoundsWaiter::ViewBoundsWaiter(views::View* observed_view)
+    : observed_view_(observed_view) {
+  observed_view_->AddObserver(this);
+}
+
+ViewBoundsWaiter::~ViewBoundsWaiter() {
+  observed_view_->RemoveObserver(this);
+}
+
+void ViewBoundsWaiter::WaitForNonEmptyBounds() {
+  if (!observed_view_->bounds().IsEmpty()) {
+    return;
+  }
+  run_loop_.Run();
+}
+
+void ViewBoundsWaiter::OnViewBoundsChanged(views::View* observed_view) {
+  if (!observed_view_->bounds().IsEmpty()) {
+    run_loop_.Quit();
+  }
 }
 
 }  // namespace ui_test_utils

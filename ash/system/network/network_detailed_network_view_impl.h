@@ -25,9 +25,9 @@ class ASH_EXPORT NetworkDetailedNetworkViewImpl
     : public NetworkDetailedView,
       public NetworkDetailedNetworkView,
       public NetworkListNetworkHeaderView::Delegate {
- public:
-  METADATA_HEADER(NetworkDetailedNetworkViewImpl);
+  METADATA_HEADER(NetworkDetailedNetworkViewImpl, NetworkDetailedView)
 
+ public:
   NetworkDetailedNetworkViewImpl(
       DetailedViewDelegate* detailed_view_delegate,
       NetworkDetailedNetworkView::Delegate* delegate);
@@ -71,17 +71,13 @@ class ASH_EXPORT NetworkDetailedNetworkViewImpl
   // Owned by the views hierarchy. These are the containers to carry the warning
   // message, the ethernet entry, the mobile header, mobile network entries,
   // wifi header, and wifi network entries.
-  raw_ptr<RoundedContainer, DanglingUntriaged | ExperimentalAsh>
-      first_list_view_ = nullptr;
-  raw_ptr<RoundedContainer, ExperimentalAsh> mobile_top_container_ = nullptr;
-  raw_ptr<RoundedContainer, ExperimentalAsh> mobile_network_list_view_ =
-      nullptr;
-  raw_ptr<RoundedContainer, ExperimentalAsh> wifi_top_container_ = nullptr;
-  raw_ptr<RoundedContainer, ExperimentalAsh> wifi_network_list_view_ = nullptr;
-  raw_ptr<RoundedContainer, ExperimentalAsh> tether_hosts_top_container_ =
-      nullptr;
-  raw_ptr<RoundedContainer, ExperimentalAsh> tether_hosts_network_list_view_ =
-      nullptr;
+  raw_ptr<RoundedContainer, DanglingUntriaged> first_list_view_ = nullptr;
+  raw_ptr<RoundedContainer> mobile_top_container_ = nullptr;
+  raw_ptr<RoundedContainer> mobile_network_list_view_ = nullptr;
+  raw_ptr<RoundedContainer> wifi_top_container_ = nullptr;
+  raw_ptr<RoundedContainer> wifi_network_list_view_ = nullptr;
+  raw_ptr<RoundedContainer> tether_hosts_top_container_ = nullptr;
+  raw_ptr<RoundedContainer> tether_hosts_network_list_view_ = nullptr;
 };
 
 }  // namespace ash

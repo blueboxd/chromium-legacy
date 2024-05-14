@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
 
-#include "base/containers/cxx20_erase.h"
+#include <map>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/task/sequenced_task_runner.h"
@@ -255,7 +256,7 @@ void TrustSafetySentimentService::OpenedNewTabPage() {
   // trigger which occurred more than the maximum prompt time ago, or the
   // trigger for the kIneligible area if it is no longer blocking
   // eligibility.
-  base::EraseIf(pending_triggers_,
+  std::erase_if(pending_triggers_,
                 [](const std::pair<FeatureArea, PendingTrigger>& area_trigger) {
                   return base::Time::Now() - area_trigger.second.occurred_time >
                              GetMaxTimeToPrompt() ||
@@ -459,6 +460,7 @@ void TrustSafetySentimentService::InteractedWithDownloadWarningUI(
   product_specific_data["Is downloads page UI"] = false;
   product_specific_data["Is download prompt UI"] = false;
   product_specific_data["User proceeded past warning"] = false;
+  product_specific_data["Is subpage UI"] = false;
   switch (surface) {
     case DownloadItemWarningData::WarningSurface::BUBBLE_MAINPAGE:
       product_specific_data["Is mainpage UI"] = true;

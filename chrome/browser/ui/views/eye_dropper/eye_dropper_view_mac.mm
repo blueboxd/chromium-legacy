@@ -111,7 +111,7 @@ void EyeDropperView::MoveViewToFront() {
   [window makeKeyAndOrderFront:nil];
 }
 
-void EyeDropperView::CaptureInputIfNeeded() {
+void EyeDropperView::CaptureInput() {
   // There is no need to capture input on Mac.
 }
 

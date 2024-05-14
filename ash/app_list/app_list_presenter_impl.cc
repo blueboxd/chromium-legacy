@@ -127,7 +127,7 @@ class FullscreenLauncherAnimationObserver
   }
 
  private:
-  const raw_ptr<ui::Layer, ExperimentalAsh> layer_;
+  const raw_ptr<ui::Layer> layer_;
   AnimationCompleteCallback complete_callback_;
 };
 
@@ -475,7 +475,7 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
   if (settings.has_value() && transition.has_value()) {
     view_->OnTabletModeAnimationTransitionNotified(*transition);
     reporter.emplace(settings->GetAnimator(),
-                     metrics_util::ForSmoothness(
+                     metrics_util::ForSmoothnessV3(
                          view_->GetStateTransitionMetricsReportCallback()));
   }
 
@@ -691,7 +691,7 @@ void AppListPresenterImpl::OnTabletToClamshellTransitionAnimationDone(
 
   if (!aborted) {
     if (target_visibility) {
-      view_->Layout();
+      view_->DeprecatedLayoutImmediately();
     } else if (!target_visibility && !window->is_destroying()) {
       window->Hide();
       OnClosed();

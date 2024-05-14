@@ -31,7 +31,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
 import androidx.core.widget.ImageViewCompat;
 
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxDrawableState;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
@@ -99,6 +98,8 @@ public final class BaseSuggestionViewBinder<T extends View>
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
+            // TODO(crbug/1515321): migrate this to SuggestionLayout.
+            updateMargin(model, view);
         } else if (SuggestionCommonProperties.COLOR_SCHEME == propertyKey) {
             updateColorScheme(model, view);
         } else if (DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED == propertyKey
@@ -106,9 +107,6 @@ public final class BaseSuggestionViewBinder<T extends View>
             view.setRoundingEdges(
                     model.get(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED),
                     model.get(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED));
-        } else if (DropdownCommonProperties.TOP_MARGIN == propertyKey
-                || DropdownCommonProperties.BOTTOM_MARGIN == propertyKey) {
-            updateMargin(model, view);
         } else if (BaseSuggestionViewProperties.ACTION_BUTTONS == propertyKey) {
             bindActionButtons(model, view, model.get(BaseSuggestionViewProperties.ACTION_BUTTONS));
         } else if (BaseSuggestionViewProperties.ON_FOCUS_VIA_SELECTION == propertyKey) {
@@ -251,14 +249,9 @@ public final class BaseSuggestionViewBinder<T extends View>
 
     /**
      * Access the BaseSuggestionViewMetadata for the given view, creating and attaching a new one if
-     * none is currently associated. Returns an unattached metadata if {@link
-     * OmniboxFeatures#shouldCacheSuggestionResources} returns false.
+     * none is currently associated.
      */
     private static @NonNull BaseSuggestionViewMetadata ensureViewMetadata(View view) {
-        if (!OmniboxFeatures.shouldCacheSuggestionResources()) {
-            return new BaseSuggestionViewMetadata();
-        }
-
         BaseSuggestionViewMetadata metadata =
                 (BaseSuggestionViewMetadata) view.getTag(R.id.base_suggestion_view_metadata_key);
         if (metadata == null) {
@@ -379,10 +372,7 @@ public final class BaseSuggestionViewBinder<T extends View>
         }
 
         if (layoutParams instanceof MarginLayoutParams) {
-            int topSpacing = model.get(DropdownCommonProperties.TOP_MARGIN);
-            int bottomSpacing = model.get(DropdownCommonProperties.BOTTOM_MARGIN);
-            ((MarginLayoutParams) layoutParams)
-                    .setMargins(sSideSpacing, topSpacing, sSideSpacing, bottomSpacing);
+            ((MarginLayoutParams) layoutParams).setMargins(sSideSpacing, 0, sSideSpacing, 0);
         }
         view.setLayoutParams(layoutParams);
     }

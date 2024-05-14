@@ -12,12 +12,14 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_item_updated_fields.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "ash/public/cpp/holding_space/holding_space_test_api.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/public/cpp/holding_space/mock_holding_space_client.h"
 #include "ash/public/cpp/holding_space/mock_holding_space_model_observer.h"
 #include "ash/root_window_controller.h"
@@ -26,7 +28,7 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/holding_space/holding_space_animation_registry.h"
-#include "ash/system/message_center/message_popup_animation_waiter.h"
+#include "ash/system/notification_center/message_popup_animation_waiter.h"
 #include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/progress_indicator/progress_ring_animation.h"
 #include "ash/system/status_area_widget.h"
@@ -62,6 +64,7 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_test_util.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
+#include "chrome/browser/ui/ash/mock_activation_change_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/download/public/common/mock_download_item.h"
@@ -95,7 +98,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -132,14 +134,6 @@ std::string GetAccessibleName(const views::View* view) {
   std::string a11y_name;
   a11y_data.GetStringAttribute(ax::mojom::StringAttribute::kName, &a11y_name);
   return a11y_name;
-}
-
-// Returns all holding space item types.
-std::vector<HoldingSpaceItem::Type> GetHoldingSpaceItemTypes() {
-  std::vector<HoldingSpaceItem::Type> types;
-  for (int i = 0; i <= static_cast<int>(HoldingSpaceItem::Type::kMaxValue); ++i)
-    types.push_back(static_cast<HoldingSpaceItem::Type>(i));
-  return types;
 }
 
 // Flushes the message loop by posting a task and waiting for it to run.
@@ -249,16 +243,6 @@ void WaitForText(views::Label* label, const std::u16string& text) {
 }
 
 // Mocks -----------------------------------------------------------------------
-
-class MockActivationChangeObserver : public wm::ActivationChangeObserver {
- public:
-  MOCK_METHOD(void,
-              OnWindowActivated,
-              (wm::ActivationChangeObserver::ActivationReason reason,
-               aura::Window* gained_active,
-               aura::Window* lost_active),
-              (override));
-};
 
 class MockDownloadControllerClient
     : public crosapi::mojom::DownloadControllerClient {
@@ -528,7 +512,7 @@ class HoldingSpaceUiDragAndDropBrowserTest
     // Cache a reference to preview layers.
     const ui::Layer* previews_container_layer =
         test_api().GetPreviewsTrayIcon()->layer()->children()[0];
-    const std::vector<ui::Layer*>& preview_layers =
+    const std::vector<raw_ptr<ui::Layer, VectorExperimental>>& preview_layers =
         previews_container_layer->children();
 
     // Iterate over the layers for each preview.
@@ -640,19 +624,12 @@ class HoldingSpaceUiDragAndDropBrowserTest
     return GetStorageLocationFlags() & flag;
   }
 
-  raw_ptr<DropSenderView, ExperimentalAsh> drop_sender_view_ = nullptr;
-  raw_ptr<DropTargetView, ExperimentalAsh> drop_target_view_ = nullptr;
+  raw_ptr<DropSenderView> drop_sender_view_ = nullptr;
+  raw_ptr<DropTargetView> drop_target_view_ = nullptr;
 };
 
-// Flaky on ChromeOS bots: crbug.com/1338054
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_DragAndDrop DISABLED_DragAndDrop
-#else
-#define MAYBE_DragAndDrop DragAndDrop
-#endif
 // Verifies that drag-and-drop of holding space items works.
-IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest,
-                       MAYBE_DragAndDrop) {
+IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDrop) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -711,15 +688,8 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest,
   ASSERT_FALSE(test_api().IsShowing());
 }
 
-// Disabled due to flakiness. http://crbug.com/1261364
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_DragAndDropToPin DISABLED_DragAndDropToPin
-#else
-#define MAYBE_DragAndDropToPin DragAndDropToPin
-#endif
 // Verifies that drag-and-drop to pin holding space items works.
-IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest,
-                       MAYBE_DragAndDropToPin) {
+IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -897,8 +867,9 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiBrowserTest, PinAndUnpinItems) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   // Add an item of every type. For downloads, also add an in-progress item.
-  for (HoldingSpaceItem::Type type : GetHoldingSpaceItemTypes())
+  for (const auto type : holding_space_util::GetAllItemTypes()) {
     AddItem(GetProfile(), type, CreateFile());
+  }
   AddItem(GetProfile(), HoldingSpaceItem::Type::kDownload, CreateFile(),
           HoldingSpaceProgress(/*current_bytes=*/0, /*total_bytes=*/100));
 
@@ -1037,8 +1008,9 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiBrowserTest, RemoveItem) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   // Populate holding space with items of all types.
-  for (HoldingSpaceItem::Type type : GetHoldingSpaceItemTypes())
+  for (const auto type : holding_space_util::GetAllItemTypes()) {
     AddItem(GetProfile(), type, CreateFile());
+  }
 
   test_api().Show();
   ASSERT_TRUE(test_api().IsShowing());
@@ -1195,8 +1167,9 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiBrowserTest, RemoveItem) {
       EXPECT_CALL(mock, OnHoldingSpaceItemsRemoved)
           .WillOnce([&](const std::vector<const HoldingSpaceItem*>& items) {
             ASSERT_EQ(items.size(), item_ids.size());
-            for (const HoldingSpaceItem* item : items)
+            for (const HoldingSpaceItem* item : items) {
               ASSERT_TRUE(base::Contains(item_ids, item->id()));
+            }
             run_loop.Quit();
           });
 
@@ -1272,7 +1245,8 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiBrowserTest, TogglePreviews) {
   ASSERT_TRUE(previews_tray_icon);
   ASSERT_TRUE(previews_tray_icon->layer());
   ASSERT_EQ(1u, previews_tray_icon->layer()->children().size());
-  auto* previews_container_layer = previews_tray_icon->layer()->children()[0];
+  auto* previews_container_layer =
+      previews_tray_icon->layer()->children()[0].get();
   EXPECT_FALSE(previews_tray_icon->GetVisible());
 
   // After pinning a file, we should have a single preview in the tray icon.
@@ -2012,11 +1986,10 @@ class HoldingSpaceUiInProgressDownloadsBrowserTestBase
 
   const DownloadTypeToUse download_type_to_use_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  raw_ptr<testing::NiceMock<content::MockDownloadManager>,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<testing::NiceMock<content::MockDownloadManager>, DanglingUntriaged>
       download_manager_ = nullptr;
-  raw_ptr<content::DownloadManagerDelegate, ExperimentalAsh>
-      download_manager_delegate_ = nullptr;
+  raw_ptr<content::DownloadManagerDelegate> download_manager_delegate_ =
+      nullptr;
   base::ObserverList<content::DownloadManager::Observer>::Unchecked
       download_manager_observers_;
   testing::NiceMock<MockDownloadControllerClient> download_controller_client_;
@@ -2847,12 +2820,11 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiPauseOrResumeBrowserTest,
   // space model.
   base::RunLoop run_loop;
   EXPECT_CALL(mock, OnHoldingSpaceItemUpdated)
-      .WillOnce([&](const HoldingSpaceItem* item, uint32_t updated_fields) {
+      .WillOnce([&](const HoldingSpaceItem* item,
+                    const HoldingSpaceItemUpdatedFields& updated_fields) {
         EXPECT_EQ(item->id(),
                   test_api().GetHoldingSpaceItemId(in_progress_download_chip));
-        EXPECT_TRUE(
-            updated_fields &
-            HoldingSpaceModelObserver::UpdatedField::kInProgressCommands);
+        EXPECT_TRUE(updated_fields.previous_in_progress_commands);
         run_loop.Quit();
       });
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
@@ -2932,12 +2904,11 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiPauseOrResumeBrowserTest,
   // updated in the holding space model.
   base::RunLoop run_loop;
   EXPECT_CALL(mock, OnHoldingSpaceItemUpdated)
-      .WillOnce([&](const HoldingSpaceItem* item, uint32_t updated_fields) {
+      .WillOnce([&](const HoldingSpaceItem* item,
+                    const HoldingSpaceItemUpdatedFields& updated_fields) {
         EXPECT_EQ(item->id(),
                   test_api().GetHoldingSpaceItemId(in_progress_download_chip));
-        EXPECT_TRUE(
-            updated_fields &
-            HoldingSpaceModelObserver::UpdatedField::kInProgressCommands);
+        EXPECT_TRUE(updated_fields.previous_in_progress_commands);
         run_loop.Quit();
       });
   test::Click(secondary_action_container);

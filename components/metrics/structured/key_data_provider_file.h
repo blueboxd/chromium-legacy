@@ -8,14 +8,18 @@
 #include <memory>
 #include <optional>
 
+#include "base/barrier_closure.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/metrics/structured/key_data_provider.h"
+#include "components/metrics/structured/lib/key_data_provider.h"
 
 namespace metrics::structured {
 
 // KeyDataProvider implementation that stores the keys in a file.
+//
+// (b/316198668): Explore to remove this layer of abstraction since it should
+// not be needed anymore.
 class KeyDataProviderFile : public KeyDataProvider, KeyDataProvider::Observer {
  public:
   KeyDataProviderFile(const base::FilePath& file_path,

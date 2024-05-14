@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_installation_manager.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,7 +39,6 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -57,7 +57,7 @@ void OnGetBundlePathFromCommandLine(
   bool is_bundle_path_set =
       !bundle_path.has_value() || bundle_path->has_value();
   if (!is_proxy_url_set && !is_bundle_path_set) {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
     return;
   }
 
@@ -79,7 +79,7 @@ void GetBundlePathFromCommandLine(
       command_line.GetSwitchValuePath(switches::kInstallIsolatedWebAppFromFile);
 
   if (switch_value.empty()) {
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(std::nullopt);
     return;
   }
 
@@ -127,7 +127,7 @@ MaybeIwaLocation GetProxyUrlFromCommandLine(
   std::string switch_value =
       command_line.GetSwitchValueASCII(switches::kInstallIsolatedWebAppFromUrl);
   if (switch_value.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return GetProxyUrl(GURL(switch_value));
 }
@@ -346,7 +346,7 @@ void IsolatedWebAppInstallationManager::InstallIsolatedWebAppFromLocation(
     base::OnceCallback<void(MaybeInstallIsolatedWebAppCommandSuccess)>
         callback) {
   ASSIGN_OR_RETURN(
-      absl::optional<IsolatedWebAppLocation> optional_location, location,
+      std::optional<IsolatedWebAppLocation> optional_location, location,
       [&](std::string error) {
         std::move(callback).Run(base::unexpected(std::move(error)));
       });
@@ -395,7 +395,7 @@ void IsolatedWebAppInstallationManager::OnGetIsolatedWebAppUrlInfo(
 
   provider_->scheduler().InstallIsolatedWebApp(
       url_info.value(), location,
-      /*expected_version=*/absl::nullopt, std::move(keep_alive),
+      /*expected_version=*/std::nullopt, std::move(keep_alive),
       std::move(optional_profile_keep_alive),
       base::BindOnce(
           &IsolatedWebAppInstallationManager::OnInstallIsolatedWebApp,
@@ -433,7 +433,17 @@ void IsolatedWebAppInstallationManager::MaybeScheduleGarbageCollection() {
       provider_->extensions_manager().ShouldGarbageCollectStoragePartitions()) {
     provider_->command_manager().ScheduleCommand(
         std::make_unique<web_app::GarbageCollectStoragePartitionsCommand>(
-            &profile_.get(), base::DoNothing()));
+            &profile_.get(),
+            base::BindOnce(
+                [](base::WeakPtr<IsolatedWebAppInstallationManager> weak_this) {
+                  if (!weak_this) {
+                    return;
+                  }
+                  weak_this
+                      ->on_garbage_collect_storage_partitions_done_for_testing_
+                      .Signal();
+                },
+                weak_ptr_factory_.GetWeakPtr())));
   }
 }
 

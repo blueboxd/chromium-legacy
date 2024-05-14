@@ -15,11 +15,17 @@
 -DelegatedInkWithPredictionTest.TrailExtendsBeyondPresentationArea/SkiaGraphiteMetal
 -GPURendererPixelTest.AntiAliasing/SkiaGraphiteMetal
 -GPURendererPixelTest.AntiAliasingPerspective/SkiaGraphiteMetal
+-IntersectingMultiplanarVideoQuadPixelTest.Y16VideoQuads/SkiaGraphiteMetal
+-IntersectingMultiplanarVideoQuadPixelTest.YUVVideoQuads/SkiaGraphiteMetal
 -IntersectingVideoQuadPixelTest.Y16VideoQuads/SkiaGraphiteMetal
 -IntersectingVideoQuadPixelTest.YUVVideoQuads/SkiaGraphiteMetal
 -RendererPixelTest.RoundedCornerOnRenderPass/SkiaGraphiteMetal
 -SurfaceAggregatorPixelTest.DrawAndEraseDelegatedInkTrail/SkiaGraphiteDawn
 -SurfaceAggregatorPixelTest.DrawAndEraseDelegatedInkTrail/SkiaGraphiteMetal
+
+# TODO(crbug.com/40256189): This test has been failing with pixel differences
+# since https://crrev.com/c/4966062.
+-VideoRendererPixelHiLoTest.SimpleYUVRect/1
 
 # These tests fail with perceptible pixel differences
 -FromColorSpace/ColorTransformPixelTest.Basic/118
@@ -37,6 +43,8 @@
 -GPURendererPixelTest.RenderPassDrawQuadForceAntiAliasingOff/SkiaGraphiteDawn
 -GPURendererPixelTest.SolidColorDrawQuadForceAntiAliasingOff/SkiaGraphiteDawn
 -GPURendererPixelTest.TextureQuadBatching/SkiaGraphiteDawn
+-IntersectingMultiplanarVideoQuadPixelTest.Y16VideoQuads/SkiaGraphiteDawn
+-IntersectingMultiplanarVideoQuadPixelTest.YUVVideoQuads/SkiaGraphiteDawn
 -IntersectingQuadPixelTest.FlippedTexturedQuads/SkiaGraphiteDawn
 -IntersectingQuadPixelTest.NonFlippedTexturedQuads/SkiaGraphiteDawn
 -IntersectingQuadPixelTest.RenderPassQuads/SkiaGraphiteDawn

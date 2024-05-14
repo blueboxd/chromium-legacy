@@ -7,6 +7,7 @@
 #import "base/apple/foundation_util.h"
 #import "base/check.h"
 #import "base/feature_list.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
@@ -19,7 +20,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -42,9 +43,10 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller+toolbar_add.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -68,6 +70,7 @@ enum ItemType : NSInteger {
 }  // namespace
 
 using autofill::autofill_metrics::LogMandatoryReauthOptInOrOutUpdateEvent;
+using autofill::autofill_metrics::LogMandatoryReauthSettingsPageEditCardEvent;
 using autofill::autofill_metrics::MandatoryReauthAuthenticationFlowEvent;
 using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
 
@@ -78,9 +81,9 @@ using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
     PersonalDataManagerObserver,
     PopoverLabelViewControllerDelegate,
     SuccessfulReauthTimeAccessor> {
-  autofill::PersonalDataManager* _personalDataManager;
+  raw_ptr<autofill::PersonalDataManager> _personalDataManager;
 
-  Browser* _browser;
+  raw_ptr<Browser> _browser;
   std::unique_ptr<autofill::PersonalDataManagerObserverBridge> _observer;
 
   // Whether Settings have been dismissed.
@@ -605,15 +608,23 @@ using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
   if (autofill::IsCreditCardLocal(selectedCard) &&
       _personalDataManager->IsPaymentMethodsMandatoryReauthEnabled() &&
       [self.reauthenticationModule canAttemptReauth]) {
-    [self attemptReauthentication:selectedCard];
+    [self attemptReauthenticationForEditCard:selectedCard];
   } else {
     [self openCreditCardDetails:selectedCard];
   }
 }
 
 // Attempt reauthentication, if all goes well proceed to card details page.
-- (void)attemptReauthentication:(autofill::CreditCard)selectedCard {
+- (void)attemptReauthenticationForEditCard:(autofill::CreditCard)selectedCard {
+  LogMandatoryReauthSettingsPageEditCardEvent(
+      MandatoryReauthAuthenticationFlowEvent::kFlowStarted);
   auto completionHandler = ^(ReauthenticationResult result) {
+    MandatoryReauthAuthenticationFlowEvent event =
+        result == ReauthenticationResult::kFailure
+            ? MandatoryReauthAuthenticationFlowEvent::kFlowFailed
+            : MandatoryReauthAuthenticationFlowEvent::kFlowSucceeded;
+    LogMandatoryReauthSettingsPageEditCardEvent(event);
+
     if (result != ReauthenticationResult::kFailure) {
       [self openCreditCardDetails:selectedCard];
     }

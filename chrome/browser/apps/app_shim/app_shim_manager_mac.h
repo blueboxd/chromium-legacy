@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/services/mac_notifications/public/mojom/mac_notifications.mojom.h"
 #include "components/webapps/common/web_app_id.h"
 
@@ -62,7 +63,8 @@ class AppShimManager
       public AvatarMenuObserver,
       public ProfileManagerObserver,
       public ProfileObserver,
-      public mac_notifications::mojom::MacNotificationProvider {
+      public mac_notifications::mojom::MacNotificationProvider,
+      public mac_notifications::mojom::MacNotificationActionHandler {
  public:
   class Delegate {
    public:
@@ -184,6 +186,24 @@ class AppShimManager
   mojo::Remote<mac_notifications::mojom::MacNotificationProvider>
   LaunchNotificationProvider(const webapps::AppId& app_id);
 
+  // Triggers an OS-level notification permission request prompt to be shown by
+  // the app shim corresponding to `app_id`. Returns the current state without
+  // showing a prompt if permission has already been granted and/or denied to
+  // the app shim.
+  using RequestNotificationPermissionCallback =
+      chrome::mojom::AppShim::RequestNotificationPermissionCallback;
+  void ShowNotificationPermissionRequest(
+      const webapps::AppId& app_id,
+      RequestNotificationPermissionCallback callback);
+
+  // Causes ShowNotificationPermissionRequest() to immediately call its callback
+  // with the given `result`, rather than trying to request permission from the
+  // app shim.
+  void SetNotificationPermissionResponseForTesting(
+      mac_notifications::mojom::RequestPermissionResult result) {
+    notification_permission_result_for_testing_ = result;
+  }
+
   // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
@@ -234,8 +254,8 @@ class AppShimManager
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* menu) override;
 
-  static base::apple::ScopedCFTypeRef<SecRequirementRef>
-      BuildAppShimRequirementFromFrameworkRequirementString(CFStringRef);
+  static base::apple::ScopedCFTypeRef<CFStringRef>
+      BuildAppShimRequirementStringFromFrameworkRequirementString(CFStringRef);
 
   class AppShimObserver {
    public:
@@ -249,6 +269,9 @@ class AppShimManager
   void SetAppShimObserverForTesting(AppShimObserver* observer) {
     app_shim_observer_ = observer;
   }
+
+  // Simulates a launch as triggered by an app shim for the specific `app_id`.
+  void LoadAndLaunchAppForTesting(const webapps::AppId& app_id);
 
  protected:
   typedef std::set<Browser*> BrowserSet;
@@ -309,6 +332,8 @@ class AppShimManager
   std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items_;
 
  private:
+  friend class ScopedAppShimKeepAlive;
+
   // The state for an individual app, and for the profile-scoped app info.
   struct ProfileState;
   struct AppState;
@@ -413,6 +438,13 @@ class AppShimManager
   ProfileState* GetOrCreateProfileState(Profile* profile,
                                         const webapps::AppId& app_id);
 
+  // Launches a shim for `app_id` in background mode (i.e. without being shown
+  // in the Dock and other UI surfaces). Can call `callback` with nullptr if the
+  // `app_id` is invalid (for example not installed locally in any profile). If
+  // the launch itself fails, this will still call `callback` with a valid
+  // AppShimHost, but a mojo connection to the app shim will never be
+  // established (and any calls that were made to the remote app shim will be
+  // dropped).
   void LaunchShimInBackgroundMode(
       const webapps::AppId& app_id,
       base::OnceCallback<void(AppShimHost*)> callback);
@@ -429,6 +461,10 @@ class AppShimManager
       mojo::PendingRemote<
           mac_notifications::mojom::MacNotificationActionHandler> handler)
       override;
+
+  // mac_notifications::mojom::MacNotificationActionHandler:
+  void OnNotificationAction(
+      mac_notifications::mojom::NotificationActionInfoPtr info) override;
 
   std::unique_ptr<Delegate> delegate_;
 
@@ -447,6 +483,17 @@ class AppShimManager
   // always expects to get a connected MacNotificationProvider remote.
   mojo::ReceiverSet<mac_notifications::mojom::MacNotificationProvider>
       dummy_notification_provider_receivers_;
+
+  // Notification actions from all app shims are routed through these receivers
+  // and this class to make sure notification actions can be handled even if the
+  // browser process has never tried to connect to the notification service
+  // in an app shim.
+  mojo::ReceiverSet<mac_notifications::mojom::MacNotificationActionHandler>
+      notification_action_handler_receivers_;
+
+  // Set in some tests to short-circuit ShowNotificationPermissionRequest.
+  std::optional<mac_notifications::mojom::RequestPermissionResult>
+      notification_permission_result_for_testing_;
 
   raw_ptr<AppShimObserver> app_shim_observer_ = nullptr;
 

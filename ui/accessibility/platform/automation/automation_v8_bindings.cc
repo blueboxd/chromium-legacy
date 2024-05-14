@@ -116,9 +116,8 @@ class TreeIDWrapper : public V8HandlerFunctionWrapper {
  private:
   ~TreeIDWrapper() override = default;
 
-  raw_ptr<AutomationTreeManagerOwner, LeakedDanglingUntriaged>
-      automation_tree_manager_owner_;
-  raw_ptr<AutomationV8Router, LeakedDanglingUntriaged> automation_router_;
+  raw_ptr<AutomationTreeManagerOwner> automation_tree_manager_owner_;
+  raw_ptr<AutomationV8Router> automation_router_;
   TreeIDFunction function_;
 };
 
@@ -175,9 +174,8 @@ class NodeIDWrapper : public V8HandlerFunctionWrapper {
 
   friend class base::RefCountedThreadSafe<NodeIDWrapper>;
 
-  raw_ptr<AutomationTreeManagerOwner, LeakedDanglingUntriaged>
-      automation_tree_manager_owner_;
-  raw_ptr<AutomationV8Router, LeakedDanglingUntriaged> automation_router_;
+  raw_ptr<AutomationTreeManagerOwner> automation_tree_manager_owner_;
+  raw_ptr<AutomationV8Router> automation_router_;
   NodeIDFunction function_;
 };
 
@@ -238,9 +236,8 @@ class NodeIDPlusAttributeWrapper : public V8HandlerFunctionWrapper {
  private:
   ~NodeIDPlusAttributeWrapper() override = default;
 
-  raw_ptr<AutomationTreeManagerOwner, LeakedDanglingUntriaged>
-      automation_tree_manager_owner_;
-  raw_ptr<AutomationV8Router, LeakedDanglingUntriaged> automation_router_;
+  raw_ptr<AutomationTreeManagerOwner> automation_tree_manager_owner_;
+  raw_ptr<AutomationV8Router> automation_router_;
   NodeIDPlusAttributeFunction function_;
 };
 
@@ -306,9 +303,8 @@ class NodeIDPlusRangeWrapper : public V8HandlerFunctionWrapper {
  private:
   ~NodeIDPlusRangeWrapper() override = default;
 
-  raw_ptr<AutomationTreeManagerOwner, LeakedDanglingUntriaged>
-      automation_tree_manager_owner_;
-  raw_ptr<AutomationV8Router, LeakedDanglingUntriaged> automation_router_;
+  raw_ptr<AutomationTreeManagerOwner> automation_tree_manager_owner_;
+  raw_ptr<AutomationV8Router> automation_router_;
   NodeIDPlusRangeFunction function_;
 };
 
@@ -365,9 +361,8 @@ class NodeIDPlusStringBoolWrapper : public V8HandlerFunctionWrapper {
  private:
   ~NodeIDPlusStringBoolWrapper() override = default;
 
-  raw_ptr<AutomationTreeManagerOwner, LeakedDanglingUntriaged>
-      automation_tree_manager_owner_;
-  raw_ptr<AutomationV8Router, LeakedDanglingUntriaged> automation_router_;
+  raw_ptr<AutomationTreeManagerOwner> automation_tree_manager_owner_;
+  raw_ptr<AutomationV8Router> automation_router_;
   NodeIDPlusStringBoolFunction function_;
 };
 
@@ -430,9 +425,8 @@ class NodeIDPlusDimensionsWrapper : public V8HandlerFunctionWrapper {
 
   friend class base::RefCountedThreadSafe<NodeIDPlusDimensionsWrapper>;
 
-  raw_ptr<AutomationTreeManagerOwner, LeakedDanglingUntriaged>
-      automation_tree_manager_owner_;
-  raw_ptr<AutomationV8Router, LeakedDanglingUntriaged> automation_router_;
+  raw_ptr<AutomationTreeManagerOwner> automation_tree_manager_owner_;
+  raw_ptr<AutomationV8Router> automation_router_;
   NodeIDPlusDimensionsFunction function_;
 };
 
@@ -504,9 +498,8 @@ class NodeIDPlusEventWrapper : public V8HandlerFunctionWrapper {
  private:
   ~NodeIDPlusEventWrapper() override = default;
 
-  raw_ptr<AutomationTreeManagerOwner, LeakedDanglingUntriaged>
-      automation_tree_manager_owner_;
-  raw_ptr<AutomationV8Router, LeakedDanglingUntriaged> automation_router_;
+  raw_ptr<AutomationTreeManagerOwner> automation_tree_manager_owner_;
+  raw_ptr<AutomationV8Router> automation_router_;
   NodeIDPlusEventFunction function_;
 };
 
@@ -563,7 +556,7 @@ void AutomationV8Bindings::SendTreeDestroyedEvent(const AXTreeID& tree_id) {
 
 void AutomationV8Bindings::SendGetTextLocationResult(
     const ui::AXActionData& data,
-    const absl::optional<gfx::Rect>& rect) {
+    const std::optional<gfx::Rect>& rect) {
   base::Value::Dict params;
   params.Set("treeID", data.target_tree_id.ToString());
   params.Set("childTreeID", data.child_tree_id.ToString());

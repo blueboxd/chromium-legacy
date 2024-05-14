@@ -47,6 +47,8 @@ namespace net {
 //   "BLAH xxx:xx"      INVALID
 NET_EXPORT ProxyChain
 PacResultElementToProxyChain(std::string_view pac_result_element);
+// TODO(crbug.com/1491092): Remove method once all calls are updated to use
+// PacResultElementToProxyChain.
 NET_EXPORT ProxyServer
 PacResultElementToProxyServer(std::string_view pac_result_element);
 NET_EXPORT std::string ProxyServerToPacResultElement(
@@ -89,6 +91,9 @@ NET_EXPORT ProxyChain ProxyUriToProxyChain(std::string_view uri,
 NET_EXPORT ProxyServer
 ProxyUriToProxyServer(std::string_view uri, ProxyServer::Scheme default_scheme);
 NET_EXPORT std::string ProxyServerToProxyUri(const ProxyServer& proxy_server);
+NET_EXPORT ProxyServer
+ProxySchemeHostAndPortToProxyServer(ProxyServer::Scheme scheme,
+                                    std::string_view host_and_port);
 
 // Parses the proxy scheme from the non-standard URI scheme string
 // representation used in `ProxyUriToProxyServer()` and

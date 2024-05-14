@@ -6,9 +6,10 @@
 
 import 'chrome://personalization/strings.m.js';
 
-import {GooglePhotosAlbum, Paths, PersonalizationBreadcrumbElement, PersonalizationRouterElement, SeaPenTemplateId, TopicSource} from 'chrome://personalization/js/personalization_app.js';
+import {GooglePhotosAlbum, Paths, PersonalizationBreadcrumbElement, PersonalizationRouterElement, TopicSource} from 'chrome://personalization/js/personalization_app.js';
+import {SeaPenTemplateId} from 'chrome://resources/ash/common/sea_pen/sea_pen_generated.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {baseSetup, initElement} from './personalization_app_test_utils.js';
@@ -420,7 +421,7 @@ suite('PersonalizationBreadcrumbElementTest', function() {
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(breadcrumbContainer, [
       breadcrumbElement.i18n('wallpaperLabel'),
-      'Sea Pen',
+      breadcrumbElement.i18n('seaPenLabel'),
     ]);
   });
 
@@ -433,9 +434,11 @@ suite('PersonalizationBreadcrumbElementTest', function() {
     const breadcrumbContainer =
         breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
-    assertBreadcrumbs(
-        breadcrumbContainer,
-        [breadcrumbElement.i18n('wallpaperLabel'), 'Sea Pen', 'Airbrushed']);
+    assertBreadcrumbs(breadcrumbContainer, [
+      breadcrumbElement.i18n('wallpaperLabel'),
+      breadcrumbElement.i18n('seaPenLabel'),
+      'Airbrushed',
+    ]);
 
     const original = PersonalizationRouterElement.instance;
     const goToRoutePromise = new Promise<[Paths, Object]>(resolve => {
@@ -457,5 +460,151 @@ suite('PersonalizationBreadcrumbElementTest', function() {
     const [path, queryParams] = await goToRoutePromise;
     assertEquals(Paths.SEA_PEN_COLLECTION, path);
     assertDeepEquals({}, queryParams);
+  });
+
+  test('hide dropdown icon for sea pen templates', async () => {
+    loadTimeData.overrideValues({isSeaPenEnabled: true});
+    breadcrumbElement = initElement(PersonalizationBreadcrumbElement, {
+      'path': Paths.SEA_PEN_COLLECTION,
+    });
+
+    const dropdownIcon =
+        breadcrumbElement.shadowRoot!.querySelector('#seaPenDropdown');
+
+    assertFalse(!!dropdownIcon);
+  });
+
+  test('show dropdown icon for SeaPen results', async () => {
+    loadTimeData.overrideValues({isSeaPenEnabled: true});
+    breadcrumbElement = initElement(PersonalizationBreadcrumbElement, {
+      'path': Paths.SEA_PEN_RESULTS,
+      'seaPenTemplateId': SeaPenTemplateId.kFlower.toString(),
+    });
+
+    const dropdownIcon =
+        breadcrumbElement.shadowRoot!.querySelector('#seaPenDropdown');
+
+    assertTrue(!!dropdownIcon);
+  });
+
+  test('click SeaPen template breadcrumb to show dropdown menu', async () => {
+    loadTimeData.overrideValues({isSeaPenEnabled: true});
+    breadcrumbElement = initElement(PersonalizationBreadcrumbElement, {
+      'path': Paths.SEA_PEN_RESULTS,
+      'seaPenTemplateId': SeaPenTemplateId.kFlower.toString(),
+    });
+
+    const breadcrumb = (breadcrumbElement.shadowRoot!.querySelector(
+                            '#seaPenDropdown') as HTMLElement)
+                           .parentElement;
+    breadcrumb!.click();
+
+    const dropdownMenu =
+        breadcrumbElement.shadowRoot!.querySelector('cr-action-menu');
+    assertTrue(!!dropdownMenu);
+    assertTrue(dropdownMenu!.open, 'the action menu should be open');
+    const allMenuItems = dropdownMenu.querySelectorAll('button');
+    assertTrue(allMenuItems.length > 1);
+    const selectedElement =
+        dropdownMenu.querySelectorAll('button[aria-selected=\'true\']');
+    assertEquals(1, selectedElement.length);
+    assertEquals('Airbrushed', (selectedElement[0] as HTMLElement)!.innerText);
+  });
+
+  test('navigates with SeaPen dropdown', async () => {
+    loadTimeData.overrideValues({isSeaPenEnabled: true});
+    breadcrumbElement = initElement(PersonalizationBreadcrumbElement, {
+      'path': Paths.SEA_PEN_RESULTS,
+      'seaPenTemplateId': SeaPenTemplateId.kFlower.toString(),
+    });
+    const dropdownIcon = breadcrumbElement.shadowRoot!.querySelector(
+                             '#seaPenDropdown') as HTMLElement;
+    dropdownIcon!.click();
+    const dropdownMenu =
+        breadcrumbElement.shadowRoot!.querySelector('cr-action-menu');
+    const template =
+        (dropdownMenu!.querySelectorAll('button[aria-selected=\'false\']')[0] as
+         HTMLElement);
+
+    const original = PersonalizationRouterElement.instance;
+    const goToRoutePromise = new Promise<[Paths, Object]>(resolve => {
+      PersonalizationRouterElement.instance = () => {
+        return {
+          goToRoute(path: Paths, queryParams: Object = {}) {
+            resolve([path, queryParams]);
+            PersonalizationRouterElement.instance = original;
+          },
+        } as PersonalizationRouterElement;
+      };
+    });
+
+    template!.click();
+
+    const [path, queryParams] = await goToRoutePromise;
+    assertEquals(Paths.SEA_PEN_RESULTS, path);
+    assertDeepEquals({'seaPenTemplateId': template.dataset['id']}, queryParams);
+    assertFalse(
+        !!breadcrumbElement.shadowRoot!.querySelector('cr-action-menu')?.open,
+        'the action menu should be closed');
+  });
+
+  function pressLeftKey(el: HTMLElement) {
+    el.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'left',
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  test('resets tabindex if the focusable breadcrumb is removed', async () => {
+    loadTimeData.overrideValues({isSeaPenEnabled: true});
+    breadcrumbElement = initElement(PersonalizationBreadcrumbElement, {
+      'path': Paths.SEA_PEN_RESULTS,
+      'seaPenTemplateId': SeaPenTemplateId.kFlower.toString(),
+    });
+
+    await waitAfterNextRender(breadcrumbElement);
+
+    // Get all 4 breadcrumbs.
+    let allBreadcrumbs =
+        Array.from(breadcrumbElement.shadowRoot!.querySelectorAll(
+            '.selectable')) as HTMLElement[];
+    assertEquals(4, allBreadcrumbs.length);
+
+    // Check initial tab indices.
+    assertEquals('0', allBreadcrumbs[0]!.getAttribute('tabindex'));
+    assertNotEquals('0', allBreadcrumbs[1]!.getAttribute('tabindex'));
+    assertNotEquals('0', allBreadcrumbs[2]!.getAttribute('tabindex'));
+    assertNotEquals('0', allBreadcrumbs[3]!.getAttribute('tabindex'));
+
+    // Press 'left' to select the sea pen template breadcrumb.
+    const homeBreadcrumb = allBreadcrumbs[0]!;
+    homeBreadcrumb.focus();
+
+    pressLeftKey(homeBreadcrumb);
+
+    assertNotEquals('0', allBreadcrumbs[0]!.getAttribute('tabindex'));
+    assertNotEquals('0', allBreadcrumbs[1]!.getAttribute('tabindex'));
+    assertNotEquals('0', allBreadcrumbs[2]!.getAttribute('tabindex'));
+    assertEquals('0', allBreadcrumbs[3]!.getAttribute('tabindex'));
+
+    assertEquals(allBreadcrumbs[3], breadcrumbElement.$.selector.selectedItem);
+
+    // Go to SeaPenCollection path to remove the sea pen template
+    // breadcrumb.
+    breadcrumbElement.path = Paths.SEA_PEN_COLLECTION;
+    await waitAfterNextRender(breadcrumbElement);
+
+    // There should now be 3 breadcrumbs.
+    allBreadcrumbs = Array.from(breadcrumbElement.shadowRoot!.querySelectorAll(
+                         '.selectable')) as HTMLElement[];
+    assertEquals(3, allBreadcrumbs.length);
+
+    // And tabindex for first breadcrumb should be 0.
+    assertEquals('0', allBreadcrumbs[0]!.getAttribute('tabindex'));
+    assertNotEquals('0', allBreadcrumbs[1]!.getAttribute('tabindex'));
+    assertNotEquals('0', allBreadcrumbs[2]!.getAttribute('tabindex'));
+
+    assertEquals(allBreadcrumbs[0], breadcrumbElement.$.selector.selectedItem);
   });
 });

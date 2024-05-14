@@ -396,10 +396,7 @@ const int kMainIntentCheckDelay = 1;
 
 - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder {
   [super buildMenuWithBuilder:builder];
-
-  if (@available(iOS 15, *)) {
-    [MenuBuilder buildMainMenuWithBuilder:builder];
-  }
+  [MenuBuilder buildMainMenuWithBuilder:builder];
 }
 
 #pragma mark - Testing methods
@@ -442,9 +439,6 @@ const int kMainIntentCheckDelay = 1;
           browser->GetBrowserState());
 
   tracker->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
-
-  tracker->NotifyEvent(
-      feature_engagement::events::kDefaultBrowserVideoPromoConditionsMet);
 }
 
 @end

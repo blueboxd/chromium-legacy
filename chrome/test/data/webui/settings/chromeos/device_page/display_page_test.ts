@@ -4,10 +4,10 @@
 
 import 'chrome://os-settings/lazy_load.js';
 
-import {DevicePageBrowserProxyImpl, displaySettingsProviderMojom, Router, routes, setDisplayApiForTesting, setDisplaySettingsProviderForTesting, SettingsDisplayElement} from 'chrome://os-settings/os_settings.js';
+import {CrLinkRowElement, CrToggleElement, DevicePageBrowserProxyImpl, DisplayLayoutElement, displaySettingsProviderMojom, Router, routes, setDisplayApiForTesting, setDisplaySettingsProviderForTesting, SettingsDisplayElement, SettingsDropdownMenuElement, SettingsSliderElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
-import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {assert} from 'chrome://resources/js/assert.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush, microTask} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -20,7 +20,11 @@ import {TestDevicePageBrowserProxy} from './test_device_page_browser_proxy.js';
 
 import DisplayUnitInfo = chrome.system.display.DisplayUnitInfo;
 
+const kDisplayIdPrefix = '123456789';
+
 suite('<settings-display>', () => {
+  const isRevampWayfindingEnabled =
+      loadTimeData.getBoolean('isRevampWayfindingEnabled');
   let displayPage: SettingsDisplayElement;
   let fakeSystemDisplay: FakeSystemDisplay;
   let browserProxy: any;
@@ -29,7 +33,7 @@ suite('<settings-display>', () => {
   // Add a fake display.
   function addDisplay(displayIndex: number): void {
     const display = {
-      id: 'fakeDisplayId' + displayIndex,
+      id: kDisplayIdPrefix + displayIndex,
       name: 'fakeDisplayName' + displayIndex,
       mirroring: '',
       isPrimary: displayIndex === 1,
@@ -37,46 +41,56 @@ suite('<settings-display>', () => {
       rotation: 0,
       modes: [
         {
+          isNative: true,
           deviceScaleFactor: 1.0,
           widthInNativePixels: 1920,
           heightInNativePixels: 1080,
           width: 1920,
           height: 1080,
           refreshRate: 60,
+          isSelected: true,
         },
         {
+          isNative: true,
           deviceScaleFactor: 1.0,
           widthInNativePixels: 1920,
           heightInNativePixels: 1080,
           width: 1920,
           height: 1080,
           refreshRate: 30,
+          isSelected: true,
         },
         {
+          isNative: true,
           deviceScaleFactor: 1.0,
           widthInNativePixels: 3000,
           heightInNativePixels: 2000,
           width: 3000,
           height: 2000,
           refreshRate: 45,
+          isSelected: true,
         },
         {
+          isNative: true,
           deviceScaleFactor: 1.0,
           widthInNativePixels: 3000,
           heightInNativePixels: 2000,
           width: 3000,
           height: 2000,
           refreshRate: 75,
+          isSelected: true,
         },
         // Include 3 copies of 3000x2000 mode to emulate duplicated modes
         // reported by some monitors.  Only one is marked 'isNative'.
         {
+          isNative: false,
           deviceScaleFactor: 1.0,
           widthInNativePixels: 3000,
           heightInNativePixels: 2000,
           width: 3000,
           height: 2000,
           refreshRate: 100,
+          isSelected: true,
         },
         {
           isNative: true,
@@ -86,14 +100,17 @@ suite('<settings-display>', () => {
           width: 3000,
           height: 2000,
           refreshRate: 100,
+          isSelected: true,
         },
         {
+          isNative: false,
           deviceScaleFactor: 1.0,
           widthInNativePixels: 3000,
           heightInNativePixels: 2000,
           width: 3000,
           height: 2000,
           refreshRate: 100,
+          isSelected: true,
         },
       ],
       bounds: {
@@ -103,6 +120,31 @@ suite('<settings-display>', () => {
         height: 1080,
       },
       availableDisplayZoomFactors: [1, 1.25, 1.5, 2],
+
+      // The properties below were added solely for compilation purposes. Values
+      // may not reflect valid or real states.
+      mirroringSourceId: '',
+      mirroringDestinationIds: [],
+      activeState: chrome.system.display.ActiveState.ACTIVE,
+      isEnabled: true,
+      isUnified: false,
+      dpiX: 0,
+      dpiY: 0,
+      overscan: {
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: 0,
+      },
+      workArea: {
+        left: 0,
+        top: 0,
+        width: 0,
+        height: 0,
+      },
+      hasTouchSupport: false,
+      hasAccelerometerSupport: false,
+      displayZoomFactor: 1,
     };
     fakeSystemDisplay.addDisplayForTest(display);
   }
@@ -118,7 +160,7 @@ suite('<settings-display>', () => {
     Router.getInstance().navigateTo(routes.DISPLAY);
 
     fakeSystemDisplay = new FakeSystemDisplay();
-    setDisplayApiForTesting(fakeSystemDisplay as any);
+    setDisplayApiForTesting(fakeSystemDisplay);
 
     DevicePageBrowserProxyImpl.setInstanceForTesting(
         new TestDevicePageBrowserProxy());
@@ -133,86 +175,302 @@ suite('<settings-display>', () => {
     Router.getInstance().resetRouteForTesting();
   });
 
-  test('display settings histogram tests', async function() {
-    await initPage();
+  suite('Display settings histogram tests', () => {
+    let displayHistogram:
+        Map<displaySettingsProviderMojom.DisplaySettingsType, number>;
+    let externalDisplayHistogram:
+        Map<displaySettingsProviderMojom.DisplaySettingsType, number>;
 
-    // Add a display.
-    addDisplay(1);
-    fakeSystemDisplay.onDisplayChanged.callListeners();
-    await fakeSystemDisplay.getInfoCalled.promise;
-    await fakeSystemDisplay.getLayoutCalled.promise;
+    // Helper function for testing histogram metrics.
+    async function initHistogramTest(): Promise<void> {
+      await initPage();
 
-    // Sanity check display count and the first display is an internal display.
-    assertEquals(1, displayPage.displays.length);
-    assertTrue(displayPage.displays[0]!.isInternal);
+      // Add a display.
+      addDisplay(1);
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
 
-    // Add a second display.
-    addDisplay(2);
-    fakeSystemDisplay.onDisplayChanged.callListeners();
-    await fakeSystemDisplay.getInfoCalled.promise;
-    await fakeSystemDisplay.getLayoutCalled.promise;
-    flush();
+      // Sanity check display count and the first display is an internal
+      // display.
+      assertEquals(1, displayPage.displays.length);
+      assertTrue(displayPage.displays[0]!.isInternal);
 
-    // Sanity check display count and the second display is an external display.
-    assertEquals(2, displayPage.displays.length);
-    assertFalse(displayPage.displays[1]!.isInternal);
+      // Add a second display.
+      addDisplay(2);
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
+      flush();
 
-    // Select the second display.
-    const displayLayout =
-        displayPage.shadowRoot!.querySelector('#displayLayout');
-    assertTrue(!!displayLayout);
-    const displayDiv =
-        strictQuery('#_fakeDisplayId2', displayLayout.shadowRoot, HTMLElement);
-    assertTrue(!!displayDiv);
-    displayDiv.click();
+      // Sanity check display count and the second display is an external
+      // display.
+      assertEquals(2, displayPage.displays.length);
+      assertFalse(displayPage.displays[1]!.isInternal);
 
-    // Sanity check the second display is selected.
-    assertEquals(displayPage.displays[1]!.id, displayPage.selectedDisplay!.id);
-    flush();
+      // Select the second display.
+      const displayLayout =
+          displayPage.shadowRoot!.querySelector('#displayLayout');
+      assertTrue(!!displayLayout);
+      const displayDiv = strictQuery(
+          `#_${kDisplayIdPrefix}2`, displayLayout.shadowRoot, HTMLElement);
+      assertTrue(!!displayDiv);
+      displayDiv.click();
 
-    // Mock user changing display resolution.
-    const displayModeSelector =
-        displayPage.shadowRoot!.getElementById('displayModeSelector') as any;
-    assertTrue(!!displayModeSelector);
-    displayModeSelector.pref = {
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 5,
-    };
-    displayModeSelector.dispatchEvent(new CustomEvent('change'));
+      // Sanity check the second display is selected.
+      assertEquals(
+          displayPage.displays[1]!.id, displayPage.selectedDisplay!.id);
+      flush();
+    }
 
-    fakeSystemDisplay.onDisplayChanged.callListeners();
-    await fakeSystemDisplay.getInfoCalled.promise;
-    await fakeSystemDisplay.getLayoutCalled.promise;
-    flush();
+    setup(async () => {
+      loadTimeData.overrideValues({unifiedDesktopAvailable: true});
 
-    // Verify histogram count for resolution change.
-    const externalDisplayHistogram =
-        displaySettingsProvider.getExternalDisplayHistogram();
-    assertEquals(
-        1,
-        externalDisplayHistogram.get(
-            displaySettingsProviderMojom.DisplaySettingsType.kResolution));
+      await initHistogramTest();
+      displayHistogram = displaySettingsProvider.getDisplayHistogram();
+      externalDisplayHistogram =
+          displaySettingsProvider.getExternalDisplayHistogram();
+    });
 
-    // Mock user changing refresh rate.
-    const refreshRateSelector =
-        displayPage.shadowRoot!.getElementById('refreshRateSelector') as any;
-    assertTrue(!!refreshRateSelector);
-    refreshRateSelector.pref = {
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 1,
-    };
-    refreshRateSelector.dispatchEvent(new CustomEvent('change'));
+    test('page load', async () => {
+      // Verify histogram count for display settings page opened.
+      assertEquals(
+          1,
+          displayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kDisplayPage));
+    });
 
-    fakeSystemDisplay.onDisplayChanged.callListeners();
-    await fakeSystemDisplay.getInfoCalled.promise;
-    await fakeSystemDisplay.getLayoutCalled.promise;
-    flush();
+    test('resolution', async () => {
+      // Mock user changing display resolution.
+      const displayModeSelector =
+          displayPage.shadowRoot!.querySelector<SettingsDropdownMenuElement>(
+              '#displayModeSelector');
+      assertTrue(!!displayModeSelector);
+      displayModeSelector.pref = {
+        key: 'prefs.cros.device_display_resolution',
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: 5,
+      };
+      displayModeSelector.dispatchEvent(new CustomEvent('change'));
 
-    // Verify histogram count for refresh rate change.
-    assertEquals(
-        1,
-        externalDisplayHistogram.get(
-            displaySettingsProviderMojom.DisplaySettingsType.kRefreshRate));
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
+      flush();
+
+      // Verify histogram count for resolution change.
+      assertEquals(
+          1,
+          externalDisplayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kResolution));
+    });
+
+    test('refresh rate', async () => {
+      // Mock user changing refresh rate.
+      const refreshRateSelector =
+          displayPage.shadowRoot!.querySelector<SettingsDropdownMenuElement>(
+              '#refreshRateSelector');
+      assertTrue(!!refreshRateSelector);
+      refreshRateSelector.pref = {
+        key: 'prefs.cros.device_display_resolution',
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: 1,
+      };
+      refreshRateSelector.dispatchEvent(new CustomEvent('change'));
+
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
+      flush();
+
+      // Verify histogram count for refresh rate change.
+      assertEquals(
+          1,
+          externalDisplayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kRefreshRate));
+    });
+
+    test('scaling', async () => {
+      // Mock user changing scaling.
+      const displaySizeSlider =
+          displayPage.shadowRoot!.querySelector<SettingsSliderElement>(
+              '#displaySizeSlider');
+      assertTrue(!!displaySizeSlider);
+      displaySizeSlider.pref = {
+        key: 'prefs.cros.device_display_resolution',
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: 1.2,
+      };
+      displaySizeSlider.dispatchEvent(new CustomEvent('change'));
+
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
+      flush();
+
+      // Verify histogram count for scaling change.
+      assertEquals(
+          1,
+          externalDisplayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kScaling));
+    });
+
+    test('orientation', async () => {
+      // Mock user changing orientation.
+      const orientationSelect =
+          displayPage.shadowRoot!.querySelector<HTMLSelectElement>(
+              '#orientationSelect');
+      assertTrue(!!orientationSelect);
+      orientationSelect.value = '90';
+      orientationSelect.dispatchEvent(new CustomEvent('change'));
+
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
+      flush();
+
+      // Verify histogram count for orientation change.
+      const externalDisplayHistogram =
+          displaySettingsProvider.getExternalDisplayHistogram();
+      assertEquals(
+          1,
+          externalDisplayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kOrientation));
+
+      const externalDisplayOrientationHistogram =
+          displaySettingsProvider.getDisplayOrientationHistogram(
+              /*is_internal=*/ false);
+      assertEquals(
+          1,
+          externalDisplayOrientationHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsOrientationOption
+                  .k90Degree));
+    });
+
+    test('overscan', () => {
+      // Mock user opening overscan dialog.
+      const displayOverscan =
+          displayPage.shadowRoot!.querySelector<CrLinkRowElement>('#overscan');
+      assertTrue(!!displayOverscan);
+      displayOverscan.click();
+      flush();
+
+      // Verify histogram count for overscan setting.
+      assertEquals(
+          1,
+          externalDisplayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kOverscan));
+    });
+
+    test('night light', () => {
+      // Mock user toggling night light button.
+      const displayNightLight = strictQuery(
+          'settings-display-night-light', displayPage.shadowRoot, HTMLElement);
+      assertTrue(!!displayNightLight);
+      const nightLightToggleButton =
+          displayNightLight.shadowRoot!.getElementById(
+              'nightLightToggleButton') as SettingsToggleButtonElement;
+      assertTrue(!!nightLightToggleButton);
+      nightLightToggleButton.click();
+      flush();
+
+      // Verify histogram count for night light setting.
+      assertEquals(
+          1,
+          externalDisplayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kNightLight));
+
+      const externalDisplayNightLightStatusHistogram =
+          displaySettingsProvider.getDisplayNightLightStatusHistogram(
+              /*is_internal=*/ false);
+      assertEquals(
+          1,
+          externalDisplayNightLightStatusHistogram.get(
+              /*night_light_status=*/ true));
+
+      // Mock user updating night light schedule.
+      const schedule = displayNightLight.shadowRoot!
+                           .querySelector<SettingsDropdownMenuElement>(
+                               '#nightLightScheduleTypeDropDown');
+      assertTrue(!!schedule);
+      schedule.pref = {
+        key: 'ash.night_light.schedule_type',
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: 1,
+      };
+
+      // Verify histogram count for night light setting.
+      assertEquals(
+          1,
+          externalDisplayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType
+                  .kNightLightSchedule));
+
+      const externalDisplayNightLightScheduleHistogram =
+          displaySettingsProvider.getDisplayNightLightScheduleHistogram(
+              /*is_internal=*/ false);
+      assertEquals(
+          1,
+          externalDisplayNightLightScheduleHistogram.get(
+              displaySettingsProviderMojom
+                  .DisplaySettingsNightLightScheduleOption.kSunsetToSunrise));
+    });
+
+    test('mirror mode', () => {
+      // Mock user toggling mirror mode setting.
+      const mirrorDisplayControl =
+          displayPage.shadowRoot!.querySelector<HTMLElement>(
+              isRevampWayfindingEnabled ? '#mirrorDisplayToggle' :
+                                          '#displayMirrorCheckbox');
+      assertTrue(!!mirrorDisplayControl);
+      mirrorDisplayControl.click();
+
+      // Verify histogram count for mirror mode setting.
+      assertEquals(
+          1,
+          displayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kMirrorMode));
+      assertEquals(
+          1,
+          displaySettingsProvider.getDisplayMirrorModeStatusHistogram().get(
+              /*mirror_mode_status=*/ true));
+    });
+
+    test('unified mode', () => {
+      // Mock user toggling unified mode setting.
+      const displayUnifiedDesktopToggle =
+          displayPage.shadowRoot!.querySelector<CrToggleElement>(
+              '#displayUnifiedDesktopToggle');
+      assertTrue(!!displayUnifiedDesktopToggle);
+      displayUnifiedDesktopToggle.click();
+
+      // Verify histogram count for unified mode setting.
+      assertEquals(
+          1,
+          displayHistogram.get(
+              displaySettingsProviderMojom.DisplaySettingsType.kUnifiedMode));
+      assertEquals(
+          1,
+          displaySettingsProvider.getDisplayUnifiedModeStatusHistogram().get(
+              /*mirror_mode_status=*/ true));
+    });
+
+    test('primary display', () => {
+      // Mock user changing primary display.
+      const primaryDisplaySelect =
+          displayPage.shadowRoot!.querySelector<HTMLSelectElement>(
+              '#primaryDisplaySelect');
+      assertTrue(!!primaryDisplaySelect);
+      primaryDisplaySelect.value = '1';
+      primaryDisplaySelect.dispatchEvent(new CustomEvent('change'));
+      flush();
+
+      // Verify histogram count for changing primary display setting.
+      assertEquals(
+          1,
+          displayHistogram.get(displaySettingsProviderMojom.DisplaySettingsType
+                                   .kPrimaryDisplay));
+    });
   });
 
   test('display tests', async function() {
@@ -344,7 +602,7 @@ suite('<settings-display>', () => {
               displayPage.shadowRoot!.querySelector('#displayLayout');
           assertTrue(!!displayLayout);
           const displayDiv = strictQuery(
-              '#_fakeDisplayId2', displayLayout.shadowRoot, HTMLElement);
+              `#_${kDisplayIdPrefix}2`, displayLayout.shadowRoot, HTMLElement);
           assertTrue(!!displayDiv);
           displayDiv.click();
           assertEquals(
@@ -387,10 +645,12 @@ suite('<settings-display>', () => {
           assertEquals(90, displayPage.displays[1]!.rotation);
 
           // Mirror the displays.
-          const displayMirrorCheckbox = strictQuery(
-              '#displayMirrorCheckbox', displayPage.shadowRoot, HTMLElement);
-          assertTrue(!!displayMirrorCheckbox);
-          displayMirrorCheckbox.click();
+          const mirrorDisplayControl = strictQuery(
+              isRevampWayfindingEnabled ? '#mirrorDisplayToggle' :
+                                          '#displayMirrorCheckbox',
+              displayPage.shadowRoot, HTMLElement);
+          assertTrue(!!mirrorDisplayControl);
+          mirrorDisplayControl.click();
           flush();
 
           fakeSystemDisplay.onDisplayChanged.callListeners();
@@ -470,12 +730,13 @@ suite('<settings-display>', () => {
     assertEquals(2, displayPage.displays.length);
     assertTrue(displayPage.shouldShowArrangementSection());
 
-    const deepLinkElement =
-        displayPage.shadowRoot!.querySelector('#displayMirrorCheckbox')!
-            .shadowRoot!.querySelector('#checkbox');
-    await waitAfterNextRender(deepLinkElement as HTMLElement);
+    const deepLinkElement = displayPage.shadowRoot!.querySelector<HTMLElement>(
+        isRevampWayfindingEnabled ? '#mirrorDisplayToggle' :
+                                    '#displayMirrorCheckbox');
+    assertTrue(!!deepLinkElement);
+    await waitAfterNextRender(deepLinkElement);
     assertEquals(
-        deepLinkElement, getDeepActiveElement(),
+        deepLinkElement, displayPage.shadowRoot!.activeElement,
         'Display mirroring checkbox should be focused for settingId=428.');
   });
 
@@ -512,13 +773,16 @@ suite('<settings-display>', () => {
         })
         .then(() => {
           const displayLayout =
-              displayPage.shadowRoot!.querySelector('#displayLayout') as any;
+              displayPage.shadowRoot!.querySelector<DisplayLayoutElement>(
+                  '#displayLayout');
           assert(!!displayLayout);
           const display = strictQuery(
-              '#_fakeDisplayId2', displayLayout.shadowRoot, HTMLElement);
-          const layout = displayLayout.displayLayoutMap_.get('fakeDisplayId2');
+              `#_${kDisplayIdPrefix}2`, displayLayout.shadowRoot, HTMLElement);
+          const layout = displayLayout.getDisplayLayoutMapForTesting().get(
+              `${kDisplayIdPrefix}2`);
+          assert(layout);
 
-          assertEquals(layout.parentId, 'fakeDisplayId1');
+          assertEquals(layout.parentId, `${kDisplayIdPrefix}1`);
           assertEquals(layout.position, 'right');
 
           const offset =

@@ -237,10 +237,10 @@ ClipboardWin::~ClipboardWin() {
 void ClipboardWin::OnPreShutdown() {}
 
 // DataTransferEndpoint is not used on this platform.
-absl::optional<DataTransferEndpoint> ClipboardWin::GetSource(
+std::optional<DataTransferEndpoint> ClipboardWin::GetSource(
     ClipboardBuffer buffer) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 const ClipboardSequenceNumberToken& ClipboardWin::GetSequenceNumber(
@@ -528,7 +528,7 @@ void ClipboardWin::ReadCustomData(ClipboardBuffer buffer,
     return;
 
   base::win::ScopedHGlobal<const uint8_t*> locked_data(hdata);
-  if (absl::optional<std::u16string> maybe_result =
+  if (std::optional<std::u16string> maybe_result =
           ReadCustomDataForType(locked_data, type);
       maybe_result) {
     *result = std::move(*maybe_result);
@@ -685,38 +685,12 @@ void ClipboardWin::WriteText(const char* text_data, size_t text_len) {
   WriteToClipboard(ClipboardFormatType::PlainTextType(), glob);
 }
 
-void ClipboardWin::WriteHTML(const char* markup_data,
-                             size_t markup_len,
-                             const char* url_data,
-                             size_t url_len) {
-  std::string markup(markup_data, markup_len);
-  std::string url;
-
-  if (url_len > 0)
-    url.assign(url_data, url_len);
-
-  std::string html_fragment = clipboard_util::HtmlToCFHtml(
-      markup, url, ClipboardContentType::kSanitized);
-  HGLOBAL glob = CreateGlobalData(html_fragment);
-
-  WriteToClipboard(ClipboardFormatType::HtmlType(), glob);
-}
-
-void ClipboardWin::WriteUnsanitizedHTML(const char* markup_data,
-                                        size_t markup_len,
-                                        const char* url_data,
-                                        size_t url_len) {
-  std::string markup(markup_data, markup_len);
-  std::string url;
-
-  if (url_len > 0) {
-    url.assign(url_data, url_len);
-  }
-
+void ClipboardWin::WriteHTML(base::StringPiece markup,
+                             std::optional<base::StringPiece> source_url) {
   // Add Windows specific headers to the HTML payload before writing to the
   // clipboard.
-  std::string html_fragment = clipboard_util::HtmlToCFHtml(
-      markup, url, ClipboardContentType::kUnsanitized);
+  std::string html_fragment =
+      clipboard_util::HtmlToCFHtml(markup, source_url.value_or(""));
   HGLOBAL glob = CreateGlobalData(html_fragment);
 
   WriteToClipboard(ClipboardFormatType::HtmlType(), glob);

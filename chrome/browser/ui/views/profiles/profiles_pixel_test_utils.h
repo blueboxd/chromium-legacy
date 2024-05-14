@@ -10,6 +10,7 @@
 
 #include "base/scoped_environment_variable_override.h"
 #include "chrome/browser/signin/signin_browser_test_base.h"
+#include "components/signin/public/identity_manager/tribool.h"
 
 namespace base {
 class CommandLine;
@@ -50,7 +51,10 @@ AccountInfo SignInWithAccount(
     AccountManagementStatus management_status =
         AccountManagementStatus::kNonManaged,
     std::optional<signin::ConsentLevel> consent_level =
-        signin::ConsentLevel::kSignin);
+        signin::ConsentLevel::kSignin,
+    signin::Tribool
+        can_show_history_sync_opt_ins_without_minor_mode_restrictions =
+            signin::Tribool::kTrue);
 
 // Sets up the parameters that are passed to the command line. For example,
 // to enable dark mode, we need to pass `kForceDarkMode` to the command line.
@@ -73,9 +77,7 @@ void InitPixelTestFeatures(const PixelTestParam& params,
 //   constructor, removing the need to call `SetUpPixelTestCommandLine()` and
 //   `InitPixelTestFeatures()`.
 // - providing helpers to set up the account, see `SignInWithAccount()`.
-template <typename T,
-          typename =
-              std::enable_if_t<std::is_base_of_v<InProcessBrowserTest, T>>>
+template <typename T>
 class ProfilesPixelTestBaseT : public SigninBrowserTestBaseT<T> {
  public:
   template <typename... Args>
@@ -93,9 +95,13 @@ class ProfilesPixelTestBaseT : public SigninBrowserTestBaseT<T> {
       AccountManagementStatus management_status =
           AccountManagementStatus::kNonManaged,
       std::optional<signin::ConsentLevel> consent_level =
-          signin::ConsentLevel::kSignin) {
-    return ::SignInWithAccount(*this->identity_test_env(), management_status,
-                               consent_level);
+          signin::ConsentLevel::kSignin,
+      signin::Tribool
+          can_show_history_sync_opt_ins_without_minor_mode_restrictions =
+              signin::Tribool::kTrue) {
+    return ::SignInWithAccount(
+        *this->identity_test_env(), management_status, consent_level,
+        can_show_history_sync_opt_ins_without_minor_mode_restrictions);
   }
 
   // SigninBrowserTestBaseT overrides:

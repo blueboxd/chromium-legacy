@@ -31,9 +31,9 @@ class RoundedImageView;
 // the SavedDeskRegularIconView may have only an icon, or an icon with a count
 // label; while the SavedDeskOverflowIconView has only a count label.
 class SavedDeskIconView : public views::View {
- public:
-  METADATA_HEADER(SavedDeskIconView);
+  METADATA_HEADER(SavedDeskIconView, views::View)
 
+ public:
   // Create an icon view for an app. Sets `count` to `count_`. `sorting_key` is
   // the key that is used for sorting by the icon container.
   SavedDeskIconView(int count, size_t sorting_key);
@@ -80,7 +80,7 @@ class SavedDeskIconView : public views::View {
   size_t sorting_key_;
 
   // Owned by the views hierarchy.
-  raw_ptr<views::Label, ExperimentalAsh> count_label_ = nullptr;
+  raw_ptr<views::Label> count_label_ = nullptr;
 
  private:
   friend class SavedDeskIconViewTestApi;
@@ -89,9 +89,9 @@ class SavedDeskIconView : public views::View {
 };
 
 class SavedDeskRegularIconView : public SavedDeskIconView {
- public:
-  METADATA_HEADER(SavedDeskRegularIconView);
+  METADATA_HEADER(SavedDeskRegularIconView, SavedDeskIconView)
 
+ public:
   // `on_icon_loaded` is the callback for updating the icon container.
   SavedDeskRegularIconView(
       const ui::ColorProvider* incognito_window_color_provider,
@@ -109,7 +109,7 @@ class SavedDeskRegularIconView : public SavedDeskIconView {
   const std::string& icon_identifier() const { return icon_identifier_; }
 
   // views::View:
-  void Layout() override;
+  void Layout(PassKey) override;
 
   // SavedDeskIconView:
   void OnThemeChanged() override;
@@ -141,7 +141,7 @@ class SavedDeskRegularIconView : public SavedDeskIconView {
   // this will be an app id.
   std::string icon_identifier_;
 
-  raw_ptr<RoundedImageView, ExperimentalAsh> icon_view_ = nullptr;
+  raw_ptr<RoundedImageView> icon_view_ = nullptr;
 
   // Callback from the icon container that updates the icon order and overflow
   // icon.
@@ -154,9 +154,9 @@ class SavedDeskRegularIconView : public SavedDeskIconView {
 };
 
 class SavedDeskOverflowIconView : public SavedDeskIconView {
- public:
-  METADATA_HEADER(SavedDeskOverflowIconView);
+  METADATA_HEADER(SavedDeskOverflowIconView, SavedDeskIconView)
 
+ public:
   // Create an icon view that only has a count and an optional plus.
   SavedDeskOverflowIconView(int count, bool show_plus);
 
@@ -166,7 +166,7 @@ class SavedDeskOverflowIconView : public SavedDeskIconView {
   ~SavedDeskOverflowIconView() override;
 
   // views::View:
-  void Layout() override;
+  void Layout(PassKey) override;
 
   // SavedDeskIconView:
   void UpdateCount(int count) override;

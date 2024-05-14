@@ -36,6 +36,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/common/pref_names.h"
+#include "components/app_launch_prefetch/app_launch_prefetch.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/common/extension_features.h"
 #include "ui/views/win/hwnd_util.h"
@@ -278,8 +279,9 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     reconnect_command_line.AppendSwitchPath(::switches::kUserDataDir,
                                             profile_directory_.DirName());
 #if BUILDFLAG(IS_WIN)
-    reconnect_command_line.AppendArg(
-        ::switches::kPrefetchArgumentBrowserBackground);
+    reconnect_command_line.AppendArgNative(
+        app_launch_prefetch::GetPrefetchSwitch(
+            app_launch_prefetch::SubprocessType::kBrowserBackground));
 #endif
     base::Value::List args;
     for (const auto& arg : reconnect_command_line.argv()) {
@@ -293,9 +295,9 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     bool success =
         base::JSONWriter::Write(std::move(args), &encoded_reconnect_command);
     DCHECK(success);
-    base::Base64Encode(encoded_reconnect_command, &encoded_reconnect_command);
     command_line.AppendArg(
-        base::StrCat({"--reconnect-command=", encoded_reconnect_command}));
+        base::StrCat({"--reconnect-command=",
+                      base::Base64Encode(encoded_reconnect_command)}));
   }
 
   if (send_connect_id && !connect_id_.empty()) {

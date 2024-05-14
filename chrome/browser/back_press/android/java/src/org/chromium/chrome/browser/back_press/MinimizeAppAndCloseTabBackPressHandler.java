@@ -12,13 +12,12 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ResettersForTesting;
-import org.chromium.base.TimeUtils;
+import org.chromium.base.cached_flags.BooleanCachedFieldTrialParameter;
 import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
@@ -36,7 +35,7 @@ import java.util.function.Predicate;
  */
 public class MinimizeAppAndCloseTabBackPressHandler implements BackPressHandler, Destroyable {
     public static final BooleanCachedFieldTrialParameter SYSTEM_BACK =
-            new BooleanCachedFieldTrialParameter(
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
                     ChromeFeatureList.BACK_GESTURE_REFACTOR, "system_back", false);
 
     static final String HISTOGRAM = "Android.BackPress.MinimizeAppAndCloseTab";
@@ -50,7 +49,6 @@ public class MinimizeAppAndCloseTabBackPressHandler implements BackPressHandler,
     private final ObservableSupplier<Tab> mActivityTabSupplier;
     private final Runnable mCallbackOnBackPress;
     private final boolean mUseSystemBack;
-    private final Supplier<Long> mLastBackPressSupplier;
 
     private static Integer sVersionForTesting;
 
@@ -131,15 +129,13 @@ public class MinimizeAppAndCloseTabBackPressHandler implements BackPressHandler,
             ObservableSupplier<Tab> activityTabSupplier,
             Predicate<Tab> backShouldCloseTab,
             Callback<Tab> sendToBackground,
-            Runnable callbackOnBackPress,
-            Supplier<Long> lastBackPressMsSupplier) {
+            Runnable callbackOnBackPress) {
         mBackShouldCloseTab = backShouldCloseTab;
         mSendToBackground = sendToBackground;
         mActivityTabSupplier = activityTabSupplier;
         mUseSystemBack = shouldUseSystemBack();
         mBackPressSupplier.set(!mUseSystemBack);
         mCallbackOnBackPress = callbackOnBackPress;
-        mLastBackPressSupplier = lastBackPressMsSupplier;
         if (mUseSystemBack) {
             mActivityTabSupplier.addObserver(mOnTabChanged);
         }
@@ -160,12 +156,7 @@ public class MinimizeAppAndCloseTabBackPressHandler implements BackPressHandler,
             // TAB history handler has a higher priority and should navigate page back before
             // minimizing app and closing tab.
             if (currentTab.canGoBack()) {
-                long interval =
-                        mLastBackPressSupplier.get() == -1
-                                ? -1
-                                : TimeUtils.elapsedRealtimeMillis() - mLastBackPressSupplier.get();
-                var msg = "Tab should be navigated back before closing or exiting app; interval %s";
-                assert false : String.format(msg, interval);
+                assert false : "Tab should be navigated back before closing or exiting app";
                 if (BackPressManager.correctTabNavigationOnFallback()) {
                     return BackPressResult.FAILURE;
                 }

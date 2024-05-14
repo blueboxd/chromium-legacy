@@ -49,6 +49,9 @@ chromium-metrics-reviews@google.com.
   <int value="4"
       label="Returned result as not enabled because feature was disabled by
              enterprise policy"/>
+  <int value="5"
+      label="Returned result as not enabled because model execution
+             capability was disabled for the user account"/>
 </enum>
 
 <enum name="FeaturesSettingsVisibilityResult">
@@ -60,6 +63,9 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Visible because field trial is enabled"/>
   <int value="5"
       label="Not visible because feature was disabled by enterprise policy"/>
+  <int value="6"
+      label="Not visible because model execution capability was disabled for
+             the user account"/>
 </enum>
 
 <enum name="HintCacheStoreEntryType">
@@ -92,6 +98,14 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="Service Crash"/>
   <int value="8" label="GPU blocked"/>
   <int value="9" label="Failed to load library"/>
+</enum>
+
+<enum name="OnDeviceTextSafetyModelMetadataValidity">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="No metadata"/>
+  <int value="2" label="Wrong metadata type"/>
+  <int value="3" label="No feature configs"/>
+  <int value="4" label="Valid"/>
 </enum>
 
 <enum name="OptimizationGuideAccessTokenResult">
@@ -239,6 +253,23 @@ chromium-metrics-reviews@google.com.
   <int value="10" label="The request was cancelled"/>
 </enum>
 
+<enum name="OptimizationGuideModelQualityLogsUploadStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="UploadSuccessful">Logs upload was successful.</int>
+  <int value="2" label="Logging Not Enabled">
+    Upload is disabled due to logging feature not enabled.
+  </int>
+  <int value="3" label="Net Error">
+    Upload was not successful because of network error.
+  </int>
+  <int value="4" label="No User Metrics Consent">
+    Upload was not allowed due to user metrics consent.
+  </int>
+  <int value="5" label="Disabled due to Enterprise Policy">
+    Upload was disabled due to enterprise policy.
+  </int>
+</enum>
+
 <enum name="OptimizationGuideOnDeviceAddContextResult">
   <int value="0" label="Used Server"/>
   <int value="1" label="Used on-device">
@@ -275,6 +306,27 @@ chromium-metrics-reviews@google.com.
     The Session was destroyed while waiting for a response. This likely means
     the user closed the bubble before the response completed.
   </int>
+  <int value="9" label="Used on-device, but output considered unsafe">
+    On-device model was used, it completed successfully, but considered unsafe.
+  </int>
+  <int value="10" label="Used on-device, but output contained PII">
+    On-device model was used, but was cancelled because it surfaced PII.
+  </int>
+  <int value="11" label="Used on-device, but output contained repeats">
+    On-device was used, but the output was rejected because it had repeats.
+  </int>
+  <int value="12"
+      label="Used on-device, but completed output did not have required safety
+             scores">
+    On-device was used, but the output was rejected because the completed
+    response did not have safety scores.
+  </int>
+  <int value="13"
+      label="Used on-device and got output, but the detected output language
+             is not supported by the safety model">
+    Used on-device and got output, but the detected output language is not
+    supported by the safety model
+  </int>
 </enum>
 
 <enum name="OptimizationGuideOnDeviceModelEligibilityReason">
@@ -297,6 +349,40 @@ chromium-metrics-reviews@google.com.
   </int>
   <int value="7" label="Too many recent timeouts">
     The service took too long to respond too many times in a row.
+  </int>
+  <int value="8" label="Safety model not available">
+    The on-device safety model is required but not available.
+  </int>
+  <int value="9" label="Safety config not available for feature">
+    The on-device safety model was available but did not contain a config for
+    the feature.
+  </int>
+  <int value="10" label="Language detection model not available for feature">
+    The on-device safety model is available, but it requires specific output
+    languages and the language detection model is unavailable.
+  </int>
+  <int value="11" label="On-device execution is not enabled for this feature">
+    The feature is enabled, and on-device execution is available, but it is not
+    enabled for this feature.
+  </int>
+</enum>
+
+<enum name="OptimizationGuideOnDeviceModelStatus">
+  <int value="0" label="Ready">The model is ready to use.</int>
+  <int value="1" label="Not eligible for installation">
+    The model is not eligible for installation.
+  </int>
+  <int value="2" label="Install not done">
+    The model installation has not been completed.
+  </int>
+  <int value="3" label="Model not registered">
+    The model installer was not registered, even though the client would be
+    eligible to install right now. This likely means the state of the system has
+    changed recently.
+  </int>
+  <int value="4" label="Installed too late">
+    The model is ready, but it wasn't ready early enough for
+    OnDeviceModelServiceController to use it.
   </int>
 </enum>
 
@@ -541,6 +627,20 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Base64 decoding error"/>
 </enum>
 
+<enum name="OptimizationGuideTextSafetyInferenceResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Encoding failed"/>
+  <int value="2" label="Model creation failed"/>
+  <int value="3" label="Model execution failed"/>
+  <int value="4" label="Regression failed"/>
+</enum>
+
+<enum name="OptimizationGuideUserFeedback">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Thumbs Up"/>
+  <int value="2" label="Thumbs Down"/>
+</enum>
+
 <enum name="OptimizationType">
   <int value="0" label="TYPE_UNSPECIFIED"/>
   <int value="1" label="NOSCRIPT"/>
@@ -589,6 +689,8 @@ chromium-metrics-reviews@google.com.
   <int value="44" label="CAPITAL_ONE_CREDIT_CARD_GROCERY_BENEFITS"/>
   <int value="45" label="CAPITAL_ONE_CREDIT_CARD_ENTERTAINMENT_BENEFITS"/>
   <int value="46" label="CAPITAL_ONE_CREDIT_CARD_STREAMING_BENEFITS"/>
+  <int value="47" label="AMERICAN_EXPRESS_CREDIT_CARD_FLIGHT_BENEFITS"/>
+  <int value="48" label="AMERICAN_EXPRESS_CREDIT_CARD_SUBSCRIPTION_BENEFITS"/>
 </enum>
 
 </enums>

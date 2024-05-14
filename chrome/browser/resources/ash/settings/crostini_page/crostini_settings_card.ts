@@ -7,22 +7,23 @@
  * 'crostini-settings-card' is the card element containing crostini settings.
  */
 
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/ash/common/cr_elements/policy/cr_policy_indicator.js';
 import '../os_settings_page/settings_card.js';
 import '../settings_shared.css.js';
-import 'chrome://resources/cr_components/localized_link/localized_link.js';
+import 'chrome://resources/ash/common/cr_elements/localized_link/localized_link.js';
 
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
 import {isCrostiniAllowed, isCrostiniSupported, isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {RouteOriginMixin} from '../common/route_origin_mixin.js';
+import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, Router, routes} from '../router.js';
 
@@ -75,7 +76,9 @@ export class CrostiniSettingsCardElement extends
 
       showBruschetta_: {
         type: Boolean,
-        value: loadTimeData.getBoolean('showBruschetta'),
+        value() {
+          return loadTimeData.getBoolean('showBruschetta');
+        },
       },
 
       isRevampWayfindingEnabled_: {
@@ -91,7 +94,8 @@ export class CrostiniSettingsCardElement extends
   private disableCrostiniInstall_: boolean;
   private isCrostiniAllowed_: boolean;
   private isCrostiniSupported_: boolean;
-  private isRevampWayfindingEnabled_: boolean;
+  private readonly isRevampWayfindingEnabled_: boolean;
+  private readonly showBruschetta_: boolean;
 
   constructor() {
     super();
@@ -139,6 +143,7 @@ export class CrostiniSettingsCardElement extends
   private onEnableClick_(event: Event): void {
     this.browserProxy_.requestCrostiniInstallerView();
     event.stopPropagation();
+    recordSettingChange(Setting.kSetUpCrostini);
   }
 
   private onSubpageClick_(event: Event): void {

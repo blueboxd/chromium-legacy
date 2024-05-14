@@ -22,6 +22,7 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/test/test_context_support.h"
 #include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -95,14 +96,13 @@ class TestBufferCollection {
   fuchsia::sysmem::AllocatorPtr sysmem_allocator_;
   fuchsia::sysmem::BufferCollectionSyncPtr buffers_collection_;
 
-  absl::optional<fuchsia::sysmem::BufferCollectionInfo_2>
+  std::optional<fuchsia::sysmem::BufferCollectionInfo_2>
       buffer_collection_info_;
 };
 
 class TestSharedImageInterface : public gpu::SharedImageInterface {
  public:
   TestSharedImageInterface() = default;
-  ~TestSharedImageInterface() override = default;
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
       viz::SharedImageFormat format,
@@ -114,7 +114,12 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       base::StringPiece debug_label,
       gpu::SurfaceHandle surface_handle) override {
     ADD_FAILURE();
-    return base::MakeRefCounted<gpu::ClientSharedImage>(gpu::Mailbox());
+    return base::MakeRefCounted<gpu::ClientSharedImage>(
+        gpu::Mailbox(),
+        gpu::ClientSharedImage::Metadata(format, size, color_space,
+                                         surface_origin, alpha_type, usage),
+
+        holder_);
   }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
@@ -127,7 +132,12 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       base::StringPiece debug_label,
       base::span<const uint8_t> pixel_data) override {
     ADD_FAILURE();
-    return base::MakeRefCounted<gpu::ClientSharedImage>(gpu::Mailbox());
+    return base::MakeRefCounted<gpu::ClientSharedImage>(
+        gpu::Mailbox(),
+        gpu::ClientSharedImage::Metadata(format, size, color_space,
+                                         surface_origin, alpha_type, usage),
+
+        holder_);
   }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
@@ -142,7 +152,12 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       gfx::BufferUsage buffer_usage,
       gfx::GpuMemoryBufferHandle buffer_handle) override {
     ADD_FAILURE();
-    return base::MakeRefCounted<gpu::ClientSharedImage>(gpu::Mailbox());
+    return base::MakeRefCounted<gpu::ClientSharedImage>(
+        gpu::Mailbox(),
+        gpu::ClientSharedImage::Metadata(format, size, color_space,
+                                         surface_origin, alpha_type, usage),
+
+        holder_);
   }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
@@ -156,7 +171,28 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       gfx::GpuMemoryBufferHandle buffer_handle) override {
     auto result = GenerateMailboxForGMBHandle(std::move(buffer_handle));
     mailboxes_.insert(result);
-    return base::MakeRefCounted<gpu::ClientSharedImage>(result);
+    return base::MakeRefCounted<gpu::ClientSharedImage>(
+        result,
+        gpu::ClientSharedImage::Metadata(format, size, color_space,
+                                         surface_origin, alpha_type, usage),
+        holder_);
+  }
+
+  SharedImageInterface::SharedImageMapping CreateSharedImage(
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      base::StringPiece debug_label) override {
+    return {
+        base::MakeRefCounted<gpu::ClientSharedImage>(
+            gpu::Mailbox(),
+            gpu::ClientSharedImage::Metadata(format, size, color_space,
+                                             surface_origin, alpha_type, usage),
+            holder_),
+        base::WritableSharedMemoryMapping()};
   }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
@@ -170,7 +206,15 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       base::StringPiece debug_label) override {
     auto result = GenerateMailboxForGMBHandle(gpu_memory_buffer->CloneHandle());
     mailboxes_.insert(result);
-    return base::MakeRefCounted<gpu::ClientSharedImage>(result);
+    return base::MakeRefCounted<gpu::ClientSharedImage>(
+        result,
+        gpu::ClientSharedImage::Metadata(viz::GetSinglePlaneSharedImageFormat(
+                                             gpu_memory_buffer->GetFormat()),
+                                         gpu_memory_buffer->GetSize(),
+                                         color_space, surface_origin,
+                                         alpha_type, usage),
+
+        holder_);
   }
 
   void UpdateSharedImage(const gpu::SyncToken& sync_token,
@@ -183,10 +227,17 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
     ADD_FAILURE();
   }
 
-  void AddReferenceToSharedImage(const gpu::SyncToken& sync_token,
-                                 const gpu::Mailbox& mailbox,
-                                 uint32_t usage) override {
+  scoped_refptr<gpu::ClientSharedImage> AddReferenceToSharedImage(
+      const gpu::SyncToken& sync_token,
+      const gpu::Mailbox& mailbox,
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage) override {
     ADD_FAILURE();
+    return nullptr;
   }
 
   void DestroySharedImage(const gpu::SyncToken& sync_token,
@@ -201,14 +252,15 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
     DestroySharedImage(sync_token, client_shared_image->mailbox());
   }
 
-  SwapChainMailboxes CreateSwapChain(viz::SharedImageFormat format,
-                                     const gfx::Size& size,
-                                     const gfx::ColorSpace& color_space,
-                                     GrSurfaceOrigin surface_origin,
-                                     SkAlphaType alpha_type,
-                                     uint32_t usage) override {
+  gpu::SharedImageInterface::SwapChainSharedImages CreateSwapChain(
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage) override {
     ADD_FAILURE();
-    return SwapChainMailboxes();
+    return gpu::SharedImageInterface::SwapChainSharedImages(nullptr, nullptr);
   }
   void PresentSwapChain(const gpu::SyncToken& sync_token,
                         const gpu::Mailbox& mailbox) override {
@@ -257,6 +309,9 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
     return shared_image_capabilities_;
   }
 
+ protected:
+  ~TestSharedImageInterface() override = default;
+
  private:
   gpu::Mailbox GenerateMailboxForGMBHandle(
       gfx::GpuMemoryBufferHandle buffer_handle) {
@@ -286,7 +341,9 @@ class TestRasterContextProvider
     : public base::RefCountedThreadSafe<TestRasterContextProvider>,
       public viz::RasterContextProvider {
  public:
-  TestRasterContextProvider() {}
+  TestRasterContextProvider()
+      : shared_image_interface_(
+            base::MakeRefCounted<TestSharedImageInterface>()) {}
 
   TestRasterContextProvider(TestRasterContextProvider&) = delete;
   TestRasterContextProvider& operator=(TestRasterContextProvider&) = delete;
@@ -324,7 +381,7 @@ class TestRasterContextProvider
     return nullptr;
   }
   gpu::SharedImageInterface* SharedImageInterface() override {
-    return &shared_image_interface_;
+    return shared_image_interface_.get();
   }
   const gpu::Capabilities& ContextCapabilities() const override {
     ADD_FAILURE();
@@ -358,7 +415,7 @@ class TestRasterContextProvider
       std::move(on_destroyed_).Run();
   }
 
-  TestSharedImageInterface shared_image_interface_;
+  scoped_refptr<TestSharedImageInterface> shared_image_interface_;
   viz::TestContextSupport gpu_context_support_;
 
   base::OnceClosure on_destroyed_;

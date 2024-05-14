@@ -154,7 +154,7 @@ class BoundsAnimatorDisabler {
   // The previous animation duration.
   base::TimeDelta old_duration_;
   // The bounds animator which gets used.
-  raw_ptr<views::BoundsAnimator, ExperimentalAsh> bounds_animator_;
+  raw_ptr<views::BoundsAnimator> bounds_animator_;
 };
 
 void ReportMoveAnimationSmoothness(int smoothness) {
@@ -257,7 +257,7 @@ class ShelfView::ViewOpacityResetter : public views::ViewObserver {
   }
 
  private:
-  raw_ptr<views::View, ExperimentalAsh> view_;
+  raw_ptr<views::View> view_;
   base::ScopedObservation<views::View, views::ViewObserver> view_observer_{
       this};
 };
@@ -276,7 +276,7 @@ class ShelfView::FadeInAnimationDelegate
     shelf_view_->OnFadeInAnimationEnded();
   }
 
-  raw_ptr<ShelfView, ExperimentalAsh> shelf_view_ = nullptr;
+  raw_ptr<ShelfView> shelf_view_ = nullptr;
 };
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
@@ -307,7 +307,7 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
   void AnimationCanceled(const Animation* animation) override {}
 
  private:
-  raw_ptr<ShelfView, ExperimentalAsh> shelf_view_;
+  raw_ptr<ShelfView> shelf_view_;
   std::unique_ptr<views::View> view_;
 };
 
@@ -334,8 +334,8 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
   }
 
  private:
-  raw_ptr<ShelfView, ExperimentalAsh> shelf_view_;
-  raw_ptr<views::View, ExperimentalAsh> view_;
+  raw_ptr<ShelfView> shelf_view_;
+  raw_ptr<views::View> view_;
 };
 
 // static
@@ -447,7 +447,7 @@ ShelfAppButton* ShelfView::GetShelfAppButton(const ShelfID& id) {
     return nullptr;
 
   views::View* const view = view_model_->view_at(index);
-  DCHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  DCHECK(views::IsViewClass<ShelfAppButton>(view));
   return static_cast<ShelfAppButton*>(view);
 }
 
@@ -482,6 +482,10 @@ int ShelfView::GetShelfShortcutHostBadgeIconSize() const {
 int ShelfView::GetShelfShortcutHostBadgeContainerSize() const {
   return GetShelfShortcutHostBadgeIconSize() +
          ShelfConfig::Get()->GetShelfShortcutHostBadgeBorderSize() * 2;
+}
+
+int ShelfView::GetShelfShortcutTeardropCornerRadiusSize() const {
+  return ShelfConfig::Get()->GetShelfShortcutTeardropCornerRadiusSize();
 }
 
 int ShelfView::GetShelfItemRippleSize() const {
@@ -524,7 +528,7 @@ bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location,
 
 const std::vector<aura::Window*> ShelfView::GetOpenWindowsForView(
     views::View* view) {
-  std::vector<aura::Window*> window_list =
+  std::vector<raw_ptr<aura::Window, VectorExperimental>> window_list =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   std::vector<aura::Window*> open_windows;
   const ShelfItem* item = ShelfItemForView(view);
@@ -534,7 +538,7 @@ const std::vector<aura::Window*> ShelfView::GetOpenWindowsForView(
   if (!item)
     return open_windows;
 
-  for (auto* window : window_list) {
+  for (aura::Window* window : window_list) {
     const std::string window_app_id =
         ShelfID::Deserialize(window->GetProperty(kShelfIDKey)).app_id;
     if (window_app_id == item->id.app_id) {
@@ -686,7 +690,7 @@ View* ShelfView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // Similar implementation as views::View, but without going into each
   // child's subviews.
   View::Views children = GetChildrenInZOrder();
-  for (auto* child : base::Reversed(children)) {
+  for (views::View* child : base::Reversed(children)) {
     if (!child->GetVisible())
       continue;
 
@@ -878,7 +882,7 @@ void ShelfView::OnShelfConfigUpdated() {
 
 bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
   // This only applies to app buttons.
-  DCHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  DCHECK(views::IsViewClass<ShelfAppButton>(view));
   if (dragging())
     return false;
 
@@ -1090,8 +1094,9 @@ void ShelfView::UpdateSeparatorIndex() {
       break;
     }
 
-    if (item.type == TYPE_APP && item.is_on_active_desk)
+    if (!IsPinnedShelfItemType(item.type) && item.is_on_active_desk) {
       first_unpinned_index = i;
+    }
   }
 
   // If there is no unpinned item in shelf, return -1 as the separator should be
@@ -1311,7 +1316,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   is_repost_event_on_same_item_ =
       IsRepostEvent(event) && (last_pressed_index_ == index);
 
-  CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  CHECK(views::IsViewClass<ShelfAppButton>(view));
   drag_view_ = static_cast<ShelfAppButton*>(view);
   drag_origin_ = gfx::Point(event.x(), event.y());
   UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
@@ -1514,7 +1519,7 @@ void ShelfView::AnimateToIdealBounds() {
 
   move_animation_tracker_.emplace(
       GetWidget()->GetCompositor()->RequestNewThroughputTracker());
-  move_animation_tracker_->Start(metrics_util::ForSmoothness(
+  move_animation_tracker_->Start(metrics_util::ForSmoothnessV3(
       base::BindRepeating(&ReportMoveAnimationSmoothness)));
 
   for (size_t i = 0; i < view_model_->view_size(); ++i) {
@@ -1579,7 +1584,7 @@ void ShelfView::FadeIn(views::View* view) {
 
   ui::AnimationThroughputReporter reporter(
       fade_in_animation_settings.GetAnimator(),
-      metrics_util::ForSmoothness(
+      metrics_util::ForSmoothnessV3(
           base::BindRepeating(&ReportFadeInAnimationSmoothness)));
 
   view->layer()->SetOpacity(1.f);
@@ -2374,7 +2379,7 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     if (!fade_out_animation_tracker_) {
       fade_out_animation_tracker_.emplace(
           GetWidget()->GetCompositor()->RequestNewThroughputTracker());
-      fade_out_animation_tracker_->Start(metrics_util::ForSmoothness(
+      fade_out_animation_tracker_->Start(metrics_util::ForSmoothnessV3(
           base::BindRepeating(&ReportFadeOutAnimationSmoothness)));
     }
 
@@ -2473,7 +2478,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     case TYPE_APP:
     case TYPE_UNPINNED_BROWSER_SHORTCUT:
     case TYPE_DIALOG: {
-      CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+      CHECK(views::IsViewClass<ShelfAppButton>(view));
       ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
       UpdateButton(button, item);
       break;
@@ -2559,7 +2564,7 @@ void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window,
                                         ShelfAlignment old_alignment) {
   LayoutToIdealBounds();
   for (size_t visible_index : visible_views_indices_)
-    view_model_->view_at(visible_index)->Layout();
+    view_model_->view_at(visible_index)->DeprecatedLayoutImmediately();
 
   AnnounceShelfAlignment();
 }
@@ -2638,8 +2643,6 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
 
   context_menu_id_ = shelf_id;
 
-  menu_owner_ = source;
-
   closing_event_time_ = base::TimeTicks();
 
   // NOTE: If you convert to HAS_MNEMONICS be sure to update menu building code.
@@ -2664,11 +2667,12 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   }
 
+  // UnsafeDangling triaged in https://crbug.com/1423849.
   shelf_menu_model_adapter_ = std::make_unique<ShelfMenuModelAdapter>(
       item ? item->id.app_id : std::string(), std::move(menu_model), source,
       source_type,
       base::BindOnce(&ShelfView::OnMenuClosed, base::Unretained(this),
-                     base::UnsafeDanglingUntriaged(source)),
+                     base::UnsafeDangling(source)),
       display::Screen::GetScreen()->InTabletMode(),
       /*for_application_menu_items*/ !context_menu);
   shelf_menu_model_adapter_->Run(
@@ -2682,8 +2686,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
     context_menu_shown_callback_.Run();
 }
 
-void ShelfView::OnMenuClosed(views::View* source) {
-  menu_owner_ = nullptr;
+void ShelfView::OnMenuClosed(MayBeDangling<views::View> source) {
   context_menu_id_ = ShelfID();
 
   closing_event_time_ = shelf_menu_model_adapter_->GetClosingEventTime();
@@ -2935,7 +2938,7 @@ int ShelfView::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-BEGIN_METADATA(ShelfView, views::AccessiblePaneView)
+BEGIN_METADATA(ShelfView)
 END_METADATA
 
 }  // namespace ash

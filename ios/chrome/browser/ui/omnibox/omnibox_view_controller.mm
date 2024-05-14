@@ -6,6 +6,7 @@
 
 #import "base/containers/contains.h"
 #import "base/functional/bind.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
@@ -41,7 +42,7 @@ const CGFloat kClearButtonImageSize = 17.0f;
                                      OmniboxKeyboardDelegate,
                                      UIScribbleInteractionDelegate> {
   // Weak, acts as a delegate
-  OmniboxTextChangeDelegate* _textChangeDelegate;
+  raw_ptr<OmniboxTextChangeDelegate> _textChangeDelegate;
 }
 
 // Override of UIViewController's view with a different type.
@@ -208,6 +209,7 @@ const CGFloat kClearButtonImageSize = 17.0f;
   if (_isTextfieldEditing == owns) {
     return;
   }
+#if !defined(__IPHONE_16_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_16_0
   if (owns) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -220,6 +222,7 @@ const CGFloat kClearButtonImageSize = 17.0f;
                   name:UIMenuControllerWillShowMenuNotification
                 object:nil];
   }
+#endif
   _isTextfieldEditing = owns;
 }
 
@@ -583,6 +586,7 @@ const CGFloat kClearButtonImageSize = 17.0f;
       }));
 }
 
+#if !defined(__IPHONE_16_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_16_0
 - (void)menuControllerWillShow:(NSNotification*)notification {
   if (self.showingEditMenu || !self.isTextfieldEditing ||
       !self.textField.window.isKeyWindow) {
@@ -602,6 +606,7 @@ const CGFloat kClearButtonImageSize = 17.0f;
 
   self.showingEditMenu = NO;
 }
+#endif
 
 - (void)pasteboardDidChange:(NSNotification*)notification {
   [self updateCachedClipboardState];
@@ -748,8 +753,8 @@ const CGFloat kClearButtonImageSize = 17.0f;
 
 #pragma mark - UIScribbleInteractionDelegate
 
-- (void)scribbleInteractionWillBeginWriting:(UIScribbleInteraction*)interaction
-    API_AVAILABLE(ios(14.0)) {
+- (void)scribbleInteractionWillBeginWriting:
+    (UIScribbleInteraction*)interaction {
   if (self.textField.isPreEditing) {
     [self.textField exitPreEditState];
     [self.textField setText:[[NSAttributedString alloc] initWithString:@""]
@@ -759,8 +764,8 @@ const CGFloat kClearButtonImageSize = 17.0f;
   [self.textField clearAutocompleteText];
 }
 
-- (void)scribbleInteractionDidFinishWriting:(UIScribbleInteraction*)interaction
-    API_AVAILABLE(ios(14.0)) {
+- (void)scribbleInteractionDidFinishWriting:
+    (UIScribbleInteraction*)interaction {
   [self cleanupOmniboxAfterScribble];
 
   // Dismiss any inline autocomplete. The user expectation is to not have it.

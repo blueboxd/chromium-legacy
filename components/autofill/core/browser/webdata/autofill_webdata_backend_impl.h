@@ -183,6 +183,10 @@ class AutofillWebDataBackendImpl
   // Removes an IBAN from the web database.
   WebDatabase::State RemoveLocalIban(const std::string& guid, WebDatabase* db);
 
+  // Updates the given `iban`'s metadata in the web database.
+  WebDatabase::State UpdateServerIbanMetadata(const Iban& iban,
+                                              WebDatabase* db);
+
   // Server credit cards can be masked (only last 4 digits stored) or unmasked
   // (all data stored). These toggle between the two states.
   WebDatabase::State UnmaskServerCreditCard(const CreditCard& card,
@@ -219,6 +223,9 @@ class AutofillWebDataBackendImpl
   // Returns Virtual Card Usage Data from the database.
   std::unique_ptr<WDTypedResult> GetAutofillVirtualCardUsageData(
       WebDatabase* db);
+
+  // Returns all Credit Card Benefits from the database.
+  std::unique_ptr<WDTypedResult> GetCreditCardBenefits(WebDatabase* db);
 
   WebDatabase::State ClearAllServerData(WebDatabase* db);
   WebDatabase::State ClearAllLocalData(WebDatabase* db);

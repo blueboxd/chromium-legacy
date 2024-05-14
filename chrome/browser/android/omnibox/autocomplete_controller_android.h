@@ -10,8 +10,6 @@
 #include "base/android/jni_android.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
-#include "chrome/browser/profiles/profile_observer.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 
@@ -20,14 +18,14 @@ class ChromeAutocompleteProviderClient;
 class Profile;
 
 // The native part of the Java AutocompleteController class.
-class AutocompleteControllerAndroid : public AutocompleteController::Observer,
-                                      ProfileObserver {
+class AutocompleteControllerAndroid : public AutocompleteController::Observer {
  public:
   AutocompleteControllerAndroid(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcontroller,
       Profile* profile,
-      std::unique_ptr<ChromeAutocompleteProviderClient> client);
+      std::unique_ptr<ChromeAutocompleteProviderClient> client,
+      bool is_low_memory_device);
 
   AutocompleteControllerAndroid(const AutocompleteControllerAndroid&) = delete;
   AutocompleteControllerAndroid& operator=(
@@ -91,6 +89,10 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
       const base::android::JavaParamRef<jobjectArray>& j_voice_matches,
       const base::android::JavaParamRef<jfloatArray>& j_confidence_scores);
 
+  void CreateNavigationObserver(JNIEnv* env,
+                                uintptr_t navigation_handle_ptr,
+                                uintptr_t match_ptr);
+
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() const;
 
   // Called by Java to destroy this instance.
@@ -102,9 +104,6 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
   // AutocompleteController::Observer implementation.
   void OnResultChanged(AutocompleteController* controller,
                        bool default_match_changed) override;
-
-  // ProfileObserver overrides.
-  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   // Notifies the Java AutocompleteController that suggestions were received
   // based on the text the user typed in last.
@@ -135,7 +134,7 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
   // Destruction of Profile triggers destruction of both
   // C++ AutocompleteControllerAndroid and Java AutocompleteController objects.
   // Guaranteed to be non-null.
-  base::android::ScopedJavaGlobalRef<jobject> java_controller_;
+  const base::android::ScopedJavaGlobalRef<jobject> java_controller_;
 
   // AutocompleteController associated with this client. As this is directly
   // associated with the |provider_client_| and indirectly with |profile_|
@@ -144,8 +143,6 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
   // Invalidated only immediately before the AutocompleteControllerAndroid is
   // destroyed.
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
-
-  base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
 
   // Factory used to create asynchronously invoked callbacks.
   // Retained throughout the lifetime of the AutocompleteControllerAndroid.

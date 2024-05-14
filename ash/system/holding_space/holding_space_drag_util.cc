@@ -35,6 +35,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager_base.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -124,12 +125,12 @@ class DragImageLayoutManager : public views::LayoutManagerBase {
     return proposed_layout;
   }
 
-  std::vector<views::View*> GetChildViewsInPaintOrder(
-      const views::View* host) const override {
+  std::vector<raw_ptr<views::View, VectorExperimental>>
+  GetChildViewsInPaintOrder(const views::View* host) const override {
     // Paint `children` in reverse order so that earlier views paint at a higher
     // z-index than later views, like a deck of cards with the first `child`
     // stacked on top.
-    std::vector<views::View*> children;
+    std::vector<raw_ptr<views::View, VectorExperimental>> children;
     for (views::View* child : base::Reversed(host->children()))
       children.push_back(child);
     return children;
@@ -185,7 +186,7 @@ class DragImageItemView : public views::View {
     return drag_drop::GetDragImageShadowDetails(kDragImageItemViewCornerRadius);
   }
 
-  const raw_ptr<const ui::ColorProvider, ExperimentalAsh> color_provider_;
+  const raw_ptr<const ui::ColorProvider> color_provider_;
 };
 
 BEGIN_METADATA(DragImageItemView, views::View)
@@ -353,7 +354,7 @@ class DragImageOverflowBadge : public views::View {
     label->SetText(base::UTF8ToUTF16(base::NumberToString(count)));
   }
 
-  const raw_ptr<const ui::ColorProvider, ExperimentalAsh> color_provider_;
+  const raw_ptr<const ui::ColorProvider> color_provider_;
 };
 
 BEGIN_METADATA(DragImageOverflowBadge, views::View)
@@ -434,8 +435,8 @@ class DragImageView : public views::View {
     return gfx::Insets::TLBR(size.height() / 2, 0, 0, size.width() / 2);
   }
 
-  void Layout() override {
-    views::View::Layout();
+  void Layout(PassKey) override {
+    LayoutSuperclass<views::View>(this);
 
     if (!drag_image_overflow_badge_)
       return;
@@ -453,9 +454,9 @@ class DragImageView : public views::View {
   }
 
   void InitLayout(const std::vector<const HoldingSpaceItem*>& items) {
-    auto* layout = SetLayoutManager(std::make_unique<views::FillLayout>());
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     AddDragImageItemViews(items);
-    AddDragImageOverflowBadge(layout, items.size());
+    AddDragImageOverflowBadge(items.size());
   }
 
   void AddDragImageItemViews(
@@ -487,24 +488,25 @@ class DragImageView : public views::View {
     // Cache the first `DragImageItemView` so `drag_image_overflow_badge_` can
     // be relatively positioned if `kDragImageViewMaxItemsToPaint` is met.
     DCHECK(!container->children().empty());
-    first_drag_image_item_view_ = container->children()[0];
+    first_drag_image_item_view_ = container->children()[0].get();
   }
 
-  void AddDragImageOverflowBadge(views::FillLayout* layout, size_t count) {
+  void AddDragImageOverflowBadge(size_t count) {
     if (count <= kDragImageViewMaxItemsToPaint)
       return;
 
     drag_image_overflow_badge_ = AddChildView(
         std::make_unique<DragImageOverflowBadge>(count, color_provider_));
 
-    // This view's `layout` manager ignores `drag_image_overflow_badge_` as it
-    // is manually positioned relative to the `first_drag_image_item_view_`.
-    layout->SetChildViewIgnoredByLayout(drag_image_overflow_badge_, true);
+    // `drag_image_overflow_badge_` is manually positioned relative to the
+    // `first_drag_image_item_view_`.
+    drag_image_overflow_badge_->SetProperty(views::kViewIgnoredByLayoutKey,
+                                            true);
   }
 
-  const raw_ptr<const ui::ColorProvider, ExperimentalAsh> color_provider_;
-  raw_ptr<views::View, ExperimentalAsh> first_drag_image_item_view_ = nullptr;
-  raw_ptr<views::View, ExperimentalAsh> drag_image_overflow_badge_ = nullptr;
+  const raw_ptr<const ui::ColorProvider> color_provider_;
+  raw_ptr<views::View> first_drag_image_item_view_ = nullptr;
+  raw_ptr<views::View> drag_image_overflow_badge_ = nullptr;
 };
 
 BEGIN_METADATA(DragImageView, views::View)

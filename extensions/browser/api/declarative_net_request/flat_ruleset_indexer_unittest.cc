@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 #include "base/format_macros.h"
 #include "base/memory/raw_ptr.h"
@@ -22,8 +23,7 @@
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
-namespace declarative_net_request {
+namespace extensions::declarative_net_request {
 namespace {
 
 namespace flat_rule = url_pattern_index::flat;
@@ -121,7 +121,7 @@ dnr_api::URLTransform CreateUrlTransform() {
 // Helper to verify the indexed form of URlTransform created by
 // |CreateUrlTransform()|.
 bool VerifyUrlTransform(const flat::UrlTransform& flat_transform) {
-  auto is_string_equal = [](base::StringPiece str,
+  auto is_string_equal = [](std::string_view str,
                             const flatbuffers::String* flat_str) {
     return flat_str && ToString(flat_str) == str;
   };
@@ -134,8 +134,8 @@ bool VerifyUrlTransform(const flat::UrlTransform& flat_transform) {
 
     auto does_query_key_value_match = [&flat_transform, &is_string_equal](
                                           int query_key_index,
-                                          base::StringPiece expected_key,
-                                          base::StringPiece expected_value,
+                                          std::string_view expected_key,
+                                          std::string_view expected_value,
                                           bool expected_replace_only) {
       const flat::QueryKeyValue* query_pair =
           flat_transform.add_or_replace_query_params()->Get(query_key_index);
@@ -185,7 +185,7 @@ IndexedRule CreateIndexedRule(
     std::vector<dnr_api::ModifyHeaderInfo> request_headers_to_modify,
     std::vector<dnr_api::ModifyHeaderInfo> response_headers_to_modify,
     std::vector<dnr_api::HeaderInfo> response_headers,
-    std::vector<std::string> excluded_response_headers) {
+    std::vector<dnr_api::HeaderInfo> excluded_response_headers) {
   IndexedRule rule;
   rule.id = id;
   rule.priority = priority;
@@ -563,12 +563,16 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
         std::nullopt, {}, {}, std::move(response_headers), {}));
 
     // Allow all requests rule matching on excluded response headers.
+    std::vector<dnr_api::HeaderInfo> excluded_response_headers;
+    excluded_response_headers.push_back(CreateHeaderInfo(
+        "excluded-header", std::vector<std::string>({"value"}), std::nullopt));
     rules_to_index.push_back(CreateIndexedRule(
         122, 3, flat_rule::OptionFlag_NONE, flat_rule::ElementType_SUBDOCUMENT,
         flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_SUBSTRING,
         flat_rule::AnchorType_NONE, flat_rule::AnchorType_NONE, "example.com",
         {}, {}, std::nullopt, dnr_api::RuleActionType::kAllowAllRequests,
-        std::nullopt, std::nullopt, {}, {}, {}, {"excluded-header"}));
+        std::nullopt, std::nullopt, {}, {}, {},
+        std::move(excluded_response_headers)));
   }
 
   // Note: It's unsafe to store/return pointers to a mutable vector since the
@@ -647,13 +651,16 @@ TEST_F(FlatRulesetIndexerTest, RegexRules) {
       std::move(request_headers), {}, {}, {}));
 
   // Blocking rule that matches on response headers.
+  std::vector<dnr_api::HeaderInfo> excluded_response_headers;
+  excluded_response_headers.push_back(
+      CreateHeaderInfo("excluded-header", std::nullopt, std::nullopt));
   rules_to_index.push_back(CreateIndexedRule(
       117, kMinValidPriority, flat_rule::OptionFlag_NONE,
       flat_rule::ElementType_OBJECT, flat_rule::ActivationType_NONE,
       flat_rule::UrlPatternType_REGEXP, flat_rule::AnchorType_NONE,
       flat_rule::AnchorType_NONE, R"(^https://(abc|def))", {"a.com"},
       {"x.a.com"}, std::nullopt, dnr_api::RuleActionType::kBlock, std::nullopt,
-      std::nullopt, {}, {}, {}, {"excluded_header"}));
+      std::nullopt, {}, {}, {}, std::move(excluded_response_headers)));
 
   flatbuffers::DetachedBuffer buffer;
   const flat::ExtensionIndexedRuleset* ruleset =
@@ -725,5 +732,4 @@ TEST_F(FlatRulesetIndexerTest, RegexRules) {
 }
 
 }  // namespace
-}  // namespace declarative_net_request
-}  // namespace extensions
+}  // namespace extensions::declarative_net_request

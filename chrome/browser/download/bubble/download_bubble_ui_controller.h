@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_BUBBLE_DOWNLOAD_BUBBLE_UI_CONTROLLER_H_
 #define CHROME_BROWSER_DOWNLOAD_BUBBLE_DOWNLOAD_BUBBLE_UI_CONTROLLER_H_
 
+#include <optional>
 #include <set>
 
 #include "base/scoped_observation.h"
@@ -14,7 +15,6 @@
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -103,10 +103,10 @@ class DownloadBubbleUIController {
   // observers.
   void HideDownloadUi();
 
-  // Records that the download bubble was interacted with. This only records
-  // the fact that an interaction occurred, and should not be used
-  // quantitatively to count the number of such interactions.
-  void RecordDownloadBubbleInteraction();
+  // Records that a dangerous download was shown to the user. This only
+  // records the fact that an interaction occurred, and should not be
+  // used quantitatively to count the number of such interactions.
+  void RecordDangerousDownloadShownToUser();
 
   // Returns the DownloadDisplayController. Should always return a valid
   // controller.
@@ -144,7 +144,7 @@ class DownloadBubbleUIController {
   raw_ptr<DownloadDisplayController, AcrossTasksDanglingUntriaged>
       display_controller_;
 
-  absl::optional<base::Time> last_partial_view_shown_time_ = absl::nullopt;
+  std::optional<base::Time> last_partial_view_shown_time_ = std::nullopt;
 
   base::WeakPtrFactory<DownloadBubbleUIController> weak_factory_{this};
 };

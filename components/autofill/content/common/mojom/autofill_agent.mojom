@@ -20,14 +20,12 @@ interface AutofillAgent {
   // while another TriggerFormExtractionWithResponse() was ongoing.
   TriggerFormExtractionWithResponse() => (bool success);
 
-  // Fills or previews the form identified by `form_renderer_id` with
-  // the data in `fields`.
-  // `action_type` denotes if the action is a Fill or Undo.
+  // Fills or previews the form identified by `form` with the data of its
+  // fields. `action_type` denotes if the action is a Fill or Undo.
   // `action_persistence` denotes if the operation is a Fill or Preview.
   ApplyFormAction(ActionType action_type,
                   ActionPersistence action_persistence,
-                  FormRendererId form_renderer_id,
-                  array<FormFieldData> fields);
+                  FormData_FillData form);
 
   // Fills or previews the field identified by `field` with `value`.
   // `action_persistence` denotes if the operation is a Fill or Preview.
@@ -88,31 +86,9 @@ interface AutofillAgent {
   // Tells the renderer to preview the generated password.
   PreviewPasswordGenerationSuggestion(mojo_base.mojom.String16 password);
 
-  // Configures the render to require, or not, a user gesture before notifying
-  // the autofill agent of a field change. The default is true. Bypassing the
-  // user gesture check should only used for Android Webview, which needs to
-  // be notified of every change to the field.
-  // Note: The Android platform autofill framework only sends values to the
-  // autofill service with the user's consent, so the gesture check is
-  // redundant there anyway.
-  SetUserGestureRequired(bool required);
-
-  // Configures the render to require, or not, the secure context to query
-  // autofill suggestion, the default is false.
-  SetSecureContextRequired(bool required);
-
-  // Configures whether scroll is required in order to complete focus. The default is true.
-  SetFocusRequiresScroll(bool require);
-
-  // Configures whether AutofillAgent will query password field autofill suggestions. The default is false.
-  SetQueryPasswordSuggestion(bool query);
-
   // Allows heavy scraping of form data (e.g., button titles for
   // unowned forms).
   EnableHeavyFormDataScraping();
-
-  // Update fields that are eligible to show manual filling on form interaction.
-  SetFieldsEligibleForManualFilling(array<FieldRendererId> fields);
 
   // Returns a vector of four digit combinations present in the DOM of a
   // webpage. Used to check for the presence of the virtual card last four in

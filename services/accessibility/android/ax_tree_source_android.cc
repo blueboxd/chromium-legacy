@@ -11,6 +11,7 @@
 
 #include "base/check.h"
 #include "base/dcheck_is_on.h"
+#include "base/memory/raw_ptr.h"
 #include "services/accessibility/android/accessibility_node_info_data_wrapper.h"
 #include "services/accessibility/android/accessibility_window_info_data_wrapper.h"
 #include "services/accessibility/android/android_accessibility_util.h"
@@ -72,7 +73,7 @@ void AXTreeSourceAndroid::NotifyActionResult(const ui::AXActionData& data,
 
 void AXTreeSourceAndroid::NotifyGetTextLocationDataResult(
     const ui::AXActionData& data,
-    const absl::optional<gfx::Rect>& rect) {
+    const std::optional<gfx::Rect>& rect) {
   GetAutomationEventRouter()->DispatchGetTextLocationDataResult(data, rect);
 }
 
@@ -254,7 +255,7 @@ void AXTreeSourceAndroid::NotifyAccessibilityEventInternal(
       android_focused_id_.has_value() ? GetFromId(*android_focused_id_)
                                       : nullptr;
   std::vector<ui::AXEvent> events;
-  const absl::optional<ax::mojom::Event> event_type =
+  const std::optional<ax::mojom::Event> event_type =
       ToAXEvent(event_data.event_type, source_node, focused_node);
   if (event_type) {
     ui::AXEvent event;
@@ -290,7 +291,7 @@ void AXTreeSourceAndroid::NotifyAccessibilityEventInternal(
   }
 
   for (const int32_t update_id : update_ids) {
-    current_tree_serializer_->MarkSubtreeDirty(GetFromId(update_id));
+    current_tree_serializer_->MarkSubtreeDirty(update_id);
   }
 
   std::vector<ui::AXTreeUpdate> updates;
@@ -356,7 +357,8 @@ void AXTreeSourceAndroid::ComputeEnclosingBoundsInternal(
 
   // NOTE: |AXTreeSourceAndroid::GetChildren| depends on ComputeEnclosingBounds.
   // To get children, directly call wrapper's GetChildren here.
-  std::vector<AccessibilityInfoDataWrapper*> children;
+  std::vector<raw_ptr<AccessibilityInfoDataWrapper, VectorExperimental>>
+      children;
   info_data->GetChildren(&children);
   for (AccessibilityInfoDataWrapper* child : children) {
     ComputeEnclosingBoundsInternal(child, computed_bounds);
@@ -672,7 +674,8 @@ void AXTreeSourceAndroid::PerformAction(const ui::AXActionData& data) {
   delegate_->OnAction(data);
 }
 
-std::vector<AccessibilityInfoDataWrapper*>& AXTreeSourceAndroid::GetChildren(
+std::vector<raw_ptr<AccessibilityInfoDataWrapper, VectorExperimental>>&
+AXTreeSourceAndroid::GetChildren(
     AccessibilityInfoDataWrapper* info_data) const {
   DCHECK(info_data);
   ComputeAndCacheChildren(info_data);
@@ -685,8 +688,8 @@ void AXTreeSourceAndroid::ComputeAndCacheChildren(
     return;
   }
 
-  std::vector<AccessibilityInfoDataWrapper*>& children =
-      info_data->cached_children_.emplace();
+  std::vector<raw_ptr<AccessibilityInfoDataWrapper, VectorExperimental>>&
+      children = info_data->cached_children_.emplace();
 
   info_data->GetChildren(&children);
   if (children.size() < 2) {

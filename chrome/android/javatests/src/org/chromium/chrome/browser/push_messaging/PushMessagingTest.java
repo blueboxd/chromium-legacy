@@ -24,6 +24,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -32,7 +33,6 @@ import org.chromium.chrome.browser.notifications.NotificationTestRule;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.components.content_settings.ContentSettingValues;
@@ -157,7 +157,8 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
 
         // Denying the prompt should cause subscribe() to fail.
         PermissionTestRule.waitForDialog(mNotificationTestRule.getActivity());
-        PermissionTestRule.replyToDialog(false, mNotificationTestRule.getActivity());
+        PermissionTestRule.replyToDialog(
+                PermissionTestRule.PromptDecision.DENY, mNotificationTestRule.getActivity());
         waitForTitle(
                 mNotificationTestRule.getActivity().getActivityTab(),
                 "subscribe fail: NotAllowedError: Registration failed - permission denied");
@@ -198,7 +199,8 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
 
         // Accepting the prompt should cause subscribe() to succeed.
         PermissionTestRule.waitForDialog(mNotificationTestRule.getActivity());
-        PermissionTestRule.replyToDialog(true, mNotificationTestRule.getActivity());
+        PermissionTestRule.replyToDialog(
+                PermissionTestRule.PromptDecision.ALLOW, mNotificationTestRule.getActivity());
         waitForTitle(mNotificationTestRule.getActivity().getActivityTab(), "subscribe ok");
 
         // This should have caused notifications permission to become granted.

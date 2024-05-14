@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -40,10 +41,10 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer_test_helpers.h"
-#include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "ui/gl/gpu_preference.h"
 #include "v8/include/v8.h"
@@ -352,13 +353,18 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest,
 
  protected:
   void SetUp() override {
-    platform_ = std::make_unique<
-        ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform>>();
-
     gfx::Size initial_size(kInitialWidth, kInitialHeight);
     auto gl = std::make_unique<GLES2InterfaceForTests>();
     auto provider =
         std::make_unique<WebGraphicsContext3DProviderForTests>(std::move(gl));
+
+    // DrawingBuffer requests MappableSharedImages with usage SCANOUT, whereas
+    // TestSII by default creates backing SharedMemory GMBs that don't support
+    // this usage. Configure the TestSII to instead use test GMBs that have
+    // relaxed usage validation.
+    auto* sii = static_cast<viz::TestSharedImageInterface*>(
+        provider->SharedImageInterface());
+    sii->UseTestGMBInSharedImageCreationWithBufferUsage();
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     EXPECT_CALL(*gl_, CreateAndTexStorage2DSharedImageCHROMIUMMock(_)).Times(1);
@@ -372,13 +378,7 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest,
     testing::Mock::VerifyAndClearExpectations(gl_);
   }
 
-  void TearDown() override {
-    platform_.reset();
-  }
-
   GLuint image_id0_;
-  std::unique_ptr<ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform>>
-      platform_;
 };
 
 TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
@@ -511,10 +511,11 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
 }
 
 TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDrawingBufferWithoutGpuMemoryBuffer);
+
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
-  viz::TestGpuMemoryBufferManager* gmb_manager =
-      static_cast<viz::TestGpuMemoryBufferManager*>(
-          Platform::Current()->GetGpuMemoryBufferManager());
   viz::TestSharedImageInterface* sii =
       drawing_buffer_->SharedImageInterfaceForTests();
 
@@ -538,10 +539,10 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
-  // Force GpuMemoryBuffer creation failure. Request another resource. It should
+  // Force MappableSI creation failure. Request another resource. It should
   // still be provided, but this time with allowOverlay = false.
   EXPECT_CALL(*gl_, CreateAndTexStorage2DSharedImageCHROMIUMMock(_)).Times(1);
-  gmb_manager->SetFailOnCreate(true);
+  sii->SetFailSharedImageCreationWithBufferUsage(true);
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource2,
                                                            &release_callback2));
@@ -551,10 +552,10 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   EXPECT_TRUE(sii->CheckSharedImageExists(mailbox2));
   VerifyStateWasRestored();
 
-  // Check that if GpuMemoryBuffer allocation starts working again, resources
+  // Check that if MappableSI creation starts working again, resources
   // are correctly created with allowOverlay = true.
   EXPECT_CALL(*gl_, CreateAndTexStorage2DSharedImageCHROMIUMMock(_)).Times(1);
-  gmb_manager->SetFailOnCreate(false);
+  sii->SetFailSharedImageCreationWithBufferUsage(false);
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
                                                            &release_callback3));

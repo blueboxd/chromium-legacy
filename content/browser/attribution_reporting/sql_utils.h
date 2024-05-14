@@ -7,19 +7,21 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <string>
 
+#include "base/containers/span.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/trigger_data_matching.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/common/content_export.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace attribution_reporting {
 class AggregationKeys;
 class EventReportWindows;
 class FilterData;
 class MaxEventLevelReports;
+class TriggerSpecs;
 }  // namespace attribution_reporting
 
 namespace sql {
@@ -38,38 +40,39 @@ class AttributionReadOnlySourceData;
 
 url::Origin DeserializeOrigin(const std::string& origin);
 
-absl::optional<attribution_reporting::mojom::SourceType> DeserializeSourceType(
+std::optional<attribution_reporting::mojom::SourceType> DeserializeSourceType(
     int val);
 
 // Exposed for use with earlier DB migrations that only contained a subset of
 // fields.
-void SetReadOnlySourceData(const attribution_reporting::EventReportWindows&,
+void SetReadOnlySourceData(const attribution_reporting::EventReportWindows*,
                            attribution_reporting::MaxEventLevelReports,
                            proto::AttributionReadOnlySourceData&);
 
 std::string SerializeReadOnlySourceData(
-    const attribution_reporting::EventReportWindows&,
+    const attribution_reporting::TriggerSpecs&,
     attribution_reporting::MaxEventLevelReports,
     double randomized_response_rate,
     attribution_reporting::mojom::TriggerDataMatching,
     bool debug_cookie_set);
 
-CONTENT_EXPORT absl::optional<proto::AttributionReadOnlySourceData>
+CONTENT_EXPORT std::optional<proto::AttributionReadOnlySourceData>
 DeserializeReadOnlySourceDataAsProto(sql::Statement&, int col);
 
 std::string SerializeFilterData(const attribution_reporting::FilterData&);
 
-absl::optional<attribution_reporting::FilterData> DeserializeFilterData(
+std::optional<attribution_reporting::FilterData> DeserializeFilterData(
     sql::Statement&,
     int col);
 
-absl::optional<attribution_reporting::EventReportWindows>
-DeserializeEventReportWindows(const proto::AttributionReadOnlySourceData&);
+std::optional<attribution_reporting::TriggerSpecs> DeserializeTriggerSpecs(
+    const proto::AttributionReadOnlySourceData&,
+    attribution_reporting::mojom::SourceType);
 
 std::string SerializeAggregationKeys(
     const attribution_reporting::AggregationKeys&);
 
-absl::optional<attribution_reporting::AggregationKeys>
+std::optional<attribution_reporting::AggregationKeys>
 DeserializeAggregationKeys(sql::Statement&, int col);
 
 std::string SerializeReportMetadata(const AttributionReport::EventLevelData&);
@@ -80,16 +83,16 @@ std::string SerializeReportMetadata(
 std::string SerializeReportMetadata(
     const AttributionReport::NullAggregatableData&);
 
-[[nodiscard]] bool DeserializeReportMetadata(const std::string&,
+[[nodiscard]] bool DeserializeReportMetadata(base::span<const uint8_t>,
                                              uint32_t& trigger_data,
                                              int64_t& priority);
 
 [[nodiscard]] bool DeserializeReportMetadata(
-    const std::string&,
+    base::span<const uint8_t>,
     AttributionReport::AggregatableAttributionData&);
 
 [[nodiscard]] bool DeserializeReportMetadata(
-    const std::string&,
+    base::span<const uint8_t>,
     AttributionReport::NullAggregatableData&);
 
 }  // namespace content

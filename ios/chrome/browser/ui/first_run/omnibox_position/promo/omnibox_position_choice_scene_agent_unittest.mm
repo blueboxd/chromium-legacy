@@ -9,17 +9,27 @@
 #import "components/prefs/testing_pref_service.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/fake_startup_information.h"
-#import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
+#import "ios/chrome/browser/promos_manager/model/mock_promos_manager.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/utils/first_run_test_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 #import "ui/base/device_form_factor.h"
+
+namespace {
+
+/// Number of days since first run to be considered as an existing user. This is
+/// larger than the real value so it doesn't have to be updated when the real
+/// value changes.
+constexpr NSInteger kFirstRunRecencyForExistingUser = 100;
+
+}  // namespace
 
 class OmniboxPositionChoiceSceneAgentTest : public PlatformTest {
  protected:
@@ -45,7 +55,11 @@ class OmniboxPositionChoiceSceneAgentTest : public PlatformTest {
     agent_.sceneState = scene_state_;
   }
 
-  void TearDown() override { PlatformTest::TearDown(); }
+  void TearDown() override {
+    PlatformTest::TearDown();
+    // Clear first run sentinel and user default.
+    ResetFirstRunSentinel();
+  }
 
  protected:
   OmniboxPositionChoiceSceneAgent* agent_;
@@ -65,6 +79,8 @@ TEST_F(OmniboxPositionChoiceSceneAgentTest, TestPromoRegistration) {
   if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
     return;
   }
+  ForceFirstRunRecency(kFirstRunRecencyForExistingUser);
+
   EXPECT_CALL(
       *promos_manager_.get(),
       RegisterPromoForContinuousDisplay(promos_manager::Promo::OmniboxPosition))
@@ -79,12 +95,16 @@ TEST_F(OmniboxPositionChoiceSceneAgentTest, TestPromoRegistration) {
   scene_state_.activationLevel = SceneActivationLevelForegroundActive;
 }
 
-// Tests that the promo does not get registered when the conditions aren't met.
-TEST_F(OmniboxPositionChoiceSceneAgentTest, TestNoPromoRegistration) {
+// Tests that the promo does not get registered when there is an existing
+// preferred omnibox position.
+TEST_F(OmniboxPositionChoiceSceneAgentTest,
+       TestNoPromoRegistrationExistingPosition) {
   // OmniboxPositionChoice is only available on phones.
   if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
     return;
   }
+  ForceFirstRunRecency(kFirstRunRecencyForExistingUser);
+
   EXPECT_CALL(
       *promos_manager_.get(),
       RegisterPromoForContinuousDisplay(promos_manager::Promo::OmniboxPosition))
@@ -99,12 +119,34 @@ TEST_F(OmniboxPositionChoiceSceneAgentTest, TestNoPromoRegistration) {
   scene_state_.activationLevel = SceneActivationLevelForegroundActive;
 }
 
+// Tests that the promo does not get registered for new users.
+TEST_F(OmniboxPositionChoiceSceneAgentTest, TestNoPromoRegistrationNewUser) {
+  // OmniboxPositionChoice is only available on phones.
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
+    return;
+  }
+
+  EXPECT_CALL(
+      *promos_manager_.get(),
+      RegisterPromoForContinuousDisplay(promos_manager::Promo::OmniboxPosition))
+      .Times(0);
+  EXPECT_CALL(*promos_manager_.get(),
+              DeregisterPromo(promos_manager::Promo::OmniboxPosition))
+      .Times(1);
+
+  // The promo should not register for new users.
+  ResetFirstRunSentinel();
+  scene_state_.activationLevel = SceneActivationLevelForegroundActive;
+}
+
 // Tests that the promo derigisters when a preferred omnibox position is set.
 TEST_F(OmniboxPositionChoiceSceneAgentTest, TestDeregistration) {
   // OmniboxPositionChoice is only available on phones.
   if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
     return;
   }
+  ForceFirstRunRecency(kFirstRunRecencyForExistingUser);
+
   scene_state_.UIEnabled = YES;
   EXPECT_CALL(
       *promos_manager_.get(),

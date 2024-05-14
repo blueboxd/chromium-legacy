@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_RESPONSIVENESS_METRICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_RESPONSIVENESS_METRICS_H_
 
+#include <optional>
+
 #include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/tracing/protos/chrome_track_event.pbzero.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/responsiveness_metrics/user_interaction_latency.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
@@ -33,6 +34,8 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
     // The time when the first display update caused by the input event was
     // performed.
     base::TimeTicks end_time;
+    // The time when the original WebInputEvent was queued on main thread.
+    base::TimeTicks main_thread_queued_time;
   };
 
   // Wrapper class to store PerformanceEventTiming and timestamps
@@ -116,11 +119,11 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
 
   // Assigns interactionId and records interaction latency for keyboard events.
   // We care about input, compositionstart, and compositionend events, so
-  // |key_code| will be absl::nullopt in those cases. Returns true if the entry
+  // |key_code| will be std::nullopt in those cases. Returns true if the entry
   // would be ready to be surfaced in PerformanceObservers and the Performance
   // Timeline.
   bool SetKeyIdAndRecordLatency(PerformanceEventTiming* entry,
-                                absl::optional<int> key_code,
+                                std::optional<int> key_code,
                                 EventTimestamps event_timestamps);
 
   // Clear keydowns in |key_codes_to_remove| if we have stored them for a
@@ -141,6 +144,9 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
       const ResponsivenessMetrics::EventTimestamps& event,
       UserInteractionType interaction_type,
       base::TimeDelta total_event_duration);
+
+  void SetCurrentInteractionEventQueuedTimestamp(base::TimeTicks queued_time);
+  base::TimeTicks CurrentInteractionEventQueuedTimestamp() const;
 
  private:
   // Record UKM for user interaction latencies.
@@ -206,7 +212,10 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   // keyboard events are seen, the value is reset. TODO(crbug.com/1264930):
   // remove this attribute once PointerId for clicks correctly points to the
   // same value as its corresponding pointerdown and pointerup.
-  absl::optional<PointerId> last_pointer_id_;
+  std::optional<PointerId> last_pointer_id_;
+
+  // Queued timestamp of current event being dispatched.
+  base::TimeTicks current_interaction_event_queued_timestamp_;
 
   uint32_t current_interaction_id_for_event_timing_;
   uint32_t interaction_count_ = 0;

@@ -284,9 +284,19 @@ bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
       Browser* browser = browser_view_->browser();
       TabStripModel* model = browser->tab_strip_model();
+
+      auto has_tab_in_direction = [model](int delta) {
+        for (int index = model->active_index() + delta;
+             model->ContainsIndex(index); index += delta) {
+          if (!model->IsTabCollapsed(index)) {
+            return true;
+          }
+        }
+        return false;
+      };
+
       // Switch to the next tab only if not at the end of the tab-strip.
-      if (whole_scroll_offset < 0 &&
-          model->active_index() + 1 < model->count()) {
+      if (whole_scroll_offset < 0 && has_tab_in_direction(1)) {
         chrome::SelectNextTab(
             browser, TabStripUserGestureDetails(
                          TabStripUserGestureDetails::GestureType::kWheel,
@@ -296,7 +306,7 @@ bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
       // Switch to the previous tab only if not at the beginning of the
       // tab-strip.
-      if (whole_scroll_offset > 0 && model->active_index() > 0) {
+      if (whole_scroll_offset > 0 && has_tab_in_direction(-1)) {
         chrome::SelectPreviousTab(
             browser, TabStripUserGestureDetails(
                          TabStripUserGestureDetails::GestureType::kWheel,
@@ -372,9 +382,29 @@ void BrowserRootView::PaintChildren(const views::PaintInfo& paint_info) {
 
     cc::PaintFlags flags;
     flags.setColor(toolbar_top_separator_color);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setAntiAlias(true);
-    canvas->DrawRect(gfx::RectF(x, bottom - scale, width, scale), flags);
+    if (features::IsChromeRefresh2023()) {
+      const float stroke_width = scale;
+      // Outset the rectangle and corner radius by half the stroke width
+      // to draw an outer stroke.
+      const float stroke_outset = stroke_width / 2;
+      const float corner_radius =
+          GetLayoutConstant(TOOLBAR_CORNER_RADIUS) * scale + stroke_outset;
+
+      flags.setStyle(cc::PaintFlags::kStroke_Style);
+      flags.setStrokeWidth(stroke_width);
+
+      // Only draw the top half of the rounded rect.
+      canvas->ClipRect(gfx::RectF(x, 0, width, bottom + corner_radius),
+                       SkClipOp::kIntersect);
+
+      gfx::RectF rect(x, bottom, width, 2 * corner_radius);
+      rect.Outset(stroke_outset);
+      canvas->DrawRoundRect(rect, corner_radius, flags);
+    } else {
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      canvas->DrawRect(gfx::RectF(x, bottom - scale, width, scale), flags);
+    }
   }
 }
 
@@ -495,5 +525,5 @@ void BrowserRootView::NavigateToDropUrl(
   output_drag_op = GetDropEffect(event, url);
 }
 
-BEGIN_METADATA(BrowserRootView, views::internal::RootView)
+BEGIN_METADATA(BrowserRootView)
 END_METADATA

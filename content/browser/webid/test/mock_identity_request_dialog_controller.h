@@ -23,31 +23,35 @@ class MockIdentityRequestDialogController
   MockIdentityRequestDialogController& operator=(
       const MockIdentityRequestDialogController&) = delete;
 
-  MOCK_METHOD8(ShowAccountsDialog,
-               void(const std::string&,
-                    const absl::optional<std::string>&,
-                    const std::vector<content::IdentityProviderData>&,
-                    IdentityRequestAccount::SignInMode,
-                    bool,
-                    AccountSelectionCallback,
-                    LoginToIdPCallback,
-                    DismissCallback));
+  MOCK_METHOD10(ShowAccountsDialog,
+                void(const std::string&,
+                     const std::optional<std::string>&,
+                     const std::vector<content::IdentityProviderData>&,
+                     IdentityRequestAccount::SignInMode,
+                     blink::mojom::RpMode rp_mode,
+                     const std::optional<content::IdentityProviderData>&,
+                     AccountSelectionCallback,
+                     LoginToIdPCallback,
+                     DismissCallback,
+                     AccountsDisplayedCallback));
   MOCK_METHOD0(DestructorCalled, void());
-  MOCK_METHOD7(ShowFailureDialog,
+  MOCK_METHOD8(ShowFailureDialog,
                void(const std::string&,
-                    const absl::optional<std::string>&,
+                    const std::optional<std::string>&,
                     const std::string&,
-                    const blink::mojom::RpContext& rp_context,
+                    blink::mojom::RpContext rp_context,
+                    blink::mojom::RpMode rp_mode,
                     const content::IdentityProviderMetadata&,
                     DismissCallback,
                     LoginToIdPCallback));
-  MOCK_METHOD8(ShowErrorDialog,
+  MOCK_METHOD9(ShowErrorDialog,
                void(const std::string&,
-                    const absl::optional<std::string>&,
+                    const std::optional<std::string>&,
                     const std::string&,
-                    const blink::mojom::RpContext& rp_context,
+                    blink::mojom::RpContext rp_context,
+                    blink::mojom::RpMode rp_mode,
                     const content::IdentityProviderMetadata&,
-                    const absl::optional<IdentityCredentialTokenError>&,
+                    const std::optional<IdentityCredentialTokenError>&,
                     DismissCallback,
                     MoreDetailsCallback));
   MOCK_METHOD2(ShowModalDialog, WebContents*(const GURL&, DismissCallback));

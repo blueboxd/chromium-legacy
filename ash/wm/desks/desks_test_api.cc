@@ -22,6 +22,8 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace ash {
@@ -112,7 +114,7 @@ ui::LayerTreeOwner* DesksTestApi::GetMirroredContentsLayerTreeForRootAndDesk(
                          ->GetGridWithRootWindow(root)
                          ->desks_bar_view()
                          ->mini_views();
-  for (auto* mini_view : mini_views) {
+  for (ash::DeskMiniView* mini_view : mini_views) {
     if (mini_view->desk() == desk) {
       return mini_view->desk_preview()
           ->desk_mirrored_contents_layer_tree_owner_.get();
@@ -132,6 +134,21 @@ bool DesksTestApi::IsDeskShortcutViewVisible(DeskMiniView* mini_view) {
   // nullptr.
   return mini_view->desk_shortcut_view_ &&
          mini_view->desk_shortcut_view_->GetVisible();
+}
+
+// static
+DeskProfilesButton* DesksTestApi::GetDeskProfileButton(
+    DeskMiniView* mini_view) {
+  return mini_view->desk_profile_button_;
+}
+
+// static
+views::MenuItemView* DesksTestApi::GetDeskActionContextMenuItem(
+    DeskActionContextMenu* menu,
+    int command_id) {
+  // Verify that the menu is active.
+  CHECK(menu->context_menu_runner_);
+  return menu->root_menu_item_view_->GetMenuItemByID(command_id);
 }
 
 // static
@@ -180,6 +197,12 @@ void DesksTestApi::WaitForDeskBarUiUpdate(DeskBarViewBase* desk_bar_view) {
   base::RunLoop run_loop;
   desk_bar_view->on_update_ui_closure_for_testing_ = run_loop.QuitClosure();
   run_loop.Run();
+}
+
+// static
+void DesksTestApi::SetDeskBarUiUpdateCallback(DeskBarViewBase* desk_bar_view,
+                                              base::OnceClosure done) {
+  desk_bar_view->on_update_ui_closure_for_testing_ = std::move(done);
 }
 
 }  // namespace ash

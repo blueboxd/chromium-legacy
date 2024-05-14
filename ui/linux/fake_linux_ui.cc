@@ -25,16 +25,9 @@ FakeLinuxUi::CreateInputMethodContext(
   return nullptr;
 }
 
-gfx::FontRenderParams FakeLinuxUi::GetDefaultFontRenderParams() const {
+gfx::FontRenderParams FakeLinuxUi::GetDefaultFontRenderParams() {
   return gfx::FontRenderParams();
 }
-
-void FakeLinuxUi::GetDefaultFontDescription(
-    std::string* family_out,
-    int* size_pixels_out,
-    int* style_out,
-    int* weight_out,
-    gfx::FontRenderParams* params_out) const {}
 
 ui::SelectFileDialog* FakeLinuxUi::CreateSelectFileDialog(
     void* listener,
@@ -44,6 +37,10 @@ ui::SelectFileDialog* FakeLinuxUi::CreateSelectFileDialog(
 
 bool FakeLinuxUi::Initialize() {
   return false;
+}
+
+void FakeLinuxUi::InitializeFontSettings() {
+  set_default_font_settings(FontSettings());
 }
 
 bool FakeLinuxUi::GetColor(int id,
@@ -111,7 +108,8 @@ std::unique_ptr<ui::NavButtonProvider> FakeLinuxUi::CreateNavButtonProvider() {
   return nullptr;
 }
 
-ui::WindowFrameProvider* FakeLinuxUi::GetWindowFrameProvider(bool solid_frame) {
+ui::WindowFrameProvider* FakeLinuxUi::GetWindowFrameProvider(bool solid_frame,
+                                                             bool tiled) {
   return nullptr;
 }
 

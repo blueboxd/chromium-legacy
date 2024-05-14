@@ -21,7 +21,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engine_choice/search_engine_choice_service.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/views/profiles/profile_management_flow_controller.h"
@@ -41,9 +41,7 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-#include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
-#endif
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service_factory.h"
 
 namespace {
 
@@ -438,19 +436,7 @@ void FirstRunFlowControllerDice::CancelPostSignInFlow() {
   // TODO(crbug.com/1465779): Refactor ProfilePickerSignedInFlowController
   // to split the lacros and dice behaviours more and remove the need for such
   // hacky workarounds. Look into letting the user keep their account.
-
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-  CoreAccountId primary_account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
-  DCHECK(!primary_account_id.empty());  // Cancelling the post-sign in flow
-                                        // implies we must already be signed in.
-
-  policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
-      ->ShutdownCloudPolicyManager();
-  chrome::enterprise_util::SetUserAcceptedAccountManagement(profile_, false);
-  identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-      signin_metrics::ProfileSignout::kAbortSignin,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
+  signin::ClearProfileWithManagedAccounts(profile_);
 
   HandleIdentityStepsCompleted(PostHostClearedCallback());
 }
@@ -474,7 +460,8 @@ void FirstRunFlowControllerDice::HandleIntroSigninChoice(IntroChoice choice) {
   }
 
   SwitchToIdentityStepsFromAccountSelection(
-      /*step_switch_finished_callback=*/base::DoNothing());
+      /*step_switch_finished_callback=*/base::DoNothing(), kAccessPoint,
+      profile_->GetPath());
 }
 
 void FirstRunFlowControllerDice::HandleIdentityStepsCompleted(
@@ -489,12 +476,6 @@ void FirstRunFlowControllerDice::HandleIdentityStepsCompleted(
   }
 
   SwitchToPostIdentitySteps();
-}
-
-std::unique_ptr<ProfilePickerDiceSignInProvider>
-FirstRunFlowControllerDice::CreateDiceSignInProvider() {
-  return std::make_unique<ProfilePickerDiceSignInProvider>(host(), kAccessPoint,
-                                                           profile_->GetPath());
 }
 
 std::unique_ptr<ProfilePickerSignedInFlowController>
@@ -514,21 +495,20 @@ FirstRunFlowControllerDice::CreateSignedInFlowController(
 base::queue<ProfileManagementFlowController::Step>
 FirstRunFlowControllerDice::RegisterPostIdentitySteps() {
   base::queue<ProfileManagementFlowController::Step> post_identity_steps;
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
   auto search_engine_choice_step_completed =
       base::BindOnce(&FirstRunFlowControllerDice::AdvanceToNextPostIdentityStep,
                      base::Unretained(this));
-  SearchEngineChoiceService* search_engine_choice_service =
-      SearchEngineChoiceServiceFactory::GetForProfile(profile_);
+  SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
+      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile_);
   RegisterStep(
       Step::kSearchEngineChoice,
       ProfileManagementStepController::CreateForSearchEngineChoice(
-          host(), search_engine_choice_service, host()->GetPickerContents(),
-          SearchEngineChoiceService::EntryPoint::kFirstRunExperience,
+          host(), search_engine_choice_dialog_service,
+          host()->GetPickerContents(),
+          SearchEngineChoiceDialogService::EntryPoint::kFirstRunExperience,
           std::move(search_engine_choice_step_completed)));
   post_identity_steps.emplace(
       ProfileManagementFlowController::Step::kSearchEngineChoice);
-#endif
 
   auto default_browser_promo_step_completed =
       base::BindOnce(&FirstRunFlowControllerDice::AdvanceToNextPostIdentityStep,

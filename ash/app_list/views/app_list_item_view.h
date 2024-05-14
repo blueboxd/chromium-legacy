@@ -22,6 +22,7 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
@@ -63,9 +64,9 @@ class ASH_EXPORT AppListItemView : public views::Button,
                                    public views::ContextMenuController,
                                    public AppListItemObserver,
                                    public ui::ImplicitAnimationObserver {
- public:
-  METADATA_HEADER(AppListItemView);
+  METADATA_HEADER(AppListItemView, views::Button)
 
+ public:
   // The types of context where the app list item view is shown.
   enum class Context {
     // The item is shown in an AppsGridView.
@@ -169,14 +170,17 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // is true.
   void UpdateIconView(bool update_item_icon);
 
-  // Sets the icon of this image.
-  void SetIcon(const gfx::ImageSkia& icon);
+  // Sets the icon and host badge icon of this image.
+  void SetIconAndMaybeHostBadgeIcon(const gfx::ImageSkia& icon,
+                                    const gfx::ImageSkia& host_badge_icon);
 
-  // Returns the main app icon size for the associated item.
+  // Returns the main app icon size for the associated item. This is the actual
+  // size of the main app icon that is painted in the grid.
   gfx::Size GetIconSize() const;
 
-  // Whether the icon use on this item is a placeholder icon for a promise app.
-  bool HasPromiseIconPlaceholder();
+  // Whether the icon used on this item is a placeholder icon for a promise app.
+  // This is obtained from the value in the item's metadata.
+  bool ItemHasPlaceholderIcon();
 
   void SetItemName(const std::u16string& display_name,
                    const std::u16string& full_name);
@@ -323,6 +327,9 @@ class ASH_EXPORT AppListItemView : public views::Button,
   void AnimateInFromPromiseApp(const ui::ImageModel& fallback_icon,
                                base::RepeatingClosure callback);
 
+  // Remove all dragging states from the view.
+  void ClearItemDraggingState();
+
   GridIndex most_recent_grid_index() { return most_recent_grid_index_; }
 
   bool has_pending_row_change() { return has_pending_row_change_; }
@@ -338,10 +345,12 @@ class ASH_EXPORT AppListItemView : public views::Button,
   bool is_promise_app() const { return is_promise_app_; }
   std::optional<size_t> item_counter_count_for_test() const;
   ProgressIndicator* GetProgressIndicatorForTest() const;
+  bool has_host_badge_for_test() const { return has_host_badge_; }
 
  private:
   class FolderIconView;
 
+  friend class AppListFolderViewTest;
   friend class AppListItemViewTest;
   friend class AppListMainViewTest;
   friend class test::AppsGridViewTest;
@@ -403,7 +412,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   bool ShouldEnterPushedState(const ui::Event& event) override;
 
   // views::View overrides:
-  void Layout() override;
+  void Layout(PassKey) override;
   gfx::Size CalculatePreferredSize() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -449,6 +458,13 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // app icon has not been loaded yet.
   bool ShouldUseFallbackIconImageModel() const;
 
+  // Whether the image view has a placeholder icon in place. The placeholder
+  // icon is represented as a VectorIcon in the ImageModel. Depending on the
+  // case, the icon may use the `icon_image_model` or the
+  // `fallback_icon_image_model` (ie, when an animation in for the promise app
+  // is happening) for this calceulation.
+  bool ImageModelHasPlaceholderIcon() const;
+
   // Calculates the transform between the icon scaled by |icon_scale| and the
   // normal size icon.
   gfx::Transform GetScaleTransform(float icon_scale);
@@ -479,15 +495,16 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // active.
   void UpdateProgressRingBounds();
 
-  // Returns the preferred icon size for promise apps depending on the current
-  // app_state.
+  // Returns the preferred inner icon size for a promise app depending on the
+  // current app_state. Different from `GetIconSize()` since
+  // `GetPreferredIconSizeForProgressRing()` is used to adjust padding for the
+  // promise ring.
   gfx::Size GetPreferredIconSizeForProgressRing() const;
 
   // The app list config used to layout this view. The initial values is set
   // during view construction, but can be changed by calling
   // `UpdateAppListConfig()`.
-  raw_ptr<const AppListConfig, DanglingUntriaged | ExperimentalAsh>
-      app_list_config_;
+  raw_ptr<const AppListConfig, DanglingUntriaged> app_list_config_;
 
   const bool is_folder_;
 
@@ -495,16 +512,14 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // requests.
   bool waiting_for_context_menu_options_ = false;
 
-  raw_ptr<AppListItem, ExperimentalAsh>
-      item_weak_;  // Owned by AppListModel. Can be nullptr.
+  raw_ptr<AppListItem> item_weak_;  // Owned by AppListModel. Can be nullptr.
 
   // Handles dragging and item selection. Might be a stub for items that are not
   // part of an apps grid.
-  const raw_ptr<GridDelegate, DanglingUntriaged | ExperimentalAsh>
-      grid_delegate_;
+  const raw_ptr<GridDelegate, DanglingUntriaged> grid_delegate_;
 
   // AppListControllerImpl by another name.
-  const raw_ptr<AppListViewDelegate, ExperimentalAsh> view_delegate_;
+  const raw_ptr<AppListViewDelegate> view_delegate_;
 
   // Set to true if the ImageSkia icon in AppListItem is drawn. The refreshed
   // folder icons are directly drawn on FolderIconView instead of using the
@@ -513,22 +528,19 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // NOTE: Only one of `icon_` and `folder_icon_` is used for an item view.
   // The icon view that uses the ImageSkia in AppListItem to draw the icon.
-  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
+  raw_ptr<views::ImageView> icon_ = nullptr;
 
   // The folder icon view used for refreshed folders.
-  raw_ptr<FolderIconView, ExperimentalAsh> folder_icon_ = nullptr;
+  raw_ptr<FolderIconView> folder_icon_ = nullptr;
 
-  // The host badge icon view used for app shortcuts.
-  raw_ptr<views::ImageView, ExperimentalAsh> host_badge_icon_view_ = nullptr;
-
-  raw_ptr<views::Label, ExperimentalAsh> title_ = nullptr;
+  raw_ptr<views::Label> title_ = nullptr;
 
   // The background layer added under the `icon_` layer to paint the background
   // of the icon.
-  raw_ptr<views::View, ExperimentalAsh> icon_background_ = nullptr;
+  raw_ptr<views::View> icon_background_ = nullptr;
 
   // Draws a dot next to the title for newly installed apps.
-  raw_ptr<views::View, ExperimentalAsh> new_install_dot_ = nullptr;
+  raw_ptr<views::View> new_install_dot_ = nullptr;
 
   // The context menu model adapter used for app item view.
   std::unique_ptr<AppListMenuModelAdapter> item_menu_model_adapter_;
@@ -572,6 +584,11 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // The bitmap image for this app list item's host badge icon.
   gfx::ImageSkia host_badge_icon_image_;
 
+  // The bitmap image for this app list item's main icon. This is separate from
+  // icon_->GetImage(), since the latter might contain the badge image in its
+  // imageSkia for shortcuts.
+  gfx::ImageSkia icon_image_;
+
   // If set, the icon that will be used for the AppListItemView until the actual
   // app icon loads. Used when animating an installed app into a place of a
   // promise app, in which case the promise app icon is initially used as the
@@ -592,7 +609,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // Draws an indicator in the top right corner of the image to represent an
   // active notification.
-  raw_ptr<DotIndicator, ExperimentalAsh> notification_indicator_ = nullptr;
+  raw_ptr<DotIndicator> notification_indicator_ = nullptr;
 
   // Indicates the context in which this view is shown.
   const Context context_;

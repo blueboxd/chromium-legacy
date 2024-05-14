@@ -35,8 +35,7 @@ class PageSwitcher : public views::View,
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
-  void Layout() override;
-  const char* GetClassName() const override;
+  void Layout(PassKey) override;
   void OnThemeChanged() override;
 
  private:
@@ -47,8 +46,8 @@ class PageSwitcher : public views::View,
   void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
 
-  raw_ptr<PaginationModel, ExperimentalAsh> model_;  // Owned by AppsGridView.
-  raw_ptr<views::View, ExperimentalAsh> buttons_;  // Owned by views hierarchy.
+  raw_ptr<PaginationModel> model_;  // Owned by AppsGridView.
+  raw_ptr<views::View> buttons_;    // Owned by views hierarchy.
 };
 
 }  // namespace ash

@@ -11,43 +11,61 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/functional/overloaded.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/web_apps/isolated_web_apps/isolated_web_app_installer_model.h"
 #include "chrome/browser/ui/views/web_apps/isolated_web_apps/isolated_web_app_installer_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_info_image_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_metadata.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/dialog_model.h"
+#include "ui/base/models/dialog_model_field.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_observer.h"
 
 namespace web_app {
 namespace {
 
 constexpr int kIconSize = 32;
+constexpr int kNestedDialogIconSize = 24;
 constexpr int kInfoPaneCornerRadius = 10;
 constexpr int kProgressViewHorizontalPadding = 45;
+
+views::View* GetRootView(views::View* view) {
+  while (view->parent()) {
+    view = view->parent();
+  }
+  return view;
+}
 
 gfx::Insets BottomPadding(views::DistanceMetric distance) {
   return gfx::Insets::TLBR(
@@ -102,9 +120,9 @@ class ToU16String {
 
 // A View containing a progress bar and a description string below it.
 class AnnotatedProgressBar : public views::BoxLayoutView {
- public:
-  METADATA_HEADER(AnnotatedProgressBar);
+  METADATA_HEADER(AnnotatedProgressBar, views::BoxLayoutView)
 
+ public:
   explicit AnnotatedProgressBar(const std::u16string& description) {
     SetOrientation(views::BoxLayout::Orientation::kVertical);
     SetInsideBorderInsets(gfx::Insets::VH(0, kProgressViewHorizontalPadding));
@@ -123,15 +141,15 @@ class AnnotatedProgressBar : public views::BoxLayoutView {
  private:
   raw_ptr<views::ProgressBar> progress_bar_;
 };
-BEGIN_METADATA(AnnotatedProgressBar, views::BoxLayoutView)
+BEGIN_METADATA(AnnotatedProgressBar)
 END_METADATA
 
 // A View that displays key/value entries in a pane with a different
 // background color and a rounded border.
 class InfoPane : public views::BoxLayoutView {
- public:
-  METADATA_HEADER(InfoPane);
+  METADATA_HEADER(InfoPane, views::BoxLayoutView)
 
+ public:
   explicit InfoPane(
       const std::vector<std::pair<int, std::u16string>>& metadata) {
     views::LayoutProvider* provider = views::LayoutProvider::Get();
@@ -162,22 +180,22 @@ class InfoPane : public views::BoxLayoutView {
     InvalidateLayout();
   }
 };
-BEGIN_METADATA(InfoPane, views::BoxLayoutView)
+BEGIN_METADATA(InfoPane)
 END_METADATA
 
 // The contents view used for all installer screens. This will handle rendering
 // common UI elements like icon, title, subtitle, and an optional View for the
 // body of the dialog.
 class InstallerDialogView : public views::BoxLayoutView {
- public:
-  METADATA_HEADER(InstallerDialogView);
+  METADATA_HEADER(InstallerDialogView, views::BoxLayoutView)
 
+ public:
   InstallerDialogView(const ui::ImageModel& icon_model,
                       const ToU16String& title,
                       int subtitle_id,
-                      std::optional<ToU16String> subtitle_param = absl::nullopt,
+                      std::optional<ToU16String> subtitle_param = std::nullopt,
                       std::optional<base::RepeatingClosure>
-                          subtitle_link_callback = absl::nullopt) {
+                          subtitle_link_callback = std::nullopt) {
     SetOrientation(views::BoxLayout::Orientation::kVertical);
     SetInsideBorderInsets(views::LayoutProvider::Get()->GetInsetsMetric(
         views::InsetsMetric::INSETS_DIALOG));
@@ -209,9 +227,9 @@ class InstallerDialogView : public views::BoxLayoutView {
   }
 
   void SetSubtitle(int subtitle_id,
-                   std::optional<ToU16String> subtitle_param = absl::nullopt,
+                   std::optional<ToU16String> subtitle_param = std::nullopt,
                    std::optional<base::RepeatingClosure>
-                       subtitle_link_callback = absl::nullopt) {
+                       subtitle_link_callback = std::nullopt) {
     if (subtitle_param.has_value()) {
       size_t offset;
       subtitle_label_->SetText(l10n_util::GetStringFUTF16(
@@ -249,14 +267,16 @@ class InstallerDialogView : public views::BoxLayoutView {
   raw_ptr<views::StyledLabel> subtitle_label_;
   raw_ptr<views::BoxLayoutView> contents_wrapper_;
 };
-BEGIN_METADATA(InstallerDialogView, views::BoxLayoutView)
+
+BEGIN_METADATA(InstallerDialogView)
 END_METADATA
 
 }  // namespace
 
 class DisabledView : public InstallerDialogView {
+  METADATA_HEADER(DisabledView, InstallerDialogView)
+
  public:
-  METADATA_HEADER(DisabledView);
   explicit DisabledView(IsolatedWebAppInstallerView::Delegate* delegate)
       : InstallerDialogView(
             CreateImageModelFromVector(vector_icons::kErrorOutlineIcon,
@@ -268,12 +288,14 @@ class DisabledView : public InstallerDialogView {
                 &IsolatedWebAppInstallerView::Delegate::OnSettingsLinkClicked,
                 base::Unretained(delegate))) {}
 };
-BEGIN_METADATA(DisabledView, InstallerDialogView)
+
+BEGIN_METADATA(DisabledView)
 END_METADATA
 
 class GetMetadataView : public InstallerDialogView {
+  METADATA_HEADER(GetMetadataView, InstallerDialogView)
+
  public:
-  METADATA_HEADER(GetMetadataView);
   GetMetadataView()
       : InstallerDialogView(
             CreateImageModelFromVector(kFingerprintIcon, ui::kColorAccent),
@@ -292,22 +314,20 @@ class GetMetadataView : public InstallerDialogView {
  private:
   raw_ptr<AnnotatedProgressBar> progress_bar_;
 };
-BEGIN_METADATA(GetMetadataView, InstallerDialogView)
+
+BEGIN_METADATA(GetMetadataView)
 END_METADATA
 
 class ShowMetadataView : public InstallerDialogView {
+  METADATA_HEADER(ShowMetadataView, InstallerDialogView)
+
  public:
-  METADATA_HEADER(ShowMetadataView);
   explicit ShowMetadataView(IsolatedWebAppInstallerView::Delegate* delegate)
       : InstallerDialogView(
             CreateImageModelFromVector(kFingerprintIcon, ui::kColorAccent),
             // The title will be updated to the app name when available.
             IDS_IWA_INSTALLER_VERIFICATION_TITLE,
-            IDS_IWA_INSTALLER_SHOW_METADATA_SUBTITLE,
-            IDS_IWA_INSTALLER_SHOW_METADATA_MANAGE_PROFILES,
-            base::BindRepeating(&IsolatedWebAppInstallerView::Delegate::
-                                    OnManageProfilesLinkClicked,
-                                base::Unretained(delegate))) {
+            IDS_IWA_INSTALLER_SHOW_METADATA_SUBTITLE) {
     // Initialize the View with dummy data so the initial height calculation
     // will be roughly accurate.
     std::vector<std::pair<int, std::u16string>> info = {
@@ -325,12 +345,14 @@ class ShowMetadataView : public InstallerDialogView {
  private:
   raw_ptr<InfoPane> info_pane_;
 };
-BEGIN_METADATA(ShowMetadataView, InstallerDialogView)
+
+BEGIN_METADATA(ShowMetadataView)
 END_METADATA
 
 class InstallView : public InstallerDialogView {
+  METADATA_HEADER(InstallView, InstallerDialogView)
+
  public:
-  METADATA_HEADER(InstallView);
   InstallView()
       : InstallerDialogView(
             CreateImageModelFromVector(kFingerprintIcon, ui::kColorAccent),
@@ -349,21 +371,63 @@ class InstallView : public InstallerDialogView {
  private:
   raw_ptr<AnnotatedProgressBar> progress_bar_;
 };
-BEGIN_METADATA(InstallView, InstallerDialogView)
+
+BEGIN_METADATA(InstallView)
 END_METADATA
 
 class InstallSuccessView : public InstallerDialogView {
+  METADATA_HEADER(InstallSuccessView, InstallerDialogView)
+
  public:
-  METADATA_HEADER(InstallSuccessView);
   InstallSuccessView()
       : InstallerDialogView(
             CreateImageModelFromVector(kFingerprintIcon, ui::kColorAccent),
             // The title will be updated to the app name when available.
             IDS_IWA_INSTALLER_VERIFICATION_TITLE,
-            IDS_IWA_INSTALLER_SUCCESS_SUBTITLE) {}
+            IDS_IWA_INSTALLER_SUCCESS_SUBTITLE) {
+    auto image = std::make_unique<NonAccessibleImageView>();
+    image->SetImage(ui::ImageModel::FromResourceId(IDR_IWA_INSTALL_SUCCESS));
+    SetContentsView(std::move(image));
+  }
 };
-BEGIN_METADATA(InstallSuccessView, InstallerDialogView)
+
+BEGIN_METADATA(InstallSuccessView)
 END_METADATA
+
+class DimOverlayView : public views::View {
+  METADATA_HEADER(DimOverlayView, views::View)
+
+ public:
+  DimOverlayView() {
+    SetBackground(views::CreateSolidBackground(SkColorSetARGB(125, 0, 0, 0)));
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  std::string GetObjectName() const override { return "DimOverlayView"; }
+};
+
+BEGIN_METADATA(DimOverlayView)
+END_METADATA
+
+void IsolatedWebAppInstallerViewImpl::Dim(bool dim) {
+  views::View* root = GetRootView(this);
+
+  // Undim: remove all |DimOverlayView|
+  if (!dim) {
+    for (views::View* child : root->children()) {
+      if (child->GetObjectName().compare("DimOverlayView") == 0) {
+        // |RemoveChildViewT()| returns the ownership of the child, which gets
+        // dropped, effectively deleting the child from memory.
+        root->RemoveChildViewT(child);
+      }
+    }
+    return;
+  }
+
+  // Dim: add a |DimOverlayView| as the last child.
+  root->AddChildView(std::make_unique<DimOverlayView>());
+}
 
 // static
 void IsolatedWebAppInstallerView::SetDialogButtons(
@@ -400,7 +464,8 @@ IsolatedWebAppInstallerViewImpl::IsolatedWebAppInstallerViewImpl(
       get_metadata_view_(MakeAndAddChildView<GetMetadataView>()),
       show_metadata_view_(MakeAndAddChildView<ShowMetadataView>(delegate)),
       install_view_(MakeAndAddChildView<InstallView>()),
-      install_success_view_(MakeAndAddChildView<InstallSuccessView>()) {
+      install_success_view_(MakeAndAddChildView<InstallSuccessView>()),
+      dialog_visible_(false) {
   SetUseDefaultFillLayout(true);
   ShowChildView(nullptr);
 }
@@ -456,40 +521,145 @@ void IsolatedWebAppInstallerViewImpl::ShowInstallSuccessScreen(
   ShowChildView(install_success_view_);
 }
 
-void IsolatedWebAppInstallerViewImpl::ShowDialog(
-    const IsolatedWebAppInstallerModel::DialogContent& dialog_content) {
-  auto bubble_delegate = std::make_unique<views::BubbleDialogDelegate>(
-      GetWidget()->GetContentsView(), views::BubbleBorder::FLOAT);
-  bubble_delegate->SetModalType(ui::MODAL_TYPE_CHILD);
-  bubble_delegate->set_fixed_width(
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
-  bubble_delegate->set_close_on_deactivate(false);
+views::Widget* IsolatedWebAppInstallerViewImpl::ShowDialog(
+    const IsolatedWebAppInstallerModel::Dialog& dialog) {
+  Dim(true);
+  return absl::visit(
+      base::Overloaded{
+          [this](const IsolatedWebAppInstallerModel::BundleInvalidDialog&) {
+            return ShowChildDialog(
+                IDS_IWA_INSTALLER_VERIFICATION_ERROR_TITLE,
+                ui::DialogModelLabel(
+                    IDS_IWA_INSTALLER_VERIFICATION_ERROR_SUBTITLE),
+                CreateImageModelFromVector(vector_icons::kErrorOutlineIcon,
+                                           ui::kColorAlertMediumSeverityIcon),
+                /*ok_label=*/std::nullopt);
+          },
+          [this](
+              const IsolatedWebAppInstallerModel::BundleAlreadyInstalledDialog&
+                  already_installed_dialog) {
+            std::u16string title = l10n_util::GetStringFUTF16(
+                IDS_IWA_INSTALLER_ALREADY_INSTALLED_TITLE,
+                already_installed_dialog.bundle_name);
 
-  ui::ImageModel image =
-      dialog_content.is_error
-          ? CreateImageModelFromVector(vector_icons::kErrorOutlineIcon,
-                                       ui::kColorAlertMediumSeverityIcon)
-          : CreateImageModelFromVector(kSecurityIcon, ui::kColorAccent);
-  if (dialog_content.details_link.has_value()) {
-    bubble_delegate->SetContentsView(std::make_unique<InstallerDialogView>(
-        image, dialog_content.message, dialog_content.details,
-        dialog_content.details_link->first,
-        dialog_content.details_link->second));
-  } else {
-    bubble_delegate->SetContentsView(std::make_unique<InstallerDialogView>(
-        image, dialog_content.message, dialog_content.details));
+            std::string installed_version =
+                already_installed_dialog.installed_version.GetString();
+            auto subtitle = ui::DialogModelLabel::CreateWithReplacements(
+                IDS_IWA_INSTALLER_ALREADY_INSTALLED_SUBTITLE,
+                {
+                    ui::DialogModelLabel::CreatePlainText(
+                        already_installed_dialog.bundle_name),
+                    ui::DialogModelLabel::CreatePlainText(
+                        base::UTF8ToUTF16(installed_version)),
+                });
+            return ShowChildDialog(
+                title, subtitle,
+                CreateImageModelFromVector(vector_icons::kErrorOutlineIcon,
+                                           ui::kColorAlertMediumSeverityIcon),
+                /*ok_label=*/std::nullopt);
+          },
+          [this](const IsolatedWebAppInstallerModel::ConfirmInstallationDialog&
+                     confirm_installation_dialog) {
+            auto subtitle = ui::DialogModelLabel::CreateWithReplacement(
+                IDS_IWA_INSTALLER_CONFIRM_SUBTITLE,
+                ui::DialogModelLabel::CreateLink(
+                    IDS_IWA_INSTALLER_CONFIRM_LEARN_MORE,
+                    confirm_installation_dialog.learn_more_callback));
+            return ShowChildDialog(
+                IDS_IWA_INSTALLER_CONFIRM_TITLE, subtitle,
+                CreateImageModelFromVector(kPrivacyTipIcon, ui::kColorAccent),
+                IDS_IWA_INSTALLER_CONFIRM_CONTINUE);
+          },
+          [this](
+              const IsolatedWebAppInstallerModel::InstallationFailedDialog&) {
+            return ShowChildDialog(
+                IDS_IWA_INSTALLER_INSTALL_FAILED_TITLE,
+                ui::DialogModelLabel(IDS_IWA_INSTALLER_INSTALL_FAILED_SUBTITLE),
+                CreateImageModelFromVector(vector_icons::kErrorOutlineIcon,
+                                           ui::kColorAlertMediumSeverityIcon),
+                IDS_IWA_INSTALLER_INSTALL_FAILED_RETRY);
+          }},
+      dialog);
+}
+
+gfx::Size IsolatedWebAppInstallerViewImpl::GetMaximumSize() const {
+  // `SetCanResize` only works in ash. ash will consider Lacros windows to be
+  // non-resizable if their min and max height are the same. To achieve this,
+  // we set the max size to the View's preferred size.
+  int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH);
+  return gfx::Size(width, GetHeightForWidth(width));
+}
+
+views::Widget* IsolatedWebAppInstallerViewImpl::ShowChildDialog(
+    int title,
+    const ui::DialogModelLabel& subtitle,
+    const ui::ImageModel& icon_model,
+    std::optional<int> ok_label) {
+  return ShowChildDialog(l10n_util::GetStringUTF16(title), subtitle, icon_model,
+                         ok_label);
+}
+
+views::Widget* IsolatedWebAppInstallerViewImpl::ShowChildDialog(
+    const std::u16string& title,
+    const ui::DialogModelLabel& subtitle,
+    const ui::ImageModel& icon_model,
+    std::optional<int> ok_label) {
+  CHECK(!dialog_visible_);
+  dialog_visible_ = true;
+
+  ui::DialogModel::Builder dialog_model_builder;
+  dialog_model_builder
+      .SetInternalName(IsolatedWebAppInstallerView::kNestedDialogWidgetName)
+      .SetTitle(title)
+      .AddParagraph(ui::DialogModelLabel(subtitle).set_is_secondary())
+      .DisableCloseOnDeactivate()
+      .AddCancelButton(base::BindOnce(&Delegate::OnChildDialogCanceled,
+                                      base::Unretained(delegate_)))
+      .SetDialogDestroyingCallback(base::BindOnce(
+          &IsolatedWebAppInstallerViewImpl::OnChildDialogDestroying,
+          weak_ptr_factory_.GetWeakPtr()));
+
+  if (ok_label.has_value()) {
+    dialog_model_builder.AddOkButton(
+        base::BindOnce(&Delegate::OnChildDialogAccepted,
+                       base::Unretained(delegate_)),
+        ui::DialogModel::Button::Params().SetLabel(
+            l10n_util::GetStringUTF16(ok_label.value())));
   }
 
-  SetDialogButtons(bubble_delegate.get(), IDS_APP_CLOSE,
-                   dialog_content.accept_message);
+  // None of DialogModel's banner image, icon, or main image display the icon
+  // the way we want, so we have to manually create a header View that
+  // positions the icon correctly.
+  auto header = std::make_unique<views::BoxLayoutView>();
+  int inset = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
+  header->SetInsideBorderInsets(gfx::Insets::TLBR(inset, inset, 0, inset));
+  auto* icon = header->AddChildView(std::make_unique<NonAccessibleImageView>());
+  icon->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
+  icon->SetImageSize(gfx::Size(kNestedDialogIconSize, kNestedDialogIconSize));
+  icon->SetImage(icon_model);
 
-  bubble_delegate->SetCancelCallback(base::BindOnce(
-      &Delegate::OnChildDialogCanceled, base::Unretained(delegate_)));
-  bubble_delegate->SetAcceptCallback(base::BindOnce(
-      &Delegate::OnChildDialogAccepted, base::Unretained(delegate_)));
+  std::unique_ptr<views::BubbleDialogModelHost> bubble =
+      views::BubbleDialogModelHost::CreateModal(dialog_model_builder.Build(),
+                                                ui::MODAL_TYPE_CHILD);
+  bubble->SetAnchorView(GetWidget()->GetContentsView());
+  bubble->SetArrow(views::BubbleBorder::FLOAT);
+  bubble->set_fixed_width(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
+  bubble->RegisterWidgetInitializedCallback(base::BindOnce(
+      [](views::BubbleDialogModelHost* bubble,
+         std::unique_ptr<views::View> header) {
+        bubble->GetBubbleFrameView()->SetHeaderView(std::move(header));
+      },
+      // base::Unretained is safe here because the callback is invoked when
+      // `bubble` is initialized, at which point it must still be alive.
+      base::Unretained(bubble.get()), std::move(header)));
 
-  views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate))->Show();
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(bubble));
+  widget->Show();
+  return widget;
 }
 
 void IsolatedWebAppInstallerViewImpl::ShowChildView(views::View* view) {
@@ -498,7 +668,13 @@ void IsolatedWebAppInstallerViewImpl::ShowChildView(views::View* view) {
   }
 }
 
-BEGIN_METADATA(IsolatedWebAppInstallerViewImpl, views::View)
+void IsolatedWebAppInstallerViewImpl::OnChildDialogDestroying() {
+  dialog_visible_ = false;
+  Dim(false);
+  delegate_->OnChildDialogDestroying();
+}
+
+BEGIN_METADATA(IsolatedWebAppInstallerViewImpl)
 END_METADATA
 
 }  // namespace web_app

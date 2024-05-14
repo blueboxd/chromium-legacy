@@ -45,7 +45,9 @@ class MockUploader : public feedback::FeedbackUploader {
   MockUploader& operator=(const MockUploader&) = delete;
 
   // feedback::FeedbackUploader:
-  void QueueReport(std::unique_ptr<std::string> data, bool has_email) override {
+  void QueueReport(std::unique_ptr<std::string> data,
+                   bool has_email,
+                   int product_id) override {
     if (data != nullptr) {
       userfeedback::ExtensionSubmit feedback_data;
       feedback_data.ParseFromString(*data);
@@ -53,9 +55,14 @@ class MockUploader : public feedback::FeedbackUploader {
     }
   }
 
+  base::WeakPtr<FeedbackUploader> AsWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
   OnReportSentCallback on_report_sent_;
+  base::WeakPtrFactory<MockUploader> weak_ptr_factory_{this};
 };
 
 std::unique_ptr<KeyedService> CreateMockUploader(
@@ -97,7 +104,7 @@ TEST(EditorFeedback, DoesNotSendFeedbackWhenFlagIsOff) {
   EXPECT_FALSE(on_report_sent_future.IsReady());
 }
 
-TEST(EditorFeedback, SendFeedbackDoesNotSendEmailForNonGoogleAccount) {
+TEST(EditorFeedback, SendFeedbackDoesNotSendEmail) {
   content::BrowserTaskEnvironment task_environment;
   base::test::ScopedFeatureList feature_list(features::kOrcaFeedback);
   base::test::TestFuture<userfeedback::ExtensionSubmit> on_report_sent_future;
@@ -147,8 +154,7 @@ TEST(EditorFeedback, SendFeedbackOnlyContainsNecessaryInformation) {
   expected_feedback_data.set_product_id(5314436);
   expected_feedback_data.set_type_id(0);
   expected_feedback_data.mutable_common_data()->set_gaia_id(0);
-  expected_feedback_data.mutable_common_data()->set_user_email(
-      "test@google.com");
+  expected_feedback_data.mutable_common_data()->set_user_email("");
   expected_feedback_data.mutable_common_data()->set_description(
       "test description");
   expected_feedback_data.mutable_common_data()->set_source_description_language(

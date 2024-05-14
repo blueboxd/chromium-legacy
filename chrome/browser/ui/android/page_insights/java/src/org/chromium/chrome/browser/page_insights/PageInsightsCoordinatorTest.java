@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
+import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.AutoPeekConditions;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.Page;
@@ -83,6 +84,7 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -109,7 +111,7 @@ public class PageInsightsCoordinatorTest {
     @Mock private OptimizationGuideBridge.Natives mOptimizationGuideBridgeJniMock;
     @Mock private ObservableSupplierImpl<Tab> mTabProvider;
     @Captor private ArgumentCaptor<EmptyTabObserver> mTabObserverCaptor;
-    @Captor private ArgumentCaptor<BottomSheetObserver> mBottomUiObserverCaptor;
+    @Captor private ArgumentCaptor<BottomSheetObserver> mOtherBottomSheetObserverCaptor;
 
     @Captor
     private ArgumentCaptor<BrowserControlsStateProvider.Observer>
@@ -118,7 +120,7 @@ public class PageInsightsCoordinatorTest {
     @Mock private Tab mTab;
     @Mock private BrowserControlsStateProvider mBrowserControlsStateProvider;
     @Mock private BrowserControlsSizer mBrowserControlsSizer;
-    @Mock private BottomSheetController mBottomUiController;
+    @Mock private BottomSheetController mOtherBottomSheetController;
     @Mock private ExpandedSheetHelper mExpandedSheetHelper;
     @Mock private BooleanSupplier mIsPageInsightsHubEnabled;
     @Mock private ProcessScope mProcessScope;
@@ -132,6 +134,7 @@ public class PageInsightsCoordinatorTest {
     @Mock private BackPressManager mBackPressManager;
     @Mock private ObservableSupplierImpl<Boolean> mInMotionSupplier;
     @Mock private NavigationHandle mNavigationHandle;
+    @Mock private ApplicationViewportInsetSupplier mAppInsetSupplier;
 
     private PageInsightsCoordinator mPageInsightsCoordinator;
     private ManagedBottomSheetController mPageInsightsController;
@@ -234,18 +237,22 @@ public class PageInsightsCoordinatorTest {
                                         mShareDelegateSupplier,
                                         mProfileSupplier,
                                         mPageInsightsController,
-                                        mBottomUiController,
+                                        mOtherBottomSheetController,
                                         mExpandedSheetHelper,
                                         mBrowserControlsStateProvider,
                                         mBrowserControlsSizer,
                                         mBackPressManager,
                                         mInMotionSupplier,
+                                        mAppInsetSupplier,
+                                        PageInsightsIntentParams.getDefaultInstance(),
                                         mIsPageInsightsHubEnabled,
-                                        (navigationHandle) ->
+                                        (navigationHandle, navigationEntry) ->
                                                 PageInsightsConfig.newBuilder()
+                                                        .setIsInitialPage(true)
                                                         .setShouldAutoTrigger(true)
                                                         .setShouldXsurfaceLog(true)
-                                                        .setShouldAttachGaiaToRequest(true)
+                                                        .setServerShouldNotLogOrPersonalize(false)
+                                                        .setNavigationTimestampMs(1234L)
                                                         .build()));
         verify(mTab).addObserver(mTabObserverCaptor.capture());
         mTabObserverCaptor
@@ -406,48 +413,36 @@ public class PageInsightsCoordinatorTest {
 
     @Test
     @MediumTest
-    public void testHideWhenOtherBottomUiOpens() throws Exception {
+    public void testOnBottomUiStateChanged_true_hides() throws Exception {
         createAndLaunchPageInsightsCoordinator();
 
         // Invoke |onBottomUiStateChanged| directly - Contextual search
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mPageInsightsCoordinator.onBottomUiStateChanged(true));
         waitForAnimationToFinish();
+
         assertEquals(
                 "Sheet should be hidden",
                 SheetState.HIDDEN,
                 mPageInsightsController.getSheetState());
+    }
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPageInsightsCoordinator.onBottomUiStateChanged(false));
-        waitForAnimationToFinish();
-        assertEquals(
-                "Sheet should be restored",
-                SheetState.FULL,
-                mPageInsightsController.getSheetState());
+    @Test
+    @MediumTest
+    public void testOtherBottomSheetObserverOnSheetChanged_peek_hides() throws Exception {
+        createAndLaunchPageInsightsCoordinator();
+        verify(mOtherBottomSheetController).addObserver(mOtherBottomSheetObserverCaptor.capture());
 
-        // Other bottom sheets
-        verify(mBottomUiController).addObserver(mBottomUiObserverCaptor.capture());
         TestThreadUtils.runOnUiThreadBlocking(
                 () ->
-                        mBottomUiObserverCaptor
+                        mOtherBottomSheetObserverCaptor
                                 .getValue()
                                 .onSheetStateChanged(SheetState.PEEK, /* unused= */ 0));
         waitForAnimationToFinish();
+
         assertEquals(
                 "Sheet should be hidden",
                 SheetState.HIDDEN,
-                mPageInsightsController.getSheetState());
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () ->
-                        mBottomUiObserverCaptor
-                                .getValue()
-                                .onSheetStateChanged(SheetState.HIDDEN, /* unused= */ 0));
-        waitForAnimationToFinish();
-        assertEquals(
-                "Sheet should be restored",
-                SheetState.FULL,
                 mPageInsightsController.getSheetState());
     }
 
@@ -538,7 +533,8 @@ public class PageInsightsCoordinatorTest {
                         eq(new GURL[] {JUnitTestGURLs.EXAMPLE_URL}),
                         eq(new int[] {HintsProto.OptimizationType.PAGE_INSIGHTS.getNumber()}),
                         eq(CommonTypesProto.RequestContext.CONTEXT_PAGE_INSIGHTS_HUB.getNumber()),
-                        any(OptimizationGuideBridge.OnDemandOptimizationGuideCallback.class));
+                        any(OptimizationGuideBridge.OnDemandOptimizationGuideCallback.class),
+                        any());
     }
 
     private static PageInsightsMetadata pageInsights() {

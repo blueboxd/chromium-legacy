@@ -14,9 +14,8 @@ SwitchAccessE2ETest = class extends E2ETestBase {
     super.testGenCppIncludes();
     GEN(`
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/public/cpp/accessibility_controller.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
     `);
   }
@@ -48,7 +47,6 @@ SwitchAccessE2ETest = class extends E2ETestBase {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
-    await importModule('SwitchAccess', '/switch_access/switch_access.js');
     await SwitchAccess.ready();
   }
 

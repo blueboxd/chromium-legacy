@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cross_device/logging/logging.h"
 #include "components/metrics/structured/structured_events.h"
+#include "components/metrics/structured/structured_metrics_client.h"
 #include "components/metrics/structured/structured_metrics_features.h"
 
 namespace {
@@ -40,10 +41,11 @@ const char kSocketNotListeningString[] = "Socket is not listening.";
 
 // Top Popular peripherals and first party devices. These device
 // model names should be kept in sync with the FastPairTrackedModelID
-// enum in src/tools/metrics/histograms/enums.xml. Devices may have multiple
-// Model IDs associated with the same device (for example, each Pixel Bud Pros
-// have different Model IDs for each different color) so we append '_*' to the
-// naming for subsequent Model IDs after the first one.
+// token in //tools/metrics/histograms/metadata/bluetooth/histograms.xml.
+// Devices may have multiple Model IDs associated with the same device
+// (for example, each Pixel Bud Pros have different Model IDs for each different
+// color) so we append '_*' to the naming for subsequent Model IDs after the
+// first one.
 const char kPopularPeripheral_BoatRockerz255Pro_ModelId[] = "CFF121";
 const char kPopularPeripheral_BoatRockerz255Pro_Name[] = "BoatRockerz255Pro";
 
@@ -553,7 +555,7 @@ const std::string GetFastPairTrackedModelId(const std::string& model_id) {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. This enum should be kept in sync
 // with the BluetoothConnectToServiceError enum in
-// src/tools/metrics/histograms/enums.xml.
+// //tools/metrics/histograms/metadata/bluetooth/enums.xml.
 enum class ConnectToServiceError {
   kUnknownError = 0,
   kAcceptFailed = 1,
@@ -1600,13 +1602,13 @@ void RecordStructuredDiscoveryNotificationShown(
   int tx_power = GetTxPower(bt_device);
   CD_LOG(VERBOSE, Feature::FP)
       << __func__ << ": RSSI: " << rssi << ", TxPower: " << tx_power;
-  metrics::structured::events::v2::fast_pair::DiscoveryNotificationShown()
-      .SetProtocol(static_cast<int>(device.protocol()))
-      .SetModelId(model_id)
-      .SetFastPairVersion(version)
-      .SetRSSI(rssi)
-      .SetTxPower(tx_power)
-      .Record();
+  metrics::structured::StructuredMetricsClient::Record(std::move(
+      metrics::structured::events::v2::fast_pair::DiscoveryNotificationShown()
+          .SetProtocol(static_cast<int>(device.protocol()))
+          .SetModelId(model_id)
+          .SetFastPairVersion(version)
+          .SetRSSI(rssi)
+          .SetTxPower(tx_power)));
 }
 
 void RecordStructuredPairingStarted(const Device& device,
@@ -1625,13 +1627,13 @@ void RecordStructuredPairingStarted(const Device& device,
   int tx_power = GetTxPower(bt_device);
   CD_LOG(VERBOSE, Feature::FP)
       << __func__ << ": RSSI: " << rssi << ", TxPower: " << tx_power;
-  metrics::structured::events::v2::fast_pair::PairingStart()
-      .SetProtocol(static_cast<int>(device.protocol()))
-      .SetModelId(model_id)
-      .SetFastPairVersion(version)
-      .SetRSSI(rssi)
-      .SetTxPower(tx_power)
-      .Record();
+  metrics::structured::StructuredMetricsClient::Record(
+      std::move(metrics::structured::events::v2::fast_pair::PairingStart()
+                    .SetProtocol(static_cast<int>(device.protocol()))
+                    .SetModelId(model_id)
+                    .SetFastPairVersion(version)
+                    .SetRSSI(rssi)
+                    .SetTxPower(tx_power)));
 }
 
 void RecordStructuredPairingComplete(const Device& device,
@@ -1650,13 +1652,13 @@ void RecordStructuredPairingComplete(const Device& device,
   int tx_power = GetTxPower(bt_device);
   CD_LOG(VERBOSE, Feature::FP)
       << __func__ << ": RSSI: " << rssi << ", TxPower: " << tx_power;
-  metrics::structured::events::v2::fast_pair::PairingComplete()
-      .SetProtocol(static_cast<int>(device.protocol()))
-      .SetModelId(model_id)
-      .SetFastPairVersion(version)
-      .SetRSSI(rssi)
-      .SetTxPower(tx_power)
-      .Record();
+  metrics::structured::StructuredMetricsClient::Record(
+      std::move(metrics::structured::events::v2::fast_pair::PairingComplete()
+                    .SetProtocol(static_cast<int>(device.protocol()))
+                    .SetModelId(model_id)
+                    .SetFastPairVersion(version)
+                    .SetRSSI(rssi)
+                    .SetTxPower(tx_power)));
 }
 
 void RecordStructuredPairFailure(const Device& device, PairFailure failure) {
@@ -1670,12 +1672,12 @@ void RecordStructuredPairFailure(const Device& device, PairFailure failure) {
     return;
   }
   int version = ConvertFastPairVersionToInt(device.version());
-  metrics::structured::events::v2::fast_pair::PairFailure()
-      .SetProtocol(static_cast<int>(device.protocol()))
-      .SetModelId(model_id)
-      .SetReason(static_cast<int>(failure))
-      .SetFastPairVersion(version)
-      .Record();
+  metrics::structured::StructuredMetricsClient::Record(
+      std::move(metrics::structured::events::v2::fast_pair::PairFailure()
+                    .SetProtocol(static_cast<int>(device.protocol()))
+                    .SetModelId(model_id)
+                    .SetReason(static_cast<int>(failure))
+                    .SetFastPairVersion(version)));
 }
 
 }  // namespace quick_pair

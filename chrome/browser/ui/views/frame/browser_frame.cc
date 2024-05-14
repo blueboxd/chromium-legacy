@@ -138,10 +138,16 @@ void BrowserFrame::InitBrowserFrame() {
   Browser* browser = browser_view_->browser();
   if (browser->is_type_picture_in_picture()) {
     params.z_order = ui::ZOrderLevel::kFloatingWindow;
-    // This doesn't change anything visually, but has the side-effect of keeping
-    // the pip window in the tab order.
-    params.remove_standard_frame = true;
     params.visible_on_all_workspaces = true;
+#if !BUILDFLAG(IS_WIN)
+    // This has the side-effect of keeping the pip window in the tab order.
+    //
+    // On all platforms, except for Windows, this doesn't change anything
+    // visually. If this is set for the Windows platform, the UI will be
+    // affected. Specifically, the title bar will not render correctly, see
+    // https://crbug.com/1456231 for more details.
+    params.remove_standard_frame = true;
+#endif  // !BUILDFLAG(IS_WIN)
   }
 
 #if BUILDFLAG(IS_OZONE)
@@ -176,18 +182,12 @@ void BrowserFrame::InitBrowserFrame() {
     }
   }
 
-  params.native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-
   Init(std::move(params));
 
 #if BUILDFLAG(IS_LINUX)
-  // Because getting `linux_ui_theme` requires `native_widget_` to be
-  // initialized, this needs to happen after Init().
-  if (!IsIncognitoBrowser() &&
-      ui::LinuxUiTheme::GetForWindow(GetNativeWindow()) &&
-      !browser_view_->AppUsesWindowControlsOverlay()) {
-    SelectNativeTheme();
-  }
+  SelectNativeTheme();
+#else
+  SetNativeTheme(ui::NativeTheme::GetInstanceForNativeUi());
 #endif
 
   if (!native_browser_frame_->UsesNativeSystemMenu()) {
@@ -299,7 +299,7 @@ void BrowserFrame::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
     // theme change notifications.
     Widget::Widgets widgets;
     GetAllOwnedWidgets(GetNativeView(), &widgets);
-    for (auto* widget : widgets) {
+    for (Widget* widget : widgets) {
       widget->ThemeChanged();
     }
   }
@@ -392,6 +392,11 @@ void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,
   // Do not show context menu for Document picture-in-picture browser. Context:
   // http://b/274862709.
   if (browser_view_->browser()->is_type_picture_in_picture()) {
+    return;
+  }
+
+  // Don't show a menu if a tab drag is active. https://crbug.com/1517709
+  if (tab_drag_kind_ != TabDragKind::kNone) {
     return;
   }
 
@@ -593,7 +598,7 @@ void BrowserFrame::OnTouchUiChanged() {
   } else {
     non_client_view()->InvalidateLayout();
   }
-  GetRootView()->Layout();
+  GetRootView()->DeprecatedLayoutImmediately();
 }
 
 bool BrowserFrame::RegenerateFrameOnThemeChange(

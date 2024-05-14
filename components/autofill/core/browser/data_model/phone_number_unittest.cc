@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
-#include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +26,7 @@ constexpr char kLocale[] = "en_US";
 
 struct MatchingTypesTestCase {
   std::u16string input;
-  ServerFieldTypeSet expected_types;
+  FieldTypeSet expected_types;
 };
 // Constructs a `PhoneNumber` from `number` and verifies that the matching types
 // on `input` equal `expected_type` on every test case in `tests`.
@@ -50,7 +49,7 @@ void MatchingTypesTest(const std::u16string& number,
   // `kLocale` is irrelevant, because `profile` has country information.
   phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), number, kLocale);
   for (const MatchingTypesTestCase& test : tests) {
-    ServerFieldTypeSet matching_types;
+    FieldTypeSet matching_types;
     phone_number.GetMatchingTypes(test.input, kLocale, &matching_types);
     EXPECT_EQ(matching_types, test.expected_types);
   }
@@ -169,50 +168,6 @@ TEST(PhoneNumberTest, SetInfo) {
   EXPECT_EQ(u"514", phone.GetInfo(PHONE_HOME_CITY_CODE, kLocale));
 }
 
-TEST(PhoneNumberTest, InferCountryCallingCode) {
-  base::test::ScopedFeatureList complement_calling_code_enabled;
-  complement_calling_code_enabled.InitAndEnableFeature(
-      features::kAutofillInferCountryCallingCode);
-
-  AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
-  PhoneNumber phone(&profile);
-
-  // No country information available and thus no calling code inferred.
-  EXPECT_TRUE(
-      phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"(650) 234-5678", kLocale));
-  EXPECT_TRUE(phone.GetInfo(PHONE_HOME_COUNTRY_CODE, kLocale).empty());
-  EXPECT_EQ(u"6502345678", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
-  EXPECT_EQ(u"(650) 234-5678", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_EQ(u"6502345678", phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, kLocale));
-
-  // With country information available, the calling code is inferred.
-  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
-  EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"6502345678", kLocale));
-  EXPECT_EQ(u"1", phone.GetInfo(PHONE_HOME_COUNTRY_CODE, kLocale));
-  EXPECT_EQ(u"16502345678", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
-  EXPECT_EQ(u"1 650-234-5678", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_EQ(u"6502345678", phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, kLocale));
-
-  // Pre-formatted number.
-  // In this case the raw info is kept as-is, while the calling code is inferred
-  // for the filling information.
-  EXPECT_TRUE(
-      phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"(650) 234-5678", kLocale));
-  EXPECT_EQ(u"1", phone.GetInfo(PHONE_HOME_COUNTRY_CODE, kLocale));
-  EXPECT_EQ(u"16502345678", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
-  EXPECT_EQ(u"(650) 234-5678", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_EQ(u"6502345678", phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, kLocale));
-
-  // Different country.
-  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
-  EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"015787912345", kLocale));
-  EXPECT_EQ(u"49", phone.GetInfo(PHONE_HOME_COUNTRY_CODE, kLocale));
-  EXPECT_EQ(u"+4915787912345", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
-  EXPECT_EQ(u"+49 1578 7912345", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_EQ(u"015787912345",
-            phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, kLocale));
-}
-
 // Test that cached phone numbers are correctly invalidated and updated.
 TEST(PhoneNumberTest, UpdateCachedPhoneNumber) {
   AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
@@ -296,14 +251,14 @@ TEST(PhoneNumberTest, HelperSetsAllPhoneFieldTypes) {
   AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
   PhoneNumber phone_number(&profile);
 
-  ServerFieldTypeSet types;
+  FieldTypeSet types;
   profile.GetSupportedTypes(&types);
-  std::vector<ServerFieldType> fields{types.begin(), types.end()};
-  std::erase_if(fields, [](ServerFieldType type) {
-    return GroupTypeOfServerFieldType(type) != FieldTypeGroup::kPhone;
+  std::vector<FieldType> fields{types.begin(), types.end()};
+  std::erase_if(fields, [](FieldType type) {
+    return GroupTypeOfFieldType(type) != FieldTypeGroup::kPhone;
   });
 
-  base::ranges::for_each(fields, [](ServerFieldType type) {
+  base::ranges::for_each(fields, [](FieldType type) {
     PhoneNumber::PhoneCombineHelper helper;
     EXPECT_TRUE(helper.SetInfo(AutofillType(type), u"123"));
   });
@@ -468,7 +423,7 @@ TEST(PhoneNumberTest, CountryCodeInMatchingTypes) {
   for (size_t i = 0; i < test_cases.size(); i++) {
     SCOPED_TRACE(testing::Message() << "i(US) = " << i);
 
-    ServerFieldTypeSet matching_types;
+    FieldTypeSet matching_types;
     phone_number.GetMatchingTypes(ASCIIToUTF16(test_cases[i]), "US",
                                   &matching_types);
 
@@ -486,7 +441,7 @@ TEST(PhoneNumberTest, CountryCodeInMatchingTypes) {
   for (size_t i = 0; i < test_cases.size(); i++) {
     SCOPED_TRACE(testing::Message() << "i(DE) = " << i);
 
-    ServerFieldTypeSet matching_types;
+    FieldTypeSet matching_types;
     phone_number_de.GetMatchingTypes(ASCIIToUTF16(test_cases[i]), kLocaleDE,
                                      &matching_types);
 
@@ -510,7 +465,7 @@ TEST(PhoneNumberTest, CountryCodeNotInMatchingTypes) {
   for (size_t i = 0; i < test_cases.size(); i++) {
     SCOPED_TRACE(testing::Message() << "i = " << i);
 
-    ServerFieldTypeSet matching_types;
+    FieldTypeSet matching_types;
     phone_number.GetMatchingTypes(ASCIIToUTF16(test_cases[i]), kLocale,
                                   &matching_types);
 

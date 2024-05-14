@@ -79,18 +79,17 @@ void AppendQuad(const viz::TransferableResource& resource,
   viz::TextureDrawQuad* texture_quad =
       render_pass_out.CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
 
-  static constexpr float kVertexOpacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   gfx::RectF uv_crop(quad_rect);
   uv_crop.Scale(1.f / buffer_size.width(), 1.f / buffer_size.height());
 
-  texture_quad->SetNew(
-      quad_state, quad_rect, quad_rect,
-      /*needs_blending=*/true, resource.id,
-      /*premultiplied=*/true, uv_crop.origin(), uv_crop.bottom_right(),
-      SkColors::kTransparent, kVertexOpacity,
-      /*flipped=*/false,
-      /*nearest=*/false,
-      /*secure_output=*/false, gfx::ProtectedVideoType::kClear);
+  texture_quad->SetNew(quad_state, quad_rect, quad_rect,
+                       /*needs_blending=*/true, resource.id,
+                       /*premultiplied=*/true, uv_crop.origin(),
+                       uv_crop.bottom_right(), SkColors::kTransparent,
+                       /*flipped=*/false,
+                       /*nearest=*/false,
+                       /*secure_output=*/false,
+                       gfx::ProtectedVideoType::kClear);
 
   texture_quad->set_resource_size_in_pixels(resource.size);
 }
@@ -188,7 +187,7 @@ std::unique_ptr<viz::CompositorFrame> CreateCompositorFrame(
     const gfx::Size& buffer_size,
     gfx::GpuMemoryBuffer* gpu_memory_buffer,
     UiResourceManager* resource_manager,
-    gpu::Mailbox mailbox,
+    const scoped_refptr<gpu::ClientSharedImage>& shared_image,
     gpu::SyncToken sync_token) {
   float device_scale_factor = host_window.layer()->device_scale_factor();
   const gfx::Transform& window_to_buffer_transform =
@@ -202,6 +201,10 @@ std::unique_ptr<viz::CompositorFrame> CreateCompositorFrame(
   if (gpu_memory_buffer) {
     CHECK_EQ(gpu_memory_buffer->GetSize(), buffer_size);
   }
+
+  // If FastInkHost is configured to hold a SharedImage, ensure that that
+  // SharedImage is used when creating compositor frames.
+  auto mailbox = shared_image ? shared_image->mailbox() : gpu::Mailbox();
 
   // In auto_update mode, we use hardware overlays to render the content.
   auto resource = AcquireUiResource(buffer_size, auto_update, gpu_memory_buffer,

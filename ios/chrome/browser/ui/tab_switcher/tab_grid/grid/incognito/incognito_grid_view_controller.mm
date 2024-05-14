@@ -28,6 +28,24 @@
 }
 
 - (UIContextMenuConfiguration*)collectionView:(UICollectionView*)collectionView
+    contextMenuConfigurationForItemAtIndexPaths:
+        (NSArray<NSIndexPath*>*)indexPaths
+                                          point:(CGPoint)point
+    API_AVAILABLE(ios(16)) {
+  // Don't allow long-press previews when the incognito reauth view is blocking
+  // the content.
+  if (self.contentNeedsAuthentication) {
+    return nil;
+  }
+
+  return [super collectionView:collectionView
+      contextMenuConfigurationForItemsAtIndexPaths:indexPaths
+                                             point:point];
+}
+
+#if !defined(__IPHONE_16_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_16_0
+
+- (UIContextMenuConfiguration*)collectionView:(UICollectionView*)collectionView
     contextMenuConfigurationForItemAtIndexPath:(NSIndexPath*)indexPath
                                          point:(CGPoint)point {
   // Don't allow long-press previews when the incognito reauth view is blocking
@@ -39,6 +57,20 @@
   return [super collectionView:collectionView
       contextMenuConfigurationForItemAtIndexPath:indexPath
                                            point:point];
+}
+
+#endif
+
+- (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
+           itemsForBeginningDragSession:(id<UIDragSession>)session
+                            atIndexPath:(NSIndexPath*)indexPath {
+  if (self.contentNeedsAuthentication) {
+    // Don't support dragging items if the drag&drop handler is not set.
+    return @[];
+  }
+  return [super collectionView:collectionView
+      itemsForBeginningDragSession:session
+                       atIndexPath:indexPath];
 }
 
 #pragma mark - IncognitoReauthConsumer

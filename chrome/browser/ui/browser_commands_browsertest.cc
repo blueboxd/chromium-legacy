@@ -25,7 +25,6 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test.h"
-#include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/ui_base_features.h"
 
@@ -82,12 +81,9 @@ class BrowserCommandsTest : public InProcessBrowserTest {
                                   bool blocked,
                                   bool settings_blocked) {
     auto entries = ukm_recorder.GetEntries(
-        "ThirdPartyCookies.BreakageIndicator",
-        {"BreakageIndicatorType", "TPCBlocked", "TPCBlockedInSettings"});
+        "ThirdPartyCookies.BreakageIndicator.UserReload",
+        {"TPCBlocked", "TPCBlockedInSettings"});
     EXPECT_EQ(entries.size(), size);
-    EXPECT_EQ(
-        entries.at(index).metrics.at("BreakageIndicatorType"),
-        static_cast<int>(net::cookie_util::BreakageIndicatorType::USER_RELOAD));
     EXPECT_EQ(entries.at(index).metrics.at("TPCBlocked"), blocked);
     EXPECT_EQ(entries.at(index).metrics.at("TPCBlockedInSettings"),
               settings_blocked);
@@ -335,6 +331,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, StartsOrganizationRequest) {
+  base::HistogramTester histogram_tester;
+
   chrome::ExecuteCommand(browser(), IDC_ORGANIZE_TABS);
 
   TabOrganizationService* service =
@@ -342,8 +340,13 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, StartsOrganizationRequest) {
   const TabOrganizationSession* session =
       service->GetSessionForBrowser(browser());
 
-  EXPECT_NE(TabOrganizationRequest::State::NOT_STARTED,
+  EXPECT_EQ(TabOrganizationRequest::State::NOT_STARTED,
             session->request()->state());
+
+  histogram_tester.ExpectUniqueSample("Tab.Organization.AllEntrypoints.Clicked",
+                                      true, 1);
+  histogram_tester.ExpectUniqueSample("Tab.Organization.ThreeDotMenu.Clicked",
+                                      true, 1);
 }
 
 }  // namespace chrome

@@ -25,11 +25,13 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mock.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -67,7 +69,7 @@ class StubWebThemeEngine : public WebThemeEngine {
              const ExtraParams*,
              mojom::blink::ColorScheme color_scheme,
              const ui::ColorProvider* color_provider,
-             const absl::optional<SkColor>& accent_color) override {
+             const std::optional<SkColor>& accent_color) override {
     // Make  sure we don't overflow the array.
     DCHECK(part <= kPartProgressBar);
     painted_color_scheme_[part] = color_scheme;
@@ -282,23 +284,24 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
         VirtualTimeController::VirtualTimePolicy::kAdvance);
   }
 
-  void StopVirtualTimeAndExitRunLoop() {
+  void StopVirtualTimeAndExitRunLoop(base::OnceClosure quit_closure) {
     GetVirtualTimeController()->SetVirtualTimePolicy(
         VirtualTimeController::VirtualTimePolicy::kPause);
-    test::ExitRunLoop();
+    std::move(quit_closure).Run();
   }
 
   // Some task queues may have repeating v8 tasks that run forever so we impose
   // a hard (virtual) time limit.
   void RunTasksForPeriod(base::TimeDelta delay) {
+    base::RunLoop loop;
     TimeAdvance();
     scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
         FROM_HERE,
         WTF::BindOnce(
             &ScrollbarsTestWithVirtualTimer::StopVirtualTimeAndExitRunLoop,
-            WTF::Unretained(this)),
+            WTF::Unretained(this), loop.QuitClosure()),
         delay);
-    test::EnterRunLoop();
+    loop.Run();
   }
 
   VirtualTimeController* GetVirtualTimeController() {
@@ -362,6 +365,7 @@ TEST_P(ScrollbarsTest, ScrollbarsUpdatedOnOverlaySettingsChange) {
 }
 
 TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeF) {
+  test::TaskEnvironment task_environment;
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform;
   frame_test_helpers::WebViewHelper web_view_helper;
   // Needed so visual viewport supplies its own scrollbars. We don't support
@@ -806,6 +810,517 @@ TEST_P(ScrollbarsTest, MouseOverCustomScrollbarInCustomCursorElement) {
   HandleMouseMoveEvent(195, 5);
 
   EXPECT_EQ(ui::mojom::blink::CursorType::kMove, CursorType());
+}
+
+// Ensure mouse cursor should be custom style when hovering over the custom
+// scrollbar with custom cursor style.
+TEST_P(ScrollbarsTest, MouseOverCustomScrollbarWithCustomCursor) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: pointer;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById(AtomicString("d1"));
+
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 5);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+  HandleMouseMoveEvent(195, 5);
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHand, CursorType());
+}
+
+// Ensure mouse cursor should be custom style when hovering over the custom
+// scrollbar-thumb with custom cursor style.
+TEST_P(ScrollbarsTest, MouseOverCustomScrollbarThumbWithCustomCursor) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: auto;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById(AtomicString("d1"));
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 5);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+  HandleMouseMoveEvent(195, 5);
+  EXPECT_EQ(hit_test_result.GetScrollbar()->HoveredPart(), kThumbPart);
+
+  EXPECT_EQ(ui::mojom::blink::CursorType::kPointer, CursorType());
+}
+
+// Ensure mouse cursor should be custom style when hovering over the custom
+// scrollbar-track-piece with custom cursor style.
+TEST_P(ScrollbarsTest, MouseOverCustomScrollbarTrackPieceWithCustomCursor) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: auto;
+    }
+
+    ::-webkit-scrollbar-track-piece {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: text;
+    }
+
+    ::-webkit-scrollbar-track-piece:start {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: help;
+    }
+
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById(AtomicString("d1"));
+
+  div->scrollTo(0, 100);
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 5);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+
+  HandleMouseMoveEvent(195, 5);
+  EXPECT_EQ(hit_test_result.GetScrollbar()->HoveredPart(), kBackTrackPart);
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHelp, CursorType());
+
+  HandleMouseMoveEvent(195, 190);
+  EXPECT_EQ(hit_test_result.GetScrollbar()->HoveredPart(), kForwardTrackPart);
+  EXPECT_EQ(ui::mojom::blink::CursorType::kIBeam, CursorType());
+}
+
+// Ensure mouse cursor should inherit the style set by the custom
+// scrollbar-track when hovering over the custom scrollbar-track-piece
+// that has no style set.
+TEST_P(ScrollbarsTest, MouseOverCustomScrollbarTrackPieceWithoutStyle) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: auto;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: help;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById(AtomicString("d1"));
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 190);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+  HandleMouseMoveEvent(195, 190);
+
+  EXPECT_EQ(hit_test_result.GetScrollbar()->HoveredPart(), kForwardTrackPart);
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHelp, CursorType());
+}
+
+// Ensure mouse cursor should inherit the style set by the custom scrollbar
+// when hovering over the custom scrollbar-track-piece that both
+// scrollbar-track and scrollbar-track-piece has no style set.
+TEST_P(ScrollbarsTest,
+       MouseOverCustomScrollbarTrackPieceBothTrackAndTrackPieceWithoutStyle) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: auto;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById(AtomicString("d1"));
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 190);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+  HandleMouseMoveEvent(195, 190);
+
+  EXPECT_EQ(hit_test_result.GetScrollbar()->HoveredPart(), kForwardTrackPart);
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHand, CursorType());
+}
+
+// Ensure mouse cursor should be custom style when hovering over the custom
+// scrollbar-button with custom cursor style;
+TEST_P(ScrollbarsTest, MouseOverCustomScrollbarButtonTrackWithCustomCursor) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: auto;
+    }
+
+    ::-webkit-scrollbar-button {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: help;
+      display: block;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById(AtomicString("d1"));
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 2);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+
+  HandleMouseMoveEvent(195, 2);
+
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHelp, CursorType());
+}
+
+// Ensure mouse cursor should be custom style when hovering over the custom
+// scrollbar-corner with custom cursor style;
+TEST_P(ScrollbarsTest, MouseOverCustomScrollbarCornerTrackWithCustomCursor) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+      width: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: none;
+      height: 5px;
+      width: 5px;
+      cursor: auto;
+    }
+
+    ::-webkit-scrollbar-corner {
+      cursor: help;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById(AtomicString("d1"));
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 195);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.IsOverScrollCorner());
+
+  HandleMouseMoveEvent(195, 195);
+
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHelp, CursorType());
+}
+
+TEST_P(ScrollbarsTest, MouseOverCustomScrollbarCornerFrame) {
+  // Skip this test if scrollbars don't allow hit testing on the platform.
+  if (!WebView().GetPage()->GetScrollbarTheme().AllowsHitTest()) {
+    return;
+  }
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    iframe {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <iframe id="iframe" srcdoc="<style>
+        body { width: 200vw; height: 200vh; }
+        ::-webkit-scrollbar { cursor: pointer; }
+        ::-webkit-scrollbar-corner { cursor: help; }
+    </style>"></iframe>
+  )HTML");
+
+  // Wait for load.
+  test::RunPendingTasks();
+  Compositor().BeginFrame();
+
+  Document& iframe_document =
+      *To<HTMLIFrameElement>(
+           GetDocument().getElementById(AtomicString("iframe")))
+           ->contentDocument();
+
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 195);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), iframe_document.documentElement());
+  EXPECT_TRUE(hit_test_result.IsOverScrollCorner());
+
+  HandleMouseMoveEvent(195, 195);
+
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHelp, CursorType());
 }
 
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate

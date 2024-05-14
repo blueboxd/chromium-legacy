@@ -25,6 +25,7 @@ const INITIAL_PREFERENCES: Preferences = {
   officeFileMovedGoogleDrive: 0,
   driveFsBulkPinningAvailable: false,
   driveFsBulkPinningEnabled: false,
+  localUserFilesAllowed: true,
 };
 
 /**
@@ -41,7 +42,7 @@ export async function testUpdatePreferences(done: () => void) {
   const want = INITIAL_PREFERENCES;
   assertDeepEquals(
       want, firstState,
-      `${JSON.stringify(want)} != ${JSON.stringify(firstState)}`);
+      `${JSON.stringify(want)} !== ${JSON.stringify(firstState)}`);
 
   done();
 }
@@ -70,7 +71,8 @@ export async function testPreferencesWithNoKeysUpdates(done: () => void) {
         // Expect the preferences in the store to be updated.
         const state = store.getState().preferences;
         assertDeepEquals(
-            want, state, `${JSON.stringify(want)} != ${JSON.stringify(state)}`);
+            want, state,
+            `${JSON.stringify(want)} !== ${JSON.stringify(state)}`);
 
         return want;
       };

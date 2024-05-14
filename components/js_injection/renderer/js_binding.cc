@@ -13,7 +13,6 @@
 #include "base/functional/overloaded.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
-#include "components/js_injection/common/features.h"
 #include "components/js_injection/common/interfaces.mojom-forward.h"
 #include "components/js_injection/renderer/js_communication.h"
 #include "content/public/renderer/render_frame.h"
@@ -53,7 +52,7 @@ class V8ArrayBufferPayload : public blink::WebMessageArrayBufferPayload {
 
   size_t GetLength() const override { return array_buffer_->ByteLength(); }
 
-  absl::optional<base::span<const uint8_t>> GetAsSpanIfPossible()
+  std::optional<base::span<const uint8_t>> GetAsSpanIfPossible()
       const override {
     return base::make_span(static_cast<const uint8_t*>(array_buffer_->Data()),
                            array_buffer_->ByteLength());
@@ -219,8 +218,7 @@ void JsBinding::PostMessage(gin::Arguments* args) {
     gin::Converter<std::u16string>::FromV8(args->isolate(), js_payload,
                                            &string);
     message_payload = std::move(string);
-  } else if (IsJsToBrowserArrayBufferSupported() &&
-             js_payload->IsArrayBuffer()) {
+  } else if (js_payload->IsArrayBuffer()) {
     v8::Local<v8::ArrayBuffer> array_buffer = js_payload.As<v8::ArrayBuffer>();
     message_payload = std::make_unique<V8ArrayBufferPayload>(array_buffer);
   } else {
@@ -238,7 +236,7 @@ void JsBinding::PostMessage(gin::Arguments* args) {
   }
 
   for (auto& obj : objs) {
-    absl::optional<blink::MessagePortChannel> port =
+    std::optional<blink::MessagePortChannel> port =
         blink::WebMessagePortConverter::DisentangleAndExtractMessagePortChannel(
             args->isolate(), obj);
     // If the port is null we should throw an exception.

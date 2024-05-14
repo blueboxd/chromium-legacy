@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
@@ -67,13 +68,12 @@ class ActionView : public views::View {
   // Show error message for action. If `ax_annouce` is true, ChromeVox
   // announces the `message` directly. Otherwise, `message` is added as the
   // description of `editing_label`.
-  void ShowErrorMsg(const base::StringPiece& message,
+  void ShowErrorMsg(std::string_view message,
                     ActionLabel* editing_label,
                     bool ax_annouce);
   // Show info/edu message.
-  void ShowInfoMsg(const base::StringPiece& message,
-                   ActionLabel* editing_label);
-  void ShowFocusInfoMsg(const base::StringPiece& message, views::View* view);
+  void ShowInfoMsg(std::string_view message, ActionLabel* editing_label);
+  void ShowFocusInfoMsg(std::string_view message, views::View* view);
   void RemoveMessage();
   // Change binding for `action` binding to `input_element` and set
   // `kEditedSuccess` on `action_label` if `action_label` is not nullptr.
@@ -122,7 +122,9 @@ class ActionView : public views::View {
   void AddedToWidget() override;
 
   Action* action() { return action_; }
-  const std::vector<ActionLabel*>& labels() const { return labels_; }
+  const std::vector<raw_ptr<ActionLabel, VectorExperimental>>& labels() const {
+    return labels_;
+  }
   TouchPoint* touch_point() { return touch_point_; }
   DisplayOverlayController* display_overlay_controller() {
     return display_overlay_controller_;
@@ -146,7 +148,7 @@ class ActionView : public views::View {
   // Reference to the owner class.
   const raw_ptr<DisplayOverlayController> display_overlay_controller_ = nullptr;
   // Labels for mapping hints.
-  std::vector<ActionLabel*> labels_;
+  std::vector<raw_ptr<ActionLabel, VectorExperimental>> labels_;
   // Current display mode.
   DisplayMode current_display_mode_ = DisplayMode::kNone;
   // Local center position of the touch point view.

@@ -715,7 +715,7 @@ LOG(INFO) << "Value is " << value->get_string_value();  // DCHECK!
 
 ### Features
 
-Mojom `feature` generates a `base::FeatureList` with the given `name` and
+Mojom `feature` generates a `base::Feature` with the given `name` and
 `default_state` (`true` => `ENABLED_BY_DEFAULT`). The feature can be accessed
 and tested in C++ using the mapped name even if it is not used to mark any
 interfaces or methods.
@@ -1274,6 +1274,9 @@ probably never think about while you are coding. It has always been a
 huge pain.
 * Sync calls may lead to deadlocks.
 * Sync web apis are [strongly discouraged](https://www.w3.org/TR/design-principles/#async-by-default).
+* The `[Sync]` annotation does not affect the bindings for the service side
+and therefore does **not** guard against re-entrancy, especially when the
+client is untrusted (e.g. the renderer process).
 
 ### Mojom changes
 

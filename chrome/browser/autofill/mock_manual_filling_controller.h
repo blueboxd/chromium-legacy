@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_AUTOFILL_MOCK_MANUAL_FILLING_CONTROLLER_H_
 
 #include "chrome/browser/autofill/manual_filling_controller.h"
-#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
+#include "chrome/browser/keyboard_accessory/android/accessory_sheet_enums.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class MockManualFillingController
-    : public ManualFillingController,
-      public base::SupportsWeakPtr<MockManualFillingController> {
+class MockManualFillingController : public ManualFillingController {
  public:
   MockManualFillingController();
 
@@ -66,6 +64,13 @@ class MockManualFillingController
                base::OnceCallback<void(autofill::AccessorySheetData)>),
               (override));
   MOCK_METHOD((gfx::NativeView), container_view, (), (const, override));
+
+  base::WeakPtr<MockManualFillingController> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockManualFillingController> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_MOCK_MANUAL_FILLING_CONTROLLER_H_

@@ -124,6 +124,9 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   void StartNetworkCheck();
   void StartUpdateCheck();
 
+  // Cleans up observer registrations for this object.
+  void StopObserving();
+
   void RefreshTimeLeftEstimation();
 
   void SetUpdateOverCellularOneTimePermission();
@@ -190,7 +193,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   void OnUpdateCheckStarted(UpdateEngineClient::UpdateCheckResult result);
 
   // Pointer to delegate that owns this VersionUpdater instance.
-  raw_ptr<Delegate, ExperimentalAsh> delegate_;
+  raw_ptr<Delegate> delegate_;
 
   std::unique_ptr<base::RepeatingTimer> refresh_timer_;
 
@@ -227,7 +230,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
 
   UpdateTimeEstimator time_estimator_;
 
-  raw_ptr<const base::TickClock, ExperimentalAsh> tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   base::WeakPtrFactory<VersionUpdater> weak_ptr_factory_{this};
 };

@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ANDROID_JNI_GENERATOR_SAMPLE_FOR_TESTS_H_
-#define BASE_ANDROID_JNI_GENERATOR_SAMPLE_FOR_TESTS_H_
+#ifndef _JNI_ZERO_SAMPLE_FOR_TESTS_H_
+#define _JNI_ZERO_SAMPLE_FOR_TESTS_H_
 
 #include <jni.h>
 #include <map>
 #include <string>
+#include "third_party/jni_zero/jni_zero.h"
 
-#include "base/android/jni_android.h"
-
-namespace base {
-namespace android {
-
+namespace jni_zero {
+namespace samples {
 // This file is used to:
 // - document the best practices and guidelines on JNI usage.
 // - ensure sample_for_tests_jni.h compiles and the functions declared in it
@@ -72,6 +70,7 @@ class CPPClass {
   CPPClass();
 
   CPPClass(const CPPClass&) = delete;
+  CPPClass(CPPClass&&) = default;
   CPPClass& operator=(const CPPClass&) = delete;
 
   ~CPPClass();
@@ -82,30 +81,30 @@ class CPPClass {
   class InnerClass {
    public:
     jdouble MethodOtherP0(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& caller);
+                          const jni_zero::JavaParamRef<jobject>& caller);
   };
 
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& caller);
+  void Destroy(JNIEnv* env, const jni_zero::JavaParamRef<jobject>& caller);
 
-  jint Method(JNIEnv* env, const base::android::JavaParamRef<jobject>& caller);
+  jint Method(JNIEnv* env, const jni_zero::JavaParamRef<jobject>& caller);
 
   void AddStructB(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& caller,
-                  const base::android::JavaParamRef<jobject>& structb);
+                  const jni_zero::JavaParamRef<jobject>& caller,
+                  const jni_zero::JavaParamRef<jobject>& structb);
 
   void IterateAndDoSomethingWithStructB(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+      const jni_zero::JavaParamRef<jobject>& caller);
 
-  base::android::ScopedJavaLocalRef<jstring> ReturnAString(
+  jni_zero::ScopedJavaLocalRef<jstring> ReturnAString(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+      const jni_zero::JavaParamRef<jobject>& caller);
 
  private:
   std::map<long, std::string> map_;
 };
 
-}  // namespace android
-}  // namespace base
+}  // namespace samples
+}  // namespace jni_zero
 
-#endif  // BASE_ANDROID_JNI_GENERATOR_SAMPLE_FOR_TESTS_H_
+#endif  // _JNI_ZERO_SAMPLE_FOR_TESTS_H_

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <iosfwd>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -31,11 +32,10 @@
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace attribution_reporting {
 class AggregationKeys;
-class EventReportWindows;
+class TriggerSpecs;
 }  // namespace attribution_reporting
 
 namespace net {
@@ -95,7 +95,7 @@ class SourceBuilder {
 
   SourceBuilder& SetActiveState(StoredSource::ActiveState active_state);
 
-  SourceBuilder& SetDebugKey(absl::optional<uint64_t> debug_key);
+  SourceBuilder& SetDebugKey(std::optional<uint64_t> debug_key);
 
   SourceBuilder& SetSourceId(StoredSource::Id source_id);
 
@@ -116,8 +116,7 @@ class SourceBuilder {
 
   SourceBuilder& SetDebugReporting(bool debug_reporting);
 
-  SourceBuilder& SetEventReportWindows(
-      attribution_reporting::EventReportWindows);
+  SourceBuilder& SetTriggerSpecs(attribution_reporting::TriggerSpecs);
 
   SourceBuilder& SetMaxEventLevelReports(int max_event_level_reports);
 
@@ -177,9 +176,9 @@ class TriggerBuilder {
 
   TriggerBuilder& SetPriority(int64_t priority);
 
-  TriggerBuilder& SetDedupKey(absl::optional<uint64_t> dedup_key);
+  TriggerBuilder& SetDedupKey(std::optional<uint64_t> dedup_key);
 
-  TriggerBuilder& SetDebugKey(absl::optional<uint64_t> debug_key);
+  TriggerBuilder& SetDebugKey(std::optional<uint64_t> debug_key);
 
   TriggerBuilder& SetAggregatableTriggerData(
       std::vector<attribution_reporting::AggregatableTriggerData>);
@@ -188,7 +187,7 @@ class TriggerBuilder {
       attribution_reporting::AggregatableValues);
 
   TriggerBuilder& SetAggregatableDedupKey(
-      absl::optional<uint64_t> aggregatable_dedup_key);
+      std::optional<uint64_t> aggregatable_dedup_key);
 
   TriggerBuilder& SetAggregatableDedupKeyFilterPair(
       attribution_reporting::FilterPair filter_pair);
@@ -218,22 +217,22 @@ class TriggerBuilder {
   attribution_reporting::SuitableOrigin reporting_origin_;
   attribution_reporting::FilterPair filter_pair_;
   int64_t priority_ = 0;
-  absl::optional<uint64_t> dedup_key_;
-  absl::optional<uint64_t> debug_key_;
+  std::optional<uint64_t> dedup_key_;
+  std::optional<uint64_t> debug_key_;
   std::vector<attribution_reporting::AggregatableTriggerData>
       aggregatable_trigger_data_;
   attribution_reporting::AggregatableValues aggregatable_values_;
-  absl::optional<uint64_t> aggregatable_dedup_key_;
+  std::optional<uint64_t> aggregatable_dedup_key_;
   attribution_reporting::FilterPair aggregatable_dedup_key_filter_pair_;
   bool is_within_fenced_frame_ = false;
   bool debug_reporting_ = false;
-  absl::optional<attribution_reporting::SuitableOrigin>
+  std::optional<attribution_reporting::SuitableOrigin>
       aggregation_coordinator_origin_;
   std::vector<network::TriggerVerification> verifications_;
   attribution_reporting::mojom::SourceRegistrationTimeConfig
       source_registration_time_config_ =
           attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude;
-  absl::optional<std::string> trigger_context_id_;
+  std::optional<std::string> trigger_context_id_;
 };
 
 // Helper class to construct an `AttributionInfo` for tests using default data.
@@ -248,13 +247,13 @@ class AttributionInfoBuilder {
 
   AttributionInfoBuilder& SetTime(base::Time time);
 
-  AttributionInfoBuilder& SetDebugKey(absl::optional<uint64_t> debug_key);
+  AttributionInfoBuilder& SetDebugKey(std::optional<uint64_t> debug_key);
 
   AttributionInfo Build() const;
 
  private:
   base::Time time_;
-  absl::optional<uint64_t> debug_key_;
+  std::optional<uint64_t> debug_key_;
   attribution_reporting::SuitableOrigin context_origin_;
 };
 
@@ -285,7 +284,7 @@ class ReportBuilder {
       attribution_reporting::mojom::SourceRegistrationTimeConfig);
 
   ReportBuilder& SetVerificationToken(
-      absl::optional<std::string> verification_token);
+      std::optional<std::string> verification_token);
 
   ReportBuilder& SetTriggerContextId(std::string trigger_context_id);
 
@@ -304,14 +303,14 @@ class ReportBuilder {
   base::Uuid external_report_id_;
   AttributionReport::Id report_id_{0};
   std::vector<AggregatableHistogramContribution> contributions_;
-  absl::optional<attribution_reporting::SuitableOrigin>
+  std::optional<attribution_reporting::SuitableOrigin>
       aggregation_coordinator_origin_;
 
-  absl::optional<std::string> verification_token_;
+  std::optional<std::string> verification_token_;
   attribution_reporting::mojom::SourceRegistrationTimeConfig
       source_registration_time_config_ =
           attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude;
-  absl::optional<std::string> trigger_context_id_;
+  std::optional<std::string> trigger_context_id_;
 };
 
 bool operator==(const StoredSource&, const StoredSource&);

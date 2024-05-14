@@ -25,7 +25,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl_realized_web_state.h"
 #import "ios/web/web_state/web_state_impl_serialized_data.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "url/gurl.h"
 
 namespace web {
@@ -47,9 +47,16 @@ void CheckForOverRealization() {
   if ((now - g_last_creation_time) < kWindowSize) {
     g_last_realized_count++;
     if (g_last_realized_count >= kMaxEvents) {
-      base::debug::DumpWithoutCrashing();
       g_has_reported_once = true;
-      NOTREACHED();
+      // Don't use an assertion primitive (e.g. NOTREACHED) because
+      // sometimes this is not detected until stable release, and while
+      // this is a memory and performance regression, this does not need
+      // to be fatal for official.
+#if defined(OFFICIAL_BUILD)
+      base::debug::DumpWithoutCrashing();
+#else
+      base::ImmediateCrash();
+#endif  // defined(OFFICIAL_BUILD)
     }
   } else {
     g_last_creation_time = now;
@@ -735,8 +742,7 @@ bool WebStateImpl::CanTakeSnapshot() const {
   return LIKELY(pimpl_) ? pimpl_->CanTakeSnapshot() : false;
 }
 
-void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
-                                SnapshotCallback callback) {
+void WebStateImpl::TakeSnapshot(const CGRect rect, SnapshotCallback callback) {
   RealizedState()->TakeSnapshot(rect, std::move(callback));
 }
 
@@ -807,12 +813,9 @@ void WebStateImpl::DownloadCurrentPage(
     id<CRWWebViewDownloadDelegate> delegate,
     void (^handler)(id<CRWWebViewDownload>)) {
   CRWWebController* web_controller = GetWebController();
-  NSURLRequest* request =
-      [NSURLRequest requestWithURL:net::NSURLWithGURL(GetLastCommittedURL())];
-  [web_controller downloadCurrentPageWithRequest:request
-                                 destinationPath:destination_file
-                                        delegate:delegate
-                                         handler:handler];
+  [web_controller downloadCurrentPageToDestinationPath:destination_file
+                                              delegate:delegate
+                                               handler:handler];
 }
 
 bool WebStateImpl::IsFindInteractionSupported() {

@@ -28,7 +28,7 @@ void WebEnginePermissionDelegate::RequestPermissions(
   frame->permission_controller()->RequestPermissions(
       request_description.permissions,
       url::Origin::Create(request_description.requesting_origin),
-      request_description.user_gesture, std::move(callback));
+      std::move(callback));
 }
 
 void WebEnginePermissionDelegate::ResetPermission(
@@ -50,7 +50,7 @@ void WebEnginePermissionDelegate::RequestPermissionsFromCurrentDocument(
   frame->permission_controller()->RequestPermissions(
       request_description.permissions,
       render_frame_host->GetLastCommittedOrigin(),
-      request_description.user_gesture, std::move(callback));
+      std::move(callback));
 }
 
 blink::mojom::PermissionStatus WebEnginePermissionDelegate::GetPermissionStatus(
@@ -109,7 +109,7 @@ WebEnginePermissionDelegate::GetPermissionStatusForEmbeddedRequester(
 }
 
 WebEnginePermissionDelegate::SubscriptionId
-WebEnginePermissionDelegate::SubscribePermissionStatusChange(
+WebEnginePermissionDelegate::SubscribeToPermissionStatusChange(
     blink::PermissionType permission,
     content::RenderProcessHost* render_process_host,
     content::RenderFrameHost* render_frame_host,
@@ -121,7 +121,7 @@ WebEnginePermissionDelegate::SubscribePermissionStatusChange(
   return SubscriptionId();
 }
 
-void WebEnginePermissionDelegate::UnsubscribePermissionStatusChange(
+void WebEnginePermissionDelegate::UnsubscribeFromPermissionStatusChange(
     SubscriptionId subscription_id) {
   // TODO(crbug.com/1063094): Implement permission status subscription. It's
   // used in blink to emit PermissionStatus.onchange notifications.

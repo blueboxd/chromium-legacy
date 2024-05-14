@@ -109,6 +109,13 @@ void FakeArcSupport::ClickRunNetworkTestsButton() {
   native_message_host_->OnMessage("{\"event\": \"onRunNetworkTestsClicked\"}");
 }
 
+void FakeArcSupport::TosLoadResult(bool success) {
+  DCHECK(native_message_host_);
+  native_message_host_->OnMessage(
+      base::StrCat({"{\"event\": \"onTosLoadResult\", \"success\": ",
+                    success ? "true" : "false", "}"}));
+}
+
 void FakeArcSupport::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -158,6 +165,12 @@ void FakeArcSupport::PostMessageFromNativeHost(
     }
   } else if (*action == "showErrorPage") {
     ui_page_ = ArcSupportHost::UIPage::ERROR;
+    native_message_host_->OnMessage(base::StrCat(
+        {"{\"event\": \"onErrorPageShown\", "
+         "\"networkTestsShown\": ",
+         message.FindBool("shouldShowNetworkTests").value_or(false) ? "true"
+                                                                    : "false",
+         "}"}));
   } else if (*action == "setMetricsMode") {
     std::optional<bool> opt = message.FindBool("enabled");
     if (!opt) {

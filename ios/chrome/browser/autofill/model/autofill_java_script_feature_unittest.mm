@@ -189,9 +189,10 @@ TEST_F(AutofillJavaScriptFeatureTest, ExtractForms) {
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
         @"is_focusable" : @true,
+        @"is_user_edited" : @true,
         @"value" : @"",
         @"label" : @"First Name",
-        @"unique_renderer_id" : @"2"
+        @"renderer_id" : @"2"
       },
       @{
         @"aria_description" : @"",
@@ -206,9 +207,10 @@ TEST_F(AutofillJavaScriptFeatureTest, ExtractForms) {
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
         @"is_focusable" : @true,
+        @"is_user_edited" : @true,
         @"value" : @"",
         @"label" : @"Last Name",
-        @"unique_renderer_id" : @"3"
+        @"renderer_id" : @"3"
       },
       @{
         @"aria_description" : @"Email Address",
@@ -223,9 +225,10 @@ TEST_F(AutofillJavaScriptFeatureTest, ExtractForms) {
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
         @"is_focusable" : @true,
+        @"is_user_edited" : @true,
         @"value" : @"",
         @"label" : @"",
-        @"unique_renderer_id" : @"4"
+        @"renderer_id" : @"4"
       }
     ]
   };
@@ -286,9 +289,10 @@ TEST_F(AutofillJavaScriptFeatureTest, ExtractForms2) {
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
         @"is_focusable" : @true,
+        @"is_user_edited" : @true,
         @"value" : @"",
         @"label" : @"First Name",
-        @"unique_renderer_id" : @"2"
+        @"renderer_id" : @"2"
       },
       @{
         @"aria_description" : @"",
@@ -303,9 +307,10 @@ TEST_F(AutofillJavaScriptFeatureTest, ExtractForms2) {
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
         @"is_focusable" : @true,
+        @"is_user_edited" : @true,
         @"value" : @"",
         @"label" : @"Last Name",
-        @"unique_renderer_id" : @"3"
+        @"renderer_id" : @"3"
       },
       @{
         @"aria_description" : @"Email Address",
@@ -320,9 +325,10 @@ TEST_F(AutofillJavaScriptFeatureTest, ExtractForms2) {
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
         @"is_focusable" : @true,
+        @"is_user_edited" : @true,
         @"value" : @"",
         @"label" : @"",
-        @"unique_renderer_id" : @"4"
+        @"renderer_id" : @"4"
       }
     ]
   };
@@ -397,7 +403,7 @@ TEST_F(AutofillJavaScriptFeatureTest, FillActiveFormField) {
   base::Value::Dict data;
   data.Set("name", "email");
   data.Set("identifier", "email");
-  data.Set("unique_renderer_id", 2);
+  data.Set("renderer_id", 2);
   data.Set("value", "newemail@com");
   __block BOOL success = NO;
 
@@ -426,7 +432,7 @@ TEST_F(AutofillJavaScriptFeatureTest, FillSpecificFormField) {
   base::Value::Dict data;
   data.Set("name", "email");
   data.Set("identifier", "email");
-  data.Set("unique_renderer_id", 2);
+  data.Set("renderer_id", 2);
   data.Set("value", "newemail@com");
   __block BOOL success = NO;
 
@@ -618,7 +624,7 @@ TEST_F(AutofillJavaScriptFeatureTest, ClearForm) {
         [NSString stringWithFormat:@"%@.focus()", getFieldScript];
     ExecuteJavaScript(focusScript);
     base::Value::Dict data;
-    data.Set("unique_renderer_id", field_data.second);
+    data.Set("renderer_id", field_data.second);
     data.Set("value", "testvalue");
 
     __block BOOL success = NO;

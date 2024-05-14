@@ -9,6 +9,10 @@
 
 #import "ios/chrome/browser/ui/first_run/omnibox_position/omnibox_position_choice_mutator.h"
 
+namespace segmentation_platform {
+class DeviceSwitcherResultDispatcher;
+}  // namespace segmentation_platform
+
 @protocol OmniboxPositionChoiceConsumer;
 class PrefService;
 
@@ -21,11 +25,24 @@ class PrefService;
 /// Pref service from the original browser state, used to set preferred omnibox
 /// position.
 @property(nonatomic, assign) PrefService* originalPrefService;
+/// Device switcher result dispatcher, used to classify user as Safari switcher.
+@property(nonatomic, assign)
+    segmentation_platform::DeviceSwitcherResultDispatcher*
+        deviceSwitcherResultDispatcher;
+
+/// Initializes the mediator.
+/// `isFirstRun`: The screen is shown during first run.
+- (instancetype)initWithFirstRun:(BOOL)isFirstRun NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 /// Saves the selected omnibox position.
 - (void)saveSelectedPosition;
 /// Discards the selected omnibox position.
 - (void)discardSelectedPosition;
+/// Skip omnibox position selection. Sets the default omnibox position to the
+/// position checked by default in the screen (the leading option). Only
+/// available in FRE.
+- (void)skipSelection;
 
 @end
 

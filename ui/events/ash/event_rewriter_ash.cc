@@ -436,6 +436,21 @@ DomCode RelocateModifier(DomCode code, DomKeyLocation location) {
   return code;
 }
 
+KeyboardCode RelocateKeyboardCode(KeyboardCode key_code,
+                                  DomKeyLocation location) {
+  // Note: currently, we're using SHIFT/CONTROL, instead of
+  // LSFHIT,RSHIFT/LCONTROL,RCONTROL, so {L,R}WIN are only candidate to be
+  // replaced.
+  switch (key_code) {
+    case VKEY_LWIN:
+    case VKEY_RWIN:
+      return location == DomKeyLocation::RIGHT ? VKEY_RWIN : VKEY_LWIN;
+    default:
+      break;
+  }
+  return key_code;
+}
+
 // Returns true if |mouse_event| was generated from a touchpad device.
 bool IsFromTouchpadDevice(const MouseEvent& mouse_event) {
   for (const InputDevice& touchpad :
@@ -603,7 +618,7 @@ bool SkipSearchKeyRemapping(EventRewriterAsh::Delegate* delegate,
 
 bool ShouldBlockSixPackEventRewrite(
     EventRewriterAsh::Delegate* delegate,
-    absl::optional<ui::mojom::SixPackShortcutModifier> modifier,
+    std::optional<ui::mojom::SixPackShortcutModifier> modifier,
     int flags,
     ui::KeyboardCode key_code,
     int device_id) {
@@ -1092,7 +1107,7 @@ bool EventRewriterAsh::RewriteModifierKeys(const KeyEvent& key_event,
         break;
       }
 
-      characteristic_flag = EF_CAPS_LOCK_ON;
+      characteristic_flag = EF_MOD3_DOWN;
       remapped_key =
           GetRemappedKey(device_id, mojom::ModifierKey::kCapsLock,
                          prefs::kLanguageRemapCapsLockKeyTo, delegate_);
@@ -1160,25 +1175,9 @@ bool EventRewriterAsh::RewriteModifierKeys(const KeyEvent& key_event,
     incoming.flags |= characteristic_flag;
     characteristic_flag = remapped_key->flag;
 
-    // If the internal state of CapLocks is enabled, we should not remove
-    // the modifier flag. This is important for the case in which the user
-    // remaps the CapsLock key to another key (e.g. Search) and CapsLock is
-    // enabled. If the user were to press the CapsLock key (remapped to Search),
-    // we risk removing the CapsLock modifier and accidentally disabling
-    // CapsLocks.
-    if (incoming.key_code == VKEY_CAPITAL &&
-        !ime_keyboard_->IsCapsLockEnabled()) {
-      // We remove the CapsLock modifier here because we do not want to
-      // turn on the Capslock modifier when the key has been remapped.
-      incoming.flags &= ~EF_CAPS_LOCK_ON;
-      base::RecordAction(
-          base::UserMetricsAction("CapsLock_Toggled_Using_CapsLockKey"));
-    }
-    if (remapped_key->remap_to == ui::mojom::ModifierKey::kCapsLock) {
-      characteristic_flag |= EF_CAPS_LOCK_ON;
-    }
-    state->code = RelocateModifier(
-        state->code, KeycodeConverter::DomCodeToLocation(incoming.code));
+    auto original_location = KeycodeConverter::DomCodeToLocation(incoming.code);
+    state->code = RelocateModifier(state->code, original_location);
+    state->key_code = RelocateKeyboardCode(state->key_code, original_location);
   }
 
   // Next, remap modifier bits.
@@ -1224,8 +1223,27 @@ bool EventRewriterAsh::RewriteModifierKeys(const KeyEvent& key_event,
   // AcceleratorController, so that the event is visible to apps (see
   // crbug.com/775743).
   if (key_event.type() == ET_KEY_PRESSED && state->key_code == VKEY_CAPITAL) {
-    ime_keyboard_->SetCapsLockEnabled(!ime_keyboard_->IsCapsLockEnabled());
+    // Toggle the EF_CAPS_LOCK_ON only when the key is pressed, so here it
+    // checks whether the key is auto-repeat event. Unfortunately, EF_IS_REPEAT
+    // for CapsLock is not reliable, because it checks whether flags are the
+    // same, too, but actually CapsLock will trigger to change the
+    // EF_CAPS_LOCK_ON flag of the original event. Instead, check whether the
+    // current key is already pressed or not.
+    bool is_repeat = base::ranges::find(
+                         pressed_key_states_,
+                         std::tuple(key_event.code(), key_event.GetDomKey(),
+                                    key_event.key_code()),
+                         [](auto entry) {
+                           return std::tuple(entry.first.code, entry.first.key,
+                                             entry.first.key_code);
+                         }) != pressed_key_states_.end();
+    if (!is_repeat) {
+      ime_keyboard_->SetCapsLockEnabled(!ime_keyboard_->IsCapsLockEnabled());
+    }
   }
+  state->flags = (state->flags & ~EF_CAPS_LOCK_ON) |
+                 (ime_keyboard_->IsCapsLockEnabled() ? EF_CAPS_LOCK_ON : 0);
+
   return exact_event;
 }
 
@@ -1315,7 +1333,7 @@ bool EventRewriterAsh::ShouldRemapToRightClick(
   const bool alt_click_down = AreFlagsSet(flags, kAltLeftButton);
   const bool search_click_down = AreFlagsSet(flags, kSearchLeftButton);
   if (ash::features::IsAltClickAndSixPackCustomizationEnabled()) {
-    absl::optional<ui::mojom::SimulateRightClickModifier> modifier =
+    std::optional<ui::mojom::SimulateRightClickModifier> modifier =
         delegate_->GetRemapRightClickModifier(mouse_event.source_device_id());
     if (!modifier.has_value()) {
       return false;
@@ -1402,7 +1420,9 @@ EventRewriteStatus EventRewriterAsh::RewriteKeyEvent(
 
   // Records metric if the `key_event` is for a modifier key press event.
   const bool should_record_modifier_key_press_metrics =
-      !(key_event.flags() & EF_IS_REPEAT) && key_event.type() == ET_KEY_PRESSED;
+      !(key_event.flags() & EF_IS_REPEAT) &&
+      key_event.type() == ET_KEY_PRESSED &&
+      !ash::features::IsKeyboardRewriterFixEnabled();
   if (should_record_modifier_key_press_metrics) {
     RecordModifierKeyPressedBeforeRemapping(*keyboard_capability_, device_id,
                                             key_event.code());
@@ -1414,17 +1434,19 @@ EventRewriteStatus EventRewriterAsh::RewriteKeyEvent(
   // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
   // crbug.com/136465.
   if (!(key_event.flags() & EF_FINAL)) {
-    // If RewriteModifierKeys() returns true there should be no more processing
-    // done to the key event. It will only return true if the key event is
-    // rewritten to ALTGR. A false return is not an error.
-    if (RewriteModifierKeys(key_event, device_id, &state)) {
-      if (should_record_modifier_key_press_metrics) {
-        RecordModifierKeyPressedAfterRemapping(*keyboard_capability_, device_id,
-                                               state.code);
+    if (!ash::features::IsKeyboardRewriterFixEnabled()) {
+      // If RewriteModifierKeys() returns true there should be no more
+      // processing done to the key event. It will only return true if the key
+      // event is rewritten to ALTGR. A false return is not an error.
+      if (RewriteModifierKeys(key_event, device_id, &state)) {
+        if (should_record_modifier_key_press_metrics) {
+          RecordModifierKeyPressedAfterRemapping(*keyboard_capability_,
+                                                 device_id, state.code);
+        }
+        // Early exit with completed event.
+        BuildRewrittenKeyEvent(key_event, state, rewritten_event);
+        return EVENT_REWRITE_REWRITTEN;
       }
-      // Early exit with completed event.
-      BuildRewrittenKeyEvent(key_event, state, rewritten_event);
-      return EVENT_REWRITE_REWRITTEN;
     }
     RewriteNumPadKeys(key_event, &state);
   }
@@ -1451,7 +1473,7 @@ EventRewriteStatus EventRewriterAsh::RewriteKeyEvent(
   if (sticky_keys_controller_) {
     KeyEvent tmp_event = key_event;
     tmp_event.set_key_code(state.key_code);
-    tmp_event.set_flags(state.flags);
+    tmp_event.SetFlags(state.flags);
     std::unique_ptr<Event> output_event;
     status = sticky_keys_controller_->RewriteEvent(tmp_event, &output_event);
     if (status == EVENT_REWRITE_REWRITTEN ||
@@ -1484,11 +1506,13 @@ EventRewriteStatus EventRewriterAsh::RewriteKeyEvent(
                                   last_keyboard_device_id_, &state);
     }
   }
+
   if ((key_event.flags() == state.flags) &&
       (key_event.key_code() == state.key_code) &&
       (status == EVENT_REWRITE_CONTINUE)) {
     return EVENT_REWRITE_CONTINUE;
   }
+
   // Sticky keys may have returned a result other than |EVENT_REWRITE_CONTINUE|,
   // in which case we need to preserve that return status. Alternatively, we
   // might be here because key_event changed, in which case we need to
@@ -1509,7 +1533,7 @@ EventDispatchDetails EventRewriterAsh::RewriteMouseButtonEvent(
   EventRewriteStatus status = EVENT_REWRITE_CONTINUE;
   if (sticky_keys_controller_) {
     MouseEvent tmp_event = mouse_event;
-    tmp_event.set_flags(flags);
+    tmp_event.SetFlags(flags);
     std::unique_ptr<Event> output_event;
     status = sticky_keys_controller_->RewriteEvent(tmp_event, &output_event);
     if (status == EVENT_REWRITE_REWRITTEN ||
@@ -1527,7 +1551,7 @@ EventDispatchDetails EventRewriterAsh::RewriteMouseButtonEvent(
   }
 
   std::unique_ptr<Event> rewritten_event = mouse_event.Clone();
-  rewritten_event->set_flags(flags);
+  rewritten_event->SetFlags(flags);
   if (changed_button != EF_NONE) {
     static_cast<MouseEvent*>(rewritten_event.get())
         ->set_changed_button_flags(changed_button);
@@ -1554,7 +1578,7 @@ EventDispatchDetails EventRewriterAsh::RewriteMouseWheelEvent(
 
   const int flags = RewriteLocatedEvent(wheel_event);
   MouseWheelEvent tmp_event = wheel_event;
-  tmp_event.set_flags(flags);
+  tmp_event.SetFlags(flags);
   return sticky_keys_controller_->RewriteEvent(tmp_event, continuation);
 }
 
@@ -1566,7 +1590,7 @@ EventDispatchDetails EventRewriterAsh::RewriteTouchEvent(
     return SendEvent(continuation, &touch_event);
   }
   TouchEvent rewritten_touch_event(touch_event);
-  rewritten_touch_event.set_flags(flags);
+  rewritten_touch_event.SetFlags(flags);
   return SendEventFinally(continuation, &rewritten_touch_event);
 }
 
@@ -1878,6 +1902,12 @@ int EventRewriterAsh::RewriteLocatedEvent(const Event& event) {
     return event.flags();
   }
 
+  if (ash::features::IsKeyboardRewriterFixEnabled()) {
+    // Return the events flags as modifiers should already be remapped via
+    // the KeyboardModifierEventRewriter.
+    return event.flags();
+  }
+
   // Use the keyboard device_id for the last KeyEvent.
   return GetRemappedModifierMasks(last_keyboard_device_id_, event.flags());
 }
@@ -1930,6 +1960,67 @@ EventDispatchDetails EventRewriterAsh::RewriteKeyEventInContext(
     const Continuation continuation) {
   if (status == EventRewriteStatus::EVENT_REWRITE_DISCARD) {
     return DiscardEvent(continuation);
+  }
+
+  if (ash::features::IsKeyboardRewriterFixEnabled()) {
+    internal::PhysicalKey key = {
+        key_event.code(),
+        key_event.source_device_id(),
+    };
+    MutableKeyState key_state(rewritten_event ? rewritten_event->AsKeyEvent()
+                                              : &key_event);
+    auto it = pressed_physical_keys_.find(key);
+    bool is_rewritten_differently =
+        it != pressed_physical_keys_.end() &&
+        (it->second.code != key_state.code || it->second.key != key_state.key ||
+         it->second.key_code != key_state.key_code);
+
+    if (key_event.type() == ET_KEY_PRESSED) {
+      // If a key press event for an already pressed key is rewritten in
+      // a different way, we send an release event, just before dispatching
+      // the (newly) rewritten pressed key, so that following stage can
+      // make pairs of key-pressed/-released events or rewritten ones.
+      if (is_rewritten_differently) {
+        auto dispatched_event = std::make_unique<KeyEvent>(
+            ui::ET_KEY_RELEASED, it->second.key_code, it->second.code,
+            key_event.flags() & ~it->second.flags, it->second.key,
+            key_event.time_stamp());
+        dispatched_event->set_source_device_id(key_event.source_device_id());
+        std::ignore = SendEventFinally(continuation, dispatched_event.get());
+      }
+      // Remember consumed flags on rewriting.
+      key_state.flags = key_event.flags() & ~key_state.flags;
+      pressed_physical_keys_.insert_or_assign(key, key_state);
+    } else {
+      if (is_rewritten_differently) {
+        // Restore the originally rewritten key under the current modifiers.
+        // Note that modifier flags cannot be restored (and that's why the
+        // key is rewritten differently), so here as a best effort just
+        // mask the consumed key from the current key event flags.
+        auto rewritten_key_event = std::make_unique<KeyEvent>(
+            ui::ET_KEY_RELEASED, it->second.key_code, it->second.code,
+            key_event.flags() & ~key_state.flags, it->second.key,
+            key_event.time_stamp());
+        rewritten_key_event->set_source_device_id(key_event.source_device_id());
+        rewritten_key_event->set_scan_code(key_event.scan_code());
+        rewritten_event = std::move(rewritten_key_event);
+        status = EventRewriteStatus::EVENT_REWRITE_REWRITTEN;
+      }
+      pressed_physical_keys_.erase(key);
+    }
+
+    if (status == EventRewriteStatus::EVENT_REWRITE_CONTINUE) {
+      return SendEvent(continuation, &key_event);
+    }
+
+    EventDispatchDetails details =
+        SendEventFinally(continuation, rewritten_event.get());
+    if (status == EventRewriteStatus::EVENT_REWRITE_DISPATCH_ANOTHER &&
+        !details.dispatcher_destroyed) {
+      return SendStickyKeysReleaseEvents(std::move(rewritten_event),
+                                         continuation);
+    }
+    return details;
   }
 
   MutableKeyState current_key_state;

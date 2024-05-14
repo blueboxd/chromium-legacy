@@ -26,6 +26,7 @@ try_.defaults.set(
     siso_configs = ["builder"],
     siso_enable_cloud_profiler = True,
     siso_enable_cloud_trace = True,
+    siso_enabled = True,
     siso_project = siso.project.DEFAULT_UNTRUSTED,
 )
 
@@ -96,7 +97,8 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
-        "chromium.skip_successful_tests": 50,
+        # crbug/940930
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -111,7 +113,6 @@ try_.compilator_builder(
     name = "android-12-x64-rel-compilator",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -139,6 +140,22 @@ try_.builder(
             "release_try_builder",
         ],
     ),
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-14-x64-rel",
+    description_html = "Run chromium tests on Android 14 emulators.",
+    mirrors = [
+        "ci/android-14-x64-rel",
+    ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-14-x64-rel",
+            "release_try_builder",
+        ],
+    ),
+    contact_team_email = "clank-engprod@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -175,7 +192,8 @@ try_.orchestrator_builder(
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
         "chromium.compilator_can_outlive_parent": 100,
-        "chromium.skip_successful_tests": 50,
+        # crbug/940930
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -189,7 +207,6 @@ try_.compilator_builder(
     name = "android-arm64-rel-compilator",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 # TODO(crbug.com/1367523): Reenable this builder once the reboot issue is resolved.
@@ -233,12 +250,16 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "android_builder",
+            "arm64",
             "chrome_with_codecs",
             "reclient",
             "minimal_symbols",
             "official_optimize",
             "stable_channel",
             "v8_release_branch",
+            # Allows the bot to measure low-end arm32 and high-end arm64 using
+            # a single build.
+            "android_low_end_secondary_toolchain",
         ],
     ),
     builderless = not settings.is_main,
@@ -248,20 +269,17 @@ try_.builder(
     properties = {
         "$build/binary_size": {
             "analyze_targets": [
-                "//chrome/android:monochrome_public_minimal_apks",
                 "//chrome/android:trichrome_32_minimal_apks",
                 "//chrome/android:validate_expectations",
                 "//tools/binary_size:binary_size_trybot_py",
             ],
             "compile_targets": [
-                "monochrome_public_minimal_apks",
-                "monochrome_static_initializers",
+                "check_chrome_static_initializers",
                 "trichrome_32_minimal_apks",
                 "validate_expectations",
             ],
         },
     },
-    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -288,7 +306,7 @@ try_.builder(
     ],
     gn_args = gn_args.config(
         configs = [
-            "android_builder",
+            "android_builder_without_codecs",
             "cronet_android",
             "debug_static_builder",
             "reclient",
@@ -572,12 +590,27 @@ try_.builder(
 try_.builder(
     name = "android-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+        ],
+    ),
     execution_timeout = 6 * time.hour,
 )
 
 try_.builder(
     name = "android-deterministic-rel",
     executable = "recipe:swarming/deterministic_build",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder_without_codecs",
+            "release_try_builder",
+            "reclient",
+            "strip_debug_info",
+        ],
+    ),
     execution_timeout = 6 * time.hour,
 )
 
@@ -651,10 +684,7 @@ try_.builder(
     ],
     gn_args = gn_args.config(
         configs = [
-            "android_builder",
-            "debug_try_builder",
-            "reclient",
-            "arm64",
+            "ci/Android arm64 Builder (dbg)",
         ],
     ),
     builderless = False,
@@ -773,6 +803,27 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-webview-13-x64-dbg-hostside",
+    description_html = (
+        "This try builder mirrors android-webview-13-x64-dbg-hostside" +
+        "builder/tester to trial run WebView host-driven CTS.<br/>" +
+        "This builder should be removed after adding the test suite to" +
+        "android-12-x64-rel required CQ builder. b/267730567."
+    ),
+    mirrors = [
+        "ci/android-webview-13-x64-dbg-hostside",
+    ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-webview-13-x64-dbg-hostside",
+            "debug_try_builder",
+        ],
+    ),
+    contact_team_email = "woa-engprod@google.com",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
     name = "android-webview-pie-x86-wpt-fyi-rel",
     mirrors = ["ci/android-webview-pie-x86-wpt-fyi-rel"],
     gn_args = "ci/android-webview-pie-x86-wpt-fyi-rel",
@@ -835,7 +886,8 @@ try_.orchestrator_builder(
     coverage_test_types = ["unit", "overall"],
     experiments = {
         "chromium.add_one_test_shard": 10,
-        "chromium.skip_successful_tests": 50,
+        # crbug/940930
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -852,7 +904,6 @@ try_.compilator_builder(
     cores = 64 if settings.is_main else 32,
     contact_team_email = "clank-engprod@google.com",
     main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.builder(
@@ -915,6 +966,15 @@ try_.builder(
             config = "main_builder",
         ),
     ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_try_builder",
+            "reclient",
+            "strip_debug_info",
+            "x64",
+        ],
+    ),
 )
 
 try_.builder(
@@ -931,10 +991,10 @@ try_.builder(
     ),
     builderless = not settings.is_main,
     experiments = {
-        "chromium.skip_successful_tests": 50,
+        # crbug/940930
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -961,11 +1021,11 @@ try_.builder(
     cores = 32 if settings.is_main else 16,
     ssd = True,
     experiments = {
-        "chromium.skip_successful_tests": 50,
+        # crbug/940930
+        "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -1068,7 +1128,7 @@ try_.builder(
     ),
     gn_args = gn_args.config(
         configs = [
-            "android_builder",
+            "android_builder_without_codecs",
             "cronet_android",
             "release_try_builder",
             "reclient",
@@ -1078,10 +1138,10 @@ try_.builder(
     builderless = not settings.is_main,
     contact_team_email = "cronet-team@google.com",
     experiments = {
-        "chromium.skip_successful_tests": 50,
+        # crbug/940930
+        "chromium.enable_cleandead": 50,
     },
     main_list_view = "try",
-    siso_enabled = True,
     tryjob = try_.job(),
 )
 
@@ -1106,6 +1166,17 @@ try_.gpu.optional_tests_builder(
     ),
     try_settings = builder_config.try_settings(
         retry_failed_shards = False,
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "gpu_tests",
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "dcheck_always_on",
+            "static_angle",
+        ],
     ),
     main_list_view = "try",
     tryjob = try_.job(

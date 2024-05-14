@@ -320,12 +320,21 @@ declare global {
         es_es_pumpkin_config_binarypb: ArrayBuffer;
       }
 
+      export interface FaceGazeAssets {
+        model: ArrayBuffer;
+        wasm: ArrayBuffer;
+      }
+
       export function getDisplayNameForLocale(
           localeCodeToTranslate: string, displayLocaleCode: string): string;
 
       type GetBatteryDescriptionCallback = (description: string) => void;
       export function getBatteryDescription(
           callback: GetBatteryDescriptionCallback): void;
+
+      type InstallFaceGazeAssetsCallback = (assets: FaceGazeAssets) => void;
+      export function installFaceGazeAssets(
+          callback: InstallFaceGazeAssetsCallback): void;
 
       type InstallPumpkinForDictationCallback = (data: PumpkinData) => void;
       export function installPumpkinForDictation(
@@ -340,6 +349,8 @@ declare global {
 
       export function setKeyboardListener(enabled: boolean, capture: boolean):
           void;
+
+      export function setSelectToSpeakFocus(bounds: ScreenRect): void;
 
       export function darkenScreen(darken: boolean): void;
 
@@ -424,6 +435,9 @@ declare global {
       type IsLacrosPrimaryCallback = (result: boolean) => void;
       export function isLacrosPrimary(callback: IsLacrosPrimaryCallback): void;
 
+      export function getDisplayBounds(
+          callback: (screens: ScreenRect[]) => void): void;
+
       export function showToast(type: ToastType): void;
 
       export const onIntroduceChromeVox: ChromeEvent<() => void>;
@@ -436,6 +450,9 @@ declare global {
       export const onTwoFingerTouchStop: ChromeEvent<() => void>;
 
       export const onSelectToSpeakContextMenuClicked: ChromeEvent<() => void>;
+
+      export const onSelectToSpeakFocusChanged:
+          ChromeEvent<(bounds: ScreenRect) => void>;
 
       export const onSelectToSpeakStateChangeRequested: ChromeEvent<() => void>;
 

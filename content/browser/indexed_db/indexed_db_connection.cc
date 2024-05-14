@@ -35,14 +35,17 @@ IndexedDBConnection::IndexedDBConnection(
     base::RepeatingClosure on_version_change_ignored,
     base::OnceCallback<void(IndexedDBConnection*)> on_close,
     std::unique_ptr<IndexedDBDatabaseCallbacks> callbacks,
-    scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker)
+    mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
+        client_state_checker,
+    base::UnguessableToken client_token)
     : id_(g_next_indexed_db_connection_id++),
       bucket_context_handle_(bucket_context),
       database_(std::move(database)),
       on_version_change_ignored_(std::move(on_version_change_ignored)),
       on_close_(std::move(on_close)),
       callbacks_(std::move(callbacks)),
-      client_state_checker_(std::move(client_state_checker)) {
+      client_state_checker_(std::move(client_state_checker)),
+      client_token_(client_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bucket_context_handle_->quota_manager()->NotifyBucketAccessed(
       bucket_context_handle_->bucket_locator(), base::Time::Now());
@@ -89,7 +92,7 @@ IndexedDBConnection::AbortTransactionsAndClose(
   bucket_context_handle_->quota_manager()->NotifyBucketAccessed(
       bucket_context_handle_->bucket_locator(), base::Time::Now());
   if (!status.ok()) {
-    bucket_context_handle_->delegate().on_fatal_error.Run(status);
+    bucket_context_handle_->OnDatabaseError(status, {});
   }
   bucket_context_handle_.Release();
   return callbacks;
@@ -151,8 +154,9 @@ void IndexedDBConnection::AbortTransactionAndTearDownOnError(
   TRACE_EVENT1("IndexedDB", "IndexedDBDatabase::Abort(error)", "txn.id",
                transaction->id());
   leveldb::Status status = transaction->Abort(error);
-  if (!status.ok())
-    bucket_context_handle_->delegate().on_fatal_error.Run(status);
+  if (!status.ok()) {
+    bucket_context_handle_->OnDatabaseError(status, {});
+  }
 }
 
 leveldb::Status IndexedDBConnection::AbortAllTransactions(
@@ -204,8 +208,15 @@ void IndexedDBConnection::RemoveTransaction(int64_t id) {
 void IndexedDBConnection::DisallowInactiveClient(
     storage::mojom::DisallowInactiveClientReason reason,
     base::OnceCallback<void(bool)> callback) {
+  if (!client_state_checker_.is_bound()) {
+    // If the remote is no longer connected, we expect the client will terminate
+    // the connection soon, so marking `was_active` true here.
+    std::move(callback).Run(/*was_active=*/true);
+    return;
+  }
+
   if (reason ==
-      storage::mojom::DisallowInactiveClientReason::kClientEventIsTriggered) {
+      storage::mojom::DisallowInactiveClientReason::kVersionChangeEvent) {
     // It's only necessary to keep the client active under this scenario.
     mojo::Remote<storage::mojom::IndexedDBClientKeepActive>
         client_keep_active_remote;

@@ -23,8 +23,8 @@
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -60,18 +60,17 @@ class TransformStreamTest : public ::testing::Test {
     EXPECT_TRUE(
         global
             ->Set(scope.GetContext(), V8String(scope.GetIsolate(), "readable"),
-                  ToV8Traits<ReadableStream>::ToV8(script_state, readable)
-                      .ToLocalChecked())
+                  ToV8Traits<ReadableStream>::ToV8(script_state, readable))
             .IsJust());
     EXPECT_TRUE(
         global
             ->Set(scope.GetContext(), V8String(scope.GetIsolate(), "writable"),
-                  ToV8Traits<WritableStream>::ToV8(script_state, writable)
-                      .ToLocalChecked())
+                  ToV8Traits<WritableStream>::ToV8(script_state, writable))
             .IsJust());
   }
 
  private:
+  test::TaskEnvironment task_environment_;
   Persistent<TransformStream> stream_;
 };
 
@@ -288,9 +287,11 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
 
     void FlushVoid(TransformStreamDefaultController* controller,
                    ExceptionState& exception_state) override {
-      controller->enqueue(GetScriptState(),
-                          ScriptValue::From(GetScriptState(), "a"),
-                          exception_state);
+      controller->enqueue(
+          GetScriptState(),
+          ScriptValue(GetScriptState()->GetIsolate(),
+                      V8String(GetScriptState()->GetIsolate(), "a")),
+          exception_state);
     }
   };
 

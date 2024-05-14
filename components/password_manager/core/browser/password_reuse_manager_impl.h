@@ -17,7 +17,6 @@
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_change_event.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace password_manager {
 
@@ -43,11 +42,11 @@ class PasswordReuseManagerImpl : public PasswordReuseManager,
   void Init(PrefService* prefs,
             PasswordStoreInterface* profile_store,
             PasswordStoreInterface* account_store,
+            std::unique_ptr<PasswordReuseDetector> password_reuse_detector,
             signin::IdentityManager* identity_manager = nullptr,
             std::unique_ptr<SharedPreferencesDelegate> shared_pref_delegate =
                 nullptr) override;
-  void ReportMetrics(const std::string& username,
-                     bool is_under_advanced_protection) override;
+  void ReportMetrics(const std::string& username) override;
   void CheckReuse(const std::u16string& input,
                   const std::string& domain,
                   PasswordReuseDetectorConsumer* consumer) override;
@@ -71,6 +70,8 @@ class PasswordReuseManagerImpl : public PasswordReuseManager,
   void SetPasswordStoreSigninNotifier(
       std::unique_ptr<PasswordStoreSigninNotifier> notifier) override;
   void ScheduleEnterprisePasswordURLUpdate() override;
+  void MaybeSavePasswordHash(const PasswordForm* submitted_form,
+                             PasswordManagerClient* client) override;
 
  private:
   // Schedules the update of password hashes used by reuse detector.

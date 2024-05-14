@@ -173,6 +173,8 @@ struct FormFieldData {
   using RoleAttribute = mojom::FormFieldData_RoleAttribute;
   using LabelSource = mojom::FormFieldData_LabelSource;
 
+  struct FillData;
+
   // Returns true if many members of fields |a| and |b| are identical.
   //
   // "Many" is intended to be "all", but currently the following members are not
@@ -189,6 +191,7 @@ struct FormFieldData {
   // - FormFieldData::form_control_ax_id,
   // - FormFieldData::section,
   // - FormFieldData::is_autofilled,
+  // - FormFieldData::is_user_edited,
   // - FormFieldData::properties_mask,
   // - FormFieldData::is_enabled,
   // - FormFieldData::is_readonly,
@@ -208,7 +211,7 @@ struct FormFieldData {
 
   // An identifier that is unique across all fields in all frames.
   // Must not be leaked to renderer process. See FieldGlobalId for details.
-  FieldGlobalId global_id() const { return {host_frame, unique_renderer_id}; }
+  FieldGlobalId global_id() const { return {host_frame, renderer_id}; }
 
   // An identifier of the renderer form that contained this field.
   // This may be different from the browser form that contains this field in the
@@ -286,7 +289,7 @@ struct FormFieldData {
 
   FormControlType form_control_type = FormControlType::kInputText;
   std::string autocomplete_attribute;
-  absl::optional<AutocompleteParsingResult> parsed_autocomplete;
+  std::optional<AutocompleteParsingResult> parsed_autocomplete;
   std::u16string placeholder;
   std::u16string css_classes;
   std::u16string aria_label;
@@ -302,7 +305,7 @@ struct FormFieldData {
   // frame. In the browser process, it should only be used in conjunction with
   // |host_frame| to identify a field; see global_id(). It is not persistent
   // between page loads and therefore not used in comparison in SameFieldAs().
-  FieldRendererId unique_renderer_id;
+  FieldRendererId renderer_id;
 
   // Unique renderer ID of the enclosing form in the same frame.
   FormRendererId host_form_id;
@@ -351,6 +354,28 @@ struct FormFieldData {
   uint64_t max_length = std::numeric_limits<uint32_t>::max();
 
   bool is_autofilled = false;
+
+  // Whether the user has edited this field since page load or resetting the
+  // field.
+  //
+  // Examples that count as edits:
+  // - Typing into a text control.
+  // - Pasting into a text control.
+  // - Clicking and selecting an option of a <select> counts.
+  // - Unfocusing a <select> using TAB (because of the keydown event).
+  //
+  // Examples that do not count as edits:
+  // - Autofill.
+  // - Typing into a contenteditable.
+  // - Setting the field's value directly in JavaScript.
+  // - Untrusted events (see JavaScript's Event.isTrusted).
+  //
+  // The property is sticky: a user-edited field becomes non-user-edited only
+  // when the form is reset (JavaScript's HTMLFormElement.reset()).
+  // TODO(crbug.com/1501627): On iOS, also non-trusted events reset the
+  // property.
+  bool is_user_edited = false;
+
   CheckStatus check_status = CheckStatus::kNotCheckable;
   bool is_focusable = true;
   bool is_visible = true;
@@ -390,8 +415,39 @@ struct FormFieldData {
   bool force_override = false;
 };
 
-// TODO(crbug.com/1482526): Eliminate references to this function where
-// possible.
+// Structure containing necessary information to be sent from the browser to the
+// renderer in order to fill a field.
+// See documentation of FormFieldData for more info.
+struct FormFieldData::FillData {
+  FillData();
+  explicit FillData(const FormFieldData& field);
+
+  ~FillData();
+
+  // The field value to be set by the renderer.
+  std::u16string value;
+
+  // An identifier of the field that is unique among fields from the same frame.
+  FieldRendererId renderer_id;
+
+  // The unique identifier of the section (e.g. billing vs. shipping address)
+  // of this field.
+  // TODO(crbug.com/1441410): Remove when `kAutofillUndo` launches.
+  Section section;
+
+  // Whether the renderer should mark the field as autofilled or not. In most
+  // filling cases this will be true. However for the case of UndoAutofill we
+  // might wanna revert a field state into not autofilled, in which case this
+  // would be false.
+  bool is_autofilled = false;
+
+  // When sent from browser to renderer, this bit indicates whether a field
+  // should be filled even though it is already considered autofilled OR
+  // user modified.
+  // TODO(crbug.com/1502814): Remove.
+  bool force_override = false;
+};
+
 std::string_view FormControlTypeToString(FormControlType type);
 
 // Consider using the FormControlType enum instead.
@@ -435,6 +491,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.max_length, actual.max_length);                         \
     EXPECT_EQ(expected.css_classes, actual.css_classes);                       \
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled);                   \
+    EXPECT_EQ(expected.is_user_edited, actual.is_user_edited);                 \
     EXPECT_EQ(expected.section, actual.section);                               \
     EXPECT_EQ(expected.check_status, actual.check_status);                     \
     EXPECT_EQ(expected.properties_mask, actual.properties_mask);               \

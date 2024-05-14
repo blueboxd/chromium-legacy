@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <UserNotifications/UserNotifications.h>
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "chrome/services/mac_notifications/public/cpp/mac_notification_metrics.h"
 #include "chrome/services/mac_notifications/un_user_notifications_spi.h"
 #include "chrome/services/mac_notifications/unnotification_metrics.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image.h"
 #include "url/origin.h"
 
@@ -70,10 +70,10 @@ int GetActionButtonIndexFromAction(NSString* actionIdentifier) {
   return kNotificationInvalidButtonIndex;
 }
 
-absl::optional<std::u16string> GetReplyFromResponse(
+std::optional<std::u16string> GetReplyFromResponse(
     UNNotificationResponse* response) {
   if (![response isKindOfClass:[UNTextInputNotificationResponse class]])
-    return absl::nullopt;
+    return std::nullopt;
   auto* textResponse = static_cast<UNTextInputNotificationResponse*>(response);
   return base::SysNSStringToUTF16(textResponse.userText);
 }
@@ -86,7 +86,6 @@ namespace mac_notifications {
 constexpr base::TimeDelta MacNotificationServiceUN::kSynchronizationInterval;
 
 MacNotificationServiceUN::MacNotificationServiceUN(
-    mojo::PendingReceiver<mojom::MacNotificationService> service,
     mojo::PendingRemote<mojom::MacNotificationActionHandler> handler,
     UNUserNotificationCenter* notification_center)
     : binding_(this),
@@ -99,25 +98,44 @@ MacNotificationServiceUN::MacNotificationServiceUN(
                                 weak_factory_.GetWeakPtr())];
   notification_center_.delegate = delegate_;
   LogUNNotificationSettings(notification_center_);
-  // TODO(crbug.com/1129366): Determine when to ask for permissions. Make sure
-  // to also update the initial value of `permission_request_is_pending_` when
-  // this changes.
-  RequestPermission();
   // Schedule a timer to regularly check for any closed notifications.
   ScheduleSynchronizeNotifications();
   // Initialize currently displayed notifications as we might have been
   // restarted after a crash and want to continue managing shown notifications.
-  // Only bind the mojo receiver after initialization is done to ensure we have
-  // all required state available before handling mojo messages.
-  InitializeDeliveredNotifications(base::BindOnce(
-      [](mojo::Receiver<mojom::MacNotificationService>* receiver,
-         mojo::PendingReceiver<mojom::MacNotificationService>
-             pending_receiver) { receiver->Bind(std::move(pending_receiver)); },
-      base::Unretained(&binding_), std::move(service)));
+  // Note that this works even if this app doesn't have (or no longer has)
+  // notifications permission with the OS, so it is safe to kick this off
+  // regardless of the current permission state.
+  InitializeDeliveredNotifications();
 }
 
 MacNotificationServiceUN::~MacNotificationServiceUN() {
   [notification_center_ setDelegate:nil];
+}
+
+void MacNotificationServiceUN::Bind(
+    mojo::PendingReceiver<mojom::MacNotificationService> service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Only bind the mojo receiver after initialization is done to ensure we have
+  // all required state available before handling mojo messages.
+  if (!finished_initialization_) {
+    // If two Bind calls happen before initialization finishes, this will
+    // replace the existing `after_initialization_callback_`, which is
+    // consistent with `Bind()`s contract that only the last binding is
+    // ever active. The browser process will only re-connect after a previous
+    // connection was confirmed to be idle, so this should never miss any
+    // important mojo calls.
+    after_initialization_callback_ = base::BindOnce(
+        [](mojo::Receiver<mojom::MacNotificationService>* receiver,
+           mojo::PendingReceiver<mojom::MacNotificationService>
+               pending_receiver) {
+          receiver->Bind(std::move(pending_receiver));
+        },
+        base::Unretained(&binding_), std::move(service));
+    return;
+  }
+  binding_.reset();
+  binding_.Bind(std::move(service));
 }
 
 void MacNotificationServiceUN::DisplayNotification(
@@ -234,7 +252,7 @@ void MacNotificationServiceUN::DoDisplayNotification(
 
 void MacNotificationServiceUN::GetDisplayedNotifications(
     mojom::ProfileIdentifierPtr profile,
-    const absl::optional<GURL>& origin,
+    const std::optional<GURL>& origin,
     GetDisplayedNotificationsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Move |callback| into block storage so we can use it from the block below.
@@ -244,7 +262,7 @@ void MacNotificationServiceUN::GetDisplayedNotifications(
   // Note: |profile| might be null if we want all notifications.
   NSString* profile_id = profile ? base::SysUTF8ToNSString(profile->id) : nil;
   bool incognito = profile && profile->incognito;
-  __block absl::optional<GURL> block_origin = origin;
+  __block std::optional<GURL> block_origin = origin;
 
   // We need to call |callback| on the same sequence as this method is called.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -338,57 +356,100 @@ void MacNotificationServiceUN::CloseAllNotifications() {
 
 void MacNotificationServiceUN::OkayToTerminateService(
     OkayToTerminateServiceCallback callback) {
-  if (permission_request_is_pending_) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!pending_permission_requests_.empty()) {
     std::move(callback).Run(false);
     return;
   }
 
   GetDisplayedNotifications(
-      /*profile=*/nullptr, /*origin=*/absl::nullopt,
+      /*profile=*/nullptr, /*origin=*/std::nullopt,
       base::BindOnce([](std::vector<mojom::NotificationIdentifierPtr>
                             notifications) {
         return notifications.empty();
       }).Then(std::move(callback)));
 }
 
-void MacNotificationServiceUN::RequestPermission() {
+void MacNotificationServiceUN::RequestPermission(
+    RequestPermissionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  __block auto update_pending_status_callback =
-      base::BindPostTaskToCurrentDefault(base::BindOnce(
-          [](base::WeakPtr<MacNotificationServiceUN> service) {
-            if (service) {
-              service->permission_request_is_pending_ = false;
-            }
-          },
-          weak_factory_.GetWeakPtr()));
+  // If there already is a pending permission request, just return. Since the
+  // outcome of the permission request isn't reported back, there is no point
+  // in doing more than this.
+  pending_permission_requests_.push_back(std::move(callback));
+  if (pending_permission_requests_.size() > 1) {
+    return;
+  }
+
+  // First query current permission state, to distinguish previously
+  // granted/denied states from newly grante/denied states.
+  auto lambda = [](base::WeakPtr<MacNotificationServiceUN> service,
+                   UNAuthorizationStatus status) {
+    if (!service) {
+      return;
+    }
+    DCHECK_CALLED_ON_VALID_SEQUENCE(service->sequence_checker_);
+    switch (status) {
+      case UNAuthorizationStatusDenied:
+        service->ReportRequestPermissionResult(
+            mojom::RequestPermissionResult::kPermissionPreviouslyDenied);
+        break;
+      case UNAuthorizationStatusAuthorized:
+        service->ReportRequestPermissionResult(
+            mojom::RequestPermissionResult::kPermissionPreviouslyGranted);
+        break;
+      default:
+        service->DoRequestPermission();
+    }
+  };
+  __block auto block_callback = base::BindPostTaskToCurrentDefault(
+      base::BindOnce(lambda, weak_factory_.GetWeakPtr()));
+  [notification_center_ getNotificationSettingsWithCompletionHandler:^(
+                            UNNotificationSettings* settings) {
+    std::move(block_callback).Run(settings.authorizationStatus);
+  }];
+}
+
+void MacNotificationServiceUN::ReportRequestPermissionResult(
+    mojom::RequestPermissionResult result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LogUNNotificationRequestPermissionResult(result);
+  std::vector<RequestPermissionCallback> callbacks = std::exchange(
+      pending_permission_requests_, std::vector<RequestPermissionCallback>());
+  for (auto& callback : callbacks) {
+    std::move(callback).Run(result);
+  }
+}
+
+void MacNotificationServiceUN::DoRequestPermission() {
+  __block auto block_callback = base::BindPostTaskToCurrentDefault(
+      base::BindOnce(&MacNotificationServiceUN::ReportRequestPermissionResult,
+                     weak_factory_.GetWeakPtr()));
 
   UNAuthorizationOptions authOptions = UNAuthorizationOptionAlert |
                                        UNAuthorizationOptionSound |
                                        UNAuthorizationOptionBadge;
 
   auto resultHandler = ^(BOOL granted, NSError* _Nullable error) {
-    auto result = UNNotificationRequestPermissionResult::kRequestFailed;
+    auto result = mojom::RequestPermissionResult::kRequestFailed;
     if (!error) {
-      result = granted
-                   ? UNNotificationRequestPermissionResult::kPermissionGranted
-                   : UNNotificationRequestPermissionResult::kPermissionDenied;
+      result = granted ? mojom::RequestPermissionResult::kPermissionGranted
+                       : mojom::RequestPermissionResult::kPermissionDenied;
     }
-    LogUNNotificationRequestPermissionResult(result);
-    std::move(update_pending_status_callback).Run();
+    std::move(block_callback).Run(result);
   };
 
   [notification_center_ requestAuthorizationWithOptions:authOptions
                                       completionHandler:resultHandler];
 }
 
-void MacNotificationServiceUN::InitializeDeliveredNotifications(
-    base::OnceClosure callback) {
+void MacNotificationServiceUN::InitializeDeliveredNotifications() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   __block auto do_initialize =
       base::BindPostTaskToCurrentDefault(base::BindOnce(
           &MacNotificationServiceUN::DoInitializeDeliveredNotifications,
-          weak_factory_.GetWeakPtr(), std::move(callback)));
+          weak_factory_.GetWeakPtr()));
 
   [notification_center_ getDeliveredNotificationsWithCompletionHandler:^(
                             NSArray<UNNotification*>* _Nonnull notifications) {
@@ -401,7 +462,6 @@ void MacNotificationServiceUN::InitializeDeliveredNotifications(
 }
 
 void MacNotificationServiceUN::DoInitializeDeliveredNotifications(
-    base::OnceClosure callback,
     NSArray<UNNotification*>* notifications,
     NSSet<UNNotificationCategory*>* categories) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -416,7 +476,11 @@ void MacNotificationServiceUN::DoInitializeDeliveredNotifications(
   category_manager_.InitializeExistingCategories(std::move(notifications),
                                                  std::move(categories));
 
-  std::move(callback).Run();
+  CHECK(!finished_initialization_);
+  finished_initialization_ = true;
+  if (after_initialization_callback_) {
+    std::move(after_initialization_callback_).Run();
+  }
 }
 
 void MacNotificationServiceUN::ScheduleSynchronizeNotifications() {
@@ -439,7 +503,7 @@ void MacNotificationServiceUN::SynchronizeNotifications(
   }
   is_synchronizing_notifications_ = true;
   GetDisplayedNotifications(
-      /*profile=*/nullptr, /*origin=*/absl::nullopt,
+      /*profile=*/nullptr, /*origin=*/std::nullopt,
       base::BindOnce(&MacNotificationServiceUN::DoSynchronizeNotifications,
                      weak_factory_.GetWeakPtr()));
 }
@@ -470,7 +534,7 @@ void MacNotificationServiceUN::DoSynchronizeNotifications(
     auto action_info = mojom::NotificationActionInfo::New(
         std::move(entry.second), NotificationOperation::kClose,
         kNotificationInvalidButtonIndex,
-        /*reply=*/absl::nullopt);
+        /*reply=*/std::nullopt);
     action_handler_->OnNotificationAction(std::move(action_info));
   }
 
@@ -544,7 +608,7 @@ void MacNotificationServiceUN::OnNotificationsClosed(
   NotificationOperation operation =
       GetNotificationOperationFromAction(response.actionIdentifier);
   int buttonIndex = GetActionButtonIndexFromAction(response.actionIdentifier);
-  absl::optional<std::u16string> reply = GetReplyFromResponse(response);
+  std::optional<std::u16string> reply = GetReplyFromResponse(response);
   auto actionInfo = mac_notifications::mojom::NotificationActionInfo::New(
       std::move(meta), operation, buttonIndex, std::move(reply));
   _handler.Run(std::move(actionInfo));

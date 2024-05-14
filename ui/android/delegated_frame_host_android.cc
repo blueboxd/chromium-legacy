@@ -212,10 +212,7 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame(
 
 std::vector<viz::SurfaceId>
 DelegatedFrameHostAndroid::CollectSurfaceIdsForEviction() const {
-  if (base::FeatureList::IsEnabled(features::kEvictSubtree)) {
-    return client_->CollectSurfaceIdsForEviction();
-  }
-  return std::vector<viz::SurfaceId>();
+  return client_->CollectSurfaceIdsForEviction();
 }
 
 viz::SurfaceId DelegatedFrameHostAndroid::GetCurrentSurfaceId() const {
@@ -244,7 +241,7 @@ DelegatedFrameHostAndroid::GetFirstSurfaceIdAfterNavigationForTesting() const {
 }
 
 void DelegatedFrameHostAndroid::ClearFallbackSurfaceForCommitPending() {
-  const absl::optional<viz::SurfaceId> fallback_surface_id =
+  const std::optional<viz::SurfaceId> fallback_surface_id =
       content_layer_->oldest_acceptable_fallback();
 
   // CommitPending without a target for TakeFallbackContentFrom. Since we cannot

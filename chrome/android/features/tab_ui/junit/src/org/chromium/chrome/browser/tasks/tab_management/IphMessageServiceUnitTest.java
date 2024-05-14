@@ -30,7 +30,7 @@ import org.chromium.components.feature_engagement.Tracker;
 @RunWith(BaseRobolectricTestRunner.class)
 @Batch(Batch.UNIT_TESTS)
 public class IphMessageServiceUnitTest {
-    @Mock private TabSwitcherCoordinator.IphController mIphController;
+    @Mock private TabSwitcherIphController mIphController;
 
     @Mock private Profile mProfile;
 
@@ -43,9 +43,8 @@ public class IphMessageServiceUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        Profile.setLastUsedProfileForTesting(mProfile);
         TrackerFactory.setTrackerForTests(mTracker);
-        mIphMessageService = new IphMessageService(mIphController);
+        mIphMessageService = new IphMessageService(mProfile, mIphController);
     }
 
     @Test

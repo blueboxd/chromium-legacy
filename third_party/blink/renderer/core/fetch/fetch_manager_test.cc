@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 
+#include <optional>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -17,7 +19,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -298,6 +300,7 @@ class FetchLaterTest : public testing::Test {
   const base::HistogramTester& Histogram() const { return histogram_; }
 
  private:
+  test::TaskEnvironment task_environment;
   base::test::ScopedFeatureList feature_list_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   Persistent<FakeLocalFrameClient> frame_client_;
@@ -342,7 +345,7 @@ TEST_F(FetchLaterTest, CreateSameOriginFetchLaterRequest) {
   auto* result = fetch_later_manager->FetchLater(
       scope.GetScriptState(),
       request->PassRequestData(scope.GetScriptState(), exception_state),
-      request->signal(), absl::nullopt, exception_state);
+      request->signal(), std::nullopt, exception_state);
   Factory().FlushForTesting();
 
   EXPECT_THAT(result, Not(IsNull()));
@@ -368,7 +371,7 @@ TEST_F(FetchLaterTest, NegativeActivateAfterThrowRangeError) {
   auto* result = fetch_later_manager->FetchLater(
       scope.GetScriptState(),
       request->PassRequestData(scope.GetScriptState(), exception_state),
-      request->signal(), /*activate_after=*/absl::make_optional(-1),
+      request->signal(), /*activate_after=*/std::make_optional(-1),
       exception_state);
 
   EXPECT_THAT(result, IsNull());
@@ -398,7 +401,7 @@ TEST_F(FetchLaterTest, AbortBeforeFetchLater) {
   auto* result = fetch_later_manager->FetchLater(
       scope.GetScriptState(),
       request->PassRequestData(scope.GetScriptState(), exception_state),
-      request->signal(), /*activate_after_ms=*/absl::nullopt, exception_state);
+      request->signal(), /*activate_after_ms=*/std::nullopt, exception_state);
 
   EXPECT_THAT(result, IsNull());
   EXPECT_THAT(exception_state,
@@ -426,7 +429,7 @@ TEST_F(FetchLaterTest, AbortAfterFetchLater) {
   auto* result = fetch_later_manager->FetchLater(
       scope.GetScriptState(),
       request->PassRequestData(scope.GetScriptState(), exception_state),
-      request->signal(), /*activate_after_ms=*/absl::nullopt, exception_state);
+      request->signal(), /*activate_after_ms=*/std::nullopt, exception_state);
   EXPECT_THAT(result, Not(IsNull()));
 
   // Simulates FetchLater aborted by abort signal.
@@ -460,7 +463,7 @@ TEST_F(FetchLaterTest, ActivateAfter) {
   auto* result = fetch_later_manager->FetchLater(
       scope.GetScriptState(),
       request->PassRequestData(scope.GetScriptState(), exception_state),
-      request->signal(), absl::make_optional(activate_after_ms),
+      request->signal(), std::make_optional(activate_after_ms),
       exception_state);
   EXPECT_THAT(result, Not(IsNull()));
   fetch_later_manager->RecreateTimerForTesting(
@@ -499,7 +502,7 @@ TEST_F(FetchLaterTest, ContextDestroyed) {
       scope.GetScriptState(),
       request->PassRequestData(scope.GetScriptState(), exception_state),
       request->signal(),
-      /*activate_after_ms=*/absl::nullopt, exception_state);
+      /*activate_after_ms=*/std::nullopt, exception_state);
 
   // Simulates destroying execution context.
   fetch_later_manager->ContextDestroyed();
@@ -533,7 +536,7 @@ TEST_F(FetchLaterTest, ForcedSendingWithBackgroundSyncOff) {
   auto* result = fetch_later_manager->FetchLater(
       scope.GetScriptState(),
       request->PassRequestData(scope.GetScriptState(), exception_state),
-      request->signal(), /*activate_after=*/absl::nullopt, exception_state);
+      request->signal(), /*activate_after=*/std::nullopt, exception_state);
   EXPECT_THAT(result, Not(IsNull()));
 
   // Simluates the context enters BackForwardCache.
@@ -554,6 +557,7 @@ TEST_F(FetchLaterTest, ForcedSendingWithBackgroundSyncOff) {
 // The default priority for FetchLater request without FetchPriorityHint or
 // RenderBlockingBehavior should be kHigh.
 TEST(FetchLaterLoadPriorityTest, DefaultHigh) {
+  test::TaskEnvironment task_environment;
   V8TestingScope scope;
   ResourceLoaderOptions options(scope.GetExecutionContext()->GetCurrentWorld());
 
@@ -569,6 +573,7 @@ TEST(FetchLaterLoadPriorityTest, DefaultHigh) {
 // The priority for FetchLater request with FetchPriorityHint::kAuto should be
 // kHigh.
 TEST(FetchLaterLoadPriorityTest, WithFetchPriorityHintAuto) {
+  test::TaskEnvironment task_environment;
   V8TestingScope scope;
   ResourceLoaderOptions options(scope.GetExecutionContext()->GetCurrentWorld());
 
@@ -585,6 +590,7 @@ TEST(FetchLaterLoadPriorityTest, WithFetchPriorityHintAuto) {
 // The priority for FetchLater request with FetchPriorityHint::kLow should be
 // kLow.
 TEST(FetchLaterLoadPriorityTest, WithFetchPriorityHintLow) {
+  test::TaskEnvironment task_environment;
   V8TestingScope scope;
   ResourceLoaderOptions options(scope.GetExecutionContext()->GetCurrentWorld());
 
@@ -602,6 +608,7 @@ TEST(FetchLaterLoadPriorityTest, WithFetchPriorityHintLow) {
 // should be kHigh.
 TEST(FetchLaterLoadPriorityTest,
      WithFetchPriorityHintLowAndRenderBlockingBehaviorBlocking) {
+  test::TaskEnvironment task_environment;
   V8TestingScope scope;
   ResourceLoaderOptions options(scope.GetExecutionContext()->GetCurrentWorld());
 

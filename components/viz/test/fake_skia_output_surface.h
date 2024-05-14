@@ -20,10 +20,14 @@
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "media/gpu/buildflags.h"
 
 namespace viz {
 
 class FakeSkiaOutputSurface : public SkiaOutputSurface {
+  using SharedImagePurgeableCallback =
+      base::RepeatingCallback<void(const gpu::Mailbox&, bool)>;
+
  public:
   static std::unique_ptr<FakeSkiaOutputSurface> Create3d() {
     auto provider = TestContextProvider::Create();
@@ -82,7 +86,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       const gfx::Rect& update_rect,
       bool is_overlay) override;
   void MakePromiseSkImage(ImageContext* image_context,
-                          const gfx::ColorSpace& yuv_color_space) override;
+                          const gfx::ColorSpace& yuv_color_space,
+                          bool force_rgbx) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const AggregatedRenderPassId& id,
       const gfx::Size& size,
@@ -117,6 +122,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       const SkColor4f& color,
       const gfx::ColorSpace& color_space) override;
   void DestroySharedImage(const gpu::Mailbox& mailbox) override {}
+  void SetSharedImagePurgeable(const gpu::Mailbox& mailbox,
+                               bool purgeable) override;
   bool SupportsBGRA() const override;
 
   // ExternalUseClient implementation:
@@ -127,11 +134,15 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       const gfx::Size& size,
       SharedImageFormat format,
       bool concurrent_reads,
-      const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+      const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space,
       bool raw_draw_if_possible) override;
 
   gpu::SharedImageInterface* GetSharedImageInterface();
+
+  void SetSharedImagePurgeableCallback(SharedImagePurgeableCallback callback) {
+    set_purgeable_callback_ = std::move(callback);
+  }
 
   // If set true, callbacks triggering will be in a reverse order as SignalQuery
   // calls.
@@ -157,6 +168,17 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   bool ContainsDelegatedInkPointRendererReceiverForTesting() const {
     return delegated_ink_renderer_receiver_arrived_;
   }
+
+#if BUILDFLAG(ENABLE_VULKAN) && BUILDFLAG(IS_CHROMEOS) && \
+    BUILDFLAG(USE_V4L2_CODEC)
+  void DetileOverlay(gpu::Mailbox input,
+                     const gfx::Size& input_visible_size,
+                     gpu::SyncToken input_sync_token,
+                     gpu::Mailbox output,
+                     const gfx::RectF& display_rect,
+                     const gfx::RectF& crop_rect,
+                     gfx::OverlayTransform transform) override {}
+#endif
 
  protected:
   explicit FakeSkiaOutputSurface(
@@ -199,6 +221,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   // here or not. Used in testing to confirm that the pending receiver is
   // correctly routed towards gpu main when the platform supports delegated ink.
   bool delegated_ink_renderer_receiver_arrived_ = false;
+
+  SharedImagePurgeableCallback set_purgeable_callback_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
@@ -16,6 +17,7 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/test_utils.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -84,6 +86,21 @@ class GLES2ExternalFrameBufferTest
     CreateSharedContext(preferences, workarounds, surface_, context_,
                         context_state_, feature_info);
 
+    // On MacOS, the default texture target for native GpuMemoryBuffers is
+    // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
+    // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
+    // it's necessary to use GL_TEXTURE_2D instead.
+    // TODO(crbug.com/1056312): The proper behavior is to check the config
+    // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
+#if BUILDFLAG(IS_MAC)
+    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+        (gl::GetANGLEImplementation() ==
+             gl::ANGLEImplementation::kSwiftShader ||
+         gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
+      gpu::SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
+    }
+#endif  // BUILDFLAG(IS_MAC)
+
     backing_factory_ = std::make_unique<SharedImageFactory>(
         preferences, workarounds, GpuFeatureInfo(), context_state_.get(),
         shared_image_manager_.get(), context_state_->memory_tracker(),
@@ -127,12 +144,15 @@ class GLES2ExternalFrameBufferTest
       return shared_image_representation_factory_->ProduceGLTexture(mailbox);
   }
 
+  // Creates a SharedImage that can be used for reading and writing via the
+  // GLES2 interface (these tests do both).
   Mailbox CreateSharedImage(const viz::SharedImageFormat& format) {
     auto mailbox = Mailbox::GenerateForSharedImage();
     backing_factory_->CreateSharedImage(
         mailbox, format, gfx::Size(64, 64), gfx::ColorSpace::CreateSRGB(),
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, SurfaceHandle(),
-        SHARED_IMAGE_USAGE_GLES2, "TestLabel");
+        SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE,
+        "TestLabel");
     return mailbox;
   }
 
@@ -175,8 +195,8 @@ class GLES2ExternalFrameBufferTest
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<SharedContextState> context_state_;
-  std::unique_ptr<SharedImageFactory> backing_factory_;
   std::unique_ptr<SharedImageManager> shared_image_manager_;
+  std::unique_ptr<SharedImageFactory> backing_factory_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;

@@ -32,6 +32,8 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
     PROVISIONING_FAILURE = 3,
     NO_CELLULAR_DATA = 4,
     TETHERING_UNSUPPORTED = 5,
+    CANCELLED_FOR_NEWER_CONNECTION = 6,
+    TETHER_SHUTDOWN_DURING_CONNECTION = 7,
     CONNECTION_TO_HOST_RESULT_MAX,
   };
 
@@ -39,6 +41,9 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
     UNKNOWN_ERROR,
     CLIENT_CONNECTION_TIMEOUT,
     CLIENT_CONNECTION_INTERNAL_ERROR,
+    CLIENT_CONNECTION_NETWORK_CONNECTION_HANDLER_FAILED,
+    CLIENT_CONNECTION_NETWORK_STATE_WAS_NULL,
+    CLIENT_CONNECTION_WIFI_FAILED_TO_ENABLE,
     TETHERING_TIMED_OUT_FIRST_TIME_SETUP_REQUIRED,
     TETHERING_TIMED_OUT_FIRST_TIME_SETUP_NOT_REQUIRED,
     ENABLING_HOTSPOT_FAILED,
@@ -122,8 +127,25 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
                            RecordConnectionResultFailureNoCellData);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectionResultFailureEnablingHotspotFailed);
+  FRIEND_TEST_ALL_PREFIXES(
+      HostConnectionMetricsLoggerTest,
+      RecordConnectionResultFailureShutDownDuringConnectionAttempt);
+  FRIEND_TEST_ALL_PREFIXES(
+      HostConnectionMetricsLoggerTest,
+      RecordConnectionResultFailureClientConnection_WifiFailedToEnable);
+  FRIEND_TEST_ALL_PREFIXES(
+      HostConnectionMetricsLoggerTest,
+      RecordConnectionResultFailureClientConnection_NetworkConnectionHandlerFailed);
+  FRIEND_TEST_ALL_PREFIXES(
+      HostConnectionMetricsLoggerTest,
+      RecordConnectionResultFailureClientConnection_NetworkStateWasNull);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectionResultFailureEnablingHotspotTimeout);
+  FRIEND_TEST_ALL_PREFIXES(
+      HostConnectionMetricsLoggerTest,
+      RecordConnectionResultFailureCancelledForNewerConnection);
+  FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
+                           RecordConnectionResult);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectToHostDuration);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
@@ -137,6 +159,8 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
       RecordConnectionResultFailureInvalidHotspotCredentials);
 
   void RecordInternalError(ConnectionToHostInternalError internal_error);
+
+  void RecordUnavoidableError(ConnectionToHostResult result);
 
   // An Instant Tethering connection can fail for several different reasons.
   // Though traditionally success and each failure case would be logged to a
@@ -164,6 +188,17 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
     SUCCESS_MAX
   };
 
+  enum class ConnectionToHostResult_UnavoidableErrorEventType {
+    OTHER = 0,
+    PROVISIONING_FAILED = 1,
+    USER_CANCELLATION = 2,
+    TETHERING_UNSUPPORTED = 3,
+    NO_CELLULAR_DATA = 4,
+    SHUT_DOWN_DURING_CONNECTION = 5,
+    CANCELLED_FOR_NEWER_CONNECTION_ATTEMPT = 6,
+    kMax
+  };
+
   enum class ConnectionToHostResult_FailureEventType {
     UNKNOWN_ERROR = 0,
     TETHERING_TIMED_OUT = 1,
@@ -184,8 +219,11 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
 
   enum class ConnectionToHostResult_FailureClientConnectionEventType {
     TIMEOUT = 0,
-    CANCELED_BY_USER = 1,
+    CANCELED_BY_USER = 1,  // Obsolete
     INTERNAL_ERROR = 2,
+    NETWORK_CONNECTION_HANDLER_FAILED = 3,
+    NETWORK_STATE_WAS_NULL = 4,
+    WIFI_FAILED_TO_ENABLED = 5,
     FAILURE_CLIENT_CONNECTION_MAX
   };
 
@@ -215,8 +253,8 @@ class HostConnectionMetricsLogger : public ActiveHost::Observer {
 
   void SetClockForTesting(base::Clock* test_clock);
 
-  raw_ptr<ActiveHost, ExperimentalAsh> active_host_;
-  raw_ptr<base::Clock, ExperimentalAsh> clock_;
+  raw_ptr<ActiveHost> active_host_;
+  raw_ptr<base::Clock> clock_;
 
   base::Time connect_to_host_start_time_;
   std::string active_host_device_id_;

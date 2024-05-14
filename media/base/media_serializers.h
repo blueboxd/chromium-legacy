@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_MEDIA_SERIALIZERS_H_
 #define MEDIA_BASE_MEDIA_SERIALIZERS_H_
 
+#include <optional>
 #include <sstream>
 #include <vector>
 
@@ -12,12 +13,12 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
+#include "media/base/cdm_config.h"
 #include "media/base/decoder.h"
 #include "media/base/media_serializers_base.h"
 #include "media/base/renderer.h"
 #include "media/base/status.h"
 #include "media/base/video_decoder_config.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/hdr_metadata.h"
 
@@ -77,8 +78,8 @@ struct MediaSerializer<std::unique_ptr<T>> {
 
 // serialize optional types
 template <typename OptType>
-struct MediaSerializer<absl::optional<OptType>> {
-  static base::Value Serialize(const absl::optional<OptType>& opt) {
+struct MediaSerializer<std::optional<OptType>> {
+  static base::Value Serialize(const std::optional<OptType>& opt) {
     return opt ? MediaSerializer<OptType>::Serialize(opt.value())
                : base::Value("unset");  // TODO(tmathmeyer) maybe empty string?
   }
@@ -240,6 +241,20 @@ template <>
 struct MediaSerializer<SampleFormat> {
   static inline base::Value Serialize(SampleFormat value) {
     return base::Value(SampleFormatToString(value));
+  }
+};
+
+// Class (complex)
+template <>
+struct MediaSerializer<CdmConfig> {
+  static base::Value Serialize(const CdmConfig& value) {
+    base::Value::Dict result;
+    FIELD_SERIALIZE("key_system", value.key_system);
+    FIELD_SERIALIZE("allow_distinctive_identifier",
+                    value.allow_distinctive_identifier);
+    FIELD_SERIALIZE("allow_persistent_state", value.allow_persistent_state);
+    FIELD_SERIALIZE("use_hw_secure_codecs", value.use_hw_secure_codecs);
+    return base::Value(std::move(result));
   }
 };
 

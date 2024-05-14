@@ -9,8 +9,9 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/mojom/context_type.mojom.h"
+#include "extensions/common/utils/extension_utils.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/ipc_message_sender.h"
@@ -56,10 +57,11 @@ TEST_F(ActivityLoggerTest, DontCrashOnUnconvertedValues) {
 
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   extension_ids.insert(extension->id());
-  const Feature::Context kContextType = Feature::BLESSED_EXTENSION_CONTEXT;
+  const mojom::ContextType kContextType =
+      mojom::ContextType::kPrivilegedExtension;
   script_context_set.AddForTesting(std::make_unique<ScriptContext>(
-      context, nullptr, extension.get(), kContextType, extension.get(),
-      kContextType));
+      context, nullptr, GenerateHostIdFromExtensionId(extension->id()),
+      extension.get(), kContextType, extension.get(), kContextType));
   ScriptContext* script_context = script_context_set.GetByV8Context(context);
 
   v8::LocalVector<v8::Value> args(isolate(), {v8::Undefined(isolate())});

@@ -8,6 +8,7 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/tracking_protection_onboarding.h"
 #include "components/privacy_sandbox/tracking_protection_prefs.h"
@@ -29,6 +30,11 @@ TrackingProtectionSettings::TrackingProtectionSettings(
       prefs::kEnableDoNotTrack,
       base::BindRepeating(
           &TrackingProtectionSettings::OnDoNotTrackEnabledPrefChanged,
+          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kIpProtectionEnabled,
+      base::BindRepeating(
+          &TrackingProtectionSettings::OnIpProtectionPrefChanged,
           base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kBlockAll3pcToggleEnabled,
@@ -78,6 +84,11 @@ bool TrackingProtectionSettings::AreAllThirdPartyCookiesBlocked() const {
           is_incognito_);
 }
 
+bool TrackingProtectionSettings::IsIpProtectionEnabled() const {
+  return pref_service_->GetBoolean(prefs::kIpProtectionEnabled) &&
+         base::FeatureList::IsEnabled(kIpProtectionV1);
+}
+
 bool TrackingProtectionSettings::IsDoNotTrackEnabled() const {
   return pref_service_->GetBoolean(prefs::kEnableDoNotTrack);
 }
@@ -100,6 +111,7 @@ void TrackingProtectionSettings::OnTrackingProtectionOnboardingUpdated(
     case TrackingProtectionOnboarding::OnboardingStatus::kIneligible:
     case TrackingProtectionOnboarding::OnboardingStatus::kEligible:
     case TrackingProtectionOnboarding::OnboardingStatus::kOffboarded:
+    case TrackingProtectionOnboarding::OnboardingStatus::kOnboardingRequested:
       pref_service_->SetBoolean(prefs::kTrackingProtection3pcdEnabled, false);
       return;
     case TrackingProtectionOnboarding::OnboardingStatus::kOnboarded:
@@ -111,6 +123,12 @@ void TrackingProtectionSettings::OnTrackingProtectionOnboardingUpdated(
 void TrackingProtectionSettings::OnDoNotTrackEnabledPrefChanged() {
   for (auto& observer : observers_) {
     observer.OnDoNotTrackEnabledChanged();
+  }
+}
+
+void TrackingProtectionSettings::OnIpProtectionPrefChanged() {
+  for (auto& observer : observers_) {
+    observer.OnIpProtectionEnabledChanged();
   }
 }
 

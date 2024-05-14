@@ -24,11 +24,9 @@
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/sync/base/features.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 
@@ -55,16 +53,14 @@ constexpr char kOverallSuffix[] = ".Overall";
 constexpr char kWithCustomPassphraseSuffix[] = ".WithCustomPassphrase";
 constexpr char kWithoutCustomPassphraseSuffix[] = ".WithoutCustomPassphrase";
 
-bool IsCustomPassphraseEnabled(password_manager::SyncState sync_state) {
+bool IsCustomPassphraseEnabled(
+    password_manager::sync_util::SyncState sync_state) {
   switch (sync_state) {
-    case password_manager::SyncState::kSyncingWithCustomPassphrase:
-    case password_manager::SyncState::
-        kAccountPasswordsActiveWithCustomPassphrase:
-      return true;
-    case password_manager::SyncState::kNotSyncing:
-    case password_manager::SyncState::kSyncingNormalEncryption:
-    case password_manager::SyncState::kAccountPasswordsActiveNormalEncryption:
+    case password_manager::sync_util::SyncState::kNotActive:
+    case password_manager::sync_util::SyncState::kActiveWithNormalEncryption:
       return false;
+    case password_manager::sync_util::SyncState::kActiveWithCustomPassphrase:
+      return true;
   }
   NOTREACHED_NORETURN();
 }
@@ -295,10 +291,6 @@ CredentialsEnableServiceSettingToPasswordManagerEnableState(
 void ReportPasswordNotesMetrics(
     bool is_account_store,
     const std::vector<std::unique_ptr<PasswordForm>>& forms) {
-  if (!base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup)) {
-    return;
-  }
-
   base::StringPiece suffix_for_store =
       GetMetricsSuffixForStore(is_account_store);
 
@@ -449,9 +441,8 @@ void ReportPasswordProtectedMetrics(
     const std::vector<std::unique_ptr<PasswordForm>>& forms) {
   for (const std::unique_ptr<PasswordForm>& form : forms) {
     if (!form->blocked_by_user && form->password_value.size() > 0) {
-      metrics_util::LogIsPasswordProtected(
-          form->password_value.size() >=
-          password_manager::GetMinPasswordLengthToCheck());
+      metrics_util::LogIsPasswordProtected(form->password_value.size() >=
+                                           kMinPasswordLengthToCheck);
     }
   }
 }
@@ -656,11 +647,9 @@ StoreMetricsReporter::StoreMetricsReporter(
     const syncer::SyncService* sync_service,
     PrefService* prefs,
     password_manager::PasswordReuseManager* password_reuse_manager,
-    bool is_under_advanced_protection,
     base::OnceClosure done_callback)
     : profile_store_(profile_store),
       account_store_(account_store),
-      is_under_advanced_protection_(is_under_advanced_protection),
       done_callback_(std::move(done_callback)) {
   DCHECK(prefs);
 
@@ -690,7 +679,7 @@ StoreMetricsReporter::StoreMetricsReporter(
       password_manager::sync_util::GetPasswordSyncState(sync_service));
 
   is_opted_in_account_storage_ =
-      features_util::IsOptedInForAccountStorage(sync_service);
+      features_util::IsOptedInForAccountStorage(prefs, sync_service);
 
   is_safe_browsing_enabled_ = safe_browsing::IsSafeBrowsingEnabled(*prefs);
 
@@ -705,8 +694,7 @@ StoreMetricsReporter::StoreMetricsReporter(
   // May be null in tests.
   if (profile_store) {
     if (password_reuse_manager) {
-      password_reuse_manager->ReportMetrics(sync_username_,
-                                            is_under_advanced_protection_);
+      password_reuse_manager->ReportMetrics(sync_username_);
     }
   }
 

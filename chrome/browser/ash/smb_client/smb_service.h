@@ -37,8 +37,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-namespace ash {
-namespace smb_client {
+namespace ash::smb_client {
 
 class SmbKerberosCredentialsUpdater;
 class SmbShareInfo;
@@ -243,7 +242,7 @@ class SmbService : public KeyedService,
   static bool disable_share_discovery_for_testing_;
 
   const file_system_provider::ProviderId provider_id_;
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile> profile_;
   std::unique_ptr<SmbShareFinder> share_finder_;
   // |smbfs_mount_id| -> SmbFsShare
   // Note, mount ID for smbfs is a randomly generated string. For smbprovider
@@ -259,7 +258,6 @@ class SmbService : public KeyedService,
   base::WeakPtrFactory<SmbService> weak_ptr_factory_{this};
 };
 
-}  // namespace smb_client
-}  // namespace ash
+}  // namespace ash::smb_client
 
 #endif  // CHROME_BROWSER_ASH_SMB_CLIENT_SMB_SERVICE_H_

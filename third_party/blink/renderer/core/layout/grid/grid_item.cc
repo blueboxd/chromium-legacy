@@ -11,24 +11,39 @@ namespace blink {
 
 namespace {
 
-// Given an |item_style| determines the correct |AxisEdge| alignment.
+// Given an `item_style` determines the correct `AxisEdge` alignment.
 // Additionally will determine:
-//  - The behavior of 'auto' via the |auto_behavior| out-parameter.
-//  - If the alignment is safe via the |is_overflow_safe| out-parameter.
-AxisEdge AxisEdgeFromItemPosition(bool is_inline_axis,
+//  - The behavior of 'auto' via the `auto_behavior` out-parameter.
+//  - If the alignment is safe via the `is_overflow_safe` out-parameter.
+AxisEdge AxisEdgeFromItemPosition(GridTrackSizingDirection track_direction,
+                                  bool has_subgridded_axis,
                                   bool is_replaced,
                                   bool is_out_of_flow,
                                   const ComputedStyle& item_style,
+                                  const ComputedStyle& parent_grid_style,
                                   const ComputedStyle& root_grid_style,
                                   AutoSizeBehavior* auto_behavior,
                                   bool* is_overflow_safe) {
   DCHECK(auto_behavior && is_overflow_safe);
 
-  const auto& alignment = is_inline_axis
-                              ? item_style.ResolvedJustifySelf(
-                                    ItemPosition::kNormal, &root_grid_style)
-                              : item_style.ResolvedAlignSelf(
-                                    ItemPosition::kNormal, &root_grid_style);
+  if (has_subgridded_axis) {
+    *auto_behavior = AutoSizeBehavior::kStretchImplicit;
+    *is_overflow_safe = true;
+    return AxisEdge::kStart;
+  }
+
+  const bool is_for_columns = track_direction == kForColumns;
+  const auto root_grid_writing_direction =
+      root_grid_style.GetWritingDirection();
+
+  const auto& alignment =
+      (is_for_columns ==
+       IsParallelWritingMode(root_grid_writing_direction.GetWritingMode(),
+                             parent_grid_style.GetWritingMode()))
+          ? item_style.ResolvedJustifySelf(ItemPosition::kNormal,
+                                           &parent_grid_style)
+          : item_style.ResolvedAlignSelf(ItemPosition::kNormal,
+                                         &parent_grid_style);
 
   *auto_behavior = AutoSizeBehavior::kFitContent;
   *is_overflow_safe = alignment.Overflow() == OverflowAlignment::kSafe;
@@ -36,11 +51,12 @@ AxisEdge AxisEdgeFromItemPosition(bool is_inline_axis,
   // Auto-margins take precedence over any alignment properties.
   if (item_style.MayHaveMargin() && !is_out_of_flow) {
     const bool is_start_auto =
-        is_inline_axis
+        is_for_columns
             ? item_style.MarginInlineStartUsing(root_grid_style).IsAuto()
             : item_style.MarginBlockStartUsing(root_grid_style).IsAuto();
+
     const bool is_end_auto =
-        is_inline_axis
+        is_for_columns
             ? item_style.MarginInlineEndUsing(root_grid_style).IsAuto()
             : item_style.MarginBlockEndUsing(root_grid_style).IsAuto();
 
@@ -56,11 +72,7 @@ AxisEdge AxisEdgeFromItemPosition(bool is_inline_axis,
       return AxisEdge::kStart;
   }
 
-  const auto root_grid_writing_direction =
-      root_grid_style.GetWritingDirection();
-  const auto item_position = alignment.GetPosition();
-
-  switch (item_position) {
+  switch (const auto item_position = alignment.GetPosition()) {
     case ItemPosition::kSelfStart:
     case ItemPosition::kSelfEnd: {
       // In order to determine the correct "self" axis-edge without a
@@ -78,12 +90,10 @@ AxisEdge AxisEdgeFromItemPosition(bool is_inline_axis,
                                           physical.Top(), physical.Right(),
                                           physical.Bottom(), physical.Left());
 
-      if (is_inline_axis) {
-        return item_position == ItemPosition::kSelfStart ? logical.InlineStart()
-                                                         : logical.InlineEnd();
+      if (item_position == ItemPosition::kSelfStart) {
+        return is_for_columns ? logical.InlineStart() : logical.BlockStart();
       }
-      return item_position == ItemPosition::kSelfStart ? logical.BlockStart()
-                                                       : logical.BlockEnd();
+      return is_for_columns ? logical.InlineEnd() : logical.BlockEnd();
     }
     case ItemPosition::kCenter:
       return AxisEdge::kCenter;
@@ -101,11 +111,11 @@ AxisEdge AxisEdgeFromItemPosition(bool is_inline_axis,
     case ItemPosition::kLastBaseline:
       return AxisEdge::kLastBaseline;
     case ItemPosition::kLeft:
-      DCHECK(is_inline_axis);
+      DCHECK(is_for_columns);
       return root_grid_writing_direction.IsLtr() ? AxisEdge::kStart
                                                  : AxisEdge::kEnd;
     case ItemPosition::kRight:
-      DCHECK(is_inline_axis);
+      DCHECK(is_for_columns);
       return root_grid_writing_direction.IsRtl() ? AxisEdge::kStart
                                                  : AxisEdge::kEnd;
     case ItemPosition::kNormal:
@@ -125,12 +135,12 @@ AxisEdge AxisEdgeFromItemPosition(bool is_inline_axis,
 }  // namespace
 
 GridItemData::GridItemData(
-    BlockNode node,
+    BlockNode item_node,
+    const ComputedStyle& parent_grid_style,
     const ComputedStyle& root_grid_style,
-    FontBaseline parent_grid_font_baseline,
     bool parent_must_consider_grid_items_for_column_sizing,
     bool parent_must_consider_grid_items_for_row_sizing)
-    : node(node),
+    : node(std::move(item_node)),
       has_subgridded_columns(false),
       has_subgridded_rows(false),
       is_considered_for_column_sizing(false),
@@ -139,24 +149,8 @@ GridItemData::GridItemData(
       is_subgridded_to_parent_grid(false),
       must_consider_grid_items_for_column_sizing(false),
       must_consider_grid_items_for_row_sizing(false),
-      parent_grid_font_baseline(parent_grid_font_baseline) {
+      parent_grid_font_baseline(parent_grid_style.GetFontBaseline()) {
   const auto& style = node.Style();
-
-  const bool is_replaced = node.IsReplaced();
-  const bool is_out_of_flow = node.IsOutOfFlowPositioned();
-
-  // Determine the alignment for the grid item ahead of time (we may need to
-  // know if it stretches to correctly determine any block axis contribution).
-  bool is_overflow_safe;
-  inline_axis_alignment = AxisEdgeFromItemPosition(
-      /* is_inline_axis */ true, is_replaced, is_out_of_flow, style,
-      root_grid_style, &inline_auto_behavior, &is_overflow_safe);
-  is_inline_axis_overflow_safe = is_overflow_safe;
-
-  block_axis_alignment = AxisEdgeFromItemPosition(
-      /* is_inline_axis */ false, is_replaced, is_out_of_flow, style,
-      root_grid_style, &block_auto_behavior, &is_overflow_safe);
-  is_block_axis_overflow_safe = is_overflow_safe;
 
   const auto root_grid_writing_direction =
       root_grid_style.GetWritingDirection();
@@ -172,16 +166,6 @@ GridItemData::GridItemData(
   row_baseline_writing_mode = DetermineBaselineWritingMode(
       root_grid_writing_direction, item_writing_mode,
       /* is_parallel_context */ true);
-
-  column_baseline_group = DetermineBaselineGroup(
-      root_grid_writing_direction, column_baseline_writing_mode,
-      /* is_parallel_context */ false,
-      /* is_last_baseline */ inline_axis_alignment == AxisEdge::kLastBaseline);
-
-  row_baseline_group = DetermineBaselineGroup(
-      root_grid_writing_direction, row_baseline_writing_mode,
-      /* is_parallel_context */ true,
-      /* is_last_baseline */ block_axis_alignment == AxisEdge::kLastBaseline);
 
   // From https://drafts.csswg.org/css-grid-2/#subgrid-listing:
   //   "...if the grid container is otherwise forced to establish an independent
@@ -201,6 +185,34 @@ GridItemData::GridItemData(
                               ? style.GridTemplateRows().IsSubgriddedAxis()
                               : style.GridTemplateColumns().IsSubgriddedAxis();
   }
+
+  const bool is_out_of_flow = node.IsOutOfFlowPositioned();
+  const bool is_replaced = node.IsReplaced();
+
+  // Determine the alignment for the grid item ahead of time (we may need to
+  // know if it stretches to correctly determine any block axis contribution).
+  bool is_overflow_safe;
+  column_alignment = AxisEdgeFromItemPosition(
+      kForColumns, has_subgridded_columns, is_replaced, is_out_of_flow, style,
+      parent_grid_style, root_grid_style, &column_auto_behavior,
+      &is_overflow_safe);
+  is_overflow_safe_for_columns = is_overflow_safe;
+
+  column_baseline_group = DetermineBaselineGroup(
+      root_grid_writing_direction, column_baseline_writing_mode,
+      /* is_parallel_context */ false,
+      /* is_last_baseline */ column_alignment == AxisEdge::kLastBaseline);
+
+  row_alignment = AxisEdgeFromItemPosition(
+      kForRows, has_subgridded_rows, is_replaced, is_out_of_flow, style,
+      parent_grid_style, root_grid_style, &row_auto_behavior,
+      &is_overflow_safe);
+  is_overflow_safe_for_rows = is_overflow_safe;
+
+  row_baseline_group = DetermineBaselineGroup(
+      root_grid_writing_direction, row_baseline_writing_mode,
+      /* is_parallel_context */ true,
+      /* is_last_baseline */ row_alignment == AxisEdge::kLastBaseline);
 
   // The `false, true, false, true` parameters get the converter to calculate
   // whether the subgrids and its root grid are opposite direction in all cases.
@@ -270,30 +282,20 @@ void GridItemData::SetAlignmentFallback(
     return true;
   };
 
-  // Set fallback alignment to start edges if an item requests baseline
-  // alignment but does not meet requirements for it.
-  if (!CanParticipateInBaselineAlignment()) {
-    const auto baseline_group = BaselineGroup(track_direction);
-    if (track_direction == kForColumns) {
-      inline_axis_alignment_fallback = baseline_group == BaselineGroup::kMajor
-                                           ? AxisEdge::kStart
-                                           : AxisEdge::kEnd;
-      is_inline_axis_overflow_safe_fallback = true;
-    } else {
-      block_axis_alignment_fallback = baseline_group == BaselineGroup::kMajor
-                                          ? AxisEdge::kStart
-                                          : AxisEdge::kEnd;
-      is_block_axis_overflow_safe_fallback = true;
-    }
-  } else {
+  auto& fallback_alignment = (track_direction == kForColumns)
+                                 ? column_fallback_alignment
+                                 : row_fallback_alignment;
+
+  if (CanParticipateInBaselineAlignment()) {
     // Reset the alignment fallback if eligibility has changed.
-    if (track_direction == kForColumns) {
-      inline_axis_alignment_fallback.reset();
-      is_inline_axis_overflow_safe_fallback.reset();
-    } else {
-      block_axis_alignment_fallback.reset();
-      is_block_axis_overflow_safe_fallback.reset();
-    }
+    fallback_alignment.reset();
+  } else {
+    // Set fallback alignment to start edges if an item requests baseline
+    // alignment but does not meet the requirements for it.
+    fallback_alignment =
+        (BaselineGroup(track_direction) == BaselineGroup::kMajor)
+            ? AxisEdge::kStart
+            : AxisEdge::kEnd;
   }
 }
 
@@ -409,7 +411,8 @@ void GridItemData::ComputeOutOfFlowItemPlacement(
   }
 }
 
-GridItems::GridItems(const GridItems& other) {
+GridItems::GridItems(const GridItems& other)
+    : first_subgridded_item_index_(other.first_subgridded_item_index_) {
   item_data_.ReserveInitialCapacity(other.item_data_.size());
   for (const auto& grid_item : other.item_data_) {
     item_data_.emplace_back(std::make_unique<GridItemData>(*grid_item));
@@ -420,21 +423,6 @@ void GridItems::Append(GridItems* other) {
   item_data_.reserve(item_data_.size() + other->item_data_.size());
   for (auto& grid_item : other->item_data_)
     item_data_.emplace_back(std::move(grid_item));
-}
-
-void GridItems::RemoveSubgriddedItems() {
-  wtf_size_t new_item_count = 0;
-  for (const auto& grid_item : item_data_) {
-    if (grid_item->is_subgridded_to_parent_grid)
-      break;
-    ++new_item_count;
-  }
-
-#if DCHECK_IS_ON()
-  for (wtf_size_t i = new_item_count; i < item_data_.size(); ++i)
-    DCHECK(item_data_[i]->is_subgridded_to_parent_grid);
-#endif
-  item_data_.Shrink(new_item_count);
 }
 
 void GridItems::SortByOrderProperty() {

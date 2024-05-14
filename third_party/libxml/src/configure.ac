@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.63])
 
 m4_define([MAJOR_VERSION], 2)
-m4_define([MINOR_VERSION], 12)
+m4_define([MINOR_VERSION], 13)
 m4_define([MICRO_VERSION], 0)
 
 AC_INIT([libxml2],[MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
@@ -21,7 +21,7 @@ LIBXML_VERSION_INFO=`expr $LIBXML_MAJOR_VERSION + $LIBXML_MINOR_VERSION`:$LIBXML
 LIBXML_VERSION_NUMBER=`expr $LIBXML_MAJOR_VERSION \* 10000 + $LIBXML_MINOR_VERSION \* 100 + $LIBXML_MICRO_VERSION`
 
 if test -d .git ; then
-  extra=`git describe 2>/dev/null | sed 's+LIBXML[[0-9.]]*-++'`
+  extra=`git describe 2>/dev/null`
   echo extra=$extra
   if test "$extra" != ""
   then
@@ -103,8 +103,6 @@ AC_ARG_WITH(reader,
 [  --with-reader           xmlReader parsing interface (on)])
 AC_ARG_WITH(regexps,
 [  --with-regexps          regular expressions support (on)])
-AC_ARG_WITH(run_debug,
-[  --with-run-debug        runtime debugging module (off)])
 AC_ARG_WITH(sax1,
 [  --with-sax1             older SAX1 interface (on)])
 AC_ARG_WITH(schemas,
@@ -127,6 +125,8 @@ AC_ARG_WITH(xpath,
 [  --with-xpath            XPath 1.0 support (on)])
 AC_ARG_WITH(xptr,
 [  --with-xptr             XPointer support (on)])
+AC_ARG_WITH(xptr-locs,
+[  --with-xptr-locs        XPointer ranges and points (off)])
 AC_ARG_WITH(zlib,
 [  --with-zlib[[=DIR]]       use libz in DIR (on)])
 
@@ -136,7 +136,7 @@ AC_ARG_WITH(legacy,
 [  --with-legacy           maximum ABI compatibility (off)])
 
 AC_ARG_WITH(tls,
-[  --with-tls              thread-local storage (on)])
+[  --with-tls              thread-local storage (off)])
 AC_ARG_WITH(fexceptions,
 [  --with-fexceptions      add GCC flag -fexceptions for C++ exceptions (off)])
 AC_ARG_WITH(coverage,
@@ -241,7 +241,6 @@ if test "$with_minimum" = "yes"; then
     test "$with_reader" = "" && with_reader=no
     test "$with_readline" = "" && with_readline=no
     test "$with_regexps" = "" && with_regexps=no
-    test "$with_run_debug" = "" && with_run_debug=no
     test "$with_sax1" = "" && with_sax1=no
     test "$with_schemas" = "" && with_schemas=no
     test "$with_schematron" = "" && with_schematron=no
@@ -300,6 +299,7 @@ AC_CHECK_HEADERS([sys/mman.h])
 AC_CHECK_HEADERS([sys/socket.h netinet/in.h arpa/inet.h netdb.h])
 AC_CHECK_HEADERS([sys/select.h poll.h])
 AC_CHECK_HEADERS([sys/time.h sys/timeb.h])
+AC_CHECK_HEADERS([sys/random.h])
 AC_CHECK_HEADERS([dl.h dlfcn.h])
 AC_CHECK_HEADERS([glob.h])
 AM_CONDITIONAL(WITH_GLOB, test "$ac_cv_header_glob_h" = "yes")
@@ -309,49 +309,13 @@ dnl Checking types
 dnl
 AC_TYPE_UINT32_T
 
-dnl
-dnl Checking libraries
-dnl
-AC_CHECK_FUNCS(snprintf vsnprintf,, NEED_TRIO=1)
-
 dnl Checks for library functions.
-AC_CHECK_FUNCS([gettimeofday ftime stat isascii mmap munmap])
+AC_CHECK_FUNCS([getentropy gettimeofday ftime isascii stat mmap munmap])
 
 AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
 #if defined(HAVE_MMAP) && !defined(HAVE_MUNMAP)
 #  undef /**/ HAVE_MMAP
 #endif])
-
-dnl Checking for va_copy availability
-AC_MSG_CHECKING([for va_copy])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
-va_list ap1,ap2;]], [[va_copy(ap1,ap2);]])],
-have_va_copy=yes,
-have_va_copy=no)
-AC_MSG_RESULT($have_va_copy)
-if test x"$have_va_copy" = x"yes"; then
-    AC_DEFINE(HAVE_VA_COPY,1,[Whether va_copy() is available])
-else
-    AC_MSG_CHECKING([for __va_copy])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
-    va_list ap1,ap2;]], [[__va_copy(ap1,ap2);]])],
-    have___va_copy=yes,
-    have___va_copy=no)
-    AC_MSG_RESULT($have___va_copy)
-    if test x"$have___va_copy" = x"yes"; then
-        AC_DEFINE(HAVE___VA_COPY,1,[Whether __va_copy() is available])
-    fi
-fi
-
-dnl Checking whether va_list is an array type
-AC_MSG_CHECKING([whether va_list is an array type])
-AC_TRY_COMPILE2([
-#include <stdarg.h>
-void a(va_list * ap) {}],[
-va_list ap1, ap2; a(&ap1); ap2 = (va_list) ap1],[
-  AC_MSG_RESULT(no)],[
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([VA_LIST_IS_ARRAY], [1],[Define if va_list is an array type])])
 
 dnl
 dnl Checks for inet libraries
@@ -444,7 +408,7 @@ XML_INCLUDEDIR='-I${includedir}/libxml2'
 XML_CFLAGS=""
 
 dnl Thread-local storage
-if test "$with_tls" != "no"; then
+if test "$with_tls" = "yes"; then
     AC_COMPILE_IFELSE([
         AC_LANG_SOURCE([_Thread_local int v;]) ], [
         AC_DEFINE([XML_THREAD_LOCAL], [_Thread_local], [TLS specifier]) ], [
@@ -535,9 +499,6 @@ case ${host} in
     *-*-solaris*)
         XML_LIBDIR="${XML_LIBDIR} -R${libdir}"
         ;;
-    hppa*-hp-mpeix)
-        NEED_TRIO=1
-	;;
     *-*-cygwin* | *-*-mingw* | *-*-msys* )
         # If the host is Windows, and shared libraries are disabled, we
         # need to add -DLIBXML_STATIC to AM_CFLAGS in order for linking to
@@ -845,18 +806,6 @@ AC_SUBST(MODULE_EXTENSION)
 AM_CONDITIONAL(WITH_MODULES_SOURCES, test "$WITH_MODULES" = "1")
 
 dnl
-dnl Check for trio string functions
-dnl
-if test "${NEED_TRIO}" = "1" ; then
-    echo Adding trio library for string functions
-    WITH_TRIO=1
-else
-    WITH_TRIO=0
-fi
-AM_CONDITIONAL(WITH_TRIO_SOURCES, test "${NEED_TRIO}" = "1")
-AC_SUBST(WITH_TRIO)
-
-dnl
 dnl Thread-related stuff
 dnl
 THREAD_LIBS=""
@@ -1155,6 +1104,15 @@ else
 fi
 AC_SUBST(WITH_ICU)
 
+dnl
+dnl Crypto libraries
+dnl
+case "$host" in
+    *-*-mingw*)
+        CRYPTO_LIBS="-lbcrypt"
+        ;;
+esac
+
 if test "$with_coverage" = "yes" && test "${GCC}" = "yes"
 then
     echo Enabling code coverage for GCC
@@ -1166,7 +1124,7 @@ fi
 
 XML_LIBS="-lxml2"
 XML_LIBTOOLLIBS="libxml2.la"
-NON_PC_LIBS="${THREAD_LIBS} ${ICONV_LIBS} ${LIBM} ${NET_LIBS}"
+NON_PC_LIBS="${THREAD_LIBS} ${ICONV_LIBS} ${LIBM} ${NET_LIBS} ${CRYPTO_LIBS}"
 XML_PC_LIBS="${XML_PC_LIBS} ${NON_PC_LIBS}"
 XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${NON_PC_LIBS}"
 XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${THREAD_CFLAGS} ${ICONV_CFLAGS}"

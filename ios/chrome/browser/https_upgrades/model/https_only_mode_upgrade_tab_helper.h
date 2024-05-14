@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_HTTPS_UPGRADES_MODEL_HTTPS_ONLY_MODE_UPGRADE_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_HTTPS_UPGRADES_MODEL_HTTPS_ONLY_MODE_UPGRADE_TAB_HELPER_H_
 
+#import "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -107,17 +108,22 @@ class HttpsOnlyModeUpgradeTabHelper
   // The original HTTP URL that was navigated to.
   GURL http_url_;
 
-  // Parameters for the upgraded navigation.
+  // Parameters for the upgraded navigation. These are stored upon a new
+  // navigation and used when starting a fallback or upgraded navigation.
   GURL upgraded_https_url_;
   ui::PageTransition navigation_transition_type_ = ui::PAGE_TRANSITION_FIRST;
   bool navigation_is_renderer_initiated_ = false;
   web::Referrer referrer_;
+  // Set to true when a new navigation with a POST method is started.
+  // Used to check if the navigation should be upgraded when a response is
+  // received. Cleared when the current navigation finishes.
+  bool navigation_is_post_ = false;
 
   base::OneShotTimer timer_;
 
-  PrefService* prefs_;
-  PrerenderService* prerender_service_;
-  HttpsUpgradeService* service_;
+  raw_ptr<PrefService> prefs_;
+  raw_ptr<PrerenderService> prerender_service_;
+  raw_ptr<HttpsUpgradeService> service_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

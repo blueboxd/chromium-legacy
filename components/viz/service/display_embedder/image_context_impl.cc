@@ -44,6 +44,9 @@ SkColor4f GetFallbackColorForPlane(viz::SharedImageFormat format,
     case viz::SharedImageFormat::PlaneConfig::kY_U_V:
     case viz::SharedImageFormat::PlaneConfig::kY_V_U:
       return plane_index == 0 ? SkColors::kWhite : SkColors::kGray;
+    case viz::SharedImageFormat::PlaneConfig::kY_U_V_A:
+      return (plane_index == 0 || plane_index == 3) ? SkColors::kWhite
+                                                    : SkColors::kGray;
     case viz::SharedImageFormat::PlaneConfig::kY_UV:
       return plane_index == 0 ? SkColors::kWhite : SkColors::kGray;
     case viz::SharedImageFormat::PlaneConfig::kY_UV_A:
@@ -61,7 +64,7 @@ ImageContextImpl::ImageContextImpl(
     const gfx::Size& size,
     SharedImageFormat format,
     bool maybe_concurrent_reads,
-    const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+    const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
     sk_sp<SkColorSpace> color_space,
     bool is_for_render_pass,
     bool raw_draw_if_possible)

@@ -12,14 +12,20 @@
 #include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "components/autofill/core/common/save_password_progress_logger.h"
+#include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/base/consent_level.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/json/json_reader.h"
@@ -52,7 +58,7 @@ bool IsPasswordReuseDetectionEnabled() {
 // Represents a single CheckReuse() request. Implements functionality to
 // listen to reuse events and propagate them to |consumer| on the sequence on
 // which CheckReuseRequest is created.
-class CheckReuseRequest : public PasswordReuseDetectorConsumer {
+class CheckReuseRequest final : public PasswordReuseDetectorConsumer {
  public:
   // |consumer| must not be null.
   explicit CheckReuseRequest(PasswordReuseDetectorConsumer* consumer);
@@ -71,9 +77,14 @@ class CheckReuseRequest : public PasswordReuseDetectorConsumer {
       const std::string& domain,
       uint64_t reused_password_hash) override;
 
+  base::WeakPtr<PasswordReuseDetectorConsumer> AsWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   const base::WeakPtr<PasswordReuseDetectorConsumer> consumer_weak_;
+  base::WeakPtrFactory<CheckReuseRequest> weak_ptr_factory_{this};
 };
 
 CheckReuseRequest::CheckReuseRequest(PasswordReuseDetectorConsumer* consumer)
@@ -135,6 +146,7 @@ void PasswordReuseManagerImpl::Init(
     PrefService* prefs,
     PasswordStoreInterface* profile_store,
     PasswordStoreInterface* account_store,
+    std::unique_ptr<PasswordReuseDetector> password_reuse_detector,
     signin::IdentityManager* identity_manager,
     std::unique_ptr<SharedPreferencesDelegate> shared_pref_delegate) {
   prefs_ = prefs;
@@ -157,7 +169,7 @@ void PasswordReuseManagerImpl::Init(
   DCHECK(background_task_runner_);
   DCHECK(profile_store);
 
-  reuse_detector_ = std::make_unique<PasswordReuseDetector>();
+  reuse_detector_ = std::move(password_reuse_detector);
 
   account_store_ = account_store;
   profile_store_ = profile_store;
@@ -177,9 +189,7 @@ void PasswordReuseManagerImpl::Init(
 #endif
 }
 
-void PasswordReuseManagerImpl::ReportMetrics(
-    const std::string& username,
-    bool is_under_advanced_protection) {
+void PasswordReuseManagerImpl::ReportMetrics(const std::string& username) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   if (username.empty())
     return;
@@ -189,8 +199,7 @@ void PasswordReuseManagerImpl::ReportMetrics(
                                              /*is_gaia_password=*/true)
           ? metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF
           : metrics_util::IsSyncPasswordHashSaved::NOT_SAVED;
-  metrics_util::LogIsSyncPasswordHashSaved(hash_password_state,
-                                           is_under_advanced_protection);
+  metrics_util::LogIsSyncPasswordHashSaved(hash_password_state);
 }
 
 void PasswordReuseManagerImpl::CheckReuse(
@@ -478,6 +487,7 @@ void PasswordReuseManagerImpl::OnPrimaryAccountChanged(
             saved_creds_entry->FindDouble(kLoginHashedPassword).value());
         password_hash_data.force_update = true;
         hash_password_manager_.SavePasswordHash(password_hash_data);
+        SchedulePasswordHashUpdate(/*sign_in_state_for_metrics=*/std::nullopt);
         metrics_util::LogGaiaPasswordHashChange(
             metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN,
             /*is_sync_password=*/true);
@@ -490,5 +500,67 @@ void PasswordReuseManagerImpl::OnPrimaryAccountChanged(
     }
   }
 #endif
+}
+
+void PasswordReuseManagerImpl::MaybeSavePasswordHash(
+    const PasswordForm* submitted_form,
+    PasswordManagerClient* client) {
+  if (!base::FeatureList::IsEnabled(features::kPasswordReuseDetectionEnabled)) {
+    return;
+  }
+  // When |username_value| is empty, it's not clear whether the submitted
+  // credentials are really Gaia or enterprise credentials. Don't save
+  // password hash in that case.
+  std::string username = base::UTF16ToUTF8(submitted_form->username_value);
+  if (username.empty()) {
+    return;
+  }
+
+  bool should_save_enterprise_pw =
+      client->GetStoreResultFilter()->ShouldSaveEnterprisePasswordHash(
+          *submitted_form);
+  bool should_save_gaia_pw =
+      client->GetStoreResultFilter()->ShouldSaveGaiaPasswordHash(
+          *submitted_form);
+
+  if (!should_save_enterprise_pw && !should_save_gaia_pw) {
+    return;
+  }
+
+  if (password_manager_util::IsLoggingActive(client)) {
+    BrowserSavePasswordProgressLogger logger(client->GetLogManager());
+    logger.LogMessage(
+        autofill::SavePasswordProgressLogger::STRING_SAVE_PASSWORD_HASH);
+  }
+
+  // Canonicalizes username if it is an email.
+  if (username.find('@') != std::string::npos) {
+    username = gaia::CanonicalizeEmail(username);
+  }
+  bool is_password_change = !submitted_form->new_password_element.empty();
+  const std::u16string password = is_password_change
+                                      ? submitted_form->new_password_value
+                                      : submitted_form->password_value;
+
+  if (should_save_enterprise_pw) {
+    SaveEnterprisePasswordHash(username, password);
+    return;
+  }
+
+  CHECK(should_save_gaia_pw);
+  bool is_sync_account_email =
+      client->GetStoreResultFilter()->IsSyncAccountEmail(username);
+  metrics_util::GaiaPasswordHashChange event =
+      is_sync_account_email
+          ? (is_password_change
+                 ? metrics_util::GaiaPasswordHashChange::CHANGED_IN_CONTENT_AREA
+                 : metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA)
+          : (is_password_change
+                 ? metrics_util::GaiaPasswordHashChange::
+                       NOT_SYNC_PASSWORD_CHANGE
+                 : metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA);
+  SaveGaiaPasswordHash(username, password,
+                       /*is_sync_password_for_metrics=*/is_sync_account_email,
+                       event);
 }
 }  // namespace password_manager

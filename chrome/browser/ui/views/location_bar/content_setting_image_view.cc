@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <utility>
@@ -65,7 +66,6 @@ std::optional<ViewID> GetViewID(
     case ImageType::SENSORS:
     case ImageType::NOTIFICATIONS_QUIET_PROMPT:
     case ImageType::STORAGE_ACCESS:
-    case ImageType::MIDI:
       return std::nullopt;
 
     case ImageType::NUM_IMAGE_TYPES:
@@ -78,6 +78,8 @@ std::optional<ViewID> GetViewID(
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ContentSettingImageView,
                                       kMediaActivityIndicatorElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ContentSettingImageView,
+                                      kMidiSysexActivityIndicatorElementId);
 
 ContentSettingImageView::ContentSettingImageView(
     std::unique_ptr<ContentSettingImageModel> image_model,
@@ -90,7 +92,7 @@ ContentSettingImageView::ContentSettingImageView(
       bubble_view_(nullptr) {
   DCHECK(delegate_);
   SetUpForInOutAnimation();
-  image()->SetFlipCanvasOnPaintForRTLUI(true);
+  image_container_view()->SetFlipCanvasOnPaintForRTLUI(true);
 
   std::optional<ViewID> view_id =
       GetViewID(content_setting_image_model_->image_type());
@@ -193,9 +195,19 @@ void ContentSettingImageView::Update() {
 
   content_setting_image_model_->SetAnimationHasRun(web_contents);
 
-  if (content_setting_image_model_->image_type() ==
-      ContentSettingImageModel::ImageType::MEDIASTREAM) {
-    SetProperty(views::kElementIdentifierKey, kMediaActivityIndicatorElementId);
+  std::optional<ui::ElementIdentifier> element_identifier;
+  switch (content_setting_image_model_->image_type()) {
+    case ContentSettingImageModel::ImageType::MEDIASTREAM:
+      element_identifier = kMediaActivityIndicatorElementId;
+      break;
+    case ContentSettingImageModel::ImageType::MIDI_SYSEX:
+      element_identifier = kMidiSysexActivityIndicatorElementId;
+      break;
+    default:
+      break;
+  }
+  if (element_identifier) {
+    SetProperty(views::kElementIdentifierKey, *element_identifier);
   }
 }
 
@@ -267,8 +279,7 @@ bool ContentSettingImageView::IsBubbleShowing() const {
   return bubble_view_ != nullptr;
 }
 
-ContentSettingImageModel::ImageType ContentSettingImageView::GetTypeForTesting()
-    const {
+ContentSettingImageModel::ImageType ContentSettingImageView::GetType() const {
   return content_setting_image_model_->image_type();
 }
 
@@ -327,6 +338,6 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
   }
 }
 
-BEGIN_METADATA(ContentSettingImageView, IconLabelBubbleView)
+BEGIN_METADATA(ContentSettingImageView)
 ADD_PROPERTY_METADATA(std::optional<SkColor>, IconColor)
 END_METADATA

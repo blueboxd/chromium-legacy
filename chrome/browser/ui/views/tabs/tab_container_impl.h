@@ -37,9 +37,9 @@ class TabContainerImpl : public TabContainer,
                          public views::ViewTargeterDelegate,
                          public views::MouseWatcherListener,
                          public views::BoundsAnimatorObserver {
- public:
-  METADATA_HEADER(TabContainerImpl);
+  METADATA_HEADER(TabContainerImpl, TabContainer)
 
+ public:
   TabContainerImpl(TabContainerController& controller,
                    TabHoverCardController* hover_card_controller,
                    TabDragContextBase* drag_context,
@@ -133,7 +133,7 @@ class TabContainerImpl : public TabContainer,
   gfx::Rect GetIdealBounds(tab_groups::TabGroupId group) const override;
 
   // views::View
-  void Layout() override;
+  void Layout(PassKey) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size CalculatePreferredSize() const override;

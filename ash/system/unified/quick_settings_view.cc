@@ -64,7 +64,7 @@ class AccessibilityFocusHelperView : public views::View {
   }
 
  private:
-  raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> controller_;
+  raw_ptr<UnifiedSystemTrayController> controller_;
 };
 
 BEGIN_METADATA(AccessibilityFocusHelperView)
@@ -75,9 +75,9 @@ END_METADATA
 // The container view for the system tray, i.e. the panel containing settings
 // buttons and sliders (e.g. sign out, lock, volume slider, etc.).
 class QuickSettingsView::SystemTrayContainer : public views::View {
- public:
-  METADATA_HEADER(SystemTrayContainer);
+  METADATA_HEADER(SystemTrayContainer, views::View)
 
+ public:
   SystemTrayContainer()
       : layout_manager_(SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kVertical))) {}
@@ -97,7 +97,7 @@ class QuickSettingsView::SystemTrayContainer : public views::View {
   }
 
  private:
-  const raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_;
+  const raw_ptr<views::BoxLayout> layout_manager_;
 };
 
 BEGIN_METADATA(QuickSettingsView, SystemTrayContainer, views::View)
@@ -235,11 +235,11 @@ void QuickSettingsView::SetDetailedView(
   system_tray_container_->SetVisible(false);
   detailed_view_container_->SetVisible(true);
 
-  // We need to enforce a manual `Layout()` here to make sure that
-  // `CalendarView` is notified that it can be initialized through
-  // `OnViewBoundsChanged`. The `CalendarView` depends on `OnViewsBoundsChanged`
-  // to check if it can `ScrollToToday`.
-  Layout();
+  // We need to trigger layout here to make sure that `CalendarView` is notified
+  // that it can be initialized through `OnViewBoundsChanged`. The
+  // `CalendarView` depends on `OnViewsBoundsChanged` to check if it can
+  // `ScrollToToday`.
+  DeprecatedLayoutImmediately();
 }
 
 void QuickSettingsView::ResetDetailedView() {
@@ -304,7 +304,7 @@ void QuickSettingsView::TotalPagesChanged(int previous_page_count,
   pagination_view_->SetVisible(new_page_count > 1);
 }
 
-BEGIN_METADATA(QuickSettingsView, views::View)
+BEGIN_METADATA(QuickSettingsView)
 END_METADATA
 
 }  // namespace ash

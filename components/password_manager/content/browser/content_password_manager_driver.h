@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
@@ -32,7 +33,7 @@ namespace password_manager {
 
 // There is one ContentPasswordManagerDriver per RenderFrameHost.
 // The lifetime is managed by the ContentPasswordManagerDriverFactory.
-class ContentPasswordManagerDriver
+class ContentPasswordManagerDriver final
     : public PasswordManagerDriver,
       public autofill::mojom::PasswordManagerDriver {
  public:
@@ -52,7 +53,7 @@ class ContentPasswordManagerDriver
   void BindPendingReceiver(
       mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
           pending_receiver);
-  void UnbindReceiver();
+  void DidNavigate();
 
   // PasswordManagerDriver implementation.
   int GetId() const override;
@@ -94,6 +95,11 @@ class ContentPasswordManagerDriver
   const GURL& GetLastCommittedURL() const override;
   void AnnotateFieldsWithParsingResult(
       const autofill::ParsingResult& parsing_result) override;
+  base::WeakPtr<password_manager::PasswordManagerDriver> AsWeakPtr() override;
+
+  base::WeakPtr<ContentPasswordManagerDriver> AsWeakPtrImpl() {
+    return weak_factory_.GetWeakPtr();
+  }
 
   // Notify the renderer that the user wants to trigger password generation.
   void GeneratePassword(autofill::mojom::PasswordGenerationAgent::
@@ -133,14 +139,8 @@ class ContentPasswordManagerDriver
                                     const std::u16string& value,
                                     bool autocomplete_attribute_has_username,
                                     bool is_likely_otp) override;
-  void ShowPasswordSuggestions(autofill::FieldRendererId element_id,
-                               const autofill::FormData& form,
-                               uint64_t username_field_index,
-                               uint64_t password_field_index,
-                               base::i18n::TextDirection text_direction,
-                               const std::u16string& typed_username,
-                               int options,
-                               const gfx::RectF& bounds) override;
+  void ShowPasswordSuggestions(
+      const autofill::PasswordSuggestionRequest& request) override;
 #if BUILDFLAG(IS_ANDROID)
   void ShowKeyboardReplacingSurface(
       autofill::mojom::SubmissionReadinessState submission_readiness,
@@ -173,12 +173,14 @@ class ContentPasswordManagerDriver
 
   mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>
       password_autofill_agent_;
+  const mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>
+      password_autofill_agent_unbound_;
 
   mojo::AssociatedRemote<autofill::mojom::PasswordGenerationAgent>
       password_gen_agent_;
 
   mojo::AssociatedReceiver<autofill::mojom::PasswordManagerDriver>
-      password_manager_receiver_;
+      password_manager_receiver_{this};
 
   base::WeakPtrFactory<ContentPasswordManagerDriver> weak_factory_{this};
 };

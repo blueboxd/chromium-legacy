@@ -212,12 +212,14 @@ public class EventForwarder {
 
         TraceEvent.begin("sendTouchEvent");
         try {
+            final int historySize = event.getHistorySize();
             // Android may batch multiple events together for efficiency. We
             // want to use the oldest event time as hardware time stamp.
+            final long latestEventTime = MotionEventUtils.getEventTimeNanos(event);
             final long oldestEventTime =
-                    event.getHistorySize() > 0
-                            ? MotionEventUtils.getHistoricalEventTimeNanos(event, 0)
-                            : MotionEventUtils.getEventTimeNanos(event);
+                    historySize == 0
+                            ? latestEventTime
+                            : MotionEventUtils.getHistoricalEventTimeNanos(event, 0);
 
             int eventAction = event.getActionMasked();
 
@@ -264,9 +266,10 @@ public class EventForwarder {
                                     EventForwarder.this,
                                     event,
                                     oldestEventTime,
+                                    latestEventTime,
                                     eventAction,
                                     pointerCount,
-                                    event.getHistorySize(),
+                                    historySize,
                                     event.getActionIndex(),
                                     event.getX(),
                                     event.getY(),
@@ -529,11 +532,15 @@ public class EventForwarder {
      * @param containerView A view on which the drag event is taking place.
      */
     public boolean onDragEvent(DragEvent event, View containerView) {
+        ClipDescription clipDescription = event.getClipDescription();
+        // Do not forward chrome/tab events to native eventForwarder.
+        if (clipDescription != null
+                && clipDescription.hasMimeType(MimeTypeUtils.CHROME_MIMETYPE_TAB)) {
+            return false;
+        }
         if (mNativeEventForwarder == 0) {
             return false;
         }
-
-        ClipDescription clipDescription = event.getClipDescription();
 
         // text/* will match text/uri-list, text/html, text/plain.
         String[] mimeTypes =
@@ -722,7 +729,8 @@ public class EventForwarder {
                 long nativeEventForwarder,
                 EventForwarder caller,
                 MotionEvent event,
-                long timeNs,
+                long oldestEventTimeNs,
+                long latestEventTimeNs,
                 int action,
                 int pointerCount,
                 int historySize,

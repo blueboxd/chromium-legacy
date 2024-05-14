@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -413,8 +414,7 @@ void InputMethodController::DispatchBeforeInputFromComposition(
   if (auto* node = target->ToNode())
     ranges = TargetRangesForInputEvent(*node);
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
-      input_type, data, InputTypeIsCancelable(input_type),
-      InputEvent::EventIsComposing::kIsComposing, ranges);
+      input_type, data, InputEvent::EventIsComposing::kIsComposing, ranges);
   target->DispatchEvent(*before_input_event);
 }
 
@@ -630,7 +630,7 @@ bool InputMethodController::FinishComposingText(
         GetFrame()
             .Selection()
             .ComputeVisibleSelectionInDOMTreeDeprecated()
-            .IsBaseFirst();
+            .IsAnchorFirst();
     RevealSelectionScope reveal_selection_scope(GetFrame());
 
     if (is_too_long) {
@@ -1827,6 +1827,20 @@ DOMNodeId InputMethodController::NodeIdOfFocusedElement() const {
 }
 
 WebTextInputType InputMethodController::TextInputType() const {
+  if (!IsAvailable()) {
+    return kWebTextInputTypeNone;
+  }
+
+  // Since selection can never go inside a <canvas> element, if the user is
+  // editing inside a <canvas> with EditContext we need to handle that case
+  // directly before looking at the selection position.
+  if (GetActiveEditContext()) {
+    Element* element = GetDocument().FocusedElement();
+    if (IsA<HTMLCanvasElement>(element)) {
+      return kWebTextInputTypeContentEditable;
+    }
+  }
+
   if (!GetFrame().Selection().IsAvailable()) {
     // "mouse-capture-inside-shadow.html" reaches here.
     return kWebTextInputTypeNone;
@@ -1838,12 +1852,10 @@ WebTextInputType InputMethodController::TextInputType() const {
   if (!RootEditableElementOfSelection(GetFrame().Selection()))
     return kWebTextInputTypeNone;
 
-  if (!IsAvailable())
-    return kWebTextInputTypeNone;
-
   Element* element = GetDocument().FocusedElement();
-  if (!element)
+  if (!element) {
     return kWebTextInputTypeNone;
+  }
 
   if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     FormControlType type = input->FormControlType();

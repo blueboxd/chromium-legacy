@@ -10,6 +10,7 @@ ckitagawa@chromium.org
 sinansahin@google.com
 mvanouwerkerk@chromium.org
 jinsukkim@chromium.org
+wenyufu@chromium.org
 # apps
 nancylingwang@chromium.org
 tby@chromium.org
@@ -80,6 +81,7 @@ azeemarshad@chromium.org
 chadduffin@chromium.org
 crisrael@google.com
 enlightened@chromium.org
+hsuregan@google.com
 jiajunz@google.com
 jorgelo@chromium.org
 julietlevesque@google.com
@@ -243,8 +245,10 @@ toyoshim@chromium.org
 # network
 azeemarshad@chromium.org
 chadduffin@chromium.org
+hsuregan@google.com
 jiajunz@google.com
 khorimoto@chromium.org
+matthewmwang@chromium.org
 nidhijaju@chromium.org
 toyoshim@chromium.org
 # new_tab_page
@@ -329,10 +333,6 @@ spelchat@chromium.org
 awscreen@chromium.org
 jimmyxgong@chromium.org
 zentaro@chromium.org
-# print
-awscreen@chromium.org
-jimmyxgong@chromium.org
-zentaro@chromium.org
 # privacy_budget
 antoniosartori@chromium.org
 # privacy
@@ -341,12 +341,17 @@ dullweber@chromium.org
 harrisonsean@chromium.org
 csharrison@chromium.org
 johnidel@chromium.org
+boujane@google.com
 # profile
 alexilin@chromium.org
 # quick_answers
 xiaohuic@chromium.org
 # quota
 ayui@chromium.org
+# readaloud
+andreaxg@google.com
+basiaz@google.com
+iwells@google.com
 # renderer4
 schenney@chromium.org
 # renderer
@@ -436,6 +441,7 @@ hartmanng@chromium.org
 # web_audio
 hongchan@chromium.org
 mjwilson@chromium.org
+sinafirooz@chromium.org
 # webauthn
 kenrb@chromium.org
 hcyang@google.com

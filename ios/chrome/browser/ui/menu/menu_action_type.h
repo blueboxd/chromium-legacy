@@ -54,8 +54,14 @@ enum class MenuActionType {
   LensCameraSearch = 41,
   SaveImageToGooglePhotos = 42,
   CloseAllOtherTabs = 43,
-  kMaxValue = CloseAllOtherTabs
+  AddTabToNewGroup = 44,
+  AddTabToExistingGroup = 45,
+  RenameTabGroup = 46,
+  NewTabInGroup = 47,
+  UngroupTabGroup = 48,
+  ClaseTabGroup = 49,
+  kMaxValue = ClaseTabGroup
 };
-// LINT.ThenChange(/tools/metrics/histograms/enums.xml)
+// LINT.ThenChange(/tools/metrics/histograms/metadata/mobile/enums.xml)
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_MENU_ACTION_TYPE_H_

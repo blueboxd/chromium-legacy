@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/html/html_paragraph_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_selection_test.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -276,6 +277,89 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInText) {
       GetSelectionText(ax_selection));
 }
 
+TEST_F(AccessibilitySelectionTest, SetSelectionInMultilineTextarea) {
+// On Android we use an ifdef to disable inline text boxes.
+#if !BUILDFLAG(IS_ANDROID)
+  ui::AXMode mode(ui::kAXModeComplete);
+  mode.set_mode(ui::AXMode::kInlineTextBoxes, true);
+  ax_context_->SetAXMode(mode);
+  GetAXObjectCache().MarkDocumentDirty();
+  GetAXObjectCache().UpdateAXForAllDocuments();
+
+  LoadAhem();
+
+  SetBodyInnerHTML(R"HTML(
+    <textarea id="txt" style="width:80px; height:81px; font-family: Ahem; font-size: 4;">hello text go blue</textarea>
+    )HTML");
+  // This HTML generates the following ax tree:
+  // id#=13 rootWebArea
+  // ++id#=14 genericContainer
+  // ++++id#=15 genericContainer
+  // ++++++id#=16 textField
+  // ++++++++id#=17 genericContainer
+  // ++++++++++id#=18 staticText name='hello text go blue<newline>'
+  // ++++++++++++id#=20 inlineTextBox name='hello'
+  // ++++++++++++id#=22 inlineTextBox name='text'
+  // ++++++++++++id#=22 inlineTextBox name='go'
+  // ++++++++++++id#=22 inlineTextBox name='blue'
+
+  Element* const textarea =
+      GetDocument().QuerySelector(AtomicString("textarea"));
+  ASSERT_NE(nullptr, textarea);
+  ASSERT_TRUE(IsTextControl(textarea));
+  textarea->Focus(FocusOptions::Create());
+  ASSERT_TRUE(textarea->IsFocusedElementInDocument());
+
+  const AXObject* ax_textarea = GetAXObjectByElementId("txt");
+  ASSERT_NE(nullptr, ax_textarea);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
+
+  AXObject* ax_inline_text_box = ax_textarea->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_inline_text_box);
+  ASSERT_EQ(ax_inline_text_box->RoleValue(),
+            ax::mojom::Role::kGenericContainer);
+
+  ax_inline_text_box = ax_inline_text_box->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_inline_text_box);
+  ASSERT_EQ(ax_inline_text_box->ComputedName(), "hello text go blue");
+  ASSERT_EQ(ax_inline_text_box->RoleValue(), ax::mojom::Role::kStaticText);
+
+  ax_inline_text_box = ax_inline_text_box->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_inline_text_box);
+  ASSERT_EQ(ax_inline_text_box->ComputedName(), "hello");
+  ASSERT_EQ(ax_inline_text_box->RoleValue(), ax::mojom::Role::kInlineTextBox);
+
+  ax_inline_text_box = ax_inline_text_box->NextSiblingIncludingIgnored()
+                           ->NextSiblingIncludingIgnored();
+  ASSERT_NE(nullptr, ax_inline_text_box);
+  ASSERT_EQ(ax_inline_text_box->RoleValue(), ax::mojom::Role::kInlineTextBox);
+  ASSERT_EQ(ax_inline_text_box->ComputedName(), "text");
+
+  ax_inline_text_box = ax_inline_text_box->NextSiblingIncludingIgnored()
+                           ->NextSiblingIncludingIgnored();
+  ASSERT_NE(nullptr, ax_inline_text_box);
+  ASSERT_EQ(ax_inline_text_box->RoleValue(), ax::mojom::Role::kInlineTextBox);
+  ASSERT_EQ(ax_inline_text_box->ComputedName(), "go");
+
+  const auto ax_base =
+      AXPosition::CreatePositionInTextObject(*ax_inline_text_box, 0);
+  const auto ax_extent =
+      AXPosition::CreatePositionInTextObject(*ax_inline_text_box, 2);
+
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(ax_base).SetExtent(ax_extent).Build();
+
+  EXPECT_TRUE(ax_selection.Select());
+
+  // Even though the selection is set to offsets 0,4 "text" in the inline text
+  // box, the selection needs to end up in offsets 12,16 on the whole textarea
+  // so that "text" is the selection.
+  EXPECT_EQ(11u, ToTextControl(*textarea).selectionStart());
+  EXPECT_EQ(13u, ToTextControl(*textarea).selectionEnd());
+#endif  // !BUILDFLAG(IS_ANDROID)
+}
+
 TEST_F(AccessibilitySelectionTest, SetSelectionInTextWithWhiteSpace) {
   SetBodyInnerHTML(R"HTML(<p id="paragraph">     Hello</p>)HTML");
 
@@ -409,14 +493,16 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreakInEditableText) {
 
 //
 // Get selection tests.
-// Retrieving a selection with endpoints which have no corresponding objects in
-// the accessibility tree, e.g. which are display:none, should shrink or extend
-// the |AXSelection| to valid endpoints.
+// Retrieving a selection with endpoints which have corresponding ignored
+// objects in the accessibility tree, e.g. which are display:none, should shrink
+// or extend the |AXSelection| to valid endpoints.
+// Note: aria-describedby adds hidden target subtrees to the a11y tree as
+// "ignored but included in tree".
 //
 
 TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
   SetBodyInnerHTML(R"HTML(
-      <div id="main" role="main">
+      <div id="main" role="main" aria-describedby="hidden1 hidden2">
         <p id="beforeHidden">Before display:none.</p>
         <p id="hidden1" style="display:none">Display:none 1.</p>
         <p id="betweenHidden">In between two display:none elements.</p>

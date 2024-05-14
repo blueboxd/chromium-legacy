@@ -437,6 +437,12 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Retry clicked"/>
   <int value="2" label="SendFeedback clicked"/>
   <int value="3" label="CheckNetwork clicked"/>
+  <int value="4" label="Network error shown">
+    This bucket encompasses all others and works as a total count for
+    network-related errors (instead of the histogram's total sample count which
+    doesn't reflect that information). This enum value was added on 2023 Dec 21
+    The data before this date is missing.
+  </int>
 </enum>
 
 <enum name="ArcOptInResult">
@@ -888,6 +894,12 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="PREVIEW_EVENT_CREATE_DOCUMENT"/>
   <int value="3" label="PREVIEW_EVENT_NEW_SETTINGS"/>
   <int value="4" label="PREVIEW_EVENT_INITIATED"/>
+</enum>
+
+<enum name="UnaffiliatedDeviceArcAllowedStatus">
+  <int value="0" label="Enabled on affiliated device"/>
+  <int value="1" label="Enabled on unaffiliated device"/>
+  <int value="2" label="Disabled on unaffiliated device"/>
 </enum>
 
 <enum name="UninstallCounterReasonEnum">

@@ -61,10 +61,6 @@ _CONFIG = [
             'absl::in_place',
             'absl::in_place_type',
             'absl::int128',
-            'absl::make_optional',
-            'absl::nullopt',
-            'absl::nullopt_t',
-            'absl::optional',
             'absl::uint128',
             'absl::variant',
             'absl::visit',
@@ -90,6 +86,7 @@ _CONFIG = [
             'base::FilePath',
             'base::FunctionRef',
             'base::GetUniqueIdForProcess',
+            'base::HeapArray',
             'base::HexStringToUInt64',
             'base::Hours',
             "base::i18n::TextDirection",
@@ -104,6 +101,7 @@ _CONFIG = [
             'base::Milliseconds',
             'base::Minutes',
             'base::Nanoseconds',
+            'base::NotFatalUntil',
             'base::OptionalFromPtr',
             'base::OptionalToPtr',
             'base::Overloaded',
@@ -146,7 +144,10 @@ _CONFIG = [
             'base::WeakPtrFactory',
             'base::WrapRefCounted',
             'base::WritableSharedMemoryMapping',
+            'base::as_byte_span',
             'base::as_bytes',
+            'base::as_chars',
+            'base::as_writable_bytes',
             'base::bit_cast',
             'base::expected',
             'base::make_span',
@@ -181,6 +182,7 @@ _CONFIG = [
 
             # //base/functional/callback_helpers.h.
             'base::DoNothing',
+            'base::IgnoreArgs',
             'base::SplitOnceCallback',
 
             # //base/functional/callback.h is allowed, but you need to use
@@ -273,10 +275,6 @@ _CONFIG = [
             # //base/strings/strcat.h.
             'base::StrCat',
 
-            # //base/template_util.h.
-            'base::void_t',
-            'base::remove_cvref_t',
-
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 
@@ -346,6 +344,7 @@ _CONFIG = [
             'cc::RecordPaintCanvas',
             'cc::PaintShader',
             'cc::PaintWorkletInput',
+            'cc::RefCountedBuffer',
             'cc::NodeId',
             'cc::NodeInfo',
             'cc::UsePaintCache',
@@ -630,6 +629,7 @@ _CONFIG = [
             'net::CanonicalCookie',
             'net::CookieInclusionStatus',
             'net::CookiePriority',
+            'net::CookiePartitionKey',
             'net::CookieSameSite',
             'net::CookieSourceScheme',
 
@@ -699,6 +699,7 @@ _CONFIG = [
             'ui::AXMode',
             'ui::AXNodeData',
             'ui::AXRelativeBounds',
+            'ui::AXTreeChecks',
             'ui::AXTreeData',
             'ui::AXTreeSerializer',
             'ui::AXTreeSource',
@@ -747,6 +748,10 @@ _CONFIG = [
             'base::apple::ScopedCFTypeRef',
             'base::mac::MacOSVersion',
             'base::mac::MacOSMajorVersion',
+
+            # Protected memory
+            'base::ProtectedMemory',
+            'base::AutoWritableMemory',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
@@ -1587,6 +1592,7 @@ _CONFIG = [
         'allowed': [
             # Required to provide a canonicalization functor to liburlpattern.
             "absl::InvalidArgumentError",
+            "absl::Status",
             "absl::StatusOr",
 
             # Required by liburlpattern API in order to pass string data
@@ -1865,6 +1871,15 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/controller/blink_leak_detector.cc',
+        ],
+        'allowed': [
+            'base::CommandLine',
+            'switches::kEnableLeakDetectionHeapSnapshot',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/controller/blink_shutdown.cc',
         ],
         'allowed': [
@@ -1961,7 +1976,6 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/modules/service_worker/service_worker_router_type_converter.cc',
             'third_party/blink/renderer/modules/service_worker/service_worker_router_type_converter_test.cc',
             # TODO(crbug.com/1371756): consolidate code using liburlpattern.
             # Especially, consolidate manifest and this code.
@@ -1982,11 +1996,38 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/modules/ml/webnn/ml_graph_test_mojo.cc',
             'third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.cc',
         ],
         'allowed': [
             'webnn::features::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/ml/webnn/ml_graph_test_mojo.cc',
+        ],
+        'allowed': [
+            'base::test::ScopedFeatureList',
+            'blink_mojom::.+',
+            'webnn::features::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/ml/webnn/ml_graph_type_converter.cc',
+        ],
+        'allowed': [
+            'blink_mojom::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/ml/webnn/ml_graph_tflite_converter.cc',
+            'third_party/blink/renderer/modules/ml/webnn/ml_graph_test_model_loader.cc',
+        ],
+        'allowed': [
+            'flatbuffers::.+',
+            'tflite::.+',
         ]
     },
     {

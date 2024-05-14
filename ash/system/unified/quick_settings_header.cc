@@ -92,9 +92,9 @@ void ShowAccountSettings() {
 }  // namespace
 
 class QuickSettingsHeader::ManagedStateView : public views::Button {
- public:
-  METADATA_HEADER(ManagedStateView);
+  METADATA_HEADER(ManagedStateView, views::Button)
 
+ public:
   ManagedStateView(PressedCallback callback,
                    int label_id,
                    const gfx::VectorIcon& icon)
@@ -170,10 +170,10 @@ class QuickSettingsHeader::ManagedStateView : public views::Button {
   }
 
   // Owned by views hierarchy.
-  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> image_ = nullptr;
+  raw_ptr<views::Label> label_ = nullptr;
+  raw_ptr<views::ImageView> image_ = nullptr;
 
-  const raw_ref<const gfx::VectorIcon, ExperimentalAsh> icon_;
+  const raw_ref<const gfx::VectorIcon> icon_;
 };
 
 BEGIN_METADATA(QuickSettingsHeader, ManagedStateView, views::Button)
@@ -183,9 +183,9 @@ class QuickSettingsHeader::EnterpriseManagedView
     : public ManagedStateView,
       public EnterpriseDomainObserver,
       public SessionObserver {
- public:
-  METADATA_HEADER(EnterpriseManagedView);
+  METADATA_HEADER(EnterpriseManagedView, ManagedStateView)
 
+ public:
   explicit EnterpriseManagedView(UnifiedSystemTrayController* controller)
       : ManagedStateView(base::BindRepeating(&ShowEnterpriseInfo,
                                              base::Unretained(controller)),
@@ -294,7 +294,8 @@ QuickSettingsHeader::QuickSettingsHeader(
       base::BindRepeating(&ShowAccountSettings),
       IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL, GetSupervisedUserIcon()));
   supervised_view_->SetID(VIEW_ID_QS_SUPERVISED_BUTTON);
-  const bool visible = Shell::Get()->session_controller()->IsUserChild();
+  const bool visible =
+      Shell::Get()->system_tray_model()->IsInUserChildSession();
   supervised_view_->SetVisible(visible);
   if (visible) {
     supervised_view_->SetTooltipText(GetSupervisedUserMessage());
@@ -332,6 +333,10 @@ void QuickSettingsHeader::ChildVisibilityChanged(views::View* child) {
 
 views::View* QuickSettingsHeader::GetManagedButtonForTest() {
   return enterprise_managed_view_;
+}
+
+views::View* QuickSettingsHeader::GetSupervisedButtonForTest() {
+  return supervised_view_;
 }
 
 views::Label* QuickSettingsHeader::GetManagedButtonLabelForTest() {
@@ -379,7 +384,7 @@ void QuickSettingsHeader::UpdateVisibilityAndLayout() {
   }
 }
 
-BEGIN_METADATA(QuickSettingsHeader, views::View)
+BEGIN_METADATA(QuickSettingsHeader)
 END_METADATA
 
 }  // namespace ash

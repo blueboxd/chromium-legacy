@@ -172,7 +172,7 @@ class ArcAppQueueRestoreHandler
 
   // Override ResourcedClient::Observer
   void OnMemoryPressure(ResourcedClient::PressureLevel level,
-                        uint64_t reclaim_target_kb) override;
+                        memory_pressure::ReclaimTarget target) override;
 
   // Returns true if there are windows to be restored. Otherwise, returns false.
   bool HasRestoreData();
@@ -220,8 +220,7 @@ class ArcAppQueueRestoreHandler
 
   SchedulerConfigurationManager* GetSchedulerConfigurationManager();
 
-  raw_ptr<AppLaunchHandler, DanglingUntriaged | ExperimentalAsh> handler_ =
-      nullptr;
+  raw_ptr<AppLaunchHandler, DanglingUntriaged> handler_ = nullptr;
 
   // The app id list from the restore data. If the app has been added the
   // AppRegistryCache, the app will be removed from `app_ids_` to
@@ -244,8 +243,7 @@ class ArcAppQueueRestoreHandler
   std::map<int32_t, int32_t> window_id_to_session_id_;
   std::map<int32_t, int32_t> session_id_to_window_id_;
 
-  raw_ptr<full_restore::ArcGhostWindowHandler, ExperimentalAsh>
-      window_handler_ = nullptr;
+  raw_ptr<full_restore::ArcGhostWindowHandler> window_handler_ = nullptr;
 
   // If the system is under memory pressuure or high CPU usage rate, only launch
   // 1 window following the window stack priority. `first_run_` is used to check

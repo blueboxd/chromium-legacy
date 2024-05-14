@@ -4,6 +4,7 @@
 
 #include "components/webapps/browser/android/shortcut_info.h"
 
+#include <optional>
 #include <string>
 
 #include "base/feature_list.h"
@@ -11,7 +12,6 @@
 #include "components/webapps/browser/android/webapps_icon_utils.h"
 #include "components/webapps/browser/features.h"
 #include "shortcut_info.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -138,7 +138,6 @@ void ShortcutInfo::UpdateFromWebPageMetadata(
   if (metadata.mobile_capable == mojom::WebPageMobileCapable::ENABLED ||
       metadata.mobile_capable == mojom::WebPageMobileCapable::ENABLED_APPLE) {
     display = blink::mojom::DisplayMode::kStandalone;
-    UpdateSource(ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_STANDALONE);
   }
 }
 
@@ -192,7 +191,6 @@ void ShortcutInfo::UpdateFromManifest(const blink::mojom::Manifest& manifest) {
   if (display == DisplayMode::kStandalone ||
       display == DisplayMode::kFullscreen ||
       display == DisplayMode::kMinimalUi) {
-    source = SOURCE_ADD_TO_HOMESCREEN_STANDALONE;
     // Set the orientation based on the manifest value, or ignore if the display
     // mode is different from 'standalone', 'fullscreen' or 'minimal-ui'.
     if (manifest.orientation !=
@@ -205,13 +203,13 @@ void ShortcutInfo::UpdateFromManifest(const blink::mojom::Manifest& manifest) {
 
   // Set the theme color based on the manifest value, if any.
   theme_color = manifest.has_theme_color
-                    ? absl::make_optional(manifest.theme_color)
-                    : absl::nullopt;
+                    ? std::make_optional(manifest.theme_color)
+                    : std::nullopt;
 
   // Set the background color based on the manifest value, if any.
   background_color = manifest.has_background_color
-                         ? absl::make_optional(manifest.background_color)
-                         : absl::nullopt;
+                         ? std::make_optional(manifest.background_color)
+                         : std::nullopt;
 
   // Set the icon urls based on the icons in the manifest, if any.
   icon_urls.clear();
@@ -265,14 +263,14 @@ void ShortcutInfo::UpdateFromManifest(const blink::mojom::Manifest& manifest) {
 
   // Set the dark theme color based on the manifest value, if any.
   dark_theme_color = manifest.has_dark_theme_color
-                         ? absl::make_optional(manifest.dark_theme_color)
-                         : absl::nullopt;
+                         ? std::make_optional(manifest.dark_theme_color)
+                         : std::nullopt;
 
   // Set the dark background color based on the manifest value, if any.
   dark_background_color =
       manifest.has_dark_background_color
-          ? absl::make_optional(manifest.dark_background_color)
-          : absl::nullopt;
+          ? std::make_optional(manifest.dark_background_color)
+          : std::nullopt;
 }
 
 void ShortcutInfo::UpdateBestSplashIcon(
@@ -316,10 +314,6 @@ void ShortcutInfo::UpdateDisplayMode(bool webapk_compatible) {
       display = DisplayMode::kBrowser;
     }
   }
-}
-
-void ShortcutInfo::UpdateSource(const Source new_source) {
-  source = new_source;
 }
 
 }  // namespace webapps

@@ -84,6 +84,10 @@ void FakePasswordStoreBackend::Shutdown(base::OnceClosure shutdown_completed) {
   GetTaskRunner()->PostTask(FROM_HERE, std::move(shutdown_completed));
 }
 
+bool FakePasswordStoreBackend::IsAbleToSavePasswords() {
+  return true;
+}
+
 void FakePasswordStoreBackend::GetAllLoginsAsync(LoginsOrErrorReply callback) {
   GetTaskRunner()->PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -208,6 +212,10 @@ FakePasswordStoreBackend::CreateSyncControllerDelegate() {
 void FakePasswordStoreBackend::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
   NOTIMPLEMENTED();
+}
+
+base::WeakPtr<PasswordStoreBackend> FakePasswordStoreBackend::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 LoginsResult FakePasswordStoreBackend::GetAllLoginsInternal() {

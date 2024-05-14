@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/companion/core/constants.h"
 #include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/companion/core/utils.h"
@@ -21,6 +22,13 @@
 namespace companion {
 
 bool IsCompanionFeatureEnabled() {
+#if BUILDFLAG(IS_CHROMEOS)
+  if (!base::FeatureList::IsEnabled(
+          features::internal::kSidePanelCompanionChromeOS)) {
+    return false;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (!base::FeatureList::IsEnabled(lens::features::kLensStandalone)) {
     return false;

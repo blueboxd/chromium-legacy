@@ -30,6 +30,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -151,7 +152,7 @@ void MirrorLayerTree(
   parent->Add(mirror);
 
   // Calculate child layers.
-  std::vector<ui::Layer*> children;
+  std::vector<raw_ptr<ui::Layer, VectorExperimental>> children;
   if (visible_on_all_desks_windows_to_mirror.empty()) {
     // Without all desk windows, there is no need to reorder layers, just use
     // them as is.
@@ -183,7 +184,7 @@ void MirrorLayerTree(
 
     // Define what to use for layer ordering.
     struct LayerOrderData {
-      raw_ptr<ui::Layer, ExperimentalAsh> layer;
+      raw_ptr<ui::Layer> layer;
       // z-order in target desk.
       size_t primary_key;
       // z-order in active desk.
@@ -218,7 +219,7 @@ void MirrorLayerTree(
 
     // Step 2: Populate child layers from `source_layer` with their orders.
     size_t order = 0;
-    for (auto* it : base::Reversed(source_layer->children())) {
+    for (ui::Layer* it : base::Reversed(source_layer->children())) {
       while (primary_key_taken.contains(order)) {
         order++;
       }
@@ -236,11 +237,11 @@ void MirrorLayerTree(
         });
     children.reserve(layer_orders.size());
     for (const auto& lo : layer_orders) {
-      children.emplace_back(lo.layer);
+      children.emplace_back(lo.layer.get());
     }
   }
 
-  for (auto* child : children) {
+  for (ui::Layer* child : children) {
     // Visible on all desks windows only needed to be added to the subtree once
     // so use an empty set for subsequent calls.
     MirrorLayerTree(child, mirror, layers_data, base::flat_set<aura::Window*>(),
@@ -322,8 +323,9 @@ void GetLayersData(aura::Window* window,
     layer_data.should_clear_transform = true;
   }
 
-  for (auto* child : window->children())
+  for (aura::Window* child : window->children()) {
     GetLayersData(child, out_layers_data);
+  }
 }
 
 }  // namespace
@@ -348,7 +350,6 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   SetPaintToLayer(ui::LAYER_TEXTURED);
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_DESKS_DESK_PREVIEW));
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(false);
 
@@ -376,6 +377,8 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   highlight_overlay_layer->SetIsFastRoundedCorner(true);
 
   RecreateDeskContentsMirrorLayers();
+
+  UpdateAccessibleName();
 }
 
 DeskPreviewView::~DeskPreviewView() = default;
@@ -457,7 +460,7 @@ void DeskPreviewView::RecreateDeskContentsMirrorLayers() {
       std::make_unique<ui::LayerTreeOwner>(
           std::move(mirrored_content_root_layer));
 
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void DeskPreviewView::Close(bool primary_action) {
@@ -485,43 +488,29 @@ void DeskPreviewView::Swap(bool right) {
   desks_controller->UpdateDesksDefaultNames();
 }
 
-void DeskPreviewView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // Avoid failing accessibility checks if we don't have a name.
-  views::Button::GetAccessibleNodeData(node_data);
-  if (GetAccessibleName().empty())
-    node_data->SetNameExplicitlyEmpty();
-
-  // Note that the desk may have already been destroyed.
-  Desk* desk = mini_view_->desk();
-  if (desk) {
-    // Announce desk name.
-    node_data->AddStringAttribute(
-        ax::mojom::StringAttribute::kRoleDescription,
-        l10n_util::GetStringFUTF8(
-            IDS_ASH_DESKS_DESK_PREVIEW_A11Y_NAME,
-            l10n_util::GetStringUTF16(
-                desk->is_active()
-                    ? IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP
-                    : IDS_ASH_DESKS_INACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP),
-            desk->name()));
+void DeskPreviewView::UpdateAccessibleName() {
+  if (Desk* desk = mini_view_->desk()) {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        desk->is_active() ? IDS_ASH_DESKS_DESK_PREVIEW_ACTIVE
+                          : IDS_ASH_DESKS_DESK_PREVIEW_INACTIVE,
+        desk->name()));
   }
-
-  // If the desk can be combined or closed, add a tip to let the user know they
-  // can use an accelerator.
-  if (!DesksController::Get()->CanRemoveDesks()) {
-    return;
-  }
-
-  const std::u16string target_desk_name =
-      DesksController::Get()->GetCombineDesksTargetName(desk);
-  const std::string extra_tip = l10n_util::GetStringFUTF8(
-      IDS_ASH_OVERVIEW_CLOSABLE_DESK_MINIVIEW_A11Y_EXTRA_TIP, target_desk_name);
-
-  node_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                extra_tip);
 }
 
-void DeskPreviewView::Layout() {
+void DeskPreviewView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+
+  // Avoid failing accessibility checks if we don't have a name.
+  if (GetAccessibleName().empty()) {
+    node_data->SetNameExplicitlyEmpty();
+  }
+
+  node_data->AddStringAttribute(
+      ax::mojom::StringAttribute::kRoleDescription,
+      l10n_util::GetStringUTF8(IDS_ASH_DESKS_DESK_PREVIEW_ROLE_DESCRIPTION));
+}
+
+void DeskPreviewView::Layout(PassKey) {
   const gfx::Rect bounds = GetContentsBounds();
   wallpaper_preview_->SetBoundsRect(bounds);
   desk_mirrored_contents_view_->SetBoundsRect(bounds);
@@ -542,7 +531,7 @@ void DeskPreviewView::Layout() {
   DCHECK(desk_mirrored_contents_layer);
   desk_mirrored_contents_layer->SetTransform(transform);
 
-  Button::Layout();
+  LayoutSuperclass<Button>(this);
 }
 
 bool DeskPreviewView::OnMousePressed(const ui::MouseEvent& event) {
@@ -621,7 +610,7 @@ void DeskPreviewView::OnBlur() {
 
 void DeskPreviewView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   if (reverse) {
-    mini_view_->OnPreviewAboutToBeFocusedByReverseTab();
+    mini_view_->OnPreviewOrProfileAboutToBeFocusedByReverseTab();
   }
 }
 
@@ -660,7 +649,7 @@ void DeskPreviewView::OnFocusableViewBlurred() {
   mini_view_->UpdateFocusColor();
 }
 
-BEGIN_METADATA(DeskPreviewView, views::Button)
+BEGIN_METADATA(DeskPreviewView)
 END_METADATA
 
 }  // namespace ash

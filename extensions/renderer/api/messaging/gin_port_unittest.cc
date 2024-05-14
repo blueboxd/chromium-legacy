@@ -5,6 +5,8 @@
 #include "extensions/renderer/api/messaging/gin_port.h"
 
 #include <optional>
+#include <string_view>
+
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -23,7 +25,6 @@ namespace extensions {
 
 namespace {
 
-const int kDefaultRoutingId = 42;
 const char kDefaultPortName[] = "port name";
 
 // Stub delegate for testing.
@@ -38,15 +39,11 @@ class TestPortDelegate : public GinPort::Delegate {
 
   void PostMessageToPort(v8::Local<v8::Context> context,
                          const PortId& port_id,
-                         int routing_id,
                          std::unique_ptr<Message> message) override {
     last_port_id_ = port_id;
     last_message_ = std::move(message);
   }
-  MOCK_METHOD3(ClosePort,
-               void(v8::Local<v8::Context> context,
-                    const PortId&,
-                    int routing_id));
+  MOCK_METHOD2(ClosePort, void(v8::Local<v8::Context> context, const PortId&));
 
   void ResetLastMessage() {
     last_port_id_.reset();
@@ -95,8 +92,8 @@ class GinPortTest : public APIBindingTest {
                                   const char* name = kDefaultPortName) {
     EXPECT_EQ(context, context->GetIsolate()->GetCurrentContext());
     return gin::CreateHandle(
-        isolate(), new GinPort(context, port_id, kDefaultRoutingId, name,
-                               event_handler(), delegate()));
+        isolate(),
+        new GinPort(context, port_id, name, event_handler(), delegate()));
   }
 
   APIEventHandler* event_handler() { return event_handler_.get(); }
@@ -173,7 +170,7 @@ TEST_F(GinPortTest, TestPostMessage) {
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
   auto test_post_message = [this, port_obj, context](
-                               base::StringPiece function,
+                               std::string_view function,
                                std::optional<PortId> expected_port_id,
                                std::optional<Message> expected_message) {
     SCOPED_TRACE(function);
@@ -308,8 +305,7 @@ TEST_F(GinPortTest, TestJSDisconnect) {
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
-  EXPECT_CALL(*delegate(), ClosePort(context, port_id, kDefaultRoutingId))
-      .Times(1);
+  EXPECT_CALL(*delegate(), ClosePort(context, port_id)).Times(1);
   const char kFunction[] = "(function(port) { port.disconnect(); })";
   v8::Local<v8::Function> function = FunctionFromString(context, kFunction);
   v8::Local<v8::Value> args[] = {port_obj};

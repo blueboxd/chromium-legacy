@@ -30,6 +30,8 @@ class ViewClickListener;
 // associated ViewClickListener on click. The view can also be forced to
 // maintain a fixed height.
 class ASH_EXPORT HoverHighlightView : public views::Button {
+  METADATA_HEADER(HoverHighlightView, views::Button)
+
  public:
   enum class AccessibilityState {
     // The default accessibility view.
@@ -40,7 +42,6 @@ class ASH_EXPORT HoverHighlightView : public views::Button {
     UNCHECKED_CHECKBOX
   };
 
-  METADATA_HEADER(HoverHighlightView);
   // If |listener| is null then no action is taken on click.
   explicit HoverHighlightView(ViewClickListener* listener);
 
@@ -139,20 +140,14 @@ class ASH_EXPORT HoverHighlightView : public views::Button {
   // be called before re-populating the view.
   bool is_populated_ = false;
 
-  const raw_ptr<ViewClickListener, DanglingUntriaged | ExperimentalAsh>
-      listener_ = nullptr;
-  raw_ptr<views::ImageView, DanglingUntriaged | ExperimentalAsh> icon_ =
-      nullptr;
-  raw_ptr<views::Label, DanglingUntriaged | ExperimentalAsh> text_label_ =
-      nullptr;
-  raw_ptr<views::Label, DanglingUntriaged | ExperimentalAsh> sub_text_label_ =
-      nullptr;
-  raw_ptr<views::View, DanglingUntriaged | ExperimentalAsh> left_view_ =
-      nullptr;
-  raw_ptr<views::View, DanglingUntriaged | ExperimentalAsh> right_view_ =
-      nullptr;
-  raw_ptr<views::View, DanglingUntriaged | ExperimentalAsh> sub_row_ = nullptr;
-  raw_ptr<TriView, DanglingUntriaged | ExperimentalAsh> tri_view_ = nullptr;
+  const raw_ptr<ViewClickListener, DanglingUntriaged> listener_ = nullptr;
+  raw_ptr<views::ImageView, DanglingUntriaged> icon_ = nullptr;
+  raw_ptr<views::Label, DanglingUntriaged> text_label_ = nullptr;
+  raw_ptr<views::Label, DanglingUntriaged> sub_text_label_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> left_view_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> right_view_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> sub_row_ = nullptr;
+  raw_ptr<TriView, DanglingUntriaged> tri_view_ = nullptr;
   bool expandable_ = false;
   AccessibilityState accessibility_state_ = AccessibilityState::DEFAULT;
   base::CallbackListSubscription enabled_changed_subscription_ =

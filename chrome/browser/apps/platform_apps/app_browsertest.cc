@@ -144,7 +144,7 @@ class TabsAddedNotificationObserver : public TabStripModelObserver {
       return;
 
     for (auto& tab : change.GetInsert()->contents)
-      observed_tabs_.push_back(tab.contents);
+      observed_tabs_.push_back(tab.contents.get());
 
     if (observed_tabs_.size() >= observations_)
       run_loop_.Quit();
@@ -152,12 +152,14 @@ class TabsAddedNotificationObserver : public TabStripModelObserver {
 
   void Wait() { run_loop_.Run(); }
 
-  const std::vector<content::WebContents*>& tabs() { return observed_tabs_; }
+  const std::vector<raw_ptr<content::WebContents, VectorExperimental>>& tabs() {
+    return observed_tabs_;
+  }
 
  private:
   base::RunLoop run_loop_;
   size_t observations_;
-  std::vector<content::WebContents*> observed_tabs_;
+  std::vector<raw_ptr<content::WebContents, VectorExperimental>> observed_tabs_;
 };
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -1369,8 +1371,9 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
                        MAYBE_IncognitoComponentApp) {
   // Get the file manager app.
-  const Extension* file_manager = extension_registry()->GetExtensionById(
-      extension_misc::kFilesManagerAppId, ExtensionRegistry::ENABLED);
+  const Extension* file_manager =
+      extension_registry()->enabled_extensions().GetByID(
+          extension_misc::kFilesManagerAppId);
   ASSERT_TRUE(file_manager != nullptr);
   Profile* incognito_profile =
       profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);

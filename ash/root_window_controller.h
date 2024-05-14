@@ -54,7 +54,6 @@ class SplitViewController;
 class SplitViewOverviewSession;
 class StatusAreaWidget;
 class SystemModalContainerLayoutManager;
-class SystemWallpaperController;
 class TouchExplorationManager;
 class TouchHudDebug;
 class TouchHudProjection;
@@ -301,11 +300,6 @@ class ASH_EXPORT RootWindowController {
                                 const char* name,
                                 aura::Window* parent);
 
-  // Initializes |system_wallpaper_| and possibly also |boot_splash_screen_|.
-  // The initial color is determined by the |root_window_type| and whether or
-  // not this is the first boot.
-  void CreateSystemWallpaper(RootWindowType root_window_type);
-
   // Callback for MenuRunner.
   void OnMenuClosed();
 
@@ -315,11 +309,10 @@ class ASH_EXPORT RootWindowController {
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;
   // |ash_host_| as a WindowTreeHost.
-  raw_ptr<aura::WindowTreeHost, DanglingUntriaged | ExperimentalAsh>
-      window_tree_host_;
+  raw_ptr<aura::WindowTreeHost, DanglingUntriaged> window_tree_host_;
 
   // LayoutManagers are owned by the window they are installed on.
-  raw_ptr<RootWindowLayoutManager, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<RootWindowLayoutManager, DanglingUntriaged>
       root_window_layout_manager_ = nullptr;
 
   std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
@@ -345,18 +338,15 @@ class ASH_EXPORT RootWindowController {
   // to it during construction of the shelf widget and status tray.
   std::unique_ptr<Shelf> shelf_;
 
-  std::unique_ptr<SystemWallpaperController> system_wallpaper_;
-
   // Responsible for initializing TouchExplorationController when spoken
   // feedback is on.
   std::unique_ptr<TouchExplorationManager> touch_exploration_manager_;
 
   // Heads-up displays for touch events. These HUDs are not owned by the root
   // window controller and manage their own lifetimes.
-  raw_ptr<TouchHudDebug, DanglingUntriaged | ExperimentalAsh> touch_hud_debug_ =
+  raw_ptr<TouchHudDebug, DanglingUntriaged> touch_hud_debug_ = nullptr;
+  raw_ptr<TouchHudProjection, DanglingUntriaged> touch_hud_projection_ =
       nullptr;
-  raw_ptr<TouchHudProjection, DanglingUntriaged | ExperimentalAsh>
-      touch_hud_projection_ = nullptr;
 
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
 

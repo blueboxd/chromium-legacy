@@ -17,6 +17,7 @@ class FormStructure;
 }
 
 namespace web {
+class WebState;
 class WebFrame;
 }
 
@@ -30,12 +31,19 @@ class WebFrame;
                     withValue:(const std::u16string)value
                       inFrame:(web::WebFrame*)frame;
 
-- (void)handleParsedForms:(const std::vector<autofill::FormStructure*>&)forms
+- (void)handleParsedForms:
+            (const std::vector<
+                raw_ptr<autofill::FormStructure, VectorExperimental>>&)forms
                   inFrame:(web::WebFrame*)frame;
 
 - (void)fillFormDataPredictions:
             (const std::vector<autofill::FormDataPredictions>&)forms
                         inFrame:(web::WebFrame*)frame;
+
+// Triggers the extraction and parsing pipeline for forms in the given
+// `webFrame`.
+- (void)scanFormsInWebState:(web::WebState*)webState
+                    inFrame:(web::WebFrame*)webFrame;
 
 @end
 

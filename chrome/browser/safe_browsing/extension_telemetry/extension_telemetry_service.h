@@ -112,6 +112,9 @@ class ExtensionTelemetryService : public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
+  base::TimeDelta GetOffstoreFileDataCollectionStartupDelaySeconds();
+  base::TimeDelta GetOffstoreFileDataCollectionIntervalSeconds();
+
  private:
   // Called when prefs that affect extension telemetry service are changed.
   void OnPrefChanged();
@@ -227,7 +230,7 @@ class ExtensionTelemetryService : public KeyedService {
 
   // Given an |extension_id|, retrieves the collected file data from PrefService
   // if available.
-  absl::optional<OffstoreExtensionFileData> RetrieveOffstoreFileDataForReport(
+  std::optional<OffstoreExtensionFileData> RetrieveOffstoreFileDataForReport(
       const extensions::ExtensionId& extension_id);
 
   // Validates offending off-store extension verdicts received in a telemetry
@@ -314,9 +317,9 @@ class ExtensionTelemetryService : public KeyedService {
   base::flat_set<OffstoreExtensionFileDataContext>
       offstore_extension_file_data_contexts_;
   // Used to start the initial offstore extension file data collection based on
-  // |kExtensionTelemetryFileDataStartupDelaySeconds| - default: 5 mins.
+  // |kOffstoreFileDataCollectionStartupDelaySeconds| - default: 5 mins.
   // Then repeat the collection based on
-  // |kExtensionTelemetryFileDataProcessIntervalSeconds| - default: 2 hours.
+  // |kOffstoreFileDataCollectionIntervalSeconds| - default: 2 hours.
   base::OneShotTimer offstore_file_data_collection_timer_;
   base::TimeTicks offstore_file_data_collection_start_time_;
   base::TimeDelta offstore_file_data_collection_duration_limit_;
@@ -326,9 +329,9 @@ class ExtensionTelemetryService : public KeyedService {
                      std::unique_ptr<ExtensionSignalProcessor>>;
   SignalProcessors signal_processors_;
 
-  using SignalSubscribers =
-      base::flat_map<ExtensionSignalType,
-                     std::vector<ExtensionSignalProcessor*>>;
+  using SignalSubscribers = base::flat_map<
+      ExtensionSignalType,
+      std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>>;
   SignalSubscribers signal_subscribers_;
 
   friend class ExtensionTelemetryServiceTest;

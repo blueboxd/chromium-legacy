@@ -43,7 +43,7 @@ class TestCookieManager : public network::mojom::CookieManager {
       DeleteSessionOnlyCookiesCallback callback) override {}
   void AddCookieChangeListener(
       const GURL& url,
-      const absl::optional<std::string>& name,
+      const std::optional<std::string>& name,
       mojo::PendingRemote<network::mojom::CookieChangeListener> listener)
       override;
   void AddGlobalChangeListener(
@@ -64,6 +64,7 @@ class TestCookieManager : public network::mojom::CookieManager {
   void BlockTruncatedCookies(bool block) override {}
   void SetMitigationsEnabledFor3pcd(bool enable) override {}
   void SetTrackingProtectionEnabledFor3pcd(bool enable) override {}
+  void SetPreCommitCallbackDelayForTesting(base::TimeDelta delay) override {}
 
   virtual void DispatchCookieChange(const net::CookieChangeInfo& change);
 

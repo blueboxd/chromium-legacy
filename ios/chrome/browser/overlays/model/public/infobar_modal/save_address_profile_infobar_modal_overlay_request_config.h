@@ -9,6 +9,7 @@
 
 #include <optional>
 
+#import "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "ios/chrome/browser/overlays/model/public/overlay_request_config.h"
@@ -48,7 +49,7 @@ class SaveAddressProfileModalRequestConfig
     return profile_diff_;
   }
 
-  // Prepares and returns a map with key as the autofill::ServerFieldType and
+  // Prepares and returns a map with key as the autofill::FieldType and
   // value is the corresponding profile data(NSString*) fetched from the
   // delegate.
   NSDictionary* GetProfileInfo();
@@ -85,7 +86,7 @@ class SaveAddressProfileModalRequestConfig
       const std::vector<autofill::ProfileValueDifference>& profile_diff);
 
   // The InfoBar causing this modal.
-  InfoBarIOS* infobar_ = nullptr;
+  raw_ptr<InfoBarIOS> infobar_ = nullptr;
 
   // Configuration data extracted from `infobar_`'s save address profile
   // delegate.

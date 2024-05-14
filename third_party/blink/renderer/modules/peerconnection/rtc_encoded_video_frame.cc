@@ -136,12 +136,12 @@ RTCEncodedVideoFrameMetadata* RTCEncodedVideoFrame::getMetadata() const {
   }
 
   if (RuntimeEnabledFeatures::RTCEncodedVideoFrameAdditionalMetadataEnabled()) {
-    if (delegate_->CaptureTimeIdentifier()) {
-      metadata->setCaptureTimestamp(delegate_->CaptureTimeIdentifier()->us());
+    if (delegate_->PresentationTimestamp()) {
+      metadata->setTimestamp(delegate_->PresentationTimestamp()->us());
     }
   }
 
-  const absl::optional<webrtc::VideoFrameMetadata> webrtc_metadata =
+  const std::optional<webrtc::VideoFrameMetadata> webrtc_metadata =
       delegate_->GetMetadata();
   if (!webrtc_metadata) {
     return metadata;
@@ -174,7 +174,7 @@ RTCEncodedVideoFrameMetadata* RTCEncodedVideoFrame::getMetadata() const {
 
 void RTCEncodedVideoFrame::setMetadata(RTCEncodedVideoFrameMetadata* metadata,
                                        ExceptionState& exception_state) {
-  const absl::optional<webrtc::VideoFrameMetadata> original_webrtc_metadata =
+  const std::optional<webrtc::VideoFrameMetadata> original_webrtc_metadata =
       delegate_->GetMetadata();
   if (!original_webrtc_metadata) {
     exception_state.ThrowDOMException(

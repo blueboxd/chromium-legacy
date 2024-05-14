@@ -27,13 +27,13 @@
 
 #include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
-#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_system_font_value.h"
 #include "third_party/blink/renderer/core/css/css_repeat_style_value.h"
+#include "third_party/blink/renderer/core/css/css_unparsed_declaration_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_value_pool.h"
 #include "third_party/blink/renderer/core/css/cssom_utils.h"
@@ -126,24 +126,32 @@ void StylePropertySerializer::CSSPropertyValueSetForSerializer::Trace(
 unsigned
 StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyCount()
     const {
-  if (!HasExpandedAllProperty()) {
-    return property_set_->PropertyCount();
+  unsigned count = property_set_->PropertyCount();
+  if (HasExpandedAllProperty()) {
+    // When expanding all:* we need to serialize all properties set by the "all"
+    // property, but also still walk the actual property set to include any
+    // custom property declarations.
+    count += kIntLastCSSProperty - kIntFirstCSSProperty + 1;
   }
-  return kIntLastCSSProperty - kIntFirstCSSProperty + 1;
+  return count;
 }
 
 StylePropertySerializer::PropertyValueForSerializer
 StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyAt(
     unsigned index) const {
-  if (!HasExpandedAllProperty()) {
+  if (IsIndexInPropertySet(index)) {
     return StylePropertySerializer::PropertyValueForSerializer(
         property_set_->PropertyAt(index));
   }
 
-  CSSPropertyID property_id =
-      static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
+  // When expanding "all" into longhands, PropertyAt() is called with indices
+  // outside the size of the property_set_ to serialize all longshands.
+  DCHECK(HasExpandedAllProperty());
+  CSSPropertyID property_id = IndexToPropertyID(index);
   DCHECK(IsCSSPropertyIDWithName(property_id));
-  if (longhand_property_used_.test(index)) {
+  if (longhand_property_used_.test(GetCSSPropertyIDIndex(property_id))) {
+    // A property declaration for property_id overrides the "all" declaration.
+    // Access that declaration from the property set.
     int real_index = property_set_->FindPropertyIndex(property_id);
     DCHECK_NE(real_index, -1);
     return StylePropertySerializer::PropertyValueForSerializer(
@@ -178,8 +186,13 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
     return longhand_property_used_.test(GetCSSPropertyIDIndex(property.Id()));
   }
 
-  CSSPropertyID property_id =
-      static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
+  // Custom property declarations are never overridden by "all" and are only
+  // traversed for the indices into the property set.
+  if (IsIndexInPropertySet(index)) {
+    return property_set_->PropertyAt(index).Id() == CSSPropertyID::kVariable;
+  }
+
+  CSSPropertyID property_id = IndexToPropertyID(index);
   DCHECK(IsCSSPropertyIDWithName(property_id));
   const CSSProperty& property_class =
       CSSProperty::Get(ResolveCSSPropertyID(property_id));
@@ -196,7 +209,7 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
   // direction and unicode-bidi. It only accepts the CSS-wide keywords.
   // c.f. https://drafts.csswg.org/css-cascade/#all-shorthand
   if (!property_class.IsAffectedByAll()) {
-    return longhand_property_used_.test(index);
+    return longhand_property_used_.test(GetCSSPropertyIDIndex(property_id));
   }
 
   return true;
@@ -208,7 +221,7 @@ int StylePropertySerializer::CSSPropertyValueSetForSerializer::
   if (!HasExpandedAllProperty()) {
     return property_set_->FindPropertyIndex(property_id);
   }
-  return GetCSSPropertyIDIndex(property_id);
+  return GetCSSPropertyIDIndex(property_id) + property_set_->PropertyCount();
 }
 
 const CSSValue*
@@ -480,7 +493,7 @@ String StylePropertySerializer::CommonShorthandChecks(
         value.IsPendingSubstitutionValue()) {
       return g_empty_string;
     }
-    if (value.IsVariableReferenceValue()) {
+    if (value.IsUnparsedDeclaration()) {
       return g_empty_string;
     }
   }
@@ -1194,16 +1207,14 @@ String StylePropertySerializer::FontValue() const {
     return g_empty_string;
   }
 
-  if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
-    int font_variant_position_property_index =
-        property_set_.FindPropertyIndex(GetCSSPropertyFontVariantPosition());
-    DCHECK_NE(font_variant_position_property_index, -1);
-    PropertyValueForSerializer font_variant_position_property =
-        property_set_.PropertyAt(font_variant_position_property_index);
-    if (IsPropertyNonInitial(*font_variant_position_property.Value(),
-                             CSSValueID::kNormal)) {
-      return g_empty_string;
-    }
+  int font_variant_position_property_index =
+      property_set_.FindPropertyIndex(GetCSSPropertyFontVariantPosition());
+  DCHECK_NE(font_variant_position_property_index, -1);
+  PropertyValueForSerializer font_variant_position_property =
+      property_set_.PropertyAt(font_variant_position_property_index);
+  if (IsPropertyNonInitial(*font_variant_position_property.Value(),
+                           CSSValueID::kNormal)) {
+    return g_empty_string;
   }
 
   if (RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled()) {
@@ -1289,10 +1300,8 @@ String StylePropertySerializer::FontVariantValue() const {
                                      result);
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantEastAsian(),
                                      result);
-  if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
-    AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantPosition(),
-                                       result);
-  }
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantPosition(),
+                                     result);
 
   // The font-variant shorthand should return an empty string where
   // it cannot represent "font-variant-ligatures: none" along
@@ -2340,7 +2349,7 @@ String StylePropertySerializer::TextSpacingValue() const {
   const CSSValueID autospace_id = autospace_value->GetValueID();
   const CSSValueID spacing_trim_id = spacing_trim_value->GetValueID();
   if (autospace_id == CSSValueID::kNormal &&
-      spacing_trim_id == CSSValueID::kSpaceFirst) {
+      spacing_trim_id == CSSValueID::kNormal) {
     return getValueName(CSSValueID::kNormal);
   }
   if (autospace_id == CSSValueID::kNoAutospace &&
@@ -2350,14 +2359,14 @@ String StylePropertySerializer::TextSpacingValue() const {
 
   // Otherwise build a multi-value list.
   StringBuilder result;
-  if (autospace_id != CSSValueID::kNormal) {
-    result.Append(getValueName(autospace_id));
+  if (spacing_trim_id != CSSValueID::kNormal) {
+    result.Append(getValueName(spacing_trim_id));
   }
-  if (spacing_trim_id != CSSValueID::kSpaceFirst) {
+  if (autospace_id != CSSValueID::kNormal) {
     if (!result.empty()) {
       result.Append(kSpaceCharacter);
     }
-    result.Append(getValueName(spacing_trim_id));
+    result.Append(getValueName(autospace_id));
   }
   // When all longhands are initial values, it should be `normal`.
   DCHECK(!result.empty());

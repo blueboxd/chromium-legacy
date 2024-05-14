@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/password_add_username_view.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
+#include "chrome/browser/ui/views/passwords/password_default_store_changed_view.h"
 #include "chrome/browser/ui/views/passwords/password_generation_confirmation_view.h"
 #include "chrome/browser/ui/views/passwords/password_save_unsynced_credentials_locally_view.h"
 #include "chrome/browser/ui/views/passwords/password_save_update_view.h"
@@ -30,6 +31,7 @@
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/button.h"
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
@@ -110,7 +112,9 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
     view = new PasswordSaveUnsyncedCredentialsLocallyView(web_contents,
                                                           anchor_view);
   } else if (model_state ==
-             password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE) {
+                 password_manager::ui::MOVE_CREDENTIAL_AFTER_LOG_IN_STATE ||
+             model_state == password_manager::ui::
+                                MOVE_CREDENTIAL_FROM_MANAGE_BUBBLE_STATE) {
     view = new MoveToAccountStoreBubbleView(web_contents, anchor_view);
   } else if (model_state == password_manager::ui::PASSWORD_UPDATED_SAFE_STATE ||
              model_state ==
@@ -142,6 +146,9 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
         Profile::FromBrowserContext(web_contents->GetBrowserContext())
             ->GetPrefs());
 #endif
+  } else if (model_state ==
+             password_manager::ui::PASSWORD_STORE_CHANGED_BUBBLE_STATE) {
+    view = new PasswordDefaultStoreChangedView(web_contents, anchor_view);
   } else {
     NOTREACHED_NORETURN();
   }
@@ -224,3 +231,6 @@ void PasswordBubbleViewBase::Init() {
   SetTitle(controller->GetTitle());
   SetShowTitle(!controller->GetTitle().empty());
 }
+
+BEGIN_METADATA(PasswordBubbleViewBase)
+END_METADATA

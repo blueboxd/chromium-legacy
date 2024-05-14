@@ -16,6 +16,8 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "components/autofill/core/browser/filling_product.h"
+#include "components/autofill/core/browser/metrics/granular_filling_metrics.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/aliases.h"
@@ -172,9 +174,9 @@ AutofillKeyboardAccessoryAdapter::GetSuggestionLabelsAt(int row) const {
   return {{Suggestion::Text(labels_[OffsetIndexFor(row)])}};
 }
 
-PopupType AutofillKeyboardAccessoryAdapter::GetPopupType() const {
+FillingProduct AutofillKeyboardAccessoryAdapter::GetMainFillingProduct() const {
   CHECK(controller_) << "Call GetPopupType only from its owner!";
-  return controller_->GetPopupType();
+  return controller_->GetMainFillingProduct();
 }
 
 bool AutofillKeyboardAccessoryAdapter::
@@ -217,17 +219,22 @@ bool AutofillKeyboardAccessoryAdapter::RemoveSuggestion(
 
   view_->ConfirmDeletion(
       title, body,
-      base::BindOnce(&AutofillKeyboardAccessoryAdapter::OnDeletionConfirmed,
+      base::BindOnce(&AutofillKeyboardAccessoryAdapter::OnDeletionDialogClosed,
                      weak_ptr_factory_.GetWeakPtr(), index));
   return true;
 }
 
-void AutofillKeyboardAccessoryAdapter::SelectSuggestion(
-    std::optional<size_t> index) {
+void AutofillKeyboardAccessoryAdapter::SelectSuggestion(int index) {
   if (!controller_)
     return;
-  controller_->SelectSuggestion(
-      index ? std::optional<size_t>(OffsetIndexFor(*index)) : std::nullopt);
+  controller_->SelectSuggestion(OffsetIndexFor(index));
+}
+
+void AutofillKeyboardAccessoryAdapter::UnselectSuggestion() {
+  if (!controller_) {
+    return;
+  }
+  controller_->UnselectSuggestion();
 }
 
 // AutofillPopupViewDelegate implementation
@@ -287,11 +294,21 @@ AutofillKeyboardAccessoryAdapter::GetPopupScreenLocation() const {
   return std::nullopt;
 }
 
-void AutofillKeyboardAccessoryAdapter::OnDeletionConfirmed(int index) {
-  if (controller_)
-    controller_->RemoveSuggestion(
-        OffsetIndexFor(index),
-        AutofillMetrics::SingleEntryRemovalMethod::kKeyboardAccessory);
+void AutofillKeyboardAccessoryAdapter::OnDeletionDialogClosed(int index,
+                                                              bool confirmed) {
+  if (confirmed) {
+    if (controller_) {
+      controller_->RemoveSuggestion(
+          OffsetIndexFor(index),
+          AutofillMetrics::SingleEntryRemovalMethod::kKeyboardAccessory);
+    }
+    return;
+  }
+  if (GetFillingProductFromPopupItemId(GetSuggestionAt(index).popup_item_id) ==
+      FillingProduct::kAddress) {
+    autofill_metrics::LogDeleteAddressProfileFromExtendedMenu(
+        /*user_accepted_delete=*/false);
+  }
 }
 
 int AutofillKeyboardAccessoryAdapter::OffsetIndexFor(int element_index) const {

@@ -211,7 +211,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual bool HasLineIfEmpty() const;
   // Returns baseline offset if we can get |SimpleFontData| from primary font.
   // Or returns no value if we can't get font data.
-  absl::optional<LayoutUnit> BaselineForEmptyLine() const;
+  std::optional<LayoutUnit> BaselineForEmptyLine() const;
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
@@ -234,15 +234,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                        OutlineInfo*,
                        const PhysicalOffset& additional_offset,
                        OutlineType) const override;
-
-  // TODO(jchaffraix): We should rename this function as inline-flex and
-  // inline-grid as also covered.
-  // Alternatively it should be removed as we clarify the meaning of
-  // IsAtomicInlineLevel to imply isInline.
-  bool IsInlineBlockOrInlineTable() const final {
-    NOT_DESTROYED();
-    return IsInline() && IsAtomicInlineLevel();
-  }
 
   bool IsInSelfHitTestingPhase(HitTestPhase phase) const final {
     NOT_DESTROYED();

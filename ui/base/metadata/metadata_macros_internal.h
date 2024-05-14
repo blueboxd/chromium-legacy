@@ -60,7 +60,7 @@
 #define METADATA_ACCESSORS_INTERNAL_BASE(class_name)   \
   using kMetadataTag = class_name;                     \
   [[maybe_unused]] static const char kViewClassName[]; \
-  virtual const char* GetClassName() const;            \
+  const char* GetClassName() const;                    \
   static ui::metadata::ClassMetaData* MetaData();      \
   class_name* ReinterpretToBaseClass(void* obj);       \
   /* Don't hide non-const base class version. */       \
@@ -134,9 +134,8 @@
       qualified_class_name::metadata_class_name::meta_data_ = nullptr;        \
                                                                               \
   ui::metadata::ClassMetaData* qualified_class_name::MetaData() {             \
-    static_assert(                                                            \
-        std::is_base_of<parent_class_name, qualified_class_name>::value,      \
-        "class not child of parent");                                         \
+    static_assert(std::is_base_of_v<parent_class_name, qualified_class_name>, \
+                  "class not child of parent");                               \
     if (!qualified_class_name::metadata_class_name::meta_data_) {             \
       qualified_class_name::metadata_class_name::meta_data_ =                 \
           ui::metadata::MakeAndRegisterClassInfo<                             \

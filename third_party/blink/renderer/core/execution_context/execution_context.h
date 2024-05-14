@@ -262,7 +262,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
                          bool discard_duplicates = false) {
     AddConsoleMessageImpl(message, discard_duplicates);
   }
-  virtual void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) = 0;
   virtual void AddInspectorIssue(AuditsIssue) = 0;
 
   void CountDeprecation(WebFeature feature) override;
@@ -378,7 +377,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual void ReportPermissionsPolicyViolation(
       mojom::blink::PermissionsPolicyFeature,
       mojom::blink::PolicyDisposition,
-      const absl::optional<String>& reporting_endpoint,
+      const std::optional<String>& reporting_endpoint,
       const String& message = g_empty_string) const {}
   virtual void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
@@ -425,9 +424,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // the lifetime of its parent. This is used for resource usage attribution,
   // where the resource usage of a child context will be charged to its parent
   // (and so on up the tree).
-  virtual absl::optional<ExecutionContextToken> GetParentExecutionContextToken()
+  virtual std::optional<ExecutionContextToken> GetParentExecutionContextToken()
       const {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // ExecutionContext subclasses are usually the V8 global object, which means
@@ -491,7 +490,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
       mojom::blink::ConsoleMessageLevel,
       const String& message,
       bool discard_duplicates,
-      absl::optional<mojom::ConsoleMessageCategory> category) override;
+      std::optional<mojom::ConsoleMessageCategory> category) override;
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override = 0;
 

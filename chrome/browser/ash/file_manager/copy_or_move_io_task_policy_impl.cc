@@ -95,14 +95,20 @@ void StartReportOnlyScanning(
     Profile* profile,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     ProgressStatus status) {
-  DCHECK_EQ(settings.size(), status.sources.size());
-  DCHECK_EQ(settings.size(), status.outputs.size());
-  std::vector<storage::FileSystemURL> sources(settings.size());
-  std::vector<storage::FileSystemURL> outputs(settings.size());
-  for (size_t i = 0; i < settings.size(); ++i) {
+  // If there was an out-of-space error in the transfer, not all outputs might
+  // be populated as the transfer is aborted on out-of-space errors.
+  // So we truncate the settings, sources and outputs to only the first
+  // `num_good_files` entries.
+  const size_t num_good_files =
+      std::min({settings.size(), status.sources.size(), status.outputs.size()});
+
+  std::vector<storage::FileSystemURL> sources(num_good_files);
+  std::vector<storage::FileSystemURL> outputs(num_good_files);
+  for (size_t i = 0; i < num_good_files; ++i) {
     sources[i] = status.sources[i].url;
     outputs[i] = status.outputs[i].url;
   }
+  settings.resize(num_good_files);
 
   // Notify the Files app of completion of the copy/move.
   std::move(io_task_completion_callback).Run(std::move(status));
@@ -360,6 +366,8 @@ void CopyOrMoveIOTaskPolicyImpl::MaybeScanForDisallowedFiles(size_t idx) {
 
   progress_->state = State::kScanning;
   progress_->sources_scanned = idx + 1;
+  // TODO(b/315783871): recursively count the files in directories and pass this
+  // value to the js side to show the proper singular/plural scanning label.
   progress_callback_.Run(*progress_);
 
   DCHECK_EQ(file_transfer_analysis_delegates_.size(),

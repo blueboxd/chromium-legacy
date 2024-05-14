@@ -36,7 +36,7 @@ TEST(CastMediaSourceTest, FromCastURLWithDefaults) {
   const CastAppInfo& app_info = source->app_infos()[0];
   EXPECT_EQ("ABCDEFAB", app_info.app_id);
   EXPECT_TRUE(app_info.required_capabilities.Empty());
-  EXPECT_EQ(absl::nullopt, source->target_playout_delay());
+  EXPECT_EQ(std::nullopt, source->target_playout_delay());
   EXPECT_EQ(true, source->site_requested_audio_capture());
   EXPECT_EQ(cast_channel::VirtualConnectionType::kStrong,
             source->connection_type());
@@ -147,7 +147,7 @@ TEST(CastMediaSourceTest, FromMirroringURN) {
   AssertDefaultCastMediaSource(source.get());
 }
 
-TEST(CastMediaSourceTest, FromDesktopUrn) {
+TEST(CastMediaSourceTest, FromDesktopUrnWithoutAudio) {
   MediaSource::Id source_id("urn:x-org.chromium.media:source:desktop:foo");
   std::unique_ptr<CastMediaSource> source =
       CastMediaSource::FromMediaSourceId(source_id);
@@ -156,6 +156,21 @@ TEST(CastMediaSourceTest, FromDesktopUrn) {
   ASSERT_EQ(1u, source->app_infos().size());
   EXPECT_EQ(openscreen::cast::GetCastStreamingAudioVideoAppId(),
             source->app_infos()[0].app_id);
+  AssertDefaultCastMediaSource(source.get());
+}
+
+TEST(CastMediaSourceTest, FromDesktopUrnWithAudio) {
+  MediaSource::Id source_id(
+      "urn:x-org.chromium.media:source:desktop:foo?with_audio=true");
+  std::unique_ptr<CastMediaSource> source =
+      CastMediaSource::FromMediaSourceId(source_id);
+  ASSERT_TRUE(source);
+  EXPECT_EQ(source_id, source->source_id());
+  ASSERT_EQ(2u, source->app_infos().size());
+  EXPECT_EQ(openscreen::cast::GetCastStreamingAudioVideoAppId(),
+            source->app_infos()[0].app_id);
+  EXPECT_EQ(openscreen::cast::GetCastStreamingAudioOnlyAppId(),
+            source->app_infos()[1].app_id);
   AssertDefaultCastMediaSource(source.get());
 }
 

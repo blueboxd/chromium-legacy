@@ -32,13 +32,7 @@ static const int kDinoTileSizePixels = 4;
 // Size of a QR locator, in modules.
 static const int kLocatorSizeModules = 7;
 
-QRCodeGeneratorServiceImpl::QRCodeGeneratorServiceImpl() : receiver_(this) {
-  InitializeDinoBitmap();
-}
-
-QRCodeGeneratorServiceImpl::QRCodeGeneratorServiceImpl(
-    mojo::PendingReceiver<mojom::QRCodeGeneratorService> receiver)
-    : receiver_(this, std::move(receiver)) {
+QRCodeGeneratorServiceImpl::QRCodeGeneratorServiceImpl() {
   InitializeDinoBitmap();
 }
 
@@ -269,7 +263,7 @@ SkBitmap QRCodeGeneratorServiceImpl::RenderBitmap(
 
 void QRCodeGeneratorServiceImpl::GenerateQRCode(
     mojom::GenerateQRCodeRequestPtr request,
-    GenerateQRCodeCallback callback) {
+    ResponseCallback callback) {
   mojom::GenerateQRCodeResponsePtr response =
       mojom::GenerateQRCodeResponse::New();
 
@@ -279,25 +273,14 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
     return;
   }
 
-  // TODO(lukasza): Consider increasing `kLengthMax` - according to
-  // https://www.qrcode.com/en/about/version.html 177x177 QR code can encode up
-  // to 7089 digits.
-  constexpr size_t kLengthMax = 288;
-  if (request->data.length() > kLengthMax) {
-    response->error_code = mojom::QRCodeGeneratorError::INPUT_TOO_LONG;
-    std::move(callback).Run(std::move(response));
-    return;
-  }
-
-  absl::optional<qr_code_generator::QRCodeGenerator::GeneratedCode> qr_data;
+  std::optional<qr_code_generator::GeneratedCode> qr_data;
   {
     base::TimeTicks start_time = base::TimeTicks::Now();
     // The QR version (i.e. size) must be >= 5 because otherwise the dino
     // painted over the middle covers too much of the code to be decodable.
     constexpr int kMinimumQRVersion = 5;
-    qr_code_generator::QRCodeGenerator qr;
-    qr_data = qr.Generate(base::as_bytes(base::make_span(request->data)),
-                          kMinimumQRVersion);
+    qr_data = qr_code_generator::Generate(
+        base::as_bytes(base::make_span(request->data)), kMinimumQRVersion);
     base::UmaHistogramMicrosecondsTimes(
         "Sharing.QRCodeGeneration.Duration.BytesToQrPixels2",
         base::TimeTicks::Now() - start_time);

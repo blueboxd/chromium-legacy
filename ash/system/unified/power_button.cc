@@ -119,7 +119,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   }
 
   // Owned by views hierarchy.
-  const raw_ptr<PowerButton, ExperimentalAsh> power_button_;
+  const raw_ptr<PowerButton> power_button_;
 };
 
 // Returns whether the user's email address should be shown in the power menu.
@@ -131,15 +131,14 @@ bool ShouldShowEmailMenuItem() {
     return false;
   }
   switch (user_session->user_info.type) {
-    case user_manager::USER_TYPE_REGULAR:
-    case user_manager::USER_TYPE_CHILD:
+    case user_manager::UserType::kRegular:
+    case user_manager::UserType::kChild:
       return true;
-    case user_manager::USER_TYPE_GUEST:
-    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-    case user_manager::USER_TYPE_KIOSK_APP:
-    case user_manager::USER_TYPE_ARC_KIOSK_APP:
-    case user_manager::USER_TYPE_WEB_KIOSK_APP:
-    case user_manager::NUM_USER_TYPES:
+    case user_manager::UserType::kGuest:
+    case user_manager::UserType::kPublicAccount:
+    case user_manager::UserType::kKioskApp:
+    case user_manager::UserType::kArcKioskApp:
+    case user_manager::UserType::kWebKioskApp:
       return false;
   }
 }
@@ -334,10 +333,10 @@ class PowerButton::MenuController : public ui::SimpleMenuModel::Delegate,
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // The root menu item view of `context_menu_model_`. Cached for testing.
-  raw_ptr<views::MenuItemView, ExperimentalAsh> root_menu_item_view_ = nullptr;
+  raw_ptr<views::MenuItemView> root_menu_item_view_ = nullptr;
 
   // Owned by views hierarchy.
-  raw_ptr<PowerButton, ExperimentalAsh> power_button_ = nullptr;
+  raw_ptr<PowerButton> power_button_ = nullptr;
 };
 
 PowerButtonContainer::PowerButtonContainer(PressedCallback callback)
@@ -415,7 +414,9 @@ PowerButton::PowerButton(UnifiedSystemTrayController* tray_controller)
                                    /*highlight_on_focus=*/false);
 }
 
-PowerButton::~PowerButton() = default;
+PowerButton::~PowerButton() {
+  set_context_menu_controller(nullptr);
+}
 
 bool PowerButton::IsMenuShowing() {
   auto* menu_runner = context_menu_->menu_runner_.get();

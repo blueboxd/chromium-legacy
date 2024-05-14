@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PRINTING_WEB_API_WEB_PRINTING_MOJOM_TRAITS_H_
 #define CHROME_BROWSER_PRINTING_WEB_API_WEB_PRINTING_MOJOM_TRAITS_H_
 
+#include <cups/ipp.h>
+
 #include <memory>
 #include <optional>
 
@@ -12,7 +14,9 @@
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "printing/print_settings.h"
+#include "printing/printer_status.h"
 #include "third_party/blink/public/mojom/printing/web_printing.mojom-forward.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace mojo {
 
@@ -22,6 +26,27 @@ struct EnumTraits<blink::mojom::WebPrintingSides, printing::mojom::DuplexMode> {
       printing::mojom::DuplexMode input);
   static bool FromMojom(blink::mojom::WebPrintingSides input,
                         printing::mojom::DuplexMode* output);
+};
+
+template <>
+struct EnumTraits<blink::mojom::WebPrinterState, ipp_pstate_t> {
+  static blink::mojom::WebPrinterState ToMojom(ipp_pstate_t input);
+  static bool FromMojom(blink::mojom::WebPrinterState input,
+                        ipp_pstate_t* output) {
+    NOTREACHED_NORETURN();
+  }
+};
+
+template <>
+struct EnumTraits<blink::mojom::WebPrinterStateReason,
+                  printing::PrinterStatus::PrinterReason::Reason> {
+  static blink::mojom::WebPrinterStateReason ToMojom(
+      printing::PrinterStatus::PrinterReason::Reason input);
+  static bool FromMojom(
+      blink::mojom::WebPrinterStateReason input,
+      printing::PrinterStatus::PrinterReason::Reason* output) {
+    NOTREACHED_NORETURN();
+  }
 };
 
 template <>
@@ -45,6 +70,18 @@ struct StructTraits<blink::mojom::WebPrintJobTemplateAttributesDataView,
   }
   static const std::optional<blink::mojom::WebPrintingMultipleDocumentHandling>&
   multiple_document_handling(
+      const std::unique_ptr<printing::PrintSettings>& ptr) {
+    NOTREACHED_NORETURN();
+  }
+  static const std::optional<blink::mojom::WebPrintingOrientationRequested>&
+  orientation_requested(const std::unique_ptr<printing::PrintSettings>& ptr) {
+    NOTREACHED_NORETURN();
+  }
+  static const std::optional<gfx::Size>& printer_resolution(
+      const std::unique_ptr<printing::PrintSettings>& ptr) {
+    NOTREACHED_NORETURN();
+  }
+  static const std::optional<blink::mojom::WebPrintColorMode>& print_color_mode(
       const std::unique_ptr<printing::PrintSettings>& ptr) {
     NOTREACHED_NORETURN();
   }

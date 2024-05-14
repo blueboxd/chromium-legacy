@@ -89,6 +89,8 @@ namespace autotestPrivate {
     Fullscreen,
     PrimarySnapped,
     SecondarySnapped,
+    Pinned,
+    TrustedPinned,
     PIP,
     Floated
   };
@@ -374,8 +376,11 @@ namespace autotestPrivate {
   dictionary ArcAppTracingInfo {
     boolean success;
     double fps;
+    double perceivedFps;
     double commitDeviation;
+    double presentDeviation;
     double renderQuality;
+    double janksPerMinute;
   };
 
   callback TakeScreenshotCallback = void (DOMString base64Png);
@@ -773,7 +778,7 @@ namespace autotestPrivate {
     // Event name
     DOMString name;
     // Number of frames actually shown for this animation.
-    long microsecnods_since_unix_epoch;
+    double microsecnods_since_unix_epoch;
   };
 
   // Callback invoked to report the collection ui::LoginEventRecorder data
@@ -1626,6 +1631,11 @@ namespace autotestPrivate {
     // ARC get wakefulness mode.
     [supportsPromises] static void getArcWakefulnessMode(
       WakefulnessModeCallback callback);
+
+    // Sets the default device language.
+    // A restart is required for this change to take effect.
+    // |value|: the locale of the language.
+    static void setDeviceLanguage(DOMString locale, VoidCallback callback);
   };
 
   interface Events {

@@ -14,7 +14,7 @@
       readAnythingApp.shadowRoot.querySelector('read-anything-toolbar')
           .shadowRoot;
   const highlightButton = toolbar.getElementById('highlight');
-  const sentence1 = 'Big wheel keep on turning.';
+  const sentence1 = 'Big wheel keep on turning. ';
   const sentence2 = 'Proud Mary keep on burning.';
   const axTree = {
     rootId: 1,
@@ -69,7 +69,7 @@
   // resetPreviousHighlight and playNextMessage.
   readAnythingApp.playSpeech();
   readAnythingApp.resetPreviousHighlight();
-  readAnythingApp.playNextMessage();
+  readAnythingApp.playNextGranularity();
 
   // Color should start visible, and the previous highlight should be there
   const highlights = container.querySelectorAll('.current-read-highlight');

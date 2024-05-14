@@ -150,10 +150,11 @@ void AutofillDriverRouter::FormsSeen(
 
 void AutofillDriverRouter::SetFormToBeProbablySubmitted(
     AutofillDriver* source,
-    absl::optional<FormData> form,
-    void (*callback)(AutofillDriver* target, const FormData* optional_form)) {
+    std::optional<FormData> form,
+    void (*callback)(AutofillDriver* target,
+                     base::optional_ref<const FormData> form)) {
   if (!form) {
-    callback(source, nullptr);
+    callback(source, std::nullopt);
     return;
   }
 
@@ -408,18 +409,17 @@ void AutofillDriverRouter::JavaScriptChangedAutofilledValue(
 // The reason is that browser forms may be outdated and hence refer to frames
 // that do not exist anymore.
 
-std::vector<FieldGlobalId> AutofillDriverRouter::ApplyFormAction(
+base::flat_set<FieldGlobalId> AutofillDriverRouter::ApplyFormAction(
     AutofillDriver* source,
     mojom::ActionType action_type,
     mojom::ActionPersistence action_persistence,
     const FormData& data,
     const url::Origin& triggered_origin,
-    const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
+    const base::flat_map<FieldGlobalId, FieldType>& field_type_map,
     void (*callback)(AutofillDriver* target,
                      mojom::ActionType action_type,
                      mojom::ActionPersistence action_persistence,
-                     FormRendererId form_renderer_id,
-                     const std::vector<FormFieldData>& fields)) {
+                     const FormData::FillData& form)) {
   // Since Undo only affects fields that were already filled, and only sets
   // values to fields to something that already existed in it prior to the
   // filling, it is okay to bypass the filling security checks and hence passing
@@ -430,10 +430,15 @@ std::vector<FieldGlobalId> AutofillDriverRouter::ApplyFormAction(
                     ? internal::FormForest::SecurityOptions::TrustAllOrigins()
                     : internal::FormForest::SecurityOptions(&triggered_origin,
                                                             &field_type_map));
-  for (const FormData& renderer_form : renderer_forms.renderer_forms) {
+  for (FormData& renderer_form : renderer_forms.renderer_forms) {
     if (auto* target = DriverOfFrame(renderer_form.host_frame)) {
+      // Remove unsafe fields from the list to be sent to the renderer.
+      std::erase_if(
+          renderer_form.fields, [&renderer_forms](const FormFieldData& field) {
+            return !renderer_forms.safe_fields.contains(field.global_id());
+          });
       callback(target, action_type, action_persistence,
-               renderer_form.unique_renderer_id, renderer_form.fields);
+               FormData::FillData(renderer_form));
     }
   }
   return renderer_forms.safe_fields;
@@ -537,28 +542,6 @@ void AutofillDriverRouter::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormDataPredictions>& renderer_fdp = p.second;
     if (auto* target = DriverOfFrame(frame)) {
       callback(target, renderer_fdp);
-    }
-  }
-}
-
-void AutofillDriverRouter::SendFieldsEligibleForManualFillingToRenderer(
-    AutofillDriver* source,
-    const std::vector<FieldGlobalId>& fields,
-    void (*callback)(AutofillDriver* target,
-                     const std::vector<FieldRendererId>& fields)) {
-  // Splits FieldGlobalIds by their frames and reduce them to the
-  // FieldRendererIds.
-  std::map<LocalFrameToken, std::vector<FieldRendererId>> fields_by_frame;
-  for (FieldGlobalId field : fields) {
-    fields_by_frame[field.frame_token].push_back(field.renderer_id);
-  }
-
-  // Send the FieldRendererIds to the individual frames.
-  for (const auto& p : fields_by_frame) {
-    LocalFrameToken frame = p.first;
-    const std::vector<FieldRendererId>& frame_fields = p.second;
-    if (auto* target = DriverOfFrame(frame)) {
-      callback(target, frame_fields);
     }
   }
 }

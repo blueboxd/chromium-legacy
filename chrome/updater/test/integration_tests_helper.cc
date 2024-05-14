@@ -48,7 +48,6 @@ namespace {
 
 using ::testing::EmptyTestEventListener;
 using ::testing::Test;
-using ::testing::TestCase;
 using ::testing::TestEventListeners;
 using ::testing::TestInfo;
 using ::testing::TestPartResult;
@@ -324,14 +323,17 @@ void AppTestHelper::FirstTaskRun() {
            WithSystemScope(Wrap(&ExpectMarshalInterfaceSucceeds))},
           {"expect_legacy_update3web_succeeds",
            WithSwitch(
-               "expected_error_code",
+               "cancel_when_downloading",
                WithSwitch(
-                   "expected_final_state",
+                   "expected_error_code",
                    WithSwitch(
-                       "app_bundle_web_create_mode",
-                       WithSwitch("app_id",
-                                  WithSystemScope(Wrap(
-                                      &ExpectLegacyUpdate3WebSucceeds))))))},
+                       "expected_final_state",
+                       WithSwitch(
+                           "app_bundle_web_create_mode",
+                           WithSwitch(
+                               "app_id",
+                               WithSystemScope(
+                                   Wrap(&ExpectLegacyUpdate3WebSucceeds)))))))},
           {"expect_legacy_process_launcher_succeeds",
            WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
           {"expect_legacy_app_command_web_succeeds",
@@ -359,13 +361,15 @@ void AppTestHelper::FirstTaskRun() {
           {"install", WithSystemScope(Wrap(&Install))},
           {"install_updater_and_app",
            WithSwitch(
-               "child_window_text_to_find",
+               "always_launch_cmd",
                WithSwitch(
-                   "tag",
+                   "child_window_text_to_find",
                    WithSwitch(
-                       "is_silent_install",
-                       WithSwitch("app_id", WithSystemScope(Wrap(
-                                                &InstallUpdaterAndApp))))))},
+                       "tag",
+                       WithSwitch("is_silent_install",
+                                  WithSwitch("app_id",
+                                             WithSystemScope(Wrap(
+                                                 &InstallUpdaterAndApp)))))))},
           {"print_log", WithSystemScope(Wrap(&PrintLog))},
           {"run_wake",
            WithSwitch("exit_code", WithSystemScope(Wrap(&RunWake)))},
@@ -431,6 +435,8 @@ void AppTestHelper::FirstTaskRun() {
            WithSystemScope(Wrap(&PrivilegedHelperInstall))},
           {"delete_legacy_updater",
            WithSystemScope(Wrap(&DeleteLegacyUpdater))},
+          {"expect_prepare_to_run_bundle_success",
+           WithSwitch("bundle_path", Wrap(&ExpectPrepareToRunBundleSuccess))},
 #endif  // BUILDFLAG(IS_MAC)
           {"expect_legacy_updater_migrated",
            WithSystemScope(Wrap(&ExpectLegacyUpdaterMigrated))},

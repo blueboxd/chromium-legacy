@@ -6,8 +6,10 @@ import '../../elements/icons.html.js';
 
 import {assertInstanceof} from 'chrome://resources/js/assert.js';
 
-import {decorate} from '../../../common/js/cr_ui.js';
+import type {VolumeManager} from '../../../background/js/volume_manager.js';
+import {crInjectTypeAndInit} from '../../../common/js/cr_ui.js';
 import {queryDecoratedElement, queryRequiredElement} from '../../../common/js/dom_utils.js';
+import {FilesAppEntry} from '../../../common/js/files_app_entry_types.js';
 import {isDlpEnabled, isNewDirectoryTreeEnabled} from '../../../common/js/flags.js';
 import {str, strf} from '../../../common/js/translations.js';
 import {AllowedPaths} from '../../../common/js/volume_manager_types.js';
@@ -16,9 +18,7 @@ import {CloudPanelContainer} from '../../../containers/cloud_panel_container.js'
 import {DirectoryTreeContainer} from '../../../containers/directory_tree_container.js';
 import {NudgeContainer} from '../../../containers/nudge_container.js';
 import {SearchContainer} from '../../../containers/search_container.js';
-import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
-import {DialogType} from '../../../externs/ts/state.js';
-import type {VolumeManager} from '../../../externs/volume_manager.js';
+import {DialogType} from '../../../state/state.js';
 import {XfCloudPanel} from '../../../widgets/xf_cloud_panel.js';
 import {XfConflictDialog} from '../../../widgets/xf_conflict_dialog.js';
 import {XfDlpRestrictionDetailsDialog} from '../../../widgets/xf_dlp_restriction_details_dialog.js';
@@ -54,6 +54,7 @@ import {MultiMenu} from './multi_menu.js';
 import {MultiMenuButton} from './multi_menu_button.js';
 import {ProgressCenterPanel} from './progress_center_panel.js';
 import {ProvidersMenu} from './providers_menu.js';
+
 
 
 /**
@@ -155,7 +156,7 @@ export class FileManagerUI {
   /**
    * The container element of the dialog.
    */
-  dialogContainer: HTMLElement;
+  dialogContainer: HTMLDialogElement;
 
   /**
    * Context menu for texts.
@@ -167,7 +168,7 @@ export class FileManagerUI {
   /**
    * The toolbar which contains controls.
    */
-  readonly toolbar: Element;
+  readonly toolbar: HTMLElement;
 
   /**
    * The tooltip element.
@@ -292,8 +293,8 @@ export class FileManagerUI {
       launchParam: LaunchParam) {
     // Initialize the dialog label. This should be done before constructing
     // dialog instances.
-    BaseDialog.OK_LABEL = str('OK_LABEL');
-    BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
+    BaseDialog.okLabel = str('OK_LABEL');
+    BaseDialog.cancelLabel = str('CANCEL_LABEL');
 
     this.dialogType_ = launchParam.type;
 
@@ -329,7 +330,8 @@ export class FileManagerUI {
         queryRequiredElement('#format-dialog') as FilesFormatDialog;
 
     this.dialogContainer =
-        queryRequiredElement('.dialog-container', this.element);
+        queryRequiredElement('.dialog-container', this.element) as
+        HTMLDialogElement;
 
     this.textContextMenu = queryDecoratedElement('#text-context-menu', Menu);
 
@@ -555,7 +557,7 @@ export class FileManagerUI {
     // Set the initial focus. When there is no focus, the active element is the
     // <body>.
     let targetElement = null;
-    if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
+    if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
       targetElement = this.dialogFooter.filenameInput;
     } else if (this.listContainer.currentListType !== ListType.UNINITIALIZED) {
       targetElement = this.listContainer.currentList;
@@ -636,7 +638,7 @@ export class FileManagerUI {
 
     for (const filesMenuItem of filesMenuItems) {
       assertInstanceof(filesMenuItem, MenuItem);
-      decorate(filesMenuItem, FilesMenuItem);
+      crInjectTypeAndInit(filesMenuItem, FilesMenuItem);
     }
   }
 
@@ -730,7 +732,7 @@ export class FileManagerUI {
               displayName, response.currentProfileId);
 
           // Show the dialog.
-          this.alertDialog.showWithTitle(title, message, null, null, null);
+          this.alertDialog.showWithTitle(title, message);
         });
   }
 

@@ -18,7 +18,13 @@ BASE_DECLARE_FEATURE(kFeature);
 // label. Defaults to generic Lorem Ipsum as strings are not yet determined.
 COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
 extern const base::FeatureParam<std::string>
-    kEnterprisePlusAddressLabelOverride;
+    kEnterprisePlusAddressSuggestionLabelOverride;
+
+// Used to control the enterprise plus address feature's label in settings.
+// Defaults to generic Lorem Ipsum as strings are not yet determined.
+COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
+extern const base::FeatureParam<std::string>
+    kEnterprisePlusAddressSettingsLabelOverride;
 
 // Used to control the enterprise plus address feature's OAuth scope.
 COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
@@ -47,6 +53,15 @@ extern const base::FeatureParam<std::string> kPlusAddressManagementUrl;
 // comma-separated list of site names (eTLD+1).
 COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
 extern const base::FeatureParam<std::string> kPlusAddressExcludedSites;
+
+// Url for user to report issues with plus addresses.
+COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
+extern const base::FeatureParam<std::string> kPlusAddressErrorReportUrl;
+
+// Used to disable this feature when requests to the server repeatedly fail with
+// a 403.
+COMPONENT_EXPORT(PLUS_ADDRESSES_FEATURES)
+extern const base::FeatureParam<bool> kDisableForForbiddenUsers;
 
 }  // namespace plus_addresses
 

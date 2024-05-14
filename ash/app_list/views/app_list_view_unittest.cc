@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -498,7 +499,7 @@ class AppListViewTest : public views::ViewsTestBase {
   // Needed by AppsContainerView::ContinueContainer.
   AshColorProvider ash_color_provider_;
 
-  raw_ptr<AppListView, DanglingUntriaged | ExperimentalAsh> view_ =
+  raw_ptr<AppListView, DanglingUntriaged> view_ =
       nullptr;  // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   std::unique_ptr<AppsGridViewTestApi> test_api_;
@@ -641,8 +642,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
   void ClearSearchResults() { GetSearchModel()->results()->DeleteAll(); }
 
-  void AddSearchResultWithTitleAndScore(const base::StringPiece& title,
-                                        double score) {
+  void AddSearchResultWithTitleAndScore(std::string_view title, double score) {
     std::unique_ptr<TestSearchResult> result =
         std::make_unique<TestSearchResult>();
     result->set_display_type(ash::SearchResultDisplayType::kList);
@@ -827,7 +827,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
  private:
   AshColorProvider ash_color_provider_;
-  raw_ptr<AppListView, DanglingUntriaged | ExperimentalAsh> view_ =
+  raw_ptr<AppListView, DanglingUntriaged> view_ =
       nullptr;  // Owned by native widget.
 
   std::unique_ptr<AppListTestViewDelegate> delegate_;

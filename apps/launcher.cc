@@ -45,6 +45,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -295,7 +296,9 @@ class PlatformAppPathLauncher
     // available, or it might be in the process of being unloaded, in which case
     // the lazy background task queue is used to load the extension and then
     // call back to us.
-    const extensions::LazyContextId context_id(context_, extension_id);
+    const auto context_id =
+        extensions::LazyContextId::ForExtension(context_, app);
+    CHECK(context_id.IsForBackgroundPage());
     extensions::LazyContextTaskQueue* const queue = context_id.GetTaskQueue();
     if (queue->ShouldEnqueueTask(context_, app)) {
       queue->AddPendingTask(
@@ -349,7 +352,7 @@ class PlatformAppPathLauncher
   // The id of the extension providing the app. A pointer to the extension is
   // not kept as the extension may be unloaded and deleted during the course of
   // the launch.
-  const std::string extension_id;
+  const extensions::ExtensionId extension_id;
   extensions::AppLaunchSource launch_source_ =
       extensions::AppLaunchSource::kSourceFileHandler;
   std::optional<app_runtime::ActionData> action_data_;

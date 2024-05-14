@@ -44,6 +44,9 @@
 namespace gpu {
 
 namespace {
+constexpr base::TimeDelta kHistogramMinTime = base::Microseconds(5);
+constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(16);
+constexpr int kHistogramTimeBuckets = 50;
 
 // Control use of AVFoundation to draw video content.
 BASE_FEATURE(kAVFoundationOverlays,
@@ -54,27 +57,40 @@ BASE_FEATURE(kAVFoundationOverlays,
 // Whether the presentation should be delayed until the next CVDisplayLink
 // callback when kCVDisplayLinkBeginFrameSource is enabled. This flag has no
 // effect if kCVDisplayLinkBeginFrameSource is disabled.
-BASE_FEATURE(kDelayOnFramePresent,
-             "DelayOnFramePresent",
+BASE_FEATURE(kVSyncAlignedPresent,
+             "VSyncAlignedPresent",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether the presentation for the first frame after VSync stops should be
-// delayed when kDelayOnFramePresent is enabled.
+// delayed when kVSyncAlignedPresent is enabled.
 BASE_FEATURE(kNoDelayOnFirstFramePresent,
              "NoDelayOnFirstFramePresent",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Use CVDisplayLink timing for PresentationFeedback timestamps.
+BASE_FEATURE(kNewPresentationFeedbackTimeStamps,
+             "NewPresentationFeedbackTimeStamps",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_MAC)
 }  // namespace
 
-ImageTransportSurfaceOverlayMacEGL::ImageTransportSurfaceOverlayMacEGL()
-    : use_remote_layer_api_(ui::RemoteLayerAPISupported()),
+ImageTransportSurfaceOverlayMacEGL::ImageTransportSurfaceOverlayMacEGL(
+    base::WeakPtr<ImageTransportSurfaceDelegate> delegate)
+    : delegate_(delegate),
+      use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
       weak_ptr_factory_(this) {
   static bool av_disabled_at_command_line =
       !base::FeatureList::IsEnabled(kAVFoundationOverlays);
 
+  bool allow_av_sample_buffer_display_layer =
+      !av_disabled_at_command_line &&
+      !delegate_->GetFeatureInfo()
+           ->workarounds()
+           .disable_av_sample_buffer_display_layer;
+
   ca_layer_tree_coordinator_ = std::make_unique<ui::CALayerTreeCoordinator>(
-      use_remote_layer_api_, !av_disabled_at_command_line);
+      use_remote_layer_api_, allow_av_sample_buffer_display_layer);
 
   // Create the CAContext to send this to the GPU process, and the layer for
   // the context.
@@ -124,17 +140,13 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
     gfx::FrameData data) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::Present");
 
-  // Only one commited CALayer tree is permitted. Populate the last frame if
-  // there is already a commited CALayer tree waiting to be populated. At the
-  // end of this function, another commited CALayer tree will be produced.
+  // Only one committed CALayer tree is permitted. Populate the previous frame
+  // if there is already a committed CALayer tree waiting to be populated. At
+  // the end of this function, another committed CALayer tree will be produced.
   if (num_committed_ca_layer_trees_ >= 1) {
     PopulateCALayerParameters();
   }
   DCHECK_EQ(num_committed_ca_layer_trees_, 0);
-
-  constexpr base::TimeDelta kHistogramMinTime = base::Microseconds(5);
-  constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(16);
-  constexpr int kHistogramTimeBuckets = 50;
 
   // Query the underlying Metal device, if one exists. This is needed to ensure
   // synchronization between the display compositor and the HDRCopierLayer.
@@ -156,31 +168,11 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
     }
   }
 
-  // Do a GL fence for flush to apply back-pressure before drawing.
-  {
-    base::TimeTicks start_time = base::TimeTicks::Now();
-    ApplyBackpressure();
+#if BUILDFLAG(IS_MAC)
+  // The GPU has finished all the drawing commands.
+  ready_timestamp_ = base::TimeTicks::Now();
+#endif
 
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "Gpu.Mac.BackpressureUs", base::TimeTicks::Now() - start_time,
-        kHistogramMinTime, kHistogramMaxTime, kHistogramTimeBuckets);
-  }
-
-  // Update the CALayer tree in the GPU process.
-  base::TimeTicks before_transaction_time = base::TimeTicks::Now();
-  {
-    TRACE_EVENT0("gpu", "CommitPendingTreesToCA");
-    ca_layer_tree_coordinator_->CommitPendingTreesToCA();
-
-    base::TimeDelta transaction_time =
-        base::TimeTicks::Now() - before_transaction_time;
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "GPU.IOSurface.CATransactionTimeUs", transaction_time,
-        kHistogramMinTime, kHistogramMaxTime, kHistogramTimeBuckets);
-  }
-
-  // Delay PopulateCALayerParameters until the next Vsync on Mac. No delay if
-  // kCVDisplayLinkBeginFrameSource feature is off or DisplayLink fails.
   completion_callback_ = std::move(completion_callback);
   presentation_callback_ = std::move(presentation_callback);
   num_committed_ca_layer_trees_++;
@@ -204,7 +196,8 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
   // this is not the first frame after vsync stops.
   if (vsync_callback_mac_) {
     vsync_callback_mac_keep_alive_counter_ = kMaxKeepAliveCounter;
-    if (delay_presenetation_until_next_vsync) {
+    if (delay_presenetation_until_next_vsync &&
+        base::FeatureList::IsEnabled(kVSyncAlignedPresent)) {
       // PopulateCALayerParameters will be called in OnVSyncPresentation.
       return;
     }
@@ -215,6 +208,33 @@ void ImageTransportSurfaceOverlayMacEGL::Present(
 }
 
 void ImageTransportSurfaceOverlayMacEGL::PopulateCALayerParameters() {
+  // Do a GL fence for flush to apply back-pressure before drawing.
+  {
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    ApplyBackpressure();
+
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Gpu.Mac.BackpressureUs", base::TimeTicks::Now() - start_time,
+        kHistogramMinTime, kHistogramMaxTime, kHistogramTimeBuckets);
+  }
+
+  // Update the CALayer tree in the GPU process.
+  {
+    base::TimeTicks before_transaction_time = base::TimeTicks::Now();
+    TRACE_EVENT0("gpu", "CommitPendingTreesToCA");
+    ca_layer_tree_coordinator_->CommitPendingTreesToCA();
+
+    base::TimeDelta transaction_time =
+        base::TimeTicks::Now() - before_transaction_time;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "GPU.IOSurface.CATransactionTimeUs", transaction_time,
+        kHistogramMinTime, kHistogramMaxTime, kHistogramTimeBuckets);
+
+#if BUILDFLAG(IS_MAC)
+    latch_timestamp_ = base::TimeTicks::Now();
+#endif
+  }
+
   // Populate the CA layer parameters to send to the browser.
   gfx::CALayerParams params;
   {
@@ -248,6 +268,21 @@ void ImageTransportSurfaceOverlayMacEGL::PopulateCALayerParameters() {
   gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::Hertz(60),
                                      /*flags=*/0);
   feedback.ca_layer_error_code = ca_layer_error_code_;
+
+#if BUILDFLAG(IS_MAC)
+  if (base::FeatureList::IsEnabled(kNewPresentationFeedbackTimeStamps)) {
+    feedback.ready_timestamp = ready_timestamp_;
+    feedback.latch_timestamp = latch_timestamp_;
+    feedback.interval = frame_interval_;
+    feedback.timestamp = GetDisplaytime(latch_timestamp_);
+
+    // `update_vsync_params_callback` is not available in
+    // SkiaOutputSurfaceImpl::BufferPresented(). Setting kVSync here will not
+    // update vsync params.
+    feedback.flags = gfx::PresentationFeedback::kHWCompletion |
+                     gfx::PresentationFeedback::kVSync;
+  }
+#endif
 
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
@@ -318,8 +353,10 @@ void ImageTransportSurfaceOverlayMacEGL::SetCALayerErrorCode(
 
 #if BUILDFLAG(IS_MAC)
 void ImageTransportSurfaceOverlayMacEGL::SetVSyncDisplayID(int64_t display_id) {
-  if (!base::FeatureList::IsEnabled(features::kCVDisplayLinkBeginFrameSource) ||
-      !base::FeatureList::IsEnabled(kDelayOnFramePresent)) {
+  if (!(base::FeatureList::IsEnabled(
+            features::kCVDisplayLinkBeginFrameSource) ||
+        base::FeatureList::IsEnabled(kVSyncAlignedPresent) ||
+        base::FeatureList::IsEnabled(kNewPresentationFeedbackTimeStamps))) {
     return;
   }
 
@@ -337,12 +374,48 @@ void ImageTransportSurfaceOverlayMacEGL::SetVSyncDisplayID(int64_t display_id) {
 
     display_link_mac_ = ui::DisplayLinkMac::GetForDisplay(display_id);
   }
-
   display_id_ = display_id;
+}
+
+base::TimeTicks ImageTransportSurfaceOverlayMacEGL::GetDisplaytime(
+    base::TimeTicks latch_time) {
+  // From the CVDisplayLink params dump:
+  // |next_display_time_| ~= |current_display_time_| + |frame_interval|.
+  // params.display_time ~= params.callback_time + 1.5x |frame_interval|.
+
+  if (latch_time < current_display_time_) {
+    return current_display_time_;
+  }
+
+  // We missed the current display_time, the presentation will happen in
+  // |next_display_time_|.
+  if (latch_time < next_display_time_ && !current_display_time_.is_null()) {
+    return next_display_time_;
+  }
+
+  // For the situation of the first frame after BeginFrame, or when
+  // CVDisplayLink is heavily delayed, try to get an estimate.
+  if (!next_display_time_.is_null() && !frame_interval_.is_zero()) {
+    return latch_time.SnappedToNextTick(next_display_time_, frame_interval_);
+  }
+
+  // When there is no display_time info, just use the latch_time.
+  // This could be the very first frame after the browser starts,
+  return latch_time;
 }
 
 void ImageTransportSurfaceOverlayMacEGL::OnVSyncPresentation(
     ui::VSyncParamsMac params) {
+  // Documentation for the CVDisplayLink display_time
+  // https://developer.apple.com/documentation/corevideo/cvdisplaylinkoutputcallback
+
+  current_display_time_ = next_display_time_;
+
+  if (params.display_times_valid) {
+    next_display_time_ = params.display_timebase;
+    frame_interval_ = params.display_interval;
+  }
+
   if (num_committed_ca_layer_trees_) {
     PopulateCALayerParameters();
   } else {

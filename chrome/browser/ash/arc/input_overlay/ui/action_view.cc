@@ -57,8 +57,9 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
   // Set display mode for ActionLabel first and then other components update the
   // layout according to ActionLabel.
   if (!editing_label) {
-    for (auto* label : labels_)
+    for (arc::input_overlay::ActionLabel* label : labels_) {
       label->SetDisplayMode(mode);
+    }
   } else {
     editing_label->SetDisplayMode(mode);
   }
@@ -82,13 +83,15 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
 void ActionView::SetPositionFromCenterPosition(
     const gfx::PointF& center_position) {
   DCHECK(touch_point_center_);
-  int left = std::max(0, (int)(center_position.x() - touch_point_center_->x()));
-  int top = std::max(0, (int)(center_position.y() - touch_point_center_->y()));
+  const int left =
+      std::max(0, (int)(center_position.x() - touch_point_center_->x()));
+  const int top =
+      std::max(0, (int)(center_position.y() - touch_point_center_->y()));
   // SetPosition function needs the top-left position.
   SetPosition(gfx::Point(left, top));
 }
 
-void ActionView::ShowErrorMsg(const base::StringPiece& message,
+void ActionView::ShowErrorMsg(std::string_view message,
                               ActionLabel* editing_label,
                               bool ax_annouce) {
   display_overlay_controller_->AddEditMessage(message, MessageType::kError);
@@ -100,13 +103,12 @@ void ActionView::ShowErrorMsg(const base::StringPiece& message,
   }
 }
 
-void ActionView::ShowInfoMsg(const base::StringPiece& message,
+void ActionView::ShowInfoMsg(std::string_view message,
                              ActionLabel* editing_label) {
   display_overlay_controller_->AddEditMessage(message, MessageType::kInfo);
 }
 
-void ActionView::ShowFocusInfoMsg(const base::StringPiece& message,
-                                  views::View* view) {
+void ActionView::ShowFocusInfoMsg(std::string_view message, views::View* view) {
   display_overlay_controller_->AddEditMessage(message,
                                               MessageType::kInfoLabelFocus);
   view->SetAccessibleDescription(base::UTF8ToUTF16(message));
@@ -126,8 +128,8 @@ void ActionView::ChangeInputBinding(
 }
 
 void ActionView::OnResetBinding() {
-  const auto& input_binding = action_->GetCurrentDisplayedInput();
-  if (!IsInputBound(input_binding) ||
+  if (const auto& input_binding = action_->GetCurrentDisplayedInput();
+      !IsInputBound(input_binding) ||
       input_binding == *action_->current_input()) {
     return;
   }
@@ -156,7 +158,7 @@ void ActionView::OnChildLabelUpdateFocus(ActionLabel* child, bool focus) {
     return;
   }
 
-  for (auto* label : labels_) {
+  for (arc::input_overlay::ActionLabel* label : labels_) {
     if (label == child) {
       continue;
     }
@@ -165,7 +167,7 @@ void ActionView::OnChildLabelUpdateFocus(ActionLabel* child, bool focus) {
 }
 
 void ActionView::RemoveNewState() {
-  for (auto* label : labels_) {
+  for (arc::input_overlay::ActionLabel* label : labels_) {
     label->RemoveNewState();
   }
 }

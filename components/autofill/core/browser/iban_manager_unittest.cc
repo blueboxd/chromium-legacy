@@ -96,7 +96,7 @@ class IbanManagerTest : public testing::Test {
   // Adds an IBAN focused field to the suggestions context.
   SuggestionsContext GetIbanFocusedSuggestionsContext(
       AutofillField& autofill_field,
-      autofill::ServerFieldType type = IBAN_VALUE) {
+      autofill::FieldType type = IBAN_VALUE) {
     SuggestionsContext context;
     autofill_field.SetTypeTo(AutofillType(type));
     context.focused_field = &autofill_field;
@@ -534,7 +534,7 @@ TEST_F(IbanManagerTest, NotIbanFieldFocused_NoSuggestionsShown) {
   SetUpLocalIban(test::kIbanValue, kNickname_0);
 
   AutofillField test_field;
-  test_field.value = base::UTF8ToUTF16(std::string(test::kIbanValue));
+  test_field.value = std::u16string(test::kIbanValue16);
   // Set the field type to any type than "IBAN_VALUE".
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(
       test_field, CREDIT_CARD_VERIFICATION_CODE);
@@ -556,7 +556,7 @@ TEST_F(IbanManagerTest, Metrics_Suggestions_Allowed) {
   SetUpLocalIban(test::kIbanValue, kNickname_0);
 
   AutofillField test_field;
-  test_field.unique_renderer_id = test::MakeFieldRendererId();
+  test_field.renderer_id = test::MakeFieldRendererId();
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
   // Simulate request for suggestions.
   // TODO: handle return value.
@@ -624,7 +624,7 @@ TEST_F(IbanManagerTest, Metrics_SuggestionsShown) {
   SetUpLocalIban(test::kIbanValue, kNickname_0);
 
   AutofillField test_field;
-  test_field.unique_renderer_id = test::MakeFieldRendererId();
+  test_field.renderer_id = test::MakeFieldRendererId();
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Simulate request for suggestions.
@@ -654,7 +654,7 @@ TEST_F(IbanManagerTest, Metrics_SuggestionSelected) {
   SetUpLocalIban(test::kIbanValue_2, "");
 
   AutofillField test_field;
-  test_field.unique_renderer_id = test::MakeFieldRendererId();
+  test_field.renderer_id = test::MakeFieldRendererId();
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Simulate request for suggestions and select one suggested IBAN.

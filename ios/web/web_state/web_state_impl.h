@@ -309,7 +309,7 @@ class WebStateImpl final : public WebState {
                             NSString* response_html_string) final;
   void LoadSimulatedRequest(const GURL& url,
                             NSData* response_data,
-                            NSString* mime_type) final API_AVAILABLE(ios(15.0));
+                            NSString* mime_type) final;
   void Stop() final;
   const NavigationManager* GetNavigationManager() const final;
   NavigationManager* GetNavigationManager() final;
@@ -345,7 +345,7 @@ class WebStateImpl final : public WebState {
   bool HasOpener() const final;
   void SetHasOpener(bool has_opener) final;
   bool CanTakeSnapshot() const final;
-  void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) final;
+  void TakeSnapshot(const CGRect rect, SnapshotCallback callback) final;
   void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) final;
   void CloseMediaPresentations() final;
   void AddObserver(WebStateObserver* observer) final;

@@ -12,6 +12,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/notifications/notification_display_service_tester.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 namespace extensions {
 
 namespace {
@@ -34,6 +38,14 @@ class OfdsConfigPrivateApiUnittest : public ExtensionApiUnittest {
       delete;
   ~OfdsConfigPrivateApiUnittest() override = default;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+    notification_tester_ = std::make_unique<NotificationDisplayServiceTester>(
+        /*profile=*/profile());
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
  protected:
   void SetOneDriveMount(Profile* profile, const std::string& mount) {
     ASSERT_TRUE(profile);
@@ -47,6 +59,10 @@ class OfdsConfigPrivateApiUnittest : public ExtensionApiUnittest {
     profile->GetPrefs()->SetList(prefs::kMicrosoftOneDriveAccountRestrictions,
                                  ToList(restrictions));
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 TEST_F(OfdsConfigPrivateApiUnittest, GetMountSuccessful) {
@@ -67,7 +83,7 @@ TEST_F(OfdsConfigPrivateApiUnittest, GetMountSuccessful) {
         RunFunctionAndReturnValue(function.get(), /*args=*/"[]");
 
     ASSERT_TRUE(returned_mount_info_value);
-    absl::optional<extensions::api::odfs_config_private::MountInfo>
+    std::optional<extensions::api::odfs_config_private::MountInfo>
         returned_mount_info =
             extensions::api::odfs_config_private::MountInfo::FromValue(
                 *returned_mount_info_value);
@@ -96,8 +112,7 @@ TEST_F(OfdsConfigPrivateApiUnittest, GetAccountRestrictionsSuccessful) {
         RunFunctionAndReturnValue(function.get(), /*args=*/"[]");
 
     ASSERT_TRUE(returned_restrictions_value);
-    absl::optional<
-        extensions::api::odfs_config_private::AccountRestrictionsInfo>
+    std::optional<extensions::api::odfs_config_private::AccountRestrictionsInfo>
         returned_account_restrictions = extensions::api::odfs_config_private::
             AccountRestrictionsInfo::FromValue(*returned_restrictions_value);
 
@@ -108,5 +123,22 @@ TEST_F(OfdsConfigPrivateApiUnittest, GetAccountRestrictionsSuccessful) {
                 testing::ElementsAreArray(test_case.restrictions));
   }
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(OfdsConfigPrivateApiUnittest,
+       ShowAutomatedMountErrorNotificationIsShown) {
+  auto function = base::MakeRefCounted<
+      extensions::OdfsConfigPrivateShowAutomatedMountErrorFunction>();
+  RunFunction(function.get(), /*args=*/"[]");
+  auto notification = notification_tester_->GetNotification(
+      "automated_mount_error_notification_id");
+  ASSERT_TRUE(notification.has_value());
+  EXPECT_EQ(u"OneDrive setup failed", notification->title());
+  EXPECT_EQ(
+      u"Your administrator configured your account to be connected to "
+      u"Microsoft OneDrive automatically, but something went wrong.",
+      notification->message());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace extensions

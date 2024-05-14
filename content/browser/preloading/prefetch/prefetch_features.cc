@@ -11,10 +11,6 @@ BASE_FEATURE(kPrefetchUseContentRefactor,
              "PrefetchUseContentRefactor",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPrefetchRedirects,
-             "PrefetchRedirects",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPrefetchReusable,
              "PrefetchReusable",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -29,5 +25,27 @@ BASE_FEATURE(kPrefetchNIKScope,
 BASE_FEATURE(kPrefetchDocumentManagerEarlyCookieCopySkipped,
              "PrefetchDocumentManagerEarlyCookieCopySkipped",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrefetchUsesHTTPCache,
+             "PrefetchUsesHTTPCache",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrefetchClientHints,
+             "PrefetchClientHints",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<PrefetchClientHintsCrossSiteBehavior>::Option
+    kPrefetchClientHintsCrossSiteBehaviorOptions[] = {
+        {PrefetchClientHintsCrossSiteBehavior::kNone, "none"},
+        {PrefetchClientHintsCrossSiteBehavior::kLowEntropy, "low_entropy"},
+        {PrefetchClientHintsCrossSiteBehavior::kAll, "all"},
+};
+const base::FeatureParam<PrefetchClientHintsCrossSiteBehavior>
+    kPrefetchClientHintsCrossSiteBehavior{
+        &kPrefetchClientHints, "cross_site_behavior",
+        PrefetchClientHintsCrossSiteBehavior::kLowEntropy,
+        &kPrefetchClientHintsCrossSiteBehaviorOptions};
+
+BASE_FEATURE(kPrefetchProxy, "PrefetchProxy", base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

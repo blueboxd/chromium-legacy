@@ -46,12 +46,10 @@ import org.chromium.chrome.browser.permissions.RuntimePermissionTestUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.PermissionDialogController;
-import org.chromium.components.permissions.PermissionsAndroidFeatureList;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.ContentFeatureMap;
@@ -130,7 +128,7 @@ public class PageInfoDiscoverabilityTest {
             parameters.add(
                     new ParameterSet()
                             .name("RequestType.kMidi")
-                            .value(ContentSettingsType.MIDI, true));
+                            .value(ContentSettingsType.MIDI, false));
             parameters.add(
                     new ParameterSet()
                             .name("RequestType.kMidiSysex")
@@ -243,7 +241,7 @@ public class PageInfoDiscoverabilityTest {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    BrowsingDataBridge.getInstance()
+                    BrowsingDataBridge.getForProfile(Profile.getLastUsedRegularProfile())
                             .clearBrowsingData(
                                     helper::notifyCalled,
                                     new int[] {BrowsingDataType.SITE_SETTINGS},
@@ -255,7 +253,6 @@ public class PageInfoDiscoverabilityTest {
     /** Tests omnibox permission when permission is allowed by the user. */
     @Test
     @MediumTest
-    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     @Feature({"PageInfoDiscoverability"})
     public void testPageInfoDiscoverabilityAllowPrompt() throws Exception {
         Assert.assertEquals(ContentSettingsType.DEFAULT, mMediator.getLastPermission());
@@ -275,7 +272,7 @@ public class PageInfoDiscoverabilityTest {
                 testAndroidPermissionDelegate,
                 GEOLOCATION_TEST,
                 /* expectPermissionAllowed= */ true,
-                /* permissionPromptAllow= */ true,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.ALLOW,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 /* javascriptToExecute= */ null,
@@ -287,7 +284,6 @@ public class PageInfoDiscoverabilityTest {
     /** Tests omnibox permission when permission is blocked by the user. */
     @Test
     @MediumTest
-    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     @Feature({"PageInfoDiscoverability"})
     public void testPageInfoDiscoverabilityBlockPrompt() throws Exception {
         Assert.assertEquals(ContentSettingsType.DEFAULT, mMediator.getLastPermission());
@@ -308,7 +304,7 @@ public class PageInfoDiscoverabilityTest {
                 testAndroidPermissionDelegate,
                 GEOLOCATION_TEST,
                 /* expectPermissionAllowed= */ false,
-                /* permissionPromptAllow= */ false,
+                /* promptDecision= */ PermissionTestRule.PromptDecision.DENY,
                 /* waitForMissingPermissionPrompt= */ false,
                 /* waitForUpdater= */ true,
                 /* javascriptToExecute= */ null,
@@ -319,7 +315,6 @@ public class PageInfoDiscoverabilityTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     @Feature({"PageInfoDiscoverability"})
     public void testPermissionRequestTypeEnumSize() {
         Assert.assertEquals(
@@ -329,18 +324,17 @@ public class PageInfoDiscoverabilityTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     @Feature({"PageInfoDiscoverability"})
     @ParameterAnnotations.UseMethodParameter(RequestTypeTestParams.class)
     public void testPermissionRequestTypes(
-            @ContentSettingsType int contentSettingsType, boolean isInSiteSettings) {
+            @ContentSettingsType.EnumType int contentSettingsType, boolean isInSiteSettings) {
         if (contentSettingsType == ContentSettingsType.BLUETOOTH_CHOOSER_DATA) {
             isInSiteSettings =
                     ContentFeatureMap.isEnabled(
                             ContentFeatureList.WEB_BLUETOOTH_NEW_PERMISSIONS_BACKEND);
         }
         Assert.assertEquals(ContentSettingsType.DEFAULT, mMediator.getLastPermission());
-        @ContentSettingsType int[] permissions = {contentSettingsType};
+        @ContentSettingsType.EnumType int[] permissions = {contentSettingsType};
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mMediator.onDialogResult(

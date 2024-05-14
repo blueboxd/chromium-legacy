@@ -115,7 +115,7 @@ enum class ReplyBehavior {
 class ExtensionTestMessageListener : public extensions::TestApiObserver {
  public:
   // Listen for the `expected_message` with the specified `reply_behavior`.
-  // TODO(devlin): Possibly update this to just take a StringPiece, once the
+  // TODO(devlin): Possibly update this to just take a string_view, once the
   // enum conversions highlighted below are done?
   explicit ExtensionTestMessageListener(
       const std::string& expected_message,
@@ -164,7 +164,7 @@ class ExtensionTestMessageListener : public extensions::TestApiObserver {
     on_repeatedly_satisfied_ = on_repeatedly_satisfied;
   }
 
-  void set_extension_id(const std::string& extension_id) {
+  void set_extension_id(const extensions::ExtensionId& extension_id) {
     extension_id_ = extension_id;
   }
 

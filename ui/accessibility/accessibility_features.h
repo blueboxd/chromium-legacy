@@ -67,12 +67,6 @@ AX_BASE_EXPORT bool IsAugmentExistingImageLabelsEnabled();
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAutoDisableAccessibility);
 AX_BASE_EXPORT bool IsAutoDisableAccessibilityEnabled();
 
-// Make PDFs displayed in the ChromeOS Media App (AKA Backlight)
-// accessible by performing OCR on the images for each page.
-// TODO(nektar): Should this be moved to ChromeOS section?
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kBacklightOcr);
-AX_BASE_EXPORT bool IsBacklightOcrEnabled();
-
 // Recognize "aria-virtualcontent" as a valid aria property.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kEnableAccessibilityAriaVirtualContent);
 AX_BASE_EXPORT bool IsAccessibilityAriaVirtualContentEnabled();
@@ -81,10 +75,6 @@ AX_BASE_EXPORT bool IsAccessibilityAriaVirtualContentEnabled();
 // ignored node).
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kEnableAccessibilityExposeHTMLElement);
 AX_BASE_EXPORT bool IsAccessibilityExposeHTMLElementEnabled();
-
-// Expose all ignored nodes by Blink in the accessibility tree.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kEnableAccessibilityExposeIgnoredNodes);
-AX_BASE_EXPORT bool IsAccessibilityExposeIgnoredNodesEnabled();
 
 // Use language detection to determine the language
 // of text content in page and exposed to the browser process AXTree.
@@ -179,13 +169,13 @@ AX_BASE_EXPORT bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityExtraLargeCursor);
 AX_BASE_EXPORT bool IsAccessibilityExtraLargeCursorEnabled();
 
+// Whether the screen magnifier can follow the Select to Speak focus.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityMagnifierFollowsSts);
+AX_BASE_EXPORT bool IsAccessibilityMagnifierFollowsStsEnabled();
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
-// Filter AXModes based on running accessibility services.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityPerformanceFiltering);
-AX_BASE_EXPORT bool IsAccessibilityPerformanceFilteringEnabled();
-
 // Disable max node and timeout limits on the
 // AXTreeSnapshotter's Snapshot method, and track related histograms.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilitySnapshotStressTests);
@@ -264,6 +254,17 @@ AX_BASE_EXPORT bool IsReadAnythingWithAlgorithmEnabled();
 // Write some ScreenAI library debug data in /tmp.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kScreenAIDebugMode);
 AX_BASE_EXPORT bool IsScreenAIDebugModeEnabled();
+
+// ScreenAI library's Main Content Extraction service is enabled.
+AX_BASE_EXPORT bool IsScreenAIMainContentExtractionEnabled();
+
+// ScreenAI library's OCR service is enabled.
+AX_BASE_EXPORT bool IsScreenAIOCREnabled();
+
+// Enables to use the Screen AI component available for testing.
+// If enabled, ScreenAI library will be loaded from //third_party/screen-ai.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kScreenAITestMode);
+AX_BASE_EXPORT bool IsScreenAITestModeEnabled();
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_MAC)

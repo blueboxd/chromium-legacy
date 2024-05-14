@@ -20,7 +20,7 @@ class BLINK_PLATFORM_EXPORT InternetDisconnectedURLLoaderFactory final
     : public URLLoaderFactory {
  public:
   std::unique_ptr<URLLoader> CreateURLLoader(
-      const WebURLRequest&,
+      const network::ResourceRequest&,
       scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
       mojo::PendingRemote<mojom::blink::KeepAliveHandle> keep_alive_handle,
@@ -44,7 +44,7 @@ class InternetDisconnectedURLLoader final : public URLLoader {
                          base::TimeDelta timeout_interval,
                          URLLoaderClient*,
                          WebURLResponse&,
-                         absl::optional<WebURLError>&,
+                         std::optional<WebURLError>&,
                          scoped_refptr<SharedBuffer>&,
                          int64_t& encoded_data_length,
                          uint64_t& encoded_body_length,

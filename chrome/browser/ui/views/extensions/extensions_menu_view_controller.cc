@@ -102,7 +102,9 @@ bool HasEnterpriseForcedAccess(const extensions::Extension& extension,
 // Returns whether the site setting toggle for `web_contents` should be visible.
 bool IsSiteSettingsToggleVisible(const ToolbarActionsModel& toolbar_model,
                                  content::WebContents* web_contents) {
-  return !toolbar_model.IsRestrictedUrl(web_contents->GetLastCommittedURL());
+  const GURL& url = web_contents->GetLastCommittedURL();
+  return !toolbar_model.IsRestrictedUrl(url) &&
+         !toolbar_model.IsPolicyBlockedHost(url);
 }
 
 // Returns whether the site settings toggle for `web_contents` should be on.
@@ -164,8 +166,12 @@ bool CanUserCustomizeExtensionSiteAccess(
     return false;
   }
 
-  bool enterprise_forced_access = HasEnterpriseForcedAccess(extension, profile);
-  if (enterprise_forced_access) {
+  if (extension.permissions_data()->IsPolicyBlockedHost(url)) {
+    // Users can't customize the site access of policy-blocked sites.
+    return false;
+  }
+
+  if (HasEnterpriseForcedAccess(extension, profile)) {
     // Users can't customize the site access of enterprise-installed extensions.
     return false;
   }
@@ -255,8 +261,14 @@ ExtensionsMenuMainPageView::MessageSectionState GetMessageSectionState(
     Profile& profile,
     const ToolbarActionsModel& toolbar_model,
     content::WebContents& web_contents) {
-  if (toolbar_model.IsRestrictedUrl(web_contents.GetLastCommittedURL())) {
+  const GURL& url = web_contents.GetLastCommittedURL();
+  if (toolbar_model.IsRestrictedUrl(url)) {
     return ExtensionsMenuMainPageView::MessageSectionState::kRestrictedAccess;
+  }
+
+  if (toolbar_model.IsPolicyBlockedHost(url)) {
+    return ExtensionsMenuMainPageView::MessageSectionState::
+        kPolicyBlockedAccess;
   }
 
   PermissionsManager::UserSiteSetting site_setting =
@@ -582,10 +594,12 @@ void ExtensionsMenuViewController::UpdateMainPage(
       GetMessageSectionState(*browser_->profile(), *toolbar_model_,
                              *web_contents);
   bool has_enterprise_extensions = false;
-  // Only kUserBlockedAccess state cares whether there are any extensions
-  // installed by enterprise.
+  // Only kUserBlockedAccess or kPolicyBlockedAccess states care whether there
+  // are any extensions installed by enterprise.
   if (message_section_state ==
-      ExtensionsMenuMainPageView::MessageSectionState::kUserBlockedAccess) {
+          ExtensionsMenuMainPageView::MessageSectionState::kUserBlockedAccess ||
+      message_section_state == ExtensionsMenuMainPageView::MessageSectionState::
+                                   kPolicyBlockedAccess) {
     has_enterprise_extensions = std::any_of(
         toolbar_model_->action_ids().begin(),
         toolbar_model_->action_ids().end(),

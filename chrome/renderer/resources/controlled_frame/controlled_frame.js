@@ -4,13 +4,17 @@
 
 // This module implements chrome-specific <controlledframe> Element.
 
+var ControlledFrameImpl = require('controlledFrameImpl').ControlledFrameImpl;
 var forwardApiMethods = require('guestViewContainerElement').forwardApiMethods;
 var ChromeWebViewImpl = require('chromeWebView').ChromeWebViewImpl;
+var CONTROLLED_FRAME_API_METHODS =
+    require('controlledFrameApiMethods').CONTROLLED_FRAME_API_METHODS;
+var CONTROLLED_FRAME_PROMISE_API_METHODS =
+    require('controlledFrameApiMethods').CONTROLLED_FRAME_PROMISE_API_METHODS;
 var registerElement = require('guestViewContainerElement').registerElement;
 var WebViewAttributeNames = require('webViewConstants').WebViewAttributeNames;
 var WebViewElement = require('webViewElement').WebViewElement;
 var WebViewInternal = getInternalApi('webViewInternal');
-var WEB_VIEW_API_METHODS = require('webViewApiMethods').WEB_VIEW_API_METHODS;
 
 class ControlledFrameElement extends WebViewElement {
   static get observedAttributes() {
@@ -19,7 +23,7 @@ class ControlledFrameElement extends WebViewElement {
 
   constructor() {
     super();
-    privates(this).internal = new ChromeWebViewImpl(this);
+    privates(this).internal = new ControlledFrameImpl(this);
     privates(this).originalGo = originalGo;
   }
 }
@@ -27,8 +31,8 @@ class ControlledFrameElement extends WebViewElement {
 // Forward remaining ControlledFrameElement.foo* method calls to
 // ChromeWebViewImpl.foo* or WebViewInternal.foo*.
 forwardApiMethods(
-    ControlledFrameElement, ChromeWebViewImpl, WebViewInternal,
-    WEB_VIEW_API_METHODS);
+    ControlledFrameElement, ControlledFrameImpl, WebViewInternal,
+    CONTROLLED_FRAME_API_METHODS, CONTROLLED_FRAME_PROMISE_API_METHODS);
 
 // Since |back| and |forward| are implemented in terms of |go|, we need to
 // keep a reference to the real |go| function, since user code may override

@@ -114,7 +114,6 @@ export function invokePolymerMethod(element, name, ...args) {
 
       /**
        * Detects multi-tap gesture that invokes demo mode setup in OOBE.
-       * @type {?MultiTapDetector}
        * @private
        */
       this.demoModeStartListener_ = null;
@@ -168,6 +167,8 @@ export function invokePolymerMethod(element, name, ...args) {
 
     /**
      * Forces keyboard based OOBE navigation.
+     * TODO(b/322301624): Remove suppress once during TS migration.
+     * @suppress {missingProperties} keyboard_utils_oobe is now migrated to TS.
      * @param {boolean} value True if keyboard navigation flow is forced.
      */
     set forceKeyboardFlow(value) {
@@ -415,6 +416,7 @@ export function invokePolymerMethod(element, name, ...args) {
 
     /**
      * Trigger of play down animation for current screen step.
+     * @suppress {missingProperties} defaultControl may be not defined.
      */
     triggerDown() {
       const innerContainer = $('inner-container');
@@ -427,7 +429,7 @@ export function invokePolymerMethod(element, name, ...args) {
         // Refresh defaultControl. It could have changed.
         const stepId = this.screens_[this.currentStep_];
         const step = $(stepId);
-        const defaultControl = step.defaultControl;
+        const defaultControl = step?.defaultControl;
         innerContainer.classList.add('down-finished');
         if (defaultControl) {
           defaultControl.focus();

@@ -141,7 +141,8 @@ void HoldingSpaceKeyedService::AddPrintedPdf(
 }
 
 void HoldingSpaceKeyedService::AddPinnedFiles(
-    const std::vector<storage::FileSystemURL>& file_system_urls) {
+    const std::vector<storage::FileSystemURL>& file_system_urls,
+    holding_space_metrics::EventSource event_source) {
   if (!IsInitialized()) {
     return;
   }
@@ -183,13 +184,14 @@ void HoldingSpaceKeyedService::AddPinnedFiles(
     RecordTimeFromFirstEntryToFirstPin(profile_);
 
   holding_space_metrics::RecordItemAction(
-      items_to_record, holding_space_metrics::ItemAction::kPin);
+      items_to_record, holding_space_metrics::ItemAction::kPin, event_source);
 
   AddItems(std::move(items), /*allow_duplicates=*/false);
 }
 
 void HoldingSpaceKeyedService::RemovePinnedFiles(
-    const std::vector<storage::FileSystemURL>& file_system_urls) {
+    const std::vector<storage::FileSystemURL>& file_system_urls,
+    holding_space_metrics::EventSource event_source) {
   if (!IsInitialized()) {
     return;
   }
@@ -218,7 +220,7 @@ void HoldingSpaceKeyedService::RemovePinnedFiles(
     return;
 
   holding_space_metrics::RecordItemAction(
-      items_to_record, holding_space_metrics::ItemAction::kUnpin);
+      items_to_record, holding_space_metrics::ItemAction::kUnpin, event_source);
 
   holding_space_model_.RemoveItems(items);
 }
@@ -334,14 +336,13 @@ void HoldingSpaceKeyedService::RemoveItem(const std::string& id) {
   }
 }
 
-std::optional<holding_space_metrics::ItemFailureToLaunchReason>
+std::optional<holding_space_metrics::ItemLaunchFailureReason>
 HoldingSpaceKeyedService::OpenItemWhenComplete(const HoldingSpaceItem* item) {
   // Currently it is only possible to open download type items when complete.
   if (HoldingSpaceItem::IsDownloadType(item->type()) && downloads_delegate_) {
     return downloads_delegate_->OpenWhenComplete(item);
   }
-  return holding_space_metrics::ItemFailureToLaunchReason::
-      kNoHandlerForItemType;
+  return holding_space_metrics::ItemLaunchFailureReason::kNoHandlerForItemType;
 }
 
 void HoldingSpaceKeyedService::Shutdown() {
@@ -405,6 +406,13 @@ HoldingSpaceKeyedService::AddItems(
     // is disabled.
     if (HoldingSpaceItem::IsCameraAppType(item->type()) &&
         !features::IsHoldingSpaceCameraAppIntegrationEnabled()) {
+      result.push_back(std::cref(base::EmptyString()));
+      continue;
+    }
+    // Ignore any `items` that are from Photoshop Web if Photoshop Web
+    // integration is disabled.
+    if (item->type() == HoldingSpaceItem::Type::kPhotoshopWeb &&
+        !features::IsHoldingSpacePhotoshopWebIntegrationEnabled()) {
       result.push_back(std::cref(base::EmptyString()));
       continue;
     }

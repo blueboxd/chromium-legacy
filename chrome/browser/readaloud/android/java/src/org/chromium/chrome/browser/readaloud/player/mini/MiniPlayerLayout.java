@@ -15,7 +15,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
@@ -29,16 +28,13 @@ import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 
-import com.google.android.material.animation.ChildrenAlphaProperty;
-
+import org.chromium.chrome.browser.readaloud.player.Colors;
 import org.chromium.chrome.browser.readaloud.player.InteractionHandler;
 import org.chromium.chrome.browser.readaloud.player.R;
 import org.chromium.chrome.browser.readaloud.player.VisibilityState;
 import org.chromium.chrome.modules.readaloud.PlaybackListener;
-import org.chromium.components.browser_ui.styles.ChromeColors;
-import org.chromium.components.browser_ui.styles.SemanticColorUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.Interpolators;
-import org.chromium.ui.util.ColorUtils;
 
 /** Convenience class for manipulating mini player UI layout. */
 public class MiniPlayerLayout extends LinearLayout {
@@ -95,20 +91,21 @@ public class MiniPlayerLayout extends LinearLayout {
 
         // Set dynamic colors.
         Context context = getContext();
-        mBackgroundColorArgb = SemanticColorUtils.getDefaultBgColor(context);
-        @ColorInt int progressBarColor = SemanticColorUtils.getDefaultIconColor(context);
-        if (ColorUtils.inNightMode(context)) {
-            // This color should change to "Surface Container High" in the next Material update.
-            mBackgroundColorArgb =
-                    ChromeColors.getSurfaceColor(context, R.dimen.default_elevation_4);
-            progressBarColor = context.getColor(R.color.baseline_primary_80);
-        }
+        mBackgroundColorArgb = Colors.getMiniPlayerBackgroundColor(context);
+        Colors.setProgressBarColor(mProgressBar);
         findViewById(R.id.backdrop).setBackgroundColor(mBackgroundColorArgb);
         if (mMediator != null) {
             mMediator.onBackgroundColorUpdated(mBackgroundColorArgb);
         }
 
-        mProgressBar.setProgressTintList(ColorStateList.valueOf(progressBarColor));
+        // TODO: Plug in WindowAndroid and use #isWindowOnTablet instead
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
+            int paddingPx =
+                    context.getResources()
+                            .getDimensionPixelSize(R.dimen.readaloud_mini_player_tablet_padding);
+            View container = findViewById(R.id.mini_player_container);
+            container.setPadding(paddingPx, 0, paddingPx, 0);
+        }
         mLastPlaybackState = PlaybackListener.State.UNKNOWN;
     }
 
@@ -147,6 +144,7 @@ public class MiniPlayerLayout extends LinearLayout {
             return;
         }
         mFinalOpacity = endValue;
+        setAlpha(startValue);
 
         Runnable onFinished =
                 endValue == 1f ? mMediator::onFullOpacityReached : mMediator::onZeroOpacityReached;
@@ -154,9 +152,7 @@ public class MiniPlayerLayout extends LinearLayout {
         if (mEnableAnimations) {
             // TODO: handle case where existing animation is incomplete and needs to be reversed
             destroyAnimator();
-            mAnimator =
-                    ObjectAnimator.ofFloat(
-                            mBackdrop, ChildrenAlphaProperty.CHILDREN_ALPHA, endValue);
+            mAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, endValue);
             mAnimator.setDuration(FADE_DURATION_MS);
             mAnimator.setInterpolator(FADE_INTERPOLATOR);
             mAnimator.addListener(
@@ -169,8 +165,7 @@ public class MiniPlayerLayout extends LinearLayout {
                     });
             mAnimator.start();
         } else {
-            mContents.setAlpha(endValue);
-            mProgressBar.setAlpha(endValue);
+            setAlpha(endValue);
             onFinished.run();
         }
     }
@@ -233,7 +228,11 @@ public class MiniPlayerLayout extends LinearLayout {
 
             case STOPPED:
             case PAUSED:
-                if (mLastPlaybackState != PLAYING && mLastPlaybackState != PAUSED) {
+                // Buffering/unknown and error states have their own views, show back the normal
+                // layout if needed
+                if (mLastPlaybackState != PLAYING
+                        && mLastPlaybackState != PAUSED
+                        && mLastPlaybackState != ERROR) {
                     showOnly(mNormalLayout);
                     mProgressBar.setVisibility(View.VISIBLE);
                 }

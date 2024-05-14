@@ -304,10 +304,9 @@ base::FilePath StoragePartitionImplMap::GetStoragePartitionPath(
   if (!partition_name.empty()) {
     // For analysis of why we can ignore collisions, see the comment above
     // kPartitionNameHashBytes.
-    char buffer[kPartitionNameHashBytes];
-    crypto::SHA256HashString(partition_name, &buffer[0],
-                             sizeof(buffer));
-    return path.AppendASCII(base::HexEncode(buffer, sizeof(buffer)));
+    uint8_t buffer[kPartitionNameHashBytes];
+    crypto::SHA256HashString(partition_name, buffer, sizeof(buffer));
+    return path.AppendASCII(base::HexEncode(buffer));
   }
 
   return path.Append(kDefaultPartitionDirname);
@@ -337,7 +336,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   base::FilePath relative_partition_path = GetStoragePartitionPath(
       partition_config.partition_domain(), partition_config.partition_name());
 
-  absl::optional<StoragePartitionConfig> fallback_config =
+  std::optional<StoragePartitionConfig> fallback_config =
       partition_config.GetFallbackForBlobUrls();
   StoragePartitionImpl* fallback_for_blob_urls =
       fallback_config.has_value() ? Get(*fallback_config, /*can_create=*/false)

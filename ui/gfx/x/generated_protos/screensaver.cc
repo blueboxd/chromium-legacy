@@ -84,7 +84,7 @@ void ReadEvent<ScreenSaver::NotifyEvent>(ScreenSaver::NotifyEvent* event_,
   // pad0
   Pad(&buf, 14);
 
-  DUMP_WILL_BE_CHECK_LE(buf.offset, 32ul);
+  CHECK_LE(buf.offset, 32ul);
 }
 
 Future<ScreenSaver::QueryVersionReply> ScreenSaver::QueryVersion(
@@ -166,7 +166,7 @@ std::unique_ptr<ScreenSaver::QueryVersionReply> detail::ReadReply<
   Pad(&buf, 20);
 
   Align(&buf, 4);
-  DUMP_WILL_BE_CHECK_EQ(buf.offset < 32 ? 0 : buf.offset - 32, 4 * length);
+  CHECK_EQ(buf.offset < 32 ? 0 : buf.offset - 32, 4 * length);
 
   return reply;
 }
@@ -256,7 +256,7 @@ std::unique_ptr<ScreenSaver::QueryInfoReply> detail::ReadReply<
   Pad(&buf, 7);
 
   Align(&buf, 4);
-  DUMP_WILL_BE_CHECK_EQ(buf.offset < 32 ? 0 : buf.offset - 32, 4 * length);
+  CHECK_EQ(buf.offset < 32 ? 0 : buf.offset - 32, 4 * length);
 
   return reply;
 }
@@ -517,21 +517,21 @@ Future<void> ScreenSaver::SetAttributes(
     const WindowClass& c_class,
     const uint8_t& depth,
     const VisualId& visual,
-    const absl::optional<Pixmap>& background_pixmap,
-    const absl::optional<uint32_t>& background_pixel,
-    const absl::optional<Pixmap>& border_pixmap,
-    const absl::optional<uint32_t>& border_pixel,
-    const absl::optional<Gravity>& bit_gravity,
-    const absl::optional<Gravity>& win_gravity,
-    const absl::optional<BackingStore>& backing_store,
-    const absl::optional<uint32_t>& backing_planes,
-    const absl::optional<uint32_t>& backing_pixel,
-    const absl::optional<Bool32>& override_redirect,
-    const absl::optional<Bool32>& save_under,
-    const absl::optional<EventMask>& event_mask,
-    const absl::optional<EventMask>& do_not_propogate_mask,
-    const absl::optional<ColorMap>& colormap,
-    const absl::optional<Cursor>& cursor) {
+    const std::optional<Pixmap>& background_pixmap,
+    const std::optional<uint32_t>& background_pixel,
+    const std::optional<Pixmap>& border_pixmap,
+    const std::optional<uint32_t>& border_pixel,
+    const std::optional<Gravity>& bit_gravity,
+    const std::optional<Gravity>& win_gravity,
+    const std::optional<BackingStore>& backing_store,
+    const std::optional<uint32_t>& backing_planes,
+    const std::optional<uint32_t>& backing_pixel,
+    const std::optional<Bool32>& override_redirect,
+    const std::optional<Bool32>& save_under,
+    const std::optional<EventMask>& event_mask,
+    const std::optional<EventMask>& do_not_propogate_mask,
+    const std::optional<ColorMap>& colormap,
+    const std::optional<Cursor>& cursor) {
   return ScreenSaver::SetAttributes(
       ScreenSaver::SetAttributesRequest{drawable,
                                         x,

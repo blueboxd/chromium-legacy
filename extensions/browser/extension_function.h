@@ -29,7 +29,9 @@
 #include "extensions/common/context_data.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/mojom/extra_response_data.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-forward.h"
@@ -292,7 +294,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
     extension_ = extension;
   }
   const extensions::Extension* extension() const { return extension_.get(); }
-  const std::string& extension_id() const {
+  const extensions::ExtensionId& extension_id() const {
     DCHECK(extension())
         << "extension_id() called without an Extension. If " << name()
         << " is allowed to be called without any Extension then you should "
@@ -332,10 +334,10 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
     response_callback_ = std::move(callback);
   }
 
-  void set_source_context_type(extensions::Feature::Context type) {
+  void set_source_context_type(extensions::mojom::ContextType type) {
     source_context_type_ = type;
   }
-  extensions::Feature::Context source_context_type() const {
+  extensions::mojom::ContextType source_context_type() const {
     return source_context_type_;
   }
 
@@ -633,8 +635,8 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
       extensions::functions::UNKNOWN;
 
   // The type of the JavaScript context where this call originated.
-  extensions::Feature::Context source_context_type_ =
-      extensions::Feature::UNSPECIFIED_CONTEXT;
+  extensions::mojom::ContextType source_context_type_ =
+      extensions::mojom::ContextType::kUnspecified;
 
   // The context ID of the browser context where this call originated.
   int context_id_ = extensions::kUnspecifiedContextId;

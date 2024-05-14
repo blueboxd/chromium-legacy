@@ -5,14 +5,18 @@
 package org.chromium.chrome.browser.hub;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import static org.chromium.chrome.browser.hub.HubPaneHostProperties.ACTION_BUTTON_DATA;
+import static org.chromium.chrome.browser.hub.HubPaneHostProperties.PANE_ROOT_VIEW;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
@@ -26,11 +30,15 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import java.util.Arrays;
+import java.util.List;
 
 /** Unit tests for {@link HubPaneHostView}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -90,6 +98,7 @@ public class HubPaneHostViewUnitTest {
                         R.string.button_new_tab, R.string.button_new_tab, R.drawable.ic_add);
         FullButtonData fullButtonData = new DelegateButtonData(displayButtonData, mOnActionButton);
         mPropertyModel.set(ACTION_BUTTON_DATA, fullButtonData);
+        assertTrue(mActionButton.isEnabled());
 
         mActionButton.callOnClick();
         verify(mOnActionButton).run();
@@ -99,5 +108,61 @@ public class HubPaneHostViewUnitTest {
 
         mActionButton.callOnClick();
         verifyNoInteractions(mOnActionButton);
+    }
+
+    @Test
+    @MediumTest
+    public void testEmptyActionButtonCallbackDisablesButton() {
+        DisplayButtonData displayButtonData =
+                new ResourceButtonData(
+                        R.string.button_new_tab, R.string.button_new_tab, R.drawable.ic_add);
+        FullButtonData fullButtonData = new DelegateButtonData(displayButtonData, null);
+        mPropertyModel.set(ACTION_BUTTON_DATA, fullButtonData);
+        assertFalse(mActionButton.isEnabled());
+
+        // Verify this doesn't crash if no button data Runnable exists.
+        mActionButton.callOnClick();
+    }
+
+    @Test
+    @MediumTest
+    public void testSetRootView() {
+        View root1 = new View(mActivity);
+        View root2 = new View(mActivity);
+        View root3 = new View(mActivity);
+
+        ViewGroup paneFrame = mPaneHost.findViewById(R.id.pane_frame);
+        assertEquals(0, paneFrame.getChildCount());
+
+        mPropertyModel.set(PANE_ROOT_VIEW, root1);
+        verifyChildren(paneFrame, root1);
+
+        mPropertyModel.set(PANE_ROOT_VIEW, root2);
+        verifyChildren(paneFrame, root1, root2);
+
+        ShadowLooper.runUiThreadTasks();
+        verifyChildren(paneFrame, root2);
+
+        mPropertyModel.set(PANE_ROOT_VIEW, root1);
+        mPropertyModel.set(PANE_ROOT_VIEW, root2);
+        mPropertyModel.set(PANE_ROOT_VIEW, root3);
+        mPropertyModel.set(PANE_ROOT_VIEW, root2);
+        verifyChildren(paneFrame, root2, root3);
+
+        ShadowLooper.runUiThreadTasks();
+        verifyChildren(paneFrame, root2);
+
+        mPropertyModel.set(PANE_ROOT_VIEW, null);
+        assertEquals(0, paneFrame.getChildCount());
+    }
+
+    /** Order of children does not matter. */
+    private void verifyChildren(ViewGroup parent, View... children) {
+        assertEquals(children.length, parent.getChildCount());
+        List<View> expectedChildList = Arrays.asList(children);
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View child = parent.getChildAt(i);
+            assertTrue(child.toString(), expectedChildList.contains(child));
+        }
     }
 }

@@ -38,12 +38,9 @@ class FileChooserChromeOs::Core : public ui::SelectFileDialog::Listener {
   void Show();
 
   // ui::SelectFileDialog::Listener implementation.
-  void FileSelected(const base::FilePath& path,
+  void FileSelected(const ui::SelectedFileInfo& file,
                     int index,
                     void* params) override;
-  void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
-                                 int index,
-                                 void* params) override;
   void FileSelectionCanceled(void* params) override;
 
  private:
@@ -52,7 +49,7 @@ class FileChooserChromeOs::Core : public ui::SelectFileDialog::Listener {
   void Cleanup();
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  const raw_ref<AshProxy, LeakedDanglingUntriaged | ExperimentalAsh> ash_;
+  const raw_ref<AshProxy, LeakedDanglingUntriaged> ash_;
   FileChooser::ResultCallback callback_;
 };
 
@@ -86,16 +83,9 @@ FileChooserChromeOs::Core::~Core() {
   select_file_dialog_->ListenerDestroyed();
 }
 
-void FileChooserChromeOs::Core::FileSelected(const base::FilePath& path,
+void FileChooserChromeOs::Core::FileSelected(const ui::SelectedFileInfo& file,
                                              int index,
                                              void* params) {
-  RunCallback(path);
-}
-
-void FileChooserChromeOs::Core::FileSelectedWithExtraInfo(
-    const ui::SelectedFileInfo& file,
-    int index,
-    void* params) {
   RunCallback(file.file_path);
 }
 

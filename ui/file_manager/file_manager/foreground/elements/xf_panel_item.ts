@@ -5,7 +5,7 @@
 import './xf_button.js';
 import './xf_circular_progress.js';
 
-import {IronIconElement} from 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import type {IronIconElement} from 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {str} from '../../common/js/translations.js';
 
@@ -322,7 +322,7 @@ export class PanelItem extends HTMLElement {
           parent.appendChild(textNode);
         }
         // Remove the secondary text node if the text is empty
-        if (newValue == '') {
+        if (newValue === '') {
           textNode.remove();
         } else {
           textNode.textContent = newValue;

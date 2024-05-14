@@ -41,8 +41,8 @@ class BitstreamFileWriter::FrameFileWriter {
 
 BitstreamFileWriter::BitstreamFileWriter(
     std::unique_ptr<FrameFileWriter> frame_file_writer,
-    absl::optional<size_t> spatial_layer_index_to_write,
-    absl::optional<size_t> temporal_layer_index_to_write,
+    std::optional<size_t> spatial_layer_index_to_write,
+    std::optional<size_t> temporal_layer_index_to_write,
     const std::vector<gfx::Size>& spatial_layer_resolutions)
     : frame_file_writer_(std::move(frame_file_writer)),
       spatial_layer_index_to_write_(spatial_layer_index_to_write),
@@ -69,8 +69,8 @@ std::unique_ptr<BitstreamFileWriter> BitstreamFileWriter::Create(
     const gfx::Size& resolution,
     uint32_t frame_rate,
     uint32_t num_frames,
-    absl::optional<size_t> spatial_layer_index_to_write,
-    absl::optional<size_t> temporal_layer_index_to_write,
+    std::optional<size_t> spatial_layer_index_to_write,
+    std::optional<size_t> temporal_layer_index_to_write,
     const std::vector<gfx::Size>& spatial_layer_resolutions) {
   std::unique_ptr<FrameFileWriter> frame_file_writer;
   if (!base::DirectoryExists(output_filepath.DirName()))
@@ -108,6 +108,11 @@ std::unique_ptr<BitstreamFileWriter> BitstreamFileWriter::Create(
 void BitstreamFileWriter::ProcessBitstream(
     scoped_refptr<BitstreamRef> bitstream,
     size_t frame_index) {
+  if (bitstream->metadata.dropped_frame()) {
+    // Drop frame. Do nothing for this.
+    return;
+  }
+
   if (spatial_layer_index_to_write_ && bitstream->metadata.vp9) {
     const Vp9Metadata& metadata = *bitstream->metadata.vp9;
     if (bitstream->metadata.key_frame) {

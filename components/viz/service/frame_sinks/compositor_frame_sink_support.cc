@@ -20,6 +20,7 @@
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
+#include "components/viz/common/constants.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -37,14 +38,6 @@
 #include "components/viz/service/transitions/surface_animation_manager.h"
 #include "media/filters/video_cadence_estimator.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-
-// When throttling is enabled we estimate if vsync and sink frame rate are at
-// a simple cadence. If they are, then this value represents the maximum time
-// until the next glitch (jank) would occur caused by the drift/error
-// introduced per throttle due to the estimation not being exact. If any
-// cadence combo where to make glitches happen more frequently than this value
-// then it won't be considered a simple cadence and thus won't be throttled.
-constexpr base::TimeDelta kMaxTimeUntilNextGlitch = base::Seconds(3);
 
 // This determines whether the provided time since last interval corresponds
 // to a cadence frame that needs to be rendered.
@@ -93,7 +86,7 @@ gfx::Rect IntersectInSpace(const gfx::Rect& rect,
   const gfx::Rect intersected_in_space =
       gfx::IntersectRects(rect_in_space, intersectee_in_space);
 
-  const absl::optional<gfx::Rect> intersected =
+  const std::optional<gfx::Rect> intersected =
       transform_to_space.InverseMapRect(intersected_in_space);
 
   return intersected.value_or(gfx::Rect{});
@@ -626,7 +619,7 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    absl::optional<HitTestRegionList> hit_test_region_list,
+    std::optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
   const auto result = MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
@@ -684,7 +677,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrameLocally(
 SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    absl::optional<HitTestRegionList> hit_test_region_list,
+    std::optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time,
     mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
   if (!client_needs_begin_frame_ && auto_needs_begin_frame_) {
@@ -1236,7 +1229,7 @@ void CompositorFrameSinkSupport::OnClientCaptureStopped() {
   }
 }
 
-absl::optional<CapturableFrameSink::RegionProperties>
+std::optional<CapturableFrameSink::RegionProperties>
 CompositorFrameSinkSupport::GetRequestRegionProperties(
     const VideoCaptureSubTarget& sub_target) const {
   if (!last_activated_surface_id_.is_valid())

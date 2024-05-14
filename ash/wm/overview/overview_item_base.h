@@ -140,7 +140,8 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
 
   // Returns the window(s) associated with this, which can be a single window or
   // a list of windows.
-  virtual std::vector<aura::Window*> GetWindows() = 0;
+  virtual std::vector<raw_ptr<aura::Window, VectorExperimental>>
+  GetWindows() = 0;
 
   // Returns true if all the windows represented by `this` are visible on all
   // workspaces.
@@ -312,6 +313,10 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
 
   RoundedLabelWidget* get_cannot_snap_widget_for_testing() {
     return cannot_snap_widget_.get();
+  }
+
+  const std::optional<gfx::Size>& unclipped_size_for_testing() const {
+    return unclipped_size_;
   }
 
  protected:

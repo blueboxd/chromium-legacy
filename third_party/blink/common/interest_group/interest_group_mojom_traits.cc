@@ -13,7 +13,7 @@ bool StructTraits<
     blink::mojom::InterestGroupAdDataView,
     blink::InterestGroup::Ad>::Read(blink::mojom::InterestGroupAdDataView data,
                                     blink::InterestGroup::Ad* out) {
-  if (!data.ReadRenderUrl(&out->render_url) ||
+  if (!data.ReadRenderUrl(&out->render_url_) ||
       !data.ReadSizeGroup(&out->size_group) ||
       !data.ReadBuyerReportingId(&out->buyer_reporting_id) ||
       !data.ReadBuyerAndSellerReportingId(
@@ -30,10 +30,12 @@ bool StructTraits<blink::mojom::SellerCapabilitiesDataView,
                   blink::SellerCapabilitiesType>::
     Read(blink::mojom::SellerCapabilitiesDataView data,
          blink::SellerCapabilitiesType* out) {
-  if (data.allows_interest_group_counts())
+  if (data.allows_interest_group_counts()) {
     out->Put(blink::SellerCapabilities::kInterestGroupCounts);
-  if (data.allows_latency_stats())
+  }
+  if (data.allows_latency_stats()) {
     out->Put(blink::SellerCapabilities::kLatencyStats);
+  }
   return true;
 }
 
@@ -58,6 +60,8 @@ bool StructTraits<blink::mojom::InterestGroupDataView, blink::InterestGroup>::
   out->execution_mode = data.execution_mode();
   out->trusted_bidding_signals_slot_size_mode =
       data.trusted_bidding_signals_slot_size_mode();
+  out->max_trusted_bidding_signals_url_length =
+      data.max_trusted_bidding_signals_url_length();
   if (!data.ReadExpiry(&out->expiry) || !data.ReadOwner(&out->owner) ||
       !data.ReadName(&out->name) ||
       !data.ReadPriorityVector(&out->priority_vector) ||

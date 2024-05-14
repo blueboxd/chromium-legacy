@@ -9,11 +9,11 @@
 
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import '//resources/cr_elements/icons.html.js';
-import '//resources/cr_elements/policy/cr_policy_indicator.js';
-import '//resources/cr_elements/cr_shared_style.css.js';
-import '//resources/cr_elements/cr_shared_vars.css.js';
+import '//resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
+import '//resources/ash/common/cr_elements/icons.html.js';
+import '//resources/ash/common/cr_elements/policy/cr_policy_indicator.js';
+import '//resources/ash/common/cr_elements/cr_shared_style.css.js';
+import '//resources/ash/common/cr_elements/cr_shared_vars.css.js';
 import './network_icon.js';
 
 import {assert} from '//resources/ash/common/assert.js';
@@ -687,16 +687,17 @@ Polymer({
     if (this.networkState.type === NetworkType.kCellular) {
       // For carrier lock, display string is different from regular
       // pin lock
-      if (this.isCellularCarrierLockEnabled_ &&
-          this.networkState.typeState.cellular.simLocked &&
-          this.networkState.typeState.cellular.simLockType === 'network-pin') {
-        return this.i18n('networkListItemUpdatedCellularSimCardCarrierLocked');
+      if (this.networkState.typeState.cellular.simLocked) {
+        if (this.isCellularCarrierLockEnabled_ &&
+            this.networkState.typeState.cellular.simLockType ===
+                'network-pin') {
+          return this.i18n(
+              'networkListItemUpdatedCellularSimCardCarrierLocked');
+        }
+        return this.i18n('networkListItemUpdatedCellularSimCardLocked');
       }
       if (this.isPsimPendingActivationWhileLoggedOut_()) {
         return this.i18n('networkListItemActivateAfterDeviceSetup');
-      }
-      if (this.networkState.typeState.cellular.simLocked) {
-        return this.i18n('networkListItemUpdatedCellularSimCardLocked');
       }
       if (this.isPSimUnavailableNetwork_ || this.isESimUnactivatedProfile_) {
         return this.i18n('networkListItemUnavailableSimNetwork');

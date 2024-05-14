@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_piece.h"
@@ -37,10 +38,11 @@ class ChromeAccountManagerService : public KeyedService,
     ~Observer() override {}
 
     // Handles identity list changed events.
-    // If `need_user_approval` is true, the user need to approve the new account
-    // list (related to SignedInAccountsViewController). Notifications with no
-    // account list update are possible, this has to be handled by the observer.
-    virtual void OnIdentityListChanged(bool need_user_approval) {}
+    // If `notify_user` is true, then the user is not at the origin of this
+    // change and should be notified.
+    // Notifications with no account list update are possible, this has to be
+    // handled by the observer.
+    virtual void OnIdentityListChanged(bool notify_user) {}
 
     // Called when the identity is updated.
     virtual void OnIdentityUpdated(id<SystemIdentity> identity) {}
@@ -109,7 +111,7 @@ class ChromeAccountManagerService : public KeyedService,
   void RemoveObserver(Observer* observer);
 
   // SystemIdentityManagerObserver implementation.
-  void OnIdentityListChanged(bool need_user_approval) override;
+  void OnIdentityListChanged(bool notify_user) override;
   void OnIdentityUpdated(id<SystemIdentity> identity) override;
   void OnIdentityAccessTokenRefreshFailed(
       id<SystemIdentity> identity,
@@ -125,7 +127,7 @@ class ChromeAccountManagerService : public KeyedService,
       IdentityAvatarSize avatar_size);
 
   // Used to retrieve restricted patterns.
-  PrefService* pref_service_ = nullptr;
+  raw_ptr<PrefService> pref_service_ = nullptr;
   // Used to filter ChromeIdentities.
   PatternAccountRestriction restriction_;
   // Used to listen pref change.

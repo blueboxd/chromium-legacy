@@ -10,10 +10,12 @@
 #import "base/ranges/algorithm.h"
 #import "components/autofill/core/browser/form_structure.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/browser/ui/payments/virtual_card_enroll_ui_model.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/ios/password_account_storage_notice_handler.h"
+#import "components/plus_addresses/plus_address_types.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_observer.h"
@@ -31,7 +33,7 @@ namespace {
 
 // Whether the provided field type is one which can trigger the Payments Bottom
 // Sheet.
-bool IsPaymentsBottomSheetTriggeringField(autofill::ServerFieldType type) {
+bool IsPaymentsBottomSheetTriggeringField(autofill::FieldType type) {
   switch (type) {
     case autofill::CREDIT_CARD_NAME_FULL:
     case autofill::CREDIT_CARD_NUMBER:
@@ -70,6 +72,13 @@ void AutofillBottomSheetTabHelper::ShowPlusAddressesBottomSheet(
     plus_addresses::PlusAddressCallback callback) {
   pending_plus_address_callback_ = std::move(callback);
   [commands_handler_ showPlusAddressesBottomSheet];
+}
+
+void AutofillBottomSheetTabHelper::ShowVirtualCardEnrollmentBottomSheet(
+    autofill::VirtualCardEnrollUiModel model,
+    autofill::VirtualCardEnrollmentCallbacks callbacks) {
+  virtual_card_enrollment_callbacks_ = std::move(callbacks);
+  [commands_handler_ showVirtualCardEnrollmentBottomSheet:model];
 }
 
 void AutofillBottomSheetTabHelper::SetAutofillBottomSheetHandler(
@@ -143,14 +152,19 @@ void AutofillBottomSheetTabHelper::AttachPasswordListeners(
     return;
   }
 
+  // Whether to only trigger the bottom sheet on trusted events.
+  bool allow_autofocus = base::FeatureList::IsEnabled(
+      password_manager::features::kIOSPasswordBottomSheetAutofocus);
+
   AttachListeners(renderer_ids, registered_password_renderer_ids_[frame_id],
-                  frame_id);
+                  frame_id, allow_autofocus);
 }
 
 void AutofillBottomSheetTabHelper::AttachListeners(
     const std::vector<autofill::FieldRendererId>& renderer_ids,
     std::set<autofill::FieldRendererId>& registered_renderer_ids,
-    const std::string& frame_id) {
+    const std::string& frame_id,
+    bool allow_autofocus) {
   if (!web_state_) {
     return;
   }
@@ -175,7 +189,7 @@ void AutofillBottomSheetTabHelper::AttachListeners(
   if (!new_renderer_ids.empty()) {
     // Enable the bottom sheet on the new renderer IDs.
     AutofillBottomSheetJavaScriptFeature::GetInstance()->AttachListeners(
-        new_renderer_ids, frame);
+        new_renderer_ids, frame, allow_autofocus);
 
     // Add new renderer IDs to the list of registered renderer IDs.
     std::copy(
@@ -220,8 +234,7 @@ void AutofillBottomSheetTabHelper::DetachPasswordListenersForAllFrames(
 void AutofillBottomSheetTabHelper::DetachPaymentsListeners(
     const std::string& frame_id,
     bool refocus) {
-  // Verify that the payments bottom sheet feature is enabled
-  if (!base::FeatureList::IsEnabled(kIOSPaymentsBottomSheet) || !web_state_) {
+  if (!web_state_) {
     return;
   }
 
@@ -236,11 +249,6 @@ void AutofillBottomSheetTabHelper::DetachPaymentsListeners(
 
 void AutofillBottomSheetTabHelper::DetachPaymentsListenersForAllFrames(
     bool refocus) {
-  // Verify that the payments bottom sheet feature is enabled
-  if (!base::FeatureList::IsEnabled(kIOSPaymentsBottomSheet)) {
-    return;
-  }
-
   for (auto& registered_renderer_ids : registered_payments_renderer_ids_) {
     DetachListenersForFrame(registered_renderer_ids.first,
                             registered_renderer_ids.second, refocus);
@@ -305,9 +313,6 @@ void AutofillBottomSheetTabHelper::OnFieldTypesDetermined(
     autofill::AutofillManager& manager,
     autofill::FormGlobalId form_id,
     FieldTypeSource source) {
-  if (!base::FeatureList::IsEnabled(kIOSPaymentsBottomSheet)) {
-    return;
-  }
   autofill::FormStructure* form_structure = manager.FindCachedFormById(form_id);
   if (!form_structure || !form_structure->IsCompleteCreditCardForm()) {
     return;
@@ -319,7 +324,7 @@ void AutofillBottomSheetTabHelper::OnFieldTypesDetermined(
   std::vector<autofill::FieldRendererId> renderer_ids;
   for (const auto& field : form_structure->fields()) {
     if (IsPaymentsBottomSheetTriggeringField(field->Type().GetStorableType())) {
-      renderer_ids.push_back(field->unique_renderer_id);
+      renderer_ids.push_back(field->renderer_id);
     }
   }
   if (renderer_ids.empty()) {
@@ -334,12 +339,17 @@ void AutofillBottomSheetTabHelper::OnFieldTypesDetermined(
   }
   std::string frame_id = frame->GetFrameId();
   AttachListeners(renderer_ids, registered_payments_renderer_ids_[frame_id],
-                  frame_id);
+                  frame_id, /*allow_autofocus=*/false);
 }
 
 plus_addresses::PlusAddressCallback
 AutofillBottomSheetTabHelper::GetPendingPlusAddressFillCallback() {
   return std::move(pending_plus_address_callback_);
+}
+
+autofill::VirtualCardEnrollmentCallbacks
+AutofillBottomSheetTabHelper::GetVirtualCardEnrollmentCallbacks() {
+  return std::move(virtual_card_enrollment_callbacks_);
 }
 
 // Private methods

@@ -587,14 +587,6 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       parent_(nullptr),
       role_(ax::mojom::blink::Role::kUnknown),
       explicit_container_id_(0),
-      cached_values_need_update_(true),
-      cached_is_ignored_(false),
-      cached_is_ignored_but_included_in_tree_(false),
-      cached_is_inert_(false),
-      cached_is_aria_hidden_(false),
-      cached_is_hidden_by_child_tree_(false),
-      cached_is_descendant_of_disabled_node_(false),
-      cached_can_set_focus_attribute_(false),
       cached_live_region_root_(nullptr),
       ax_object_cache_(&ax_object_cache) {
   ++number_of_live_ax_objects_;
@@ -685,16 +677,8 @@ void AXObject::SetAncestorsHaveDirtyDescendants() const {
         break;
       }
     }
-    if (fail) {
-      LOG(ERROR) << "Failed to set dirty bits on some objects in the ancestor"
-                    "chain. Bits set: ";
-      for (auto* obj = this; obj; obj = obj->CachedParentObject()) {
-        LOG(ERROR) << "* has_dirty_descendants_: "
-                   << obj->has_dirty_descendants_
-                   << " object: " << obj->ToString(true, true);
-      }
-      DCHECK(false);
-    }
+    DCHECK(!fail) << "Failed to set dirty bits on some ancestors:\n"
+                  << ParentChainToStringHelper(this);
   }
 #endif
 }
@@ -704,6 +688,7 @@ void AXObject::Init(AXObject* parent) {
                   << "\n* Child = " << GetNode() << " / " << GetLayoutObject()
                   << "\n* Parent = " << parent_->ToString(true, true)
                   << "\n* Equal to passed-in parent? " << (parent == parent_);
+  // Every AXObject must have a parent unless it's the root.
   CHECK(parent || IsRoot())
       << "The following node should have a parent: " << GetNode();
   CHECK(!AXObjectCache().IsFrozen());
@@ -712,9 +697,11 @@ void AXObject::Init(AXObject* parent) {
   base::AutoReset<bool> reentrancy_protector(&is_initializing_, true);
 #endif  // DCHECK_IS_ON()
 
-  // Determine the parent as soon as possible.
-  // Every AXObject must have a parent unless it's the root.
-  SetParent(parent);
+  // Set the parent as soon as possible, so that we can use it in computations
+  // for the role and cached value. We will set it again at the end of the
+  // method using SetParent(), to ensure all of the normal code paths for
+  // setting the parent are followed.
+  parent_ = parent;
 
   // The role must be determined immediately.
   // Note: in order to avoid reentrancy, the role computation cannot use the
@@ -748,37 +735,9 @@ void AXObject::Init(AXObject* parent) {
   DCHECK(GetDocument()) << "All AXObjects must have a document: "
                         << ToString(true, true);
 
-  // Set the dirty bit for the root AX object when created. For all other
-  // objects, this is set by a descendant needing to be updated, and
-  // AXObjectCacheImpl::UpdateTreeIfNeeded will therefore process an object
-  // if its parent has has_dirty_descendants_ set. The root, however, has no
-  // parent, so there is no parent to mark in order to cause the root to update
-  // itself. Therefore this bit serves a second purpose of determining
-  // whether AXObjectCacheImpl::UpdateTreeIfNeeded needs to update the root
-  // object.
-  if (IsRoot()) {
-    SetHasDirtyDescendants(true);
-  } else if (AXObjectCache().UpdatingTree()) {
-    if (children_dirty_ && LastKnownIsIncludedInTreeValue()) {
-      // If we're in the updating tree loop, and a new object is created, we
-      // need to make sure to fill out all descendants of the new object.
-      SetHasDirtyDescendants(true);
-      // We also need to tell the new object's parent to iterate through
-      // all of its children to look for the has dirty descendants flag.
-      // However, we do not set the flag on higher ancestors since
-      // they have already been walked by the tree update loop.
-      if (AXObject* ax_included_parent = ParentObjectIncludedInTree()) {
-        ax_included_parent->SetHasDirtyDescendants(true);
-      }
-    }
-  } else {
-    DCHECK(ParentObjectIncludedInTree()->HasDirtyDescendants())
-        << "When adding a new child to a parent, and not updating the entire "
-           "tree from the top down, the included parent must be "
-           "flagged as having dirty descendants:"
-        << "\n* Object: " << ToString(true, true) << "* Included parent: "
-        << ParentObjectIncludedInTree()->ToString(true, true);
-  }
+  // Set the parent again, this time via SetParent(), so that all related checks
+  // and calls occur now that we have the role and updated cached values.
+  SetParent(parent_);
 }
 
 void AXObject::Detach() {
@@ -822,6 +781,8 @@ void AXObject::Detach() {
   parent_ = nullptr;
   ax_object_cache_ = nullptr;
   children_dirty_ = false;
+  child_cached_values_need_update_ = false;
+  cached_values_need_update_ = false;
   has_dirty_descendants_ = false;
   id_ = 0;
 }
@@ -888,7 +849,6 @@ void AXObject::SetParent(AXObject* new_parent) const {
 
 #endif
   parent_ = new_parent;
-  // TODO(accessibility) Is it necessary to do this while updating the tree?
   if (AXObjectCache().UpdatingTree()) {
     // If updating tree, tell the newly included parent to iterate through
     // all of its children to look for the has dirty descendants flag.
@@ -908,7 +868,7 @@ bool AXObject::IsMissingParent() const {
     // object, because hidden ones are purposely kept around without being in
     // the tree, and without a parent, for potential later reuse.
     bool is_missing = !IsRoot();
-    CHECK(!is_missing || !AXObjectCache().IsFrozen())
+    DUMP_WILL_BE_CHECK(!is_missing || !AXObjectCache().IsFrozen())
         << "Should not have missing parent in frozen tree: "
         << ToString(true, true);
     return is_missing;
@@ -966,8 +926,8 @@ AXObject* AXObject::ComputeParentOrNull() const {
         << "AXInlineTextBox box tried to compute a new parent, but they are "
            "not allowed to exist even temporarily without a parent, as their "
            "existence depends on the parent text object. Parent text = "
-        << (AXObjectCache().SafeGet(GetNode())
-                ? AXObjectCache().SafeGet(GetNode())->ToString(true, true)
+        << (AXObjectCache().Get(GetNode())
+                ? AXObjectCache().Get(GetNode())->ToString(true, true)
                 : "");
   } else if (AXObjectCache().IsAriaOwned(this)) {
     ax_parent = AXObjectCache().ValidatedAriaOwner(this);
@@ -1194,9 +1154,19 @@ AXObject* AXObject::ComputeNonARIAParent(AXObjectCacheImpl& cache,
 
   Node* parent_node = GetParentNodeForComputeParent(cache, current_node);
 
+  // If the tree is not currently mutable, then new AXObjects cannot be created.
+  // Return the AXObject for the parent only if it is already part of the tree.
+  if (!cache.IsProcessingDeferredEvents()) {
+    return cache.Get(parent_node);
+  }
+
+  // Get the existing AXObject for the parent or create one if necessary.
   // Will not create an object if no valid parent node is found. This occurs
   // when a DOM child isn't visited by LayoutTreeBuilderTraversal, such as an
   // element child of a <textarea>, which only supports plain text.
+  // TODO(acessibility) Covert to NOTREACHED(), and eventually try to remove
+  // parent repairs and this method entirely, as AXObjects will only be created
+  // by building from the top down.
   return cache.GetOrCreate(parent_node);
 }
 
@@ -1380,15 +1350,16 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
     SerializeColorAttributes(node_data);  // Blends using all nodes' values.
 
   if (accessibility_mode.has_mode(ui::AXMode::kScreenReader) ||
-      accessibility_mode.has_mode(ui::AXMode::kPDF)) {
+      accessibility_mode.has_mode(ui::AXMode::kPDFPrinting)) {
     SerializeLangAttribute(node_data);  // Propagates using all nodes' values.
   }
 
   // Always try to serialize child tree ids.
   SerializeChildTreeID(node_data);
 
-  if (!accessibility_mode.has_mode(ui::AXMode::kPDF))
+  if (!accessibility_mode.has_mode(ui::AXMode::kPDFPrinting)) {
     SerializeBoundingBoxAttributes(*node_data);
+  }
 
   // Return early. The following attributes are unnecessary for ignored nodes.
   // Exception: focusable ignored nodes are fully serialized, so that reasonable
@@ -1396,8 +1367,7 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
   if (AccessibilityIsIgnored()) {
     node_data->AddState(ax::mojom::blink::State::kIgnored);
     // Early return for ignored, unfocusable nodes, avoiding unnecessary work.
-    if (!is_focusable &&
-        !RuntimeEnabledFeatures::AccessibilityExposeIgnoredNodesEnabled()) {
+    if (!is_focusable) {
       // The name is important for exposing the selection around ignored nodes.
       // TODO(accessibility) Remove this and still pass this
       // content_browsertest:
@@ -1413,7 +1383,7 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
 
   SerializeUnignoredAttributes(node_data, accessibility_mode);
 
-  if (accessibility_mode.has_mode(ui::AXMode::kPDF)) {
+  if (accessibility_mode.has_mode(ui::AXMode::kPDFPrinting)) {
     SerializeNameAndDescriptionAttributes(accessibility_mode, node_data);
     // Return early. None of the following attributes are needed for PDFs.
     return;
@@ -1533,7 +1503,7 @@ void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
     return;
   }
 
-  absl::optional<base::UnguessableToken> child_token =
+  std::optional<base::UnguessableToken> child_token =
       child_frame->GetEmbeddingToken();
   if (!child_token)
     return;  // No child token means that the connection isn't ready yet.
@@ -1844,12 +1814,13 @@ String AXObject::KeyboardShortcut() const {
 void AXObject::SerializeOtherScreenReaderAttributes(
     ui::AXNodeData* node_data) const {
   DCHECK_NE(node_data->role, ax::mojom::blink::Role::kUnknown);
-  DCHECK_NE(node_data->role, ax::mojom::blink::Role::kNone);
 
   if (IsA<Document>(GetNode())) {
-    if (!IsLoaded()) {
+    // The busy attribute is only relevant for actual Documents, not popups.
+    if (RoleValue() == ax::mojom::blink::Role::kRootWebArea && !IsLoaded()) {
       node_data->AddBoolAttribute(ax::mojom::blink::BoolAttribute::kBusy, true);
     }
+
     if (AXObject* parent = ParentObject()) {
       DCHECK(parent->ChooserPopup() == this)
           << "ChooserPopup missing for: " << parent->ToString(true);
@@ -1917,15 +1888,17 @@ void AXObject::SerializeOtherScreenReaderAttributes(
     node_data->SetDefaultActionVerb(Action());
   }
 
-  if (NextOnLine() && !NextOnLine()->IsDetached()) {
+  if (AXObject* next_on_line = NextOnLine()) {
+    CHECK(!next_on_line->IsDetached());
     node_data->AddIntAttribute(ax::mojom::blink::IntAttribute::kNextOnLineId,
-                               NextOnLine()->AXObjectID());
+                               next_on_line->AXObjectID());
   }
 
-  if (PreviousOnLine() && !PreviousOnLine()->IsDetached()) {
+  if (AXObject* prev_on_line = PreviousOnLine()) {
+    CHECK(!prev_on_line->IsDetached());
     node_data->AddIntAttribute(
         ax::mojom::blink::IntAttribute::kPreviousOnLineId,
-        PreviousOnLine()->AXObjectID());
+        prev_on_line->AXObjectID());
   }
 
   AXObjectVector error_messages = ErrorMessage();
@@ -2248,7 +2221,7 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
   }
 
   if (accessibility_mode.has_mode(ui::AXMode::kScreenReader) ||
-      accessibility_mode.has_mode(ui::AXMode::kPDF)) {
+      accessibility_mode.has_mode(ui::AXMode::kPDFPrinting)) {
     // The DOMNodeID from Blink. Currently only populated when using
     // the accessibility tree for PDF exporting. Warning, this is totally
     // unrelated to the accessibility node ID, or the ID attribute for an
@@ -2269,7 +2242,7 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     SerializeTableAttributes(node_data);
   }
 
-  if (accessibility_mode.has_mode(ui::AXMode::kPDF)) {
+  if (accessibility_mode.has_mode(ui::AXMode::kPDFPrinting)) {
     // Return early. None of the following attributes are needed for PDFs.
     return;
   }
@@ -2418,7 +2391,7 @@ AXObject* AXObject::GetTargetPopoverForInvoker() const {
     // The next element is already the popover.
     return nullptr;
   }
-  return AXObjectCache().GetOrCreate(target_popover);
+  return AXObjectCache().Get(target_popover);
 }
 
 // Try to get an aria-controls for an <input role="combobox">, because it
@@ -2446,7 +2419,7 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
                             html_names::kAriaOwnsAttr) &&
       owned_elements.size() > 0) {
     DCHECK(owned_elements[0]);
-    listbox_candidate = AXObjectCache().GetOrCreate(owned_elements[0]);
+    listbox_candidate = AXObjectCache().Get(owned_elements[0]);
   }
 
   // Combobox grouping <div role="combobox"><input><div role="listbox"></div>.
@@ -3039,7 +3012,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     return;
   }
 
-  if (!cached_values_need_update_) {
+  if (!NeedsToUpdateCachedValues()) {
     return;
   }
 
@@ -3084,6 +3057,13 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   if (IsMockObject()) {
     CHECK(parent_) << "Mock object missing parent: " << ToString(true, true);
     parent_->UpdateCachedAttributeValuesIfNeeded();
+    if (IsDetached()) {
+      // This object can become detached when parents update their values.
+      cached_is_ignored_ = true;
+      cached_is_ignored_but_included_in_tree_ = false;
+      return;
+    }
+    CHECK(!IsMissingParent());
   }
 
   const ComputedStyle* style = GetComputedStyle();
@@ -3098,30 +3078,48 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   bool is_inert = ComputeIsInertViaStyle(style);
   bool is_aria_hidden = ComputeIsAriaHidden();
   bool is_hidden_by_child_tree = ComputeIsHiddenByChildTree();
+  bool is_descendant_of_disabled_node = ComputeIsDescendantOfDisabledNode();
+  bool is_changing_inherited_values = false;
   if (cached_is_inert_ != is_inert ||
       cached_is_aria_hidden_ != is_aria_hidden ||
-      cached_is_hidden_by_child_tree_ != is_hidden_by_child_tree) {
-    // Update children if not already dirty (e.g. during Init() time.
-    if (CanHaveChildren()) {
-      SetNeedsToUpdateChildren();
-    }
+      cached_is_hidden_by_child_tree_ != is_hidden_by_child_tree ||
+      cached_is_descendant_of_disabled_node_ !=
+          is_descendant_of_disabled_node) {
+    is_changing_inherited_values = true;
     cached_is_inert_ = is_inert;
     cached_is_aria_hidden_ = is_aria_hidden;
     cached_is_hidden_by_child_tree_ = is_hidden_by_child_tree;
+    cached_is_descendant_of_disabled_node_ = is_descendant_of_disabled_node;
   }
 
   // Must be after inert computation, because focusability depends on that, but
   // before the included in tree computation, which depends on focusability.
   cached_can_set_focus_attribute_ = ComputeCanSetFocusAttribute();
 
-  cached_is_descendant_of_disabled_node_ = ComputeIsDescendantOfDisabledNode();
-
+  // Must be computed before is_used_for_label_or_description computation.
+  bool was_included_in_tree = LastKnownIsIncludedInTreeValue();
   bool is_ignored = ComputeAccessibilityIsIgnored();
+  if (is_ignored != LastKnownIsIgnoredValue()) {
+    // Presence of inline text children depends on ignored state.
+    if (ui::CanHaveInlineTextBoxChildren(RoleValue())) {
+      is_changing_inherited_values = true;
+    }
+    cached_is_ignored_ = is_ignored;
+  }
+
+  // This depends on cached_is_ignored_ and cached_can_set_focus_attribute_.
+  bool is_used_for_label_or_description = ComputeIsUsedForLabelOrDescription();
+  if (is_used_for_label_or_description !=
+      cached_is_used_for_label_or_description_) {
+    is_changing_inherited_values = true;
+    cached_is_used_for_label_or_description_ = is_used_for_label_or_description;
+  }
+
+  // This depends on cached_is_used_for_label_or_description_.
   bool is_ignored_but_included_in_tree =
       is_ignored && ComputeAccessibilityIsIgnoredButIncludedInTree();
   bool is_included_in_tree = !is_ignored || is_ignored_but_included_in_tree;
-  bool included_in_tree_changed =
-      is_included_in_tree != LastKnownIsIncludedInTreeValue();
+  bool included_in_tree_changed = is_included_in_tree != was_included_in_tree;
   bool notify_included_in_tree_changed = false;
   if (included_in_tree_changed) {
     // If the inclusion bit is changing, we need to repair the
@@ -3140,7 +3138,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
       // nodes, so it should not be set on nodes that becomes unincluded.
       has_dirty_descendants_ = false;
     }
-
     // If the child's "included in tree" state changes, we will be notifying the
     // parent to recompute its children.
     // Exceptions:
@@ -3149,37 +3146,49 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     //   adding this child, and doing this would be redundant.
     // - Inline text boxes: their "included in tree" state is entirely dependent
     //   on their static text parent.
-    if (notify_parent_of_ignored_changes &&
-        RoleValue() != ax::mojom::blink::Role::kInlineTextBox) {
+    if (notify_parent_of_ignored_changes) {
       notify_included_in_tree_changed = true;
     }
   }
 
-  // Presence of inline text children depends on ignored state.
-  if (is_ignored != LastKnownIsIgnoredValue() &&
-      ui::CanHaveInlineTextBoxChildren(RoleValue())) {
-    // Update children if not already dirty (e.g. during Init() time.
-    SetNeedsToUpdateChildren();
-  }
-
-  // Call children changed on included ancestor.
+  // If the child's "included in tree" state changes, we will be notifying the
+  // parent to recompute it's children.
+  // Exceptions:
+  // - Caller passes in |notify_parent_of_ignored_changes = false| -- this
+  //   occurs when this is a new child, or when a parent is in the middle of
+  //   adding this child, and doing this would be redundant.
+  // - Inline text boxes: their "included in tree" state is entirely dependent
+  //   on their static text parent.
   // This must be called before cached_is_ignored_* are updated, otherwise a
   // performance optimization depending on LastKnownIsIncludedInTreeValue()
   // may misfire.
-  if (notify_included_in_tree_changed) {
-    if (AXObject* parent = CachedParentObject()) {
-      SANITIZER_CHECK(!AXObjectCache().IsFrozen())
-          << "Objects cannot change their inclusion state during "
-             "serialization:\n"
-          << "* Object: " << ToString(true, true) << "\n* Ignored will become "
-          << is_ignored << "\n* Included in tree will become "
-          << (!is_ignored || is_ignored_but_included_in_tree)
-          << "\n* Parent: " << parent->ToString(true, true);
-      // Defers a ChildrenChanged() on the first included ancestor.
-      // Must defer it, otherwise it can cause reentry into
-      // UpdateCachedAttributeValuesIfNeeded() on |this|.
-      // ParentObjectUnignored()->SetNeedsToUpdateChildren();
-      AXObjectCache().ChildrenChangedOnAncestorOf(const_cast<AXObject*>(this));
+  if (RoleValue() != ax::mojom::blink::Role::kInlineTextBox) {
+    if (notify_included_in_tree_changed) {
+      if (AXObject* parent = CachedParentObject()) {
+        SANITIZER_CHECK(!AXObjectCache().IsFrozen())
+            << "Objects cannot change their inclusion state during "
+               "serialization:\n"
+            << "* Object: " << ToString(true, true)
+            << "\n* Ignored will become " << is_ignored
+            << "\n* Included in tree will become "
+            << (!is_ignored || is_ignored_but_included_in_tree)
+            << "\n* Parent: " << parent->ToString(true, true);
+        // Defers a ChildrenChanged() on the first included ancestor.
+        // Must defer it, otherwise it can cause reentry into
+        // UpdateCachedAttributeValuesIfNeeded() on |this|.
+        // ParentObjectUnignored()->SetNeedsToUpdateChildren();
+        AXObjectCache().ChildrenChangedOnAncestorOf(
+            const_cast<AXObject*>(this));
+      }
+    } else if (included_in_tree_changed && AXObjectCache().UpdatingTree()) {
+      // In some cases changes to inherited properties can cause an object
+      // inclusion change in the tree updating phase, where it's too late to use
+      // the usual dirty object mechanisms, but we can still queue the dirty
+      // object for the serializer. The dirty object is the parent.
+      // TODO(accessibility) Do we need to de-dupe these?
+      AXObject* unignored_parent = ParentObjectUnignored();
+      CHECK(unignored_parent);
+      AXObjectCache().AddDirtyObjectToSerializationQueue(unignored_parent);
     }
   }
 
@@ -3189,7 +3198,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   // Compute live region root, which can be from any ARIA live value, including
   // "off", or from an automatic ARIA live value, e.g. from role="status".
   // TODO(dmazzoni): remove this const_cast.
-  AtomicString aria_live;
+  AXObject* previous_live_region_root = cached_live_region_root_;
   if (GetNode() && IsA<Document>(GetNode())) {
     // The document root is never a live region root.
     cached_live_region_root_ = nullptr;
@@ -3201,14 +3210,69 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     cached_live_region_root_ = IsLiveRegionRoot() ? const_cast<AXObject*>(this)
                                                   : parent_->LiveRegionRoot();
   }
+  if (cached_live_region_root_ != previous_live_region_root) {
+    is_changing_inherited_values = true;
+  }
 
   if (GetLayoutObject() && GetLayoutObject()->IsText()) {
     cached_local_bounding_box_rect_for_accessibility_ =
         GetLayoutObject()->LocalBoundingBoxRectForAccessibility();
   }
 
-  DCHECK(!cached_values_need_update_)
+  if (is_changing_inherited_values) {
+    // Update children if not already dirty.
+    OnInheritedCachedValuesChanged();
+  }
+
+#if DCHECK_IS_ON()
+  DCHECK(!NeedsToUpdateCachedValues())
       << "While recomputing cached values, they were invalidated again.";
+  if (included_in_tree_changed) {
+    AXObjectCache().UpdateIncludedNodeCount(this);
+  }
+#endif
+}
+
+void AXObject::OnInheritedCachedValuesChanged() const {
+  // When a cached value that can inherit its value changes, it means that
+  // all descendants need to recompute its value. We do this by ensuring
+  // that UpdateTreeIfNeeded() will visit all descendants and recompute
+  // cached values.
+  if (!CanHaveChildren()) {
+    return;  // Nothing to do.
+  }
+
+  // This flag is checked and cleared when children are added.
+  child_cached_values_need_update_ = true;
+
+  if (children_dirty_) {
+    return;
+  }
+
+  if (AXObjectCache().UpdatingTree()) {
+    // When already in the middle of updating the tree, we know we are building
+    // from the top down, and that its ok to mark things below (descendants) as
+    // dirty and alter/rebuild them, but at this point we must not alter
+    // ancestors. Mark the current children and their cached values dirty, and
+    // set a flag so that
+    children_dirty_ = true;
+    if (AXObject* parent = ParentObjectIncludedInTree()) {
+      // Make sure the loop in UpdateTreeIfNeeded() recursively will continue
+      // and rebuild children whenever cached values of children have changed.
+      // The loop continues if |has_dirty_descendants_| is set on the parent
+      // that added this child.
+      parent->SetHasDirtyDescendants(true);
+    }
+  } else {
+    // Ensure that all children of this node will be updated during the next
+    // tree update in AXObjectCacheImpl::UpdateTreeIfNeeded().
+    SetNeedsToUpdateChildren();
+    if (!AccessibilityIsIncludedInTree()) {
+      // Make sure that, starting at an included node, children will
+      // recursively be updated until we reach |this|.
+      AXObjectCache().ChildrenChangedOnAncestorOf(const_cast<AXObject*>(this));
+    }
+  }
 }
 
 bool AXObject::ComputeAccessibilityIsIgnored(
@@ -3218,10 +3282,13 @@ bool AXObject::ComputeAccessibilityIsIgnored(
 
 bool AXObject::ShouldIgnoreForHiddenOrInert(
     IgnoredReasons* ignored_reasons) const {
-  DCHECK(!cached_values_need_update_)
+  // TODO(crbug.com/1522716): Figure out how this can happen:
+  // "Check failed: !cached_values_need_update_. Tried to compute ignored value
+  // without up-to-date hidden/inert values on SELECT".
+  DUMP_WILL_BE_CHECK(!cached_values_need_update_)
       << "Tried to compute ignored value without up-to-date hidden/inert "
          "values on "
-      << GetNode();
+      << ToString(true, true);
 
   // All nodes must have an unignored parent within their tree under
   // the root node of the web area, so force that node to always be unignored.
@@ -3251,13 +3318,6 @@ bool AXObject::ShouldIgnoreForHiddenOrInert(
       ignored_reasons->emplace_back(kAXHiddenByChildTree);
     }
     return true;
-  }
-
-  // aria-hidden=false is meant to override visibility as the determinant in
-  // AX hierarchy inclusion, but only for the element it is specified, and not
-  // the entire subtree. See https://w3c.github.io/aria/#aria-hidden.
-  if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden)) {
-    return false;
   }
 
   if (cached_is_hidden_via_style_) {
@@ -3312,15 +3372,14 @@ bool AXObject::ComputeIsInertViaStyle(const ComputedStyle* style,
         // dialog or a fullscreen element (see AdjustStyleForInert).
         Document& document = GetNode()->GetDocument();
         if (HTMLDialogElement* dialog = document.ActiveModalDialog()) {
-          if (AXObject* dialog_object = AXObjectCache().GetOrCreate(dialog)) {
+          if (AXObject* dialog_object = AXObjectCache().Get(dialog)) {
             ignored_reasons->push_back(
                 IgnoredReason(kAXActiveModalDialog, dialog_object));
             return true;
           }
         } else if (Element* fullscreen =
                        Fullscreen::FullscreenElementFrom(document)) {
-          if (AXObject* fullscreen_object =
-                  AXObjectCache().GetOrCreate(fullscreen)) {
+          if (AXObject* fullscreen_object = AXObjectCache().Get(fullscreen)) {
             ignored_reasons->push_back(
                 IgnoredReason(kAXActiveFullscreenElement, fullscreen_object));
             return true;
@@ -3490,9 +3549,8 @@ bool AXObject::IsBlockedByAriaModalDialog(
   }
 
   if (ignored_reasons) {
-    ignored_reasons->push_back(
-        IgnoredReason(kAXAriaModalDialog,
-                      AXObjectCache().GetOrCreate(active_aria_modal_dialog)));
+    ignored_reasons->push_back(IgnoredReason(
+        kAXAriaModalDialog, AXObjectCache().Get(active_aria_modal_dialog)));
   }
   return true;
 }
@@ -3510,9 +3568,6 @@ const AXObject* AXObject::AriaHiddenRoot() const {
 
 const AXObject* AXObject::InertRoot() const {
   const AXObject* object = this;
-  if (!RuntimeEnabledFeatures::InertAttributeEnabled())
-    return nullptr;
-
   while (object && !object->IsAXNodeObject())
     object = object->ParentObject();
 
@@ -3527,7 +3582,7 @@ const AXObject* AXObject::InertRoot() const {
 
   while (element) {
     if (element->IsInertRoot())
-      return AXObjectCache().GetOrCreate(element);
+      return AXObjectCache().Get(element);
     element = FlatTreeTraversal::ParentElement(*element);
   }
 
@@ -3706,9 +3761,6 @@ bool AXObject::IsExcludedByFormControlsFilter() const {
 }
 
 bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
-  if (RuntimeEnabledFeatures::AccessibilityExposeIgnoredNodesEnabled())
-    return true;
-
   // If an inline text box is ignored, it is never included in the tree.
   if (IsAXInlineTextBox()) {
     return false;
@@ -3852,44 +3904,53 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     return false;
   }
 
-  if (IsExcludedByFormControlsFilter()) {
-    return false;
+  if (IsUsedForLabelOrDescription()) {
+    // We identify nodes in display none subtrees, or nodes that are display
+    // locked, because they lack a layout object.
+    if (!GetLayoutObject()) {
+      // Datalists and options inside them will never a layout object. They
+      // match the condition above, but we don't need them for accessible
+      // naming nor have any other use in the accessibility tree, so we exclude
+      // them specifically. What's more, including them breaks the browser test
+      // SelectToSpeakKeystrokeSelectionTest.textFieldWithComboBoxSimple.
+      // Selection and position code takes into account ignored nodes, and it
+      // looks like including ignored nodes for datalists and options is totally
+      // unexpected, making selections misbehave.
+      if (!IsA<HTMLDataListElement>(node) && !IsA<HTMLOptionElement>(node)) {
+        return true;
+      }
+    } else {  // GetLayoutObject() != nullptr.
+      // We identify hidden or collapsed nodes by their associated style values.
+      if (IsHiddenViaStyle()) {
+        return true;
+      }
+
+      // Allow the browser side ax tree to access "aria-hidden" nodes.
+      // This is useful for APIs that return the node referenced by
+      // aria-labeledby and aria-describedby.
+      // Exception: iframes. Do not expose aria-hidden iframes, where
+      // there is no possibility for the content within to know it's
+      // aria-hidden, and therefore the entire iframe must be hidden from the
+      // outer document.
+      if (IsAriaHidden()) {
+        return !IsEmbeddingElement();
+      }
+    }
+  } else if (IsAriaHidden() && GetLayoutObject() && !IsHiddenViaStyle() &&
+             CanSetFocusAttribute()) {
+    // Use aria-hidden nodes that are actually visible, and focusable.
+    // Note: in the future it is expected that the ARIA spec will change to
+    // specify that the aria-hidden property must be ignored if it receives
+    // focus as if the property was not set at all (aria-hidden elements that
+    // receive focus at any point not be treated as invisible/ignored at all).
+    // The implementation for that will end up acting as if the element that
+    // received focus (and its subtree) are not aria-hidden, and the condition
+    // here will no longer be necessary.
+    return true;
   }
 
-  // Allow the browser side ax tree to access "visibility: [hidden|collapse]"
-  // and "display: none" nodes. This is useful for APIs that return the node
-  // referenced by aria-labeledby and aria-describedby.
-  // The conditions are oversimplified, we will include more nodes than
-  // strictly necessary for aria-labelledby and aria-describedby but we
-  // avoid performing very complicated checks that could impact performance.
-
-  // We identify nodes in display none subtrees, or nodes that are display
-  // locked, because they lack a layout object.
-  if (!GetLayoutObject()) {
-    // Datalists and options inside them will never a layout object. They
-    // match the condition above, but we don't need them for accessible
-    // naming nor have any other use in the accessibility tree, so we exclude
-    // them specifically. What's more, including them breaks the browser test
-    // SelectToSpeakKeystrokeSelectionTest.textFieldWithComboBoxSimple.
-    // Selection and position code takes into account ignored nodes, and it
-    // looks like including ignored nodes for datalists and options is totally
-    // unexpected, making selections misbehave.
-    if (!IsA<HTMLDataListElement>(node) && !IsA<HTMLOptionElement>(node))
-      return true;
-
-  } else {  // GetLayoutObject() != null
-    // We identify hidden or collapsed nodes by their associated style values.
-    if (GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible)
-      return true;
-
-    // Allow the browser side ax tree to access "aria-hidden" nodes.
-    // This is useful for APIs that return the node referenced by
-    // aria-labeledby and aria-describedby.
-    // Exception: iframes, in order to stop exposing aria-hidden iframes, where
-    // there is no possibility for the content within to know it's aria-hidden.
-    if (IsAriaHidden()) {
-      return !IsEmbeddingElement();
-    }
+  if (IsExcludedByFormControlsFilter()) {
+    return false;
   }
 
   if (!element)
@@ -3909,10 +3970,16 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     return true;
   }
 
+  // Expose menus even if hidden, enabling event generation as they open.
+  if (RoleValue() == ax::mojom::blink::Role::kMenu) {
+    return true;
+  }
+
   // Always pass through Line Breaking objects, this is necessary to
   // detect paragraph edges, which are defined as hard-line breaks.
-  if (IsLineBreakingObject())
+  if (IsLineBreakingObject() && IsVisible()) {
     return true;
+  }
 
   // Ruby annotations (i.e. <rt> elements) need to be included because they are
   // used for calculating an accessible description for the ruby. We explicitly
@@ -3974,7 +4041,7 @@ const AXObject* AXObject::DatetimeAncestor() const {
       type != FormControlType::kInputWeek) {
     return nullptr;
   }
-  return AXObjectCache().GetOrCreate(input);
+  return AXObjectCache().Get(input);
 }
 
 bool AXObject::LastKnownIsIgnoredValue() const {
@@ -4466,15 +4533,78 @@ bool AXObject::IsHiddenForTextAlternativeCalculation(
     // bad authoring correction.
     if (!CanSetFocusAttribute())
       return true;
-  } else {
-    // When IsAriaHidden() returns false, we only know the node is not in an
-    // aria-hidden="true" subtree. We need to check for the case where
-    // aria-hidden="false" specifically.
-    if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
-      return false;
   }
 
   return IsHiddenViaStyle();
+}
+
+bool AXObject::IsUsedForLabelOrDescription() const {
+  UpdateCachedAttributeValuesIfNeeded();
+  return cached_is_used_for_label_or_description_;
+}
+
+bool AXObject::ComputeIsUsedForLabelOrDescription() const {
+  if (GetElement()) {
+    // Return true if a <label> or the target of a naming/description
+    // relation (<aria-labelledby or aria-describedby).
+    if (AXObjectCache().IsLabelOrDescription(*GetElement())) {
+      return true;
+    }
+    // Also return true if a visible, focusable object that gets its name
+    // from contents. Requires visibility because a hidden node can only partake
+    // in a name or description in the relation case. Note: objects that are
+    // visible and focused but aria-hidden can still compute their name from
+    // contents as a repair.
+    // Note: this must match the SupportsNameFromContents() rule in
+    // AXRelationCache::UpdateRelatedText().
+    if ((!AccessibilityIsIgnored() || CanSetFocusAttribute()) &&
+        SupportsNameFromContents(/*recursive*/ false)) {
+      // Descendants of nodes that label themselves via their inner contents
+      // and are visible are effectively part of the label for that node.
+      return true;
+    }
+  }
+
+  if (RoleValue() == ax::mojom::blink::Role::kGroup) {
+    // Groups do not contribute to ancestor names. There are other roles that
+    // don't (listed in SupportsNameFromContents()), but it is not worth
+    // the complexity to list each case. Group is relatively common, and
+    // also prevents us from considering the popup document (which has kGroup)
+    // from returning true.
+    return false;
+  }
+
+  // Finally, return true if an ancetor is part of a label or description and
+  // visibility hasn't changed from visible to hidden
+  if (AXObject* parent = ParentObject()) {
+    if (parent->IsUsedForLabelOrDescription()) {
+      // The parent was part of a label or description. If this object is not
+      // hidden, or the parent was also hidden, continue the label/description
+      // state into the child.
+      bool is_hidden = IsHiddenViaStyle() || IsAriaHidden();
+      bool is_parent_hidden =
+          parent->IsHiddenViaStyle() || parent->IsAriaHidden();
+      if (!is_hidden || is_parent_hidden) {
+        return true;
+      }
+      // Visibility has changed to hidden, where the parent was visible.
+      // Iterate through the ancestors that are part of a label/description.
+      // If any are part of a label/description relation, consider the hidden
+      // node as also part of the label/description, because label and
+      // descriptions computed from relations include hidden nodes.
+      while (parent && parent->IsUsedForLabelOrDescription()) {
+        // It's possible for parent->GetElement() to be null in the case of an
+        // AXMenuListPopup. In that case, continue and check its ancestors.
+        if (parent->GetElement() &&
+            AXObjectCache().IsLabelOrDescription(*parent->GetElement())) {
+          return true;
+        }
+        parent = parent->ParentObject();
+      }
+    }
+  }
+
+  return false;
 }
 
 String AXObject::AriaTextAlternative(
@@ -4581,6 +4711,51 @@ String AXObject::AriaTextAlternative(
   return text_alternative;
 }
 
+#if EXPENSIVE_DCHECKS_ARE_ON()
+void AXObject::CheckSubtreeIsForLabelOrDescription(const AXObject* obj) const {
+  DCHECK(obj->IsUsedForLabelOrDescription())
+      << "This object is being used for a label or description, but isn't "
+         "flagged as such, which will cause problems for determining whether "
+         "invisible nodes should be included in the tree."
+      << obj->ToString(true, true);
+
+  // Set of all children, whether in included or not.
+  HeapHashSet<Member<AXObject>> children;
+
+  // If the current object is included, check its children.
+  if (obj->AccessibilityIsIncludedInTree()) {
+    for (const auto& child : obj->ChildrenIncludingIgnored()) {
+      children.insert(child);
+    }
+  }
+
+  if (obj->GetNode()) {
+    // Also check unincluded children.
+    for (Node* child_node =
+             LayoutTreeBuilderTraversal::FirstChild(*obj->GetNode());
+         child_node;
+         child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
+      // Get the child object that should be detached from this parent.
+      // Do not invalidate from layout, because it may be unsafe to check layout
+      // at this time. However, do allow invalidations if an object changes its
+      // display locking (content-visibility: auto) status, as this may be the
+      // only chance to do that, and it's safe to do now.
+      AXObject* ax_child_from_node = obj->AXObjectCache().Get(child_node);
+      if (ax_child_from_node &&
+          ax_child_from_node->CachedParentObject() == this) {
+        children.insert(ax_child_from_node);
+      }
+    }
+  }
+
+  for (const auto& ax_child : children) {
+    if (ax_child->SupportsNameFromContents(/*recursive*/ false)) {
+      CheckSubtreeIsForLabelOrDescription(ax_child);
+    }
+  }
+}
+#endif
+
 String AXObject::TextFromElements(
     bool in_aria_labelledby_traversal,
     AXObjectSet& visited,
@@ -4591,8 +4766,11 @@ String AXObject::TextFromElements(
   AXRelatedObjectVector local_related_objects;
 
   for (const auto& element : elements) {
-    AXObject* ax_element = AXObjectCache().GetOrCreate(element);
+    AXObject* ax_element = AXObjectCache().Get(element);
     if (ax_element) {
+#if EXPENSIVE_DCHECKS_ARE_ON()
+      CheckSubtreeIsForLabelOrDescription(ax_element);
+#endif
       found_valid_element = true;
       AXObject* aria_labelled_by_node = nullptr;
       if (in_aria_labelledby_traversal)
@@ -4639,7 +4817,7 @@ bool AXObject::ElementsFromAttribute(Element* from,
     return false;
 
   HeapVector<Member<Element>>* attr_associated_elements =
-      from->GetElementArrayAttribute(attribute);
+      from->GetAttrAssociatedElements(attribute);
   if (!attr_associated_elements)
     return false;
 
@@ -4721,7 +4899,7 @@ AXObject* AXObject::PreviousOnLine() const {
   return nullptr;
 }
 
-absl::optional<const DocumentMarker::MarkerType>
+std::optional<const DocumentMarker::MarkerType>
 AXObject::GetAriaSpellingOrGrammarMarker() const {
   AtomicString aria_invalid_value;
   const AncestorsIterator iter = std::find_if(
@@ -4733,12 +4911,12 @@ AXObject::GetAriaSpellingOrGrammarMarker() const {
       });
 
   if (iter == UnignoredAncestorsEnd())
-    return absl::nullopt;
+    return std::nullopt;
   if (EqualIgnoringASCIICase(aria_invalid_value, "spelling"))
     return DocumentMarker::kSpelling;
   if (EqualIgnoringASCIICase(aria_invalid_value, "grammar"))
     return DocumentMarker::kGrammar;
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void AXObject::TextCharacterOffsets(Vector<int>&) const {}
@@ -5594,7 +5772,8 @@ AXObject* AXObject::ParentObject() const {
     return nullptr;
   }
 
-  CHECK(!IsMissingParent()) << "Missing parent: " << ToString(true, true);
+  DUMP_WILL_BE_CHECK(!IsMissingParent())
+      << "Missing parent: " << ToString(true, true);
 
   return parent_.Get();
 }
@@ -5699,8 +5878,10 @@ void AXObject::UpdateChildrenIfNecessary() {
   DCHECK(!AXObjectCache().HasBeenDisposed());
 #endif
 
-  if (!NeedsToUpdateChildren() || !CanHaveChildren()) {
-    children_dirty_ = false;
+  if (!NeedsToUpdateChildren()) {
+    CHECK(!child_cached_values_need_update_)
+        << "This should only be set when also setting children_dirty_ to true: "
+        << ToString(true, true);
     return;
   }
 
@@ -5709,21 +5890,78 @@ void AXObject::UpdateChildrenIfNecessary() {
          "AXObjectCacheImpl::UpdateTreeIfNeeded(): "
       << ToString(true, true);
 
+  if (!CanHaveChildren()) {
+    // Clear any children in case the node previously allowed children.
+    ClearChildren();
+    SetNeedsToUpdateChildren(false);
+    child_cached_values_need_update_ = false;
+    return;
+  }
+
   UpdateCachedAttributeValuesIfNeeded();
 
   ClearChildren();
   AddChildren();
+  CHECK(!children_dirty_);
+  CHECK(!child_cached_values_need_update_);
 }
 
 bool AXObject::NeedsToUpdateChildren() const {
   return children_dirty_;
 }
 
-void AXObject::SetNeedsToUpdateChildren() const {
+#if DCHECK_IS_ON()
+void AXObject::CheckIncludedObjectConnectedToRoot() const {
+  if (!LastKnownIsIncludedInTreeValue() || IsRoot()) {
+    return;
+  }
+
+  const AXObject* included_child = this;
+  const AXObject* ancestor = nullptr;
+  const AXObject* included_parent = nullptr;
+  for (ancestor = CachedParentObject(); ancestor;
+       ancestor = ancestor->CachedParentObject()) {
+    if (ancestor->LastKnownIsIncludedInTreeValue()) {
+      included_parent = ancestor;
+      if (included_parent->CachedChildrenIncludingIgnored().Find(
+              included_child) == kNotFound) {
+        if (AXObject* parent_for_repair = ComputeParent()) {
+          parent_for_repair->CheckIncludedObjectConnectedToRoot();
+        }
+
+        NOTREACHED() << "Cannot find included child in parents children:\n"
+                     << "\n* Child: " << included_child->ToString(true, true)
+                     << "\n* Parent:  " << included_parent->ToString(true, true)
+                     << "\n--------------\n"
+                     << included_parent->GetAXTreeForThis();
+      }
+      if (included_parent->IsRoot()) {
+        return;
+      }
+      included_child = included_parent;
+    }
+  }
+
+  NOTREACHED() << "Did not find included parent path to root:"
+               << "\n* Last found included parent: "
+               << (included_parent ? included_parent->ToString(true, true)
+                                   : "null")
+               << "\n* Current object in tree: " << GetAXTreeForThis();
+}
+#endif
+
+void AXObject::SetNeedsToUpdateChildren(bool update) const {
   CHECK(!IsDetached()) << "Cannot update children on a detached node: "
                        << ToString(true, true);
   CHECK(!AXObjectCache().IsFrozen());
   CHECK(!AXObjectCache().HasBeenDisposed());
+
+  if (!update) {
+    children_dirty_ = false;
+    child_cached_values_need_update_ = false;
+    return;
+  }
+
 #if defined(AX_FAIL_FAST_BUILD)
   SANITIZER_CHECK(!is_adding_children_)
       << "Should not invalidate children while adding them: "
@@ -5731,19 +5969,6 @@ void AXObject::SetNeedsToUpdateChildren() const {
 #endif
 
   if (children_dirty_) {
-#if DCHECK_IS_ON()
-    if (!AXObjectCache().EntireDocumentIsDirty()) {
-      // Already dirty. In this case, the first included parent should have
-      // the "has dirty descendants" flag.
-      // This check is skipped when marking the entire document dirty, because
-      // that path only marks the root as having dirty descendants.
-      AXObject* ancestor = CachedParentObject();
-      while (ancestor && !ancestor->LastKnownIsIncludedInTreeValue()) {
-        ancestor = ancestor->CachedParentObject();
-      }
-      DCHECK(!ancestor || ancestor->HasDirtyDescendants());
-    }
-#endif
     return;
   }
 
@@ -5822,7 +6047,17 @@ void AXObject::SetChildTree(const ui::AXTreeID& child_tree_id) {
     return;
   }
   child_tree_id_ = child_tree_id;
-  AXObjectCache().RemoveSubtreeWhenSafe(GetNode(), /* remove_root */ false);
+  // Child objects inherit their cached_is_hidden_by_child_tree_ from their
+  // parents. However, this is not true for the direct children of the root,
+  // because the root itself is not hidden by the child tree. Therefore the
+  // root's direct children must inherit cached_is_hidden_by_child_tree_ from
+  // the presence of a child tree id on their parent (the root). Calling
+  // OnInheritedCachedValuesChanged() as we set child_tree_id_ will cause
+  // cached_is_hidden_by_child_tree_ as well as ignored/included changes from
+  // that to propagate to the children, and further propagation to descendants
+  // wil result from changes to cached_is_hidden_by_child_tree_.
+  AXObjectCache().MarkAXObjectDirtyWithCleanLayout(this);
+  OnInheritedCachedValuesChanged();
   AXObjectCache().UpdateAXForAllDocuments();
 }
 
@@ -5990,7 +6225,7 @@ AXObject* AXObject::RootScroller() const {
   if (global_root_scroller->GetDocument() != GetDocument())
     return nullptr;
 
-  return AXObjectCache().GetOrCreate(global_root_scroller);
+  return AXObjectCache().Get(global_root_scroller);
 }
 
 LocalFrameView* AXObject::DocumentFrameView() const {
@@ -6447,7 +6682,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   if (layout_object->IsFixedPositioned()) {
     // If it's a fixed position element, the container should simply be the
     // root web area.
-    container = AXObjectCache().GetOrCreate(GetDocument());
+    container = AXObjectCache().Get(GetDocument());
   } else {
     while (container) {
       container_layout_object = container->GetLayoutObject();
@@ -6534,6 +6769,18 @@ PhysicalRect AXObject::GetBoundsInFrameCoordinates() const {
   return PhysicalRect::FastAndLossyFromRectF(computed_bounds);
 }
 
+void AXObject::UpdateStyleAndLayoutTreeForNode(Node& node) {
+  // In most cases, UpdateAllLifecyclePhasesExceptPaint() is enough, but if
+  // the action is part of a display locked node, that will not update the node
+  // because it's not part of the layout update cycle yet. In that case, calling
+  // UpdateStyleAndLayoutTreeForElement() is also necessary.
+  if (const Element* element =
+          FlatTreeTraversal::InclusiveParentElement(node)) {
+    element->GetDocument().UpdateStyleAndLayoutTreeForElement(
+        element, DocumentUpdateReason::kAccessibility);
+  }
+}
+
 //
 // Modify or take an action on an object.
 //
@@ -6552,18 +6799,13 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     }
   }
 
-  // In most cases, UpdateAllLifecyclePhasesExceptPaint() is enough, but if
-  // the action is part of a display locked node, that will not update the node
-  // because it's not part of the layout update cycle yet. In that case, calling
-  // UpdateStyleAndLayoutTreeForNode() is also necessary.
-  document->UpdateStyleAndLayoutTreeForNode(
-      node, DocumentUpdateReason::kAccessibility);
+  UpdateStyleAndLayoutTreeForNode(*node);
   cache.UpdateAXForAllDocuments();
 
   // Updating style and layout for the node can cause it to gain layout,
   // detaching an AXNodeObject to make room for an AXLayoutObject.
   if (IsDetached()) {
-    AXObject* new_object = cache.GetOrCreate(node);
+    AXObject* new_object = cache.Get(node);
     return new_object ? new_object->PerformAction(action_data) : false;
   }
 
@@ -6755,19 +6997,15 @@ bool AXObject::RequestScrollToMakeVisibleWithSubFocusAction(
     }
   }
 
-  // In most cases, UpdateAllLifecyclePhasesExceptPaint() is enough, but if
-  // focus is is moving to a display locked node, that will not update the node
-  // because it's not part of the layout update cycle yet. In that case, calling
-  // UpdateStyleAndLayoutTreeForNode() is also necessary.
-  document->UpdateStyleAndLayoutTreeForNode(
-      node, DocumentUpdateReason::kAccessibility);
+  UpdateStyleAndLayoutTreeForNode(*node);
+
   document->View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kAccessibility);
 
   // Updating style and layout for the node can cause it to gain layout,
   // detaching an AXNodeObject to make room for an AXLayoutObject.
   if (IsDetached()) {
-    AXObject* new_object = cache.GetOrCreate(node);
+    AXObject* new_object = cache.Get(node);
     return new_object
                ? new_object->OnNativeScrollToMakeVisibleWithSubFocusAction(
                      subfocus, horizontal_scroll_alignment,
@@ -6898,9 +7136,8 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
           ScrollAlignment::CenterIfNeeded(), ScrollAlignment::CenterIfNeeded(),
           mojom::blink::ScrollType::kProgrammatic, false,
           mojom::blink::ScrollBehavior::kAuto));
-  AXObjectCache().PostNotification(
-      AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
-      ax::mojom::blink::Event::kLocationChanged);
+  AXObjectCache().PostNotification(GetDocument(),
+                                   ax::mojom::blink::Event::kLocationChanged);
   return true;
 }
 
@@ -6921,9 +7158,8 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
           mojom::blink::ScrollType::kProgrammatic,
           false /* make_visible_in_visual_viewport */,
           mojom::blink::ScrollBehavior::kAuto));
-  AXObjectCache().PostNotification(
-      AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
-      ax::mojom::blink::Event::kLocationChanged);
+  AXObjectCache().PostNotification(GetDocument(),
+                                   ax::mojom::blink::Event::kLocationChanged);
   return true;
 }
 
@@ -6941,9 +7177,8 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
           ScrollAlignment::LeftAlways(), ScrollAlignment::TopAlways(),
           mojom::blink::ScrollType::kProgrammatic, false,
           mojom::blink::ScrollBehavior::kAuto));
-  AXObjectCache().PostNotification(
-      AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
-      ax::mojom::blink::Event::kLocationChanged);
+  AXObjectCache().PostNotification(GetDocument(),
+                                   ax::mojom::blink::Event::kLocationChanged);
   return true;
 }
 
@@ -7103,7 +7338,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kCell:
     case ax::mojom::blink::Role::kCheckBox:
     case ax::mojom::blink::Role::kColumnHeader:
-    case ax::mojom::blink::Role::kComboBoxSelect:
     case ax::mojom::blink::Role::kDocBackLink:
     case ax::mojom::blink::Role::kDocBiblioRef:
     case ax::mojom::blink::Role::kDocNoteRef:
@@ -7147,6 +7381,7 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kComboBoxMenuButton:  // Only value from
                                                        // content.
     case ax::mojom::blink::Role::kComboBoxGrouping:
+    case ax::mojom::blink::Role::kComboBoxSelect:
     case ax::mojom::blink::Role::kComment:
     case ax::mojom::blink::Role::kComplementary:
     case ax::mojom::blink::Role::kContentInfo:
@@ -7590,12 +7825,20 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
       }
     }
 
-    if (cached_values_need_update_) {
+    if (NeedsToUpdateCachedValues()) {
       string_builder = string_builder + " needsToUpdateCachedValues";
       if (AXObjectCache().IsFrozen()) {
         cached_values_only = true;
         string_builder = string_builder + "/disallowed";
       }
+    }
+    if (child_cached_values_need_update_) {
+      string_builder = string_builder + " childCachedValuesNeedUpdate";
+    }
+    if (!GetDocument()) {
+      string_builder = string_builder + " missingDocument";
+    } else if (!GetDocument()->GetFrame()) {
+      string_builder = string_builder + " closedDocument";
     }
 
     // Add properties of interest that often contribute to errors:
@@ -7612,6 +7855,10 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
     }
     if (IsFocused())
       string_builder = string_builder + " focused";
+    if (cached_values_only ? cached_can_set_focus_attribute_
+                           : CanSetFocusAttribute()) {
+      string_builder = string_builder + " focusable";
+    }
     if (!IsDetached() && AXObjectCache().IsAriaOwned(this))
       string_builder = string_builder + " isAriaOwned";
     if (cached_values_only ? LastKnownIsIgnoredValue()
@@ -7650,6 +7897,10 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
         string_builder = string_builder + " isDisplayLocked";
       }
     }
+    if (cached_values_only ? !!cached_live_region_root_ : !!LiveRegionRoot()) {
+      string_builder = string_builder + " inLiveRegion";
+    }
+
     if (cached_values_only) {
       if (cached_is_aria_hidden_)
         string_builder = string_builder + " ariaHidden";
@@ -7704,14 +7955,24 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
           string_builder = string_builder + " missingFromParentsChildren";
         }
       }
-    } else if (IsMissingParent()) {
-      string_builder = string_builder + " isMissingParent";
+    } else if (!IsRoot()) {
+      if (!parent_) {
+        string_builder = string_builder + " isMissingParent";
+      } else if (parent_->IsDetached()) {
+        string_builder = string_builder + " detachedParent";
+      }
     }
     if (!cached_values_only && !CanHaveChildren()) {
       string_builder = string_builder + " cannotHaveChildren";
     }
-    if (!GetLayoutObject())
+    if (!GetLayoutObject() && !IsAXInlineTextBox()) {
       string_builder = string_builder + " missingLayout";
+    }
+
+    if (cached_values_only ? cached_is_used_for_label_or_description_
+                           : IsUsedForLabelOrDescription()) {
+      string_builder = string_builder + " inLabelOrDesc";
+    }
 
     if (!cached_values_only)
       string_builder = string_builder + " name=";

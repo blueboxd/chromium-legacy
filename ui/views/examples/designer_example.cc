@@ -169,7 +169,7 @@ class ClassRegistration<Combobox> : public BaseClassRegistration,
   // ui::ComboboxModel
   size_t GetItemCount() const override { return 1; }
   std::u16string GetItemAt(size_t index) const override { return u"<empty>"; }
-  absl::optional<size_t> GetDefaultIndex() const override { return 0; }
+  std::optional<size_t> GetDefaultIndex() const override { return 0; }
 };
 
 template <>
@@ -516,7 +516,7 @@ void DesignerExample::CreateExampleView(View* container) {
                                   .SetColumns({MakeColumn(0, u"Name", true),
                                                MakeColumn(1, u"Value", false)})
                                   .SetModel(this)
-                                  .SetTableType(views::TEXT_ONLY)
+                                  .SetTableType(views::TableType::kTextOnly)
                                   .SetSingleSelection(true))
                               .SetPreferredSize(gfx::Size(250, 400)))))
       .BuildChildren();
@@ -653,7 +653,7 @@ std::u16string DesignerExample::GetItemAt(size_t index) const {
   return class_registrations_[index]->GetViewClassName();
 }
 
-absl::optional<size_t> DesignerExample::GetDefaultIndex() const {
+std::optional<size_t> DesignerExample::GetDefaultIndex() const {
   return 0;
 }
 

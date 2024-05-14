@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/raw_ref.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_view_views.h"
 
 namespace content {
@@ -32,12 +33,16 @@ class PopupViewViewsTestApi {
     return view_->HandleKeyPressEvent(event);
   }
 
-  std::optional<PopupViewViews::CellIndex> GetOpenSubPopupCell() const&& {
-    return view_->open_sub_popup_cell_;
+  std::optional<size_t> GetOpenSubPopupRow() const&& {
+    return view_->row_with_open_sub_popup_;
   }
 
   const std::vector<PopupViewViews::RowPointer>& rows() const&& {
     return view_->rows_;
+  }
+
+  base::WeakPtr<PopupViewViews> GetWeakPtr() {
+    return view_->weak_ptr_factory_.GetWeakPtr();
   }
 
  private:

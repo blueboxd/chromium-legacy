@@ -4,10 +4,6 @@
 
 package org.chromium.content_public.browser;
 
-import android.graphics.Point;
-
-import androidx.annotation.Nullable;
-
 /**
  * An interface that is notified of events and state changes related to gesture processing
  * from content layer.
@@ -26,15 +22,12 @@ public abstract class GestureStateListener {
     public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {}
 
     /**
-     * Called to indicate that a scroll update gesture had been consumed by the page.
-     * This callback is called whenever any layer is scrolled (like a frame or div). It is
-     * not called when a JS touch handler consumes the event (preventDefault), it is not called
-     * for JS-initiated scrolling.
-     *
-     * @param rootScrollOffset Updated root scroll offset if the scroll was consumed by the
-     *                         viewport, null otherwise.
+     * Called to indicate that a scroll update gesture had been consumed by the page. This callback
+     * is called whenever any layer is scrolled (like a frame or div). It is not called when a JS
+     * touch handler consumes the event (preventDefault), it is not called for JS-initiated
+     * scrolling.
      */
-    public void onScrollUpdateGestureConsumed(@Nullable Point rootScrollOffset) {}
+    public void onScrollUpdateGestureConsumed() {}
 
     /** Called when a scroll gesture has started. */
     public void onScrollStarted(int scrollOffsetY, int scrollExtentY, boolean isDirectionUp) {}
@@ -64,25 +57,8 @@ public abstract class GestureStateListener {
      */
     public void onSingleTap(boolean consumed) {}
 
-    /**
-     * Called after a single-tap gesture event was processed by the renderer,
-     * but was not handled.
-     */
-    public void onShowUnhandledTapUIIfNeeded(int x, int y) {}
-
     /** Called when the gesture source loses window focus. */
     public void onWindowFocusChanged(boolean hasWindowFocus) {}
-
-    /** Called when a long press gesture event was processed by the rendereer. */
-    public void onLongPress() {}
-
-    /**
-     * Called on overscroll. This happens when user tries to scroll beyond scroll bounds, or when
-     * a fling animation hits scroll bounds.
-     * @param accumulatedOverscrollX see `ui::DidOverscrollParams::accumulated_overscroll`.
-     * @param accumulatedOverscrollY see `ui::DidOverscrollParams::accumulated_overscroll`.
-     */
-    public void didOverscroll(float accumulatedOverscrollX, float accumulatedOverscrollY) {}
 
     /** Called when the scroll offsets or extents may have changed. */
     public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {}

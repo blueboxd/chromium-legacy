@@ -8,16 +8,16 @@
  * settings.
  */
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
-import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
+import 'chrome://resources/ash/common/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/ash/common/cr_elements/policy/cr_policy_indicator.js';
+import 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
 import '../icons.html.js';
 import '../settings_shared.css.js';
 
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {CrSliderElement} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {CrSliderElement} from 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -31,6 +31,7 @@ import {Route, routes} from '../router.js';
 
 import {getTemplate} from './audio.html.js';
 import {CrosAudioConfigInterface, getCrosAudioConfig} from './cros_audio_config.js';
+import {BatteryStatus} from './device_page_browser_proxy.js';
 import {FakeCrosAudioConfig} from './fake_cros_audio_config.js';
 
 /** Utility for keeping percent in inclusive range of [0,100].  */
@@ -77,8 +78,6 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
 
       isNoiseCancellationEnabled_: {
         type: Boolean,
-        observer:
-            SettingsAudioElement.prototype.onNoiseCancellationEnabledChanged,
       },
 
       isNoiseCancellationSupported_: {
@@ -89,12 +88,9 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
         type: Number,
       },
 
-      systemSoundsEnabled_: {
+      powerSoundsHidden_: {
         type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('areSystemSoundsEnabled');
-        },
-        readOnly: true,
+        computed: 'computePowerSoundsHidden_(batteryStatus_)',
       },
 
       startupSoundEnabled_: {
@@ -140,8 +136,9 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
   private isNoiseCancellationEnabled_: boolean;
   private isNoiseCancellationSupported_: boolean;
   private outputVolume_: number;
-  private systemSoundsEnabled_: boolean;
   private startupSoundEnabled_: boolean;
+  private batteryStatus_: BatteryStatus|undefined;
+  private powerSoundsHidden_: boolean;
 
   constructor() {
     super();
@@ -163,6 +160,8 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
         'startup-sound-setting-retrieved', (startupSoundEnabled: boolean) => {
           this.startupSoundEnabled_ = startupSoundEnabled;
         });
+    this.addWebUiListener(
+        'battery-status-changed', this.set.bind(this, 'batteryStatus_'));
   }
 
   /**
@@ -226,22 +225,6 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
         '#audioInputDeviceDropdown');
     assert(!!inputDeviceSelect);
     this.crosAudioConfig_.setActiveDevice(BigInt(inputDeviceSelect.value));
-  }
-
-  /** Handles updates to noise cancellation state. */
-  protected onNoiseCancellationEnabledChanged(
-      enabled: SettingsAudioElement['isNoiseCancellationEnabled_'],
-      previousEnabled: SettingsAudioElement['isNoiseCancellationEnabled_']):
-      void {
-    // Polymer triggers change event on all assignment to
-    // `isNoiseCancellationEnabled_` even if the value is logically unchanged.
-    // Check previous value before calling `setNoiseCancellationEnabled` to test
-    // if value actually updated.
-    if (previousEnabled === undefined || previousEnabled === enabled) {
-      return;
-    }
-
-    this.crosAudioConfig_.setNoiseCancellationEnabled(enabled);
   }
 
   /** Handles updates to force respect ui gains state. */
@@ -417,8 +400,16 @@ export class SettingsAudioElement extends SettingsAudioElementBase {
         this.i18n('audioOutputMuteButtonAriaLabelNotMuted');
   }
 
+  private toggleNoiseCancellationEnabled_(e: CustomEvent<boolean>): void {
+    this.crosAudioConfig_.setNoiseCancellationEnabled(e.detail);
+  }
+
   private toggleStartupSoundEnabled_(e: CustomEvent<boolean>): void {
     this.audioAndCaptionsBrowserProxy_.setStartupSoundEnabled(e.detail);
+  }
+
+  private computePowerSoundsHidden_(): boolean {
+    return !this.batteryStatus_?.present;
   }
 }
 

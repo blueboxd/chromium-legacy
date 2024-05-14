@@ -323,7 +323,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, BasicRegistration) {
 
   EXPECT_FALSE(watcher_manager().HasObservationsForTesting());
 
-  absl::optional<FileSystemAccessWatchScope> observation_scope = absl::nullopt;
+  std::optional<FileSystemAccessWatchScope> observation_scope = std::nullopt;
   {
     base::test::TestFuture<base::expected<
         std::unique_ptr<Observation>, blink::mojom::FileSystemAccessErrorPtr>>
@@ -843,8 +843,9 @@ TEST_F(FileSystemAccessWatcherManagerTest, WatchLocalDirectory) {
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
 }
 
+// TODO(crbug.com/1517278): Failing on Windows. Re-enable this test.
 TEST_F(FileSystemAccessWatcherManagerTest,
-       WatchLocalDirectoryNonRecursivelyDoesNotSeeRecursiveChanges) {
+       DISABLED_WatchLocalDirectoryNonRecursivelyDoesNotSeeRecursiveChanges) {
   base::FilePath dir_path = dir_.GetPath().AppendASCII("dir");
   auto dir_url = manager_->CreateFileSystemURLFromPath(
       FileSystemAccessEntryFactory::PathType::kLocal, dir_path);

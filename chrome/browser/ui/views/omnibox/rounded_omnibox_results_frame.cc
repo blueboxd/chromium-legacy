@@ -45,6 +45,45 @@ struct WidgetEventPair {
   std::unique_ptr<ui::MouseEvent> event;
 };
 
+#if BUILDFLAG(IS_MAC)
+views::Widget* GetImmersiveFullscreenWidgetForEvent(
+    views::View* this_view,
+    const ui::MouseEvent* this_event) {
+  views::Widget* parent_widget = this_view->GetWidget()->parent();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
+      parent_widget->GetNativeWindow());
+
+  // If the results window is not a child of the overlay widget we are not in
+  // immersive fullscreen.
+  if (browser_view->overlay_widget() != parent_widget) {
+    return nullptr;
+  }
+
+  // If the event is located in the location bar send the event to the overlay
+  // widget to handle text selection.
+  gfx::Point event_location = this_event->location();
+  views::View::ConvertPointToScreen(this_view, &event_location);
+  views::View::ConvertPointFromScreen(browser_view->GetLocationBarView(),
+                                      &event_location);
+  if (browser_view->GetLocationBarView()->HitTestPoint(event_location)) {
+    return browser_view->overlay_widget();
+  }
+
+  // In immersive fullscreen with tabs enabled the floating results shadow
+  // spreads into the tab strip area which is hosted in yet another separate
+  // widget, the tab widget. Send the rest of the events to the tab widget. This
+  // will allow for tab strip interaction in the area covered by the shadow and
+  // accurate tab hover card dismissal.
+  if (browser_view->tab_overlay_widget()) {
+    return browser_view->tab_overlay_widget();
+  }
+
+  // If immersive fullscreen with tabs is not enabled, send events to the
+  // overlay widget for tab strip interaction in the area covered by the shadow.
+  return browser_view->overlay_widget();
+}
+#endif
+
 WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
                                         const ui::MouseEvent* this_event) {
   // Note that the floating results view is a top-level widget, so hop up a
@@ -62,29 +101,10 @@ WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
 // handle the event.
 // TODO(http://crbug.com/1462791): Remove custom event handling.
 #if BUILDFLAG(IS_MAC)
-  views::Widget* top_level = nullptr;
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-      parent_widget->GetNativeWindow());
-  if (browser_view->overlay_widget() == parent_widget) {
-    // In immersive fullscreen the floating results shadow spreads into the tab
-    // strip area which is hosted in a separate widget. Decide where to send the
-    // event. This will allow for accurate tab hover card dismissal when the
-    // results window is on screen.
-    top_level = browser_view->overlay_widget();
-    if (browser_view->tab_overlay_widget()) {
-      gfx::Point event_location = this_event->location();
-      views::View::ConvertPointToScreen(this_view, &event_location);
-      views::View::ConvertPointFromScreen(
-          browser_view->tab_overlay_widget()->GetRootView(), &event_location);
-      if (browser_view->tab_overlay_widget()->GetRootView()->HitTestPoint(
-              event_location)) {
-        top_level = browser_view->tab_overlay_widget();
-      }
-    }
-  } else {
-    top_level = parent_widget->GetTopLevelWidgetForNativeView(
-        parent_widget->GetNativeView());
-  }
+  views::Widget* top_level =
+      GetImmersiveFullscreenWidgetForEvent(this_view, this_event)
+          ?: parent_widget->GetTopLevelWidgetForNativeView(
+                 parent_widget->GetNativeView());
 #else
   views::Widget* top_level = parent_widget->GetTopLevelWidgetForNativeView(
       parent_widget->GetNativeView());
@@ -110,8 +130,9 @@ WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
 // View at the top of the frame which paints transparent pixels to make a hole
 // so that the location bar shows through.
 class TopBackgroundView : public views::View {
+  METADATA_HEADER(TopBackgroundView, views::View)
+
  public:
-  METADATA_HEADER(TopBackgroundView);
   explicit TopBackgroundView(const LocationBarView* location_bar)
       : location_bar_(location_bar) {}
 
@@ -170,7 +191,7 @@ class TopBackgroundView : public views::View {
   raw_ptr<const LocationBarView> location_bar_;
 };
 
-BEGIN_METADATA(TopBackgroundView, views::View)
+BEGIN_METADATA(TopBackgroundView)
 END_METADATA
 
 // Insets used to position |contents_| within |contents_host_|.
@@ -268,7 +289,7 @@ gfx::Insets RoundedOmniboxResultsFrame::GetShadowInsets() {
   return views::BubbleBorder::GetBorderAndShadowInsets(kElevation);
 }
 
-void RoundedOmniboxResultsFrame::Layout() {
+void RoundedOmniboxResultsFrame::Layout(PassKey) {
   // This is called when the Widget resizes due to results changing. Resizing
   // the Widget is fast on ChromeOS, but slow on other platforms, and can't be
   // animated smoothly.
@@ -320,5 +341,5 @@ void RoundedOmniboxResultsFrame::OnMouseEvent(ui::MouseEvent* event) {
 
 #endif  // !USE_AURA
 
-BEGIN_METADATA(RoundedOmniboxResultsFrame, views::View)
+BEGIN_METADATA(RoundedOmniboxResultsFrame)
 END_METADATA

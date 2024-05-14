@@ -13,6 +13,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -42,12 +43,19 @@
 #include "media/base/video_facing.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#include "content/browser/media/captured_surface_controller.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "media/capture/video/chromeos/system_event_monitor_impl.h"
+#endif
 
 namespace media {
 class AudioSystem;
@@ -63,9 +71,9 @@ class AudioInputDeviceManager;
 class AudioServiceListener;
 class FakeMediaStreamUIProxy;
 class MediaStreamUIProxy;
+class PermissionControllerImpl;
 class VideoCaptureManager;
 class VideoCaptureProvider;
-class PermissionControllerImpl;
 
 enum TransferState { KEPT_ALIVE, GOT_OPEN_DEVICE };
 
@@ -120,6 +128,11 @@ class CONTENT_EXPORT MediaStreamManager
       base::RepeatingCallback<void(const std::string& label,
                                    const blink::MediaStreamDevice& device)>;
 
+  using ZoomLevelChangeCallback =
+      base::RepeatingCallback<void(const std::string& label,
+                                   const blink::MediaStreamDevice& device,
+                                   int zoom_level)>;
+
   using GetOpenDeviceCallback =
       base::OnceCallback<void(blink::mojom::MediaStreamRequestResult result,
                               blink::mojom::GetOpenDeviceResponsePtr response)>;
@@ -127,6 +140,16 @@ class CONTENT_EXPORT MediaStreamManager
   // Callback for testing.
   using GenerateStreamTestCallback =
       base::OnceCallback<bool(const blink::StreamControls&)>;
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  // Callback for creating a CapturedSurfaceController. Used to override the
+  // default CapturedSurfaceController in tests.
+  using CapturedSurfaceControllerFactoryCallback =
+      ::base::RepeatingCallback<std::unique_ptr<CapturedSurfaceController>(
+          GlobalRenderFrameHostId,
+          WebContentsMediaCaptureId,
+          base::RepeatingCallback<void(int)> on_zoom_level_change_callback)>;
+#endif
 
   // Adds |message| to native logs for outstanding device requests, for use by
   // render processes hosts whose corresponding render processes are requesting
@@ -192,13 +215,12 @@ class CONTENT_EXPORT MediaStreamManager
 
   // GenerateStream opens new media devices according to |controls|. It creates
   // a new request which is identified by a unique string that's returned to the
-  // caller. `render_frame_host_id` is used to determine
-  // where the infobar will appear to the user. |device_stopped_cb| is set to
-  // receive device stopped notifications. |device_changed_cb| is set to receive
-  // device changed notifications. |device_request_state_change_cb| is used to
-  // notify clients about request state changes.
-  // TODO(crbug.com/1288839): Package device-related callbacks into a single
-  // struct.
+  // caller. `render_frame_host_id` is used to determine where the infobar will
+  // appear to the user. |device_stopped_callback| is set to receive device
+  // stopped notifications. |device_changed_callback| is set to receive device
+  // changed notifications.  |device_request_state_change_callback| is used to
+  // notify clients about request state changes.  TODO(crbug.com/1288839):
+  // Package device-related callbacks into a single struct.
   void GenerateStreams(
       GlobalRenderFrameHostId render_frame_host_id,
       int requester_id,
@@ -207,17 +229,18 @@ class CONTENT_EXPORT MediaStreamManager
       MediaDeviceSaltAndOrigin salt_and_origin,
       bool user_gesture,
       blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
-      GenerateStreamsCallback generate_stream_cb,
-      DeviceStoppedCallback device_stopped_cb,
-      DeviceChangedCallback device_changed_cb,
-      DeviceRequestStateChangeCallback device_request_state_change_cb,
+      GenerateStreamsCallback generate_stream_callback,
+      DeviceStoppedCallback device_stopped_callback,
+      DeviceChangedCallback device_changed_callback,
+      DeviceRequestStateChangeCallback device_request_state_change_callback,
       DeviceCaptureConfigurationChangeCallback
-          device_capture_configuration_change_cb,
-      DeviceCaptureHandleChangeCallback device_capture_handle_change_cb);
+          device_capture_configuration_change_callback,
+      DeviceCaptureHandleChangeCallback device_capture_handle_change_callback,
+      ZoomLevelChangeCallback zoom_level_change_callback);
 
   // Accesses an existing open device, identified by |device_session_id|,
   // and associates it with a new DeviceRequest. This device is then returned by
-  // invoking |get_open_device_cb| asynchronously.
+  // invoking |get_open_device_callback| asynchronously.
   void GetOpenDevice(
       const base::UnguessableToken& device_session_id,
       const base::UnguessableToken& transfer_id,
@@ -225,13 +248,14 @@ class CONTENT_EXPORT MediaStreamManager
       int requester_id,
       int page_request_id,
       MediaDeviceSaltAndOrigin salt_and_origin,
-      GetOpenDeviceCallback get_open_device_cb,
-      DeviceStoppedCallback device_stopped_cb,
-      DeviceChangedCallback device_changed_cb,
-      DeviceRequestStateChangeCallback device_request_state_change_cb,
+      GetOpenDeviceCallback get_open_device_callback,
+      DeviceStoppedCallback device_stopped_callback,
+      DeviceChangedCallback device_changed_callback,
+      DeviceRequestStateChangeCallback device_request_state_change_callback,
       DeviceCaptureConfigurationChangeCallback
-          device_capture_configuration_change_cb,
-      DeviceCaptureHandleChangeCallback device_capture_handle_change_cb);
+          device_capture_configuration_change_callback,
+      DeviceCaptureHandleChangeCallback device_capture_handle_change_callback,
+      ZoomLevelChangeCallback zoom_level_change_callback);
 
   // Cancel an open request identified by |page_request_id| for the given frame.
   // Must be called on the IO thread.
@@ -261,16 +285,16 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Open a device identified by |device_id|. |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-  // |device_stopped_cb| is set to receive device stopped notifications. The
-  // request is identified using string returned to the caller.
+  // |device_stopped_callback| is set to receive device stopped notifications.
+  // The request is identified using string returned to the caller.
   void OpenDevice(GlobalRenderFrameHostId render_frame_host_id,
                   int requester_id,
                   int page_request_id,
                   const std::string& device_id,
                   blink::mojom::MediaStreamType type,
                   MediaDeviceSaltAndOrigin salt_and_origin,
-                  OpenDeviceCallback open_device_cb,
-                  DeviceStoppedCallback device_stopped_cb);
+                  OpenDeviceCallback open_device_callback,
+                  DeviceStoppedCallback device_stopped_callback);
 
   // Find |device_id| in the list of |requests_|, and returns its session id,
   // or an empty base::UnguessableToken if not found. Must be called on the IO
@@ -295,6 +319,16 @@ class CONTENT_EXPORT MediaStreamManager
   blink::MediaStreamDevices GetDevicesOpenedByRequest(
       const std::string& label) const;
 
+  using GetRawDeviceIdsOpenedForFrameCallback =
+      base::OnceCallback<void(std::vector<std::string> active_device_ids)>;
+  // Returns all device IDs currently opened for `render_frame_host_id` and its
+  // descendants with `type`. If no request exists that matches the constraints,
+  // an empty array is returned.
+  void GetRawDeviceIdsOpenedForFrame(
+      RenderFrameHost* render_frame_host,
+      blink::mojom::MediaStreamType type,
+      GetRawDeviceIdsOpenedForFrameCallback) const;
+
   // This object gets deleted on the UI thread after the IO thread has been
   // destroyed. So we need to know when IO thread is being destroyed so that
   // we can delete VideoCaptureManager and AudioInputDeviceManager.
@@ -313,7 +347,8 @@ class CONTENT_EXPORT MediaStreamManager
   void UseFakeUIFactoryForTests(
       base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
           fake_ui_factory,
-      bool use_for_gum_desktop_capture = true);
+      bool use_for_gum_desktop_capture = true,
+      std::optional<WebContentsMediaCaptureId> captured_tab_id = std::nullopt);
 
   // Register and unregister a new callback for receiving native log entries.
   // Called on the IO thread.
@@ -352,6 +387,11 @@ class CONTENT_EXPORT MediaStreamManager
                           blink::mojom::MediaStreamType stream_type,
                           MediaRequestState new_state);
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  void SetCapturedSurfaceControllerFactoryForTesting(
+      CapturedSurfaceControllerFactoryCallback factory);
+#endif
+
   // This method is called when all tracks are started.
   void OnStreamStarted(const std::string& label);
 
@@ -367,9 +407,9 @@ class CONTENT_EXPORT MediaStreamManager
 
   void OnRegionCaptureRectChanged(
       const base::UnguessableToken& session_id,
-      const absl::optional<gfx::Rect>& region_capture_rect);
+      const std::optional<gfx::Rect>& region_capture_rect);
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Determines whether the captured surface (tab/window) should be focused.
   // This can be called at most once, and only within the first 1s of the
   // capture session being initiated. If a call with |focus=false| is not
@@ -384,7 +424,23 @@ class CONTENT_EXPORT MediaStreamManager
                                       bool focus,
                                       bool is_from_microtask,
                                       bool is_from_timer);
-#endif
+
+  // Captured Surface Control APIs.
+  void SendWheel(
+      GlobalRenderFrameHostId capturer_rfh_id,
+      const base::UnguessableToken& session_id,
+      blink::mojom::CapturedWheelActionPtr action,
+      base::OnceCallback<void(blink::mojom::CapturedSurfaceControlResult)>
+          callback);
+
+  void SetZoomLevel(
+      GlobalRenderFrameHostId capturer_rfh_id,
+      const base::UnguessableToken& session_id,
+      int zoom_level,
+      base::OnceCallback<void(blink::mojom::CapturedSurfaceControlResult)>
+          callback);
+
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
   void RegisterDispatcherHost(
       std::unique_ptr<blink::mojom::MediaStreamDispatcherHost> host,
@@ -487,9 +543,23 @@ class CONTENT_EXPORT MediaStreamManager
       const std::string& label) const;
   DeviceRequest* FindRequest(const std::string& label) const;
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  // Find a request by the session-ID of its video device.
+  // (In case of multiple video devices - any of them would fit.)
+  // TOOD(crbug.com/1466247): Remove this after making the Captured Surface
+  // Control APIs pass the label instead.
+  DeviceRequest* FindRequestByVideoSessionId(
+      const base::UnguessableToken& session_id) const;
+
+  CapturedSurfaceController* GetCapturedSurfaceController(
+      GlobalRenderFrameHostId capturer_rfh_id,
+      const base::UnguessableToken& session_id,
+      blink::mojom::CapturedSurfaceControlResult& result);
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
   // Clones an existing device identified by |existing_device_session_id| and
-  // returns it. If no such device is found, it returns absl::nullopt.
-  absl::optional<blink::MediaStreamDevice> CloneExistingOpenDevice(
+  // returns it. If no such device is found, it returns std::nullopt.
+  std::optional<blink::MediaStreamDevice> CloneExistingOpenDevice(
       const base::UnguessableToken& existing_device_session_id,
       const base::UnguessableToken& transfer_id,
       const std::string& new_label);
@@ -552,7 +622,7 @@ class CONTENT_EXPORT MediaStreamManager
   void PostRequestToUI(
       const std::string& label,
       const MediaDeviceEnumeration& enumeration,
-      const absl::optional<media::AudioParameters>& output_parameters);
+      const std::optional<media::AudioParameters>& output_parameters);
 
   // Returns true if a device with |device_id| has already been requested with
   // a render_frame_host_id and type equal to the the values
@@ -569,7 +639,7 @@ class CONTENT_EXPORT MediaStreamManager
   void FinalizeGetOpenDevice(const std::string& label, DeviceRequest* request);
   void PanTiltZoomPermissionChecked(
       const std::string& label,
-      const absl::optional<blink::MediaStreamDevice>& video_device,
+      const std::optional<blink::MediaStreamDevice>& video_device,
       bool pan_tilt_zoom_allowed);
   void FinalizeRequestFailed(DeviceRequests::const_iterator request_it,
                              blink::mojom::MediaStreamRequestResult result);
@@ -586,18 +656,18 @@ class CONTENT_EXPORT MediaStreamManager
   // valid alternate device ID.
   // Returns false if the required device ID is present and invalid.
   // Otherwise, if no valid device is found, device_id is unchanged.
-  bool PickDeviceId(const MediaDeviceSaltAndOrigin& salt_and_origin,
-                    const blink::TrackControls& controls,
-                    const blink::WebMediaDeviceInfoArray& devices,
-                    std::string* device_id) const;
+  bool RemoveInvalidDeviceIds(const MediaDeviceSaltAndOrigin& salt_and_origin,
+                              const blink::TrackControls& controls,
+                              const blink::WebMediaDeviceInfoArray& devices,
+                              std::vector<std::string>* device_id) const;
 
   // Finds the requested device id from request. The requested device type
   // must be MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-  bool GetRequestedDeviceCaptureId(
+  bool GetEligibleCaptureDeviceids(
       const DeviceRequest* request,
       blink::mojom::MediaStreamType type,
       const blink::WebMediaDeviceInfoArray& devices,
-      std::string* device_id) const;
+      std::vector<std::string>* device_id) const;
 
   void TranslateDeviceIdToSourceId(const DeviceRequest* request,
                                    blink::MediaStreamDevice* device) const;
@@ -698,7 +768,12 @@ class CONTENT_EXPORT MediaStreamManager
       const MediaDeviceEnumeration& enumeration,
       DeviceRequest* request);
 
-#if !BUILDFLAG(IS_ANDROID)
+  void GetRawDeviceIdsOpenedForFrameIds(
+      blink::mojom::MediaStreamType type,
+      GetRawDeviceIdsOpenedForFrameCallback callback,
+      base::flat_set<GlobalRenderFrameHostId> render_frame_host_ids) const;
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Defines a window of opportunity for the Web-application to decide
   // whether a display-surface which it's capturing should be focused.
   // After |kConditionalFocusWindow| past the beginning of the capture,
@@ -706,6 +781,8 @@ class CONTENT_EXPORT MediaStreamManager
   // from Web-applications, thereby preventing applications from changing
   // focus at an arbitrary time.
   const base::TimeDelta conditional_focus_window_;
+
+  CapturedSurfaceControllerFactoryCallback captured_surface_controller_factory_;
 #endif
 
   const raw_ptr<media::AudioSystem, DanglingUntriaged>
@@ -713,7 +790,7 @@ class CONTENT_EXPORT MediaStreamManager
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
 
-  absl::optional<base::Thread> video_capture_thread_;
+  std::optional<base::Thread> video_capture_thread_;
 
   std::unique_ptr<MediaDevicesManager> media_devices_manager_;
 
@@ -740,6 +817,12 @@ class CONTENT_EXPORT MediaStreamManager
   // is getDisplayMedia-driven or getUserMedia-driven.
   bool use_fake_ui_only_for_camera_and_microphone_ = false;
 
+  // If `fake_ui_factory_` is set, then when its use results in tab-capture:
+  // * If `fake_ui_factory_captured_tab_id_` is also set, it determines the ID
+  //   of the tab that will be captured.
+  // * Otherwise, the capturing tab will capture itself.
+  std::optional<WebContentsMediaCaptureId> fake_ui_factory_captured_tab_id_;
+
   // Observes changes of captured tabs' CaptureHandleConfig and reports
   // this changes back to their capturers. This object lives on the UI thread
   // and must be accessed on it and torn down from it.
@@ -759,6 +842,10 @@ class CONTENT_EXPORT MediaStreamManager
   mojo::UniqueReceiverSet<media::mojom::VideoCaptureHost> video_capture_hosts_;
 
   GenerateStreamTestCallback generate_stream_test_callback_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<media::SystemEventMonitorImpl> system_event_monitor_;
+#endif
 };
 
 }  // namespace content

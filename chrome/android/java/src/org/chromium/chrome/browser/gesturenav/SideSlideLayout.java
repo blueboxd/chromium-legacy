@@ -19,6 +19,7 @@ import android.view.animation.Transformation;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.NavigationBubble.CloseTarget;
+import org.chromium.ui.animation.EmptyAnimationListener;
 import org.chromium.ui.interpolators.Interpolators;
 
 /**
@@ -63,11 +64,6 @@ public class SideSlideLayout extends ViewGroup {
     // Minimum number of pull updates necessary to trigger a side nav.
     private static final int MIN_PULLS_TO_ACTIVATE = 3;
 
-    // Time threshold to detect navigation reversal - i.e. user navigating
-    // forward after navigating back (or back after forward) within a short
-    // period of time.
-    private static final int NAVIGATION_REVERSAL_MS = 3 * 1000;
-
     private final DecelerateInterpolator mDecelerateInterpolator;
     private final float mTotalDragDistance;
     private final int mMediumAnimationDuration;
@@ -102,13 +98,7 @@ public class SideSlideLayout extends ViewGroup {
     private boolean mWillNavigate;
 
     private final AnimationListener mNavigateListener =
-            new AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {}
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {}
-
+            new EmptyAnimationListener() {
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     mArrowView.setFaded(false, false);
@@ -125,8 +115,6 @@ public class SideSlideLayout extends ViewGroup {
                     int targetTop = mFrom + (int) ((mOriginalOffset - mFrom) * interpolatedTime);
                     int offset = targetTop - mArrowView.getLeft();
                     mTotalMotion += offset;
-
-                    float progress = Math.min(1.f, getOverscroll() / mTotalDragDistance);
                     setTargetOffsetLeftAndRight(offset);
                 }
             };
@@ -140,7 +128,7 @@ public class SideSlideLayout extends ViewGroup {
         setWillNotDraw(false);
         mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);
 
-        mCircleWidth = (int) getResources().getDimensionPixelSize(R.dimen.navigation_bubble_size);
+        mCircleWidth = getResources().getDimensionPixelSize(R.dimen.navigation_bubble_size);
 
         LayoutInflater layoutInflater = LayoutInflater.from(getContext());
         mArrowView = (NavigationBubble) layoutInflater.inflate(R.layout.navigation_bubble, null);
@@ -158,13 +146,7 @@ public class SideSlideLayout extends ViewGroup {
         mTotalDragDistance = RAW_SWIPE_LIMIT_DP * getResources().getDisplayMetrics().density;
 
         mAnimateToStartPosition.setAnimationListener(
-                new AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {}
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {}
-
+                new EmptyAnimationListener() {
                     @Override
                     public void onAnimationEnd(Animation animation) {
                         reset();
@@ -262,8 +244,8 @@ public class SideSlideLayout extends ViewGroup {
     }
 
     private void initializeOffset() {
-        int offset = mIsForward ? ((View) getParent()).getWidth() : -mArrowViewWidth;
-        mCurrentTargetOffset = mOriginalOffset = offset;
+        mOriginalOffset = mIsForward ? ((View) getParent()).getWidth() : -mArrowViewWidth;
+        mCurrentTargetOffset = mOriginalOffset;
     }
 
     /**
@@ -279,13 +261,6 @@ public class SideSlideLayout extends ViewGroup {
         initializeOffset();
         mArrowView.setFaded(false, false);
         return true;
-    }
-
-    /**
-     * @param Total amount of pull offset.
-     */
-    float getPullOffset() {
-        return mTotalMotion;
     }
 
     /**

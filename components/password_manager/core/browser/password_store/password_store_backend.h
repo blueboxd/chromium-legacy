@@ -36,8 +36,7 @@ using LoginsOrErrorReply = base::OnceCallback<void(LoginsResultOrError)>;
 // Android, it sends requests to a service).
 // All methods are required to do their work asynchronously to prevent expensive
 // IO operation from possibly blocking the main thread.
-class PasswordStoreBackend
-    : public base::SupportsWeakPtr<PasswordStoreBackend> {
+class PasswordStoreBackend {
  public:
   using RemoteChangesReceived =
       base::RepeatingCallback<void(std::optional<PasswordStoreChangeList>)>;
@@ -59,6 +58,9 @@ class PasswordStoreBackend
   // Shuts down the store asynchronously. The callback is run on the main thread
   // after the shutdown has concluded and it is safe to delete the backend.
   virtual void Shutdown(base::OnceClosure shutdown_completed) = 0;
+
+  // Necessary condition to offer saving passwords.
+  virtual bool IsAbleToSavePasswords() = 0;
 
   // Returns the complete list of PasswordForms (regardless of their blocklist
   // status). Callback is called on the main sequence.
@@ -151,6 +153,9 @@ class PasswordStoreBackend
 
   // Propagates sync initialization event.
   virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service) = 0;
+
+  // Get a WeakPtr to the instance.
+  virtual base::WeakPtr<PasswordStoreBackend> AsWeakPtr() = 0;
 };
 
 }  // namespace password_manager

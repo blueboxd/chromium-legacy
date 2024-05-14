@@ -223,11 +223,13 @@ void AshAcceleratorConfiguration::OnActiveUserPrefServiceChanged(
   }
 }
 
-const std::vector<ui::Accelerator>&
+base::optional_ref<const std::vector<ui::Accelerator>>
 AshAcceleratorConfiguration::GetAcceleratorsForAction(
     AcceleratorActionId action_id) {
   const auto accelerator_iter = id_to_accelerators_.find(action_id);
-  CHECK(accelerator_iter != id_to_accelerators_.end());
+  if (accelerator_iter == id_to_accelerators_.end()) {
+    return std::nullopt;
+  }
 
   return accelerator_iter->second;
 }
@@ -576,6 +578,17 @@ AshAcceleratorConfiguration::DoReplaceAccelerator(
 
   // Now add the new accelerator.
   return DoAddAccelerator(action_id, new_accelerator, /*save_override=*/true);
+}
+
+void AshAcceleratorConfiguration::SetUsePositionalLookup(
+    bool use_positional_lookup) {
+  accelerator_to_id_.set_use_positional_lookup(use_positional_lookup);
+  deprecated_accelerators_to_id_.set_use_positional_lookup(
+      use_positional_lookup);
+  default_accelerators_to_id_cache_.set_use_positional_lookup(
+      use_positional_lookup);
+  default_deprecated_accelerators_to_id_cache_.set_use_positional_lookup(
+      use_positional_lookup);
 }
 
 const DeprecatedAcceleratorData*

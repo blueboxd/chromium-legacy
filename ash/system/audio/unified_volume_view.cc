@@ -7,7 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -24,6 +25,7 @@
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -47,7 +49,6 @@ UnifiedVolumeView::UnifiedVolumeView(
           &kQuickSettingsRightArrowIcon,
           IDS_ASH_STATUS_TRAY_AUDIO))),
       is_active_output_node_(is_active_output_node),
-      a11y_controller_(Shell::Get()->accessibility_controller()),
       device_id_(CrasAudioHandler::Get()->GetPrimaryActiveOutputNode()) {
   CrasAudioHandler::Get()->AddAudioObserver(this);
 
@@ -60,10 +61,14 @@ UnifiedVolumeView::UnifiedVolumeView(
   }
 
   more_button_->SetIconColor(cros_tokens::kCrosSysSecondary);
+  more_button_->SetProperty(views::kElementIdentifierKey,
+                            kQuickSettingsAudioDetailedViewButtonElementId);
+
   // TODO(b/257151067): Update the a11y name id.
   // Adds the live caption button before `more_button_`.
-  a11y_controller_->AddObserver(this);
-  const bool enabled = a11y_controller_->live_caption().enabled();
+  Shell::Get()->accessibility_controller()->AddObserver(this);
+  const bool enabled =
+      Shell::Get()->accessibility_controller()->live_caption().enabled();
   live_caption_button_ = AddChildViewAt(
       std::make_unique<IconButton>(
           base::BindRepeating(&UnifiedVolumeView::OnLiveCaptionButtonPressed,
@@ -112,7 +117,6 @@ UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller,
                         Style::kRadioActive),
       more_button_(nullptr),
       is_active_output_node_(is_active_output_node),
-      a11y_controller_(Shell::Get()->accessibility_controller()),
       device_id_(device_id) {
   CrasAudioHandler::Get()->AddAudioObserver(this);
 
@@ -131,7 +135,7 @@ UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller,
 
 UnifiedVolumeView::~UnifiedVolumeView() {
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  a11y_controller_->RemoveObserver(this);
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
 }
 
 void UnifiedVolumeView::Update(bool by_user) {
@@ -221,8 +225,8 @@ const gfx::VectorIcon& UnifiedVolumeView::GetVolumeIconForLevel(float level) {
 }
 
 void UnifiedVolumeView::OnLiveCaptionButtonPressed() {
-  a11y_controller_->live_caption().SetEnabled(
-      !a11y_controller_->live_caption().enabled());
+  Shell::Get()->accessibility_controller()->live_caption().SetEnabled(
+      !Shell::Get()->accessibility_controller()->live_caption().enabled());
 }
 
 void UnifiedVolumeView::OnOutputNodeVolumeChanged(uint64_t node_id,
@@ -253,7 +257,8 @@ void UnifiedVolumeView::OnActiveInputNodeChanged() {
 }
 
 void UnifiedVolumeView::OnAccessibilityStatusChanged() {
-  const bool enabled = a11y_controller_->live_caption().enabled();
+  const bool enabled =
+      Shell::Get()->accessibility_controller()->live_caption().enabled();
 
   // Sets `live_caption_button_` toggle state to update its icon, icon color,
   // and background color.
@@ -269,7 +274,7 @@ void UnifiedVolumeView::OnAccessibilityStatusChanged() {
 }
 
 void UnifiedVolumeView::ChildVisibilityChanged(views::View* child) {
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void UnifiedVolumeView::VisibilityChanged(View* starting_from,
@@ -277,7 +282,7 @@ void UnifiedVolumeView::VisibilityChanged(View* starting_from,
   Update(/*by_user=*/true);
 }
 
-BEGIN_METADATA(UnifiedVolumeView, views::View)
+BEGIN_METADATA(UnifiedVolumeView)
 END_METADATA
 
 }  // namespace ash

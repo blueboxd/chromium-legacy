@@ -19,11 +19,19 @@
 #define IN_LIBXML
 #include "libxml.h"
 
+#include <errno.h>
 #include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #include "private/dict.h"
+#include "private/globals.h"
 #include "private/threads.h"
 
 #include <libxml/parser.h>
@@ -81,6 +89,8 @@ static xmlMutex xmlDictMutex;
  * xmlInitializeDict:
  *
  * DEPRECATED: Alias for xmlInitParser.
+ *
+ * Returns 0.
  */
 int
 xmlInitializeDict(void) {
@@ -89,7 +99,7 @@ xmlInitializeDict(void) {
 }
 
 /**
- * xmlInitializeDict:
+ * xmlInitDictInternal:
  *
  * Initialize mutex.
  */
@@ -499,6 +509,10 @@ xmlDictHashQName(unsigned seed, const xmlChar *prefix, const xmlChar *name,
 
     HASH_FINISH(h1, h2);
 
+    /*
+     * Always set the upper bit of hash values since 0 means an unoccupied
+     * bucket.
+     */
     return(h2 | MAX_HASH_SIZE);
 }
 
@@ -506,6 +520,21 @@ unsigned
 xmlDictComputeHash(const xmlDict *dict, const xmlChar *string) {
     size_t len;
     return(xmlDictHashName(dict->seed, string, SIZE_MAX, &len));
+}
+
+#define HASH_ROL31(x,n) ((x) << (n) | ((x) & 0x7FFFFFFF) >> (31 - (n)))
+
+ATTRIBUTE_NO_SANITIZE_INTEGER
+unsigned
+xmlDictCombineHash(unsigned v1, unsigned v2) {
+    /*
+     * The upper bit of hash values is always set, so we have to operate on
+     * 31-bit hashes here.
+     */
+    v1 ^= v2;
+    v1 += HASH_ROL31(v2, 5);
+
+    return((v1 & 0xFFFFFFFF) | 0x80000000);
 }
 
 /**
@@ -887,24 +916,21 @@ static xmlMutex xmlRngMutex;
 
 static unsigned globalRngState[2];
 
-#ifdef XML_THREAD_LOCAL
-XML_THREAD_LOCAL static int localRngInitialized = 0;
-XML_THREAD_LOCAL static unsigned localRngState[2];
-#endif
-
 ATTRIBUTE_NO_SANITIZE_INTEGER
 void
 xmlInitRandom(void) {
-    int var;
-
     xmlInitMutex(&xmlRngMutex);
 
-    /* TODO: Get seed values from system PRNG */
+    {
+        int var;
 
-    globalRngState[0] = (unsigned) time(NULL) ^
-                        HASH_ROL((unsigned) (size_t) &xmlInitRandom, 8);
-    globalRngState[1] = HASH_ROL((unsigned) (size_t) &xmlRngMutex, 16) ^
-                        HASH_ROL((unsigned) (size_t) &var, 24);
+        globalRngState[0] =
+                (unsigned) time(NULL) ^
+                HASH_ROL((unsigned) ((size_t) &xmlInitRandom & 0xFFFFFFFF), 8);
+        globalRngState[1] =
+                HASH_ROL((unsigned) ((size_t) &xmlRngMutex & 0xFFFFFFFF), 16) ^
+                HASH_ROL((unsigned) ((size_t) &var & 0xFFFFFFFF), 24);
+    }
 }
 
 void
@@ -927,18 +953,7 @@ xoroshiro64ss(unsigned *s) {
 }
 
 unsigned
-xmlRandom(void) {
-#ifdef XML_THREAD_LOCAL
-    if (!localRngInitialized) {
-        xmlMutexLock(&xmlRngMutex);
-        localRngState[0] = xoroshiro64ss(globalRngState);
-        localRngState[1] = xoroshiro64ss(globalRngState);
-        localRngInitialized = 1;
-        xmlMutexUnlock(&xmlRngMutex);
-    }
-
-    return(xoroshiro64ss(localRngState));
-#else
+xmlGlobalRandom(void) {
     unsigned ret;
 
     xmlMutexLock(&xmlRngMutex);
@@ -946,6 +961,14 @@ xmlRandom(void) {
     xmlMutexUnlock(&xmlRngMutex);
 
     return(ret);
+}
+
+unsigned
+xmlRandom(void) {
+#ifdef LIBXML_THREAD_ENABLED
+    return(xoroshiro64ss(xmlGetLocalRngState()));
+#else
+    return(xmlGlobalRandom());
 #endif
 }
 

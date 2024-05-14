@@ -73,6 +73,7 @@ member class=ui::InputDevice id=1
  phys=""
  enabled=1
  suspected_keyboard_imposter=0
+ suspected_mouse_imposter=0
  sys_path=""
  vendor_id=0000
  product_id=0000
@@ -94,6 +95,7 @@ member class=ui::InputDevice id=1
  phys=""
  enabled=1
  suspected_keyboard_imposter=0
+ suspected_mouse_imposter=0
  sys_path=""
  vendor_id=046D
  product_id=C31C
@@ -115,6 +117,7 @@ member class=ui::InputDevice id=1
  phys=""
  enabled=1
  suspected_keyboard_imposter=0
+ suspected_mouse_imposter=0
  sys_path=""
  vendor_id=0001
  product_id=0001
@@ -136,6 +139,7 @@ member class=ui::InputDevice id=1
  phys=""
  enabled=1
  suspected_keyboard_imposter=0
+ suspected_mouse_imposter=0
  sys_path=""
  vendor_id=04F3
  product_id=323B
@@ -748,6 +752,66 @@ TEST_F(EventConverterEvdevImplTest, SetAllowedKeysBlockedKeyPressed) {
   ASSERT_EQ(0u, size());
 }
 
+TEST_F(EventConverterEvdevImplTest, SetBlockModifiers) {
+  ui::MockEventConverterEvdevImpl* dev = device();
+
+  struct input_event key_press[] = {
+      {{0, 0}, EV_KEY, KEY_LEFTMETA, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+  struct input_event key_release[] = {
+      {{0, 0}, EV_KEY, KEY_LEFTMETA, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(key_press, std::size(key_press));
+  ASSERT_EQ(1u, size());
+  ui::KeyEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+
+  dev->ProcessEvents(key_release, std::size(key_release));
+  ASSERT_EQ(2u, size());
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+
+  dev->SetBlockModifiers(true);
+
+  dev->ProcessEvents(key_press, std::size(key_press));
+  ASSERT_EQ(2u, size());
+  dev->ProcessEvents(key_release, std::size(key_release));
+  ASSERT_EQ(2u, size());
+}
+
+TEST_F(EventConverterEvdevImplTest, SetBlockModifiersWithModifierHeldDown) {
+  ui::MockEventConverterEvdevImpl* dev = device();
+
+  struct input_event key_press[] = {
+      {{0, 0}, EV_KEY, KEY_LEFTCTRL, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+  struct input_event key_release[] = {
+      {{0, 0}, EV_KEY, KEY_LEFTCTRL, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(key_press, std::size(key_press));
+  ASSERT_EQ(1u, size());
+  ui::KeyEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+
+  dev->SetBlockModifiers(true);
+  ASSERT_EQ(2u, size());
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_CONTROL, event->key_code());
+
+  dev->ProcessEvents(key_release, std::size(key_release));
+  ASSERT_EQ(2u, size());
+
+  dev->SetBlockModifiers(false);
+  ASSERT_EQ(2u, size());
+}
+
 TEST_F(EventConverterEvdevImplTest, ShouldSwapMouseButtonsFromUserPreference) {
   ui::MockEventConverterEvdevImpl* dev = device();
 
@@ -927,7 +991,7 @@ TEST_F(EventConverterEvdevImplLogTest, ChangeEnabled) {
   EXPECT_EQ(output.str(), log);
 }
 
-TEST_F(EventConverterEvdevImplLogTest, ChangeImposter) {
+TEST_F(EventConverterEvdevImplLogTest, ChangeKeyboardImposter) {
   ui::EventDeviceInfo devinfo;
   SetUpDevice(devinfo);
 
@@ -937,6 +1001,19 @@ TEST_F(EventConverterEvdevImplLogTest, ChangeImposter) {
   device()->DescribeForLog(output);
   std::string log = LogSubst(kDefaultDeviceLogDescription,
                              "suspected_keyboard_imposter", "1");
+  EXPECT_EQ(output.str(), log);
+}
+
+TEST_F(EventConverterEvdevImplLogTest, ChangeMouseImposter) {
+  ui::EventDeviceInfo devinfo;
+  SetUpDevice(devinfo);
+
+  device()->SetSuspectedMouseImposter(true);
+
+  std::stringstream output;
+  device()->DescribeForLog(output);
+  std::string log =
+      LogSubst(kDefaultDeviceLogDescription, "suspected_mouse_imposter", "1");
   EXPECT_EQ(output.str(), log);
 }
 

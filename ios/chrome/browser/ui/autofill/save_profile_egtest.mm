@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_address_profile_modal_constants.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -75,7 +76,7 @@ BOOL WaitForKeyboardToAppear() {
   return [waitForKeyboard waitWithTimeout:kWaitForActionTimeout.InSecondsF()];
 }
 
-}  // namepsace
+}  // namespace
 
 @interface SaveProfileEGTest : ChromeTestCase
 
@@ -92,6 +93,9 @@ BOOL WaitForKeyboardToAppear() {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
+
+  config.features_disabled.push_back(
+      autofill::features::test::kAutofillServerCommunication);
 
   if ([self isRunningTest:@selector(testUserData_MigrationToAccount)]) {
     config.features_enabled.push_back(

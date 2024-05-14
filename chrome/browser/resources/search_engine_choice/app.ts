@@ -16,17 +16,18 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import './strings.m.js';
 
-import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
+import type {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import type {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import type {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
-import {SearchEngineChoice, SearchEngineChoiceBrowserProxy} from './browser_proxy.js';
-import {PageHandlerRemote} from './search_engine_choice.mojom-webui.js';
+import type {SearchEngineChoice} from './browser_proxy.js';
+import {SearchEngineChoiceBrowserProxy} from './browser_proxy.js';
+import type {PageHandlerRemote} from './search_engine_choice.mojom-webui.js';
 
 export interface SearchEngineChoiceAppElement {
   $: {
@@ -89,20 +90,6 @@ export class SearchEngineChoiceAppElement extends
         value: '',
       },
 
-      withMarketingSnippets_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('withMarketingSnippets');
-        },
-      },
-
-      withForcedScroll_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('withForcedScroll');
-        },
-      },
-
       actionButtonText_: {
         type: String,
         computed: 'getActionButtonText_(hasUserScrolledToTheBottom_)',
@@ -120,9 +107,7 @@ export class SearchEngineChoiceAppElement extends
   private fakeOmniboxText_: string;
   private fakeOmniboxIconPath_: string;
   private pageHandler_: PageHandlerRemote;
-  private withMarketingSnippets_: boolean;
   private hasUserScrolledToTheBottom_: boolean;
-  private withForcedScroll_: boolean;
   private actionButtonText_: string;
 
   constructor() {
@@ -144,24 +129,23 @@ export class SearchEngineChoiceAppElement extends
         searchEngine.iconPath =
             getFaviconForPageURL(searchEngine?.url!, false, '', 24);
       } else {
-        searchEngine.iconPath = 'url(' + searchEngine.iconPath + ')';
+        searchEngine.iconPath = 'image-set(url(' + searchEngine.iconPath +
+            ') 1x, url(' + searchEngine.iconPath + '@2x) 2x)';
       }
     });
 
     afterNextRender(this, () => {
-      if (this.withForcedScroll_) {
-        // If the choice list and the page don't contain a scrollbar then the
-        // user is already at the bottom.
-        this.hasUserScrolledToTheBottom_ =
-            !this.isChoiceListScrollable_() && !this.isPageScrollable_();
+      // If the choice list and the page don't contain a scrollbar then the
+      // user is already at the bottom.
+      this.hasUserScrolledToTheBottom_ =
+          !this.isChoiceListScrollable_() && !this.isPageScrollable_();
 
-        if (this.isChoiceListScrollable_()) {
-          this.$.choiceList.addEventListener(
-              'scroll', this.onChoiceListScroll_.bind(this));
-        }
-        if (this.isPageScrollable_()) {
-          document.addEventListener('scroll', this.onPageScroll_.bind(this));
-        }
+      if (this.isChoiceListScrollable_()) {
+        this.$.choiceList.addEventListener(
+            'scroll', this.onChoiceListScroll_.bind(this));
+      }
+      if (this.isPageScrollable_()) {
+        document.addEventListener('scroll', this.onPageScroll_.bind(this));
       }
 
       this.pageHandler_.displayDialog();
@@ -173,10 +157,6 @@ export class SearchEngineChoiceAppElement extends
     this.pageHandler_.handleLearnMoreLinkClicked();
   }
 
-  private needsScrollToTheBottom_() {
-    return this.withForcedScroll_ && !this.hasUserScrolledToTheBottom_;
-  }
-
   private needsUserChoice_() {
     return parseInt(this.selectedChoice_) === -1;
   }
@@ -184,21 +164,28 @@ export class SearchEngineChoiceAppElement extends
   // The action button will be disabled if the user scrolls to the bottom of
   // the list without making a search engine choice.
   private computeActionButtonDisabled_() {
-    return !this.needsScrollToTheBottom_() && this.needsUserChoice_();
+    return this.hasUserScrolledToTheBottom_ && this.needsUserChoice_();
   }
 
   private onActionButtonClicked_() {
-    if (this.needsScrollToTheBottom_()) {
-      if (this.isChoiceListScrollable_()) {
-        const choiceList = this.$.choiceList;
-        choiceList.scrollTo({top: choiceList.scrollHeight, behavior: 'smooth'});
-      } else if (this.isPageScrollable_()) {
-        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-      }
+    if (this.hasUserScrolledToTheBottom_) {
+      this.pageHandler_.handleSearchEngineChoiceSelected(
+          parseInt(this.selectedChoice_));
       return;
     }
-    this.pageHandler_.handleSearchEngineChoiceSelected(
-        parseInt(this.selectedChoice_));
+
+    if (this.isChoiceListScrollable_()) {
+      const choiceList = this.$.choiceList;
+      choiceList.scrollTo({top: choiceList.scrollHeight, behavior: 'smooth'});
+    } else if (this.isPageScrollable_()) {
+      window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+    }
+  }
+
+  private onChevronClicked_(chevronExpanded: boolean) {
+    if (chevronExpanded) {
+      chrome.metricsPrivate.recordUserAction('ExpandSearchEngineDescription');
+    }
   }
 
   private onInfoDialogButtonClicked_() {
@@ -310,7 +297,8 @@ export class SearchEngineChoiceAppElement extends
 
   private getActionButtonText_() {
     return this.i18n(
-        this.needsScrollToTheBottom_() ? 'moreButtonText' : 'submitButtonText');
+        this.hasUserScrolledToTheBottom_ ? 'submitButtonText' :
+                                           'moreButtonText');
   }
 }
 

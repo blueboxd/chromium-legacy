@@ -6,6 +6,7 @@
 #define CC_TREES_DRAW_PROPERTY_UTILS_H_
 
 #include <vector>
+#include "base/memory/raw_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_collections.h"
 

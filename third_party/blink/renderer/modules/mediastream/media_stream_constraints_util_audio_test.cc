@@ -178,8 +178,8 @@ class MediaStreamConstraintsUtilAudioTestBase : public SimTest {
 
   AudioCaptureSettings SelectSettings(
       bool is_reconfigurable = false,
-      absl::optional<AudioDeviceCaptureCapabilities> capabilities =
-          absl::nullopt) {
+      std::optional<AudioDeviceCaptureCapabilities> capabilities =
+          std::nullopt) {
     MediaConstraints constraints = constraint_factory_.CreateMediaConstraints();
     if (capabilities) {
       return SelectSettingsAudioCapture(*capabilities, constraints,
@@ -1666,6 +1666,30 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
 #else
   EXPECT_FALSE(result.HasValue());
 #endif
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, VoiceIsolationControl) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().voice_isolation.SetExact(true);
+  AudioCaptureSettings settings = SelectSettings(true, capabilities_);
+  EXPECT_TRUE(settings.HasValue());
+  EXPECT_EQ(
+      settings.audio_processing_properties().voice_isolation,
+      AudioProcessingProperties::VoiceIsolationType::kVoiceIsolationEnabled);
+
+  constraint_factory_.Reset();
+  constraint_factory_.basic().voice_isolation.SetExact(false);
+  settings = SelectSettings(true, capabilities_);
+  EXPECT_TRUE(settings.HasValue());
+  EXPECT_EQ(
+      settings.audio_processing_properties().voice_isolation,
+      AudioProcessingProperties::VoiceIsolationType::kVoiceIsolationDisabled);
+  constraint_factory_.Reset();
+  settings = SelectSettings(true, capabilities_);
+  EXPECT_TRUE(settings.HasValue());
+  EXPECT_EQ(
+      settings.audio_processing_properties().voice_isolation,
+      AudioProcessingProperties::VoiceIsolationType::kVoiceIsolationDefault);
 }
 
 // Test advanced constraints sets that can be satisfied.

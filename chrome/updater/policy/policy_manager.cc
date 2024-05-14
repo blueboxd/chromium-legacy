@@ -7,6 +7,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/logging.h"
@@ -19,6 +20,9 @@
 namespace updater {
 
 namespace {
+
+constexpr char kCloudPolicyOverridesPlatformPolicy[] =
+    "CloudPolicyOverridesPlatformPolicy";
 
 // Preferences Category.
 constexpr char kAutoUpdateCheckPeriodOverrideMinutes[] =
@@ -61,7 +65,7 @@ constexpr char kRollbackToTargetVersion[] = "RollbackToTargetVersion";
 PolicyManager::PolicyManager(base::Value::Dict policies)
     : policies_(std::move(policies)) {
   constexpr size_t kInstallAppPrefixLength =
-      base::StringPiece(kInstallAppPrefix).length();
+      std::string_view(kInstallAppPrefix).length();
   base::ranges::for_each(policies_, [&](const auto& policy) {
     const std::string policy_name = policy.first;
     VLOG_IF(1, policy_name != base::ToLowerASCII(policy_name))
@@ -88,6 +92,12 @@ PolicyManager::PolicyManager(base::Value::Dict policies)
 
 PolicyManager::~PolicyManager() = default;
 
+std::optional<bool> PolicyManager::CloudPolicyOverridesPlatformPolicy() const {
+  std::optional<int> policy =
+      GetIntegerPolicy(kCloudPolicyOverridesPlatformPolicy);
+  return policy ? std::optional<bool>(policy.value()) : std::nullopt;
+}
+
 bool PolicyManager::HasActiveDevicePolicies() const {
   return !policies_.empty();
 }
@@ -112,8 +122,9 @@ std::optional<UpdatesSuppressedTimes> PolicyManager::GetUpdatesSuppressedTimes()
   std::optional<int> duration_min =
       GetIntegerPolicy(kUpdatesSuppressedDurationMin);
 
-  if (!start_hour || !start_min || !duration_min)
+  if (!start_hour || !start_min || !duration_min) {
     return std::nullopt;
+  }
 
   UpdatesSuppressedTimes supressed_times;
   supressed_times.start_hour_ = start_hour.value();
@@ -209,7 +220,7 @@ std::optional<std::vector<std::string>> PolicyManager::GetAppsWithPolicy()
       if (base::StartsWith(policy_name, base::ToLowerASCII(prefix)) &&
           kPrefixedPolicyNames.count(policy_name) == 0) {
         apps_with_policy.push_back(
-            policy_name.substr(base::StringPiece(prefix).length()));
+            policy_name.substr(std::string_view(prefix).length()));
       }
     });
   });

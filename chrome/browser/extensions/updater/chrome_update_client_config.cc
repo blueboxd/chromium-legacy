@@ -16,6 +16,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/scoped_observation.h"
@@ -24,6 +25,7 @@
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/extensions/updater/extension_update_client_command_line_config_policy.h"
+#include "chrome/browser/extensions/updater/extension_updater_switches.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
@@ -168,7 +170,7 @@ void ExtensionActivityDataService::OnExtensionPrefsWillBeDestroyed(
 // communication with the update backend.
 ChromeUpdateClientConfig::ChromeUpdateClientConfig(
     content::BrowserContext* context,
-    absl::optional<GURL> url_override)
+    std::optional<GURL> url_override)
     : context_(context),
       impl_(ExtensionUpdateClientCommandLineConfigPolicy(
                 base::CommandLine::ForCurrentProcess()),
@@ -201,14 +203,16 @@ base::TimeDelta ChromeUpdateClientConfig::UpdateDelay() const {
 }
 
 std::vector<GURL> ChromeUpdateClientConfig::UpdateUrl() const {
-  if (url_override_.has_value())
+  if (url_override_.has_value()) {
     return {*url_override_};
+  }
   return impl_.UpdateUrl();
 }
 
 std::vector<GURL> ChromeUpdateClientConfig::PingUrl() const {
-  if (url_override_.has_value())
+  if (url_override_.has_value()) {
     return {*url_override_};
+  }
   return impl_.PingUrl();
 }
 
@@ -222,7 +226,7 @@ base::Version ChromeUpdateClientConfig::GetBrowserVersion() const {
 }
 
 std::string ChromeUpdateClientConfig::GetChannel() const {
-  return chrome::GetChannelName(chrome::WithExtendedStable(true));
+  return GetChannelForExtensionUpdates();
 }
 
 std::string ChromeUpdateClientConfig::GetLang() const {
@@ -297,8 +301,9 @@ bool ChromeUpdateClientConfig::EnabledBackgroundDownloader() const {
 }
 
 bool ChromeUpdateClientConfig::EnabledCupSigning() const {
-  if (url_override_.has_value())
+  if (url_override_.has_value()) {
     return false;
+  }
   return impl_.EnabledCupSigning();
 }
 
@@ -320,7 +325,7 @@ ChromeUpdateClientConfig::GetProtocolHandlerFactory() const {
   return impl_.GetProtocolHandlerFactory();
 }
 
-absl::optional<bool> ChromeUpdateClientConfig::IsMachineExternallyManaged()
+std::optional<bool> ChromeUpdateClientConfig::IsMachineExternallyManaged()
     const {
   return impl_.IsMachineExternallyManaged();
 }
@@ -333,7 +338,7 @@ ChromeUpdateClientConfig::GetUpdaterStateProvider() const {
 // static
 scoped_refptr<ChromeUpdateClientConfig> ChromeUpdateClientConfig::Create(
     content::BrowserContext* context,
-    absl::optional<GURL> update_url_override) {
+    std::optional<GURL> update_url_override) {
   FactoryCallback& factory = GetFactoryCallback();
   return factory.is_null() ? base::MakeRefCounted<ChromeUpdateClientConfig>(
                                  context, update_url_override)
@@ -347,13 +352,17 @@ void ChromeUpdateClientConfig::SetChromeUpdateClientConfigFactoryForTesting(
   GetFactoryCallback() = factory;
 }
 
-absl::optional<base::FilePath> ChromeUpdateClientConfig::GetCrxCachePath()
+std::optional<base::FilePath> ChromeUpdateClientConfig::GetCrxCachePath()
     const {
   base::FilePath path;
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &path);
-  return result ? absl::optional<base::FilePath>(
+  return result ? std::optional<base::FilePath>(
                       path.AppendASCII("extensions_crx_cache"))
-                : absl::nullopt;
+                : std::nullopt;
+}
+
+bool ChromeUpdateClientConfig::IsConnectionMetered() const {
+  return impl_.IsConnectionMetered();
 }
 
 }  // namespace extensions

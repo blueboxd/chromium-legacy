@@ -194,8 +194,7 @@ class Buffer::Texture : public viz::ContextLostObserver {
   void ScheduleWaitForRelease(base::TimeDelta delay);
   void WaitForRelease();
 
-  const raw_ptr<gfx::GpuMemoryBuffer, DanglingUntriaged | ExperimentalAsh>
-      gpu_memory_buffer_;
+  const raw_ptr<gfx::GpuMemoryBuffer, DanglingUntriaged> gpu_memory_buffer_;
   const gfx::Size size_;
   scoped_refptr<viz::RasterContextProvider> context_provider_;
   const unsigned texture_target_;
@@ -221,15 +220,21 @@ Buffer::Texture::Texture(
       query_type_(GL_COMMANDS_COMPLETED_CHROMIUM) {
   gpu::SharedImageInterface* sii = context_provider_->SharedImageInterface();
 
-  // Add GLES2 usage as it is used by RasterImplementationGLES.
-  const uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER |
+  // These SharedImages are used over the raster interface as both the source
+  // and destination of writes. Add GLES2 usage as they might be used by
+  // RasterImplementationGLES.
+  // TODO(crbug.com/1508447): Remove GLES2 usage once the browser main thread
+  // using the RasterDecoder implementation has definitively landed.
+  const uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                         gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
                          gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-                         gpu::SHARED_IMAGE_USAGE_GLES2;
+                         gpu::SHARED_IMAGE_USAGE_GLES2_READ |
+                         gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
 
   shared_image_ = sii->CreateSharedImage(
       viz::SinglePlaneFormat::kRGBA_8888, size, color_space,
-      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage, "ExoTexture",
-      gpu::kNullSurfaceHandle);
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+      gpu::kExoTextureLabelPrefix, gpu::kNullSurfaceHandle);
   CHECK(shared_image_);
   DCHECK(!shared_image_->mailbox().IsZero());
   gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
@@ -258,10 +263,16 @@ Buffer::Texture::Texture(
       wait_for_release_delay_(wait_for_release_delay) {
   gpu::SharedImageInterface* sii = context_provider_->SharedImageInterface();
 
-  // Add GLES2 usage as it is used by RasterImplementationGLES.
-  uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER |
+  // These SharedImages are used over the raster interface as both the source
+  // and destination of writes. Add GLES2 usage as they might be used by
+  // RasterImplementationGLES.
+  // TODO(crbug.com/1508447): Remove GLES2 usage once the browser main thread
+  // using the RasterDecoder implementation has definitively landed.
+  uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                   gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
                    gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-                   gpu::SHARED_IMAGE_USAGE_GLES2;
+                   gpu::SHARED_IMAGE_USAGE_GLES2_READ |
+                   gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
   if (is_overlay_candidate) {
     usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
   }
@@ -270,14 +281,14 @@ Buffer::Texture::Texture(
     auto si_format = GetSharedImageFormat(gpu_memory_buffer_->GetFormat());
     shared_image_ = sii->CreateSharedImage(
         si_format, gpu_memory_buffer_->GetSize(), color_space,
-        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage, "ExoTexture",
-        gpu_memory_buffer_->CloneHandle());
+        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+        gpu::kExoTextureLabelPrefix, gpu_memory_buffer_->CloneHandle());
 
   } else {
     shared_image_ = sii->CreateSharedImage(
         gpu_memory_buffer_, gpu_memory_buffer_manager,
         gfx::BufferPlane::DEFAULT, color_space, kTopLeft_GrSurfaceOrigin,
-        kPremul_SkAlphaType, usage, "ExoTexture");
+        kPremul_SkAlphaType, usage, gpu::kExoTextureLabelPrefix);
   }
   CHECK(shared_image_);
   DCHECK(!shared_image_->mailbox().IsZero());
@@ -848,6 +859,10 @@ void Buffer::OnIsProtectedNativePixmapHandle(bool is_protected) {
 }
 #endif  // BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
 
+base::WeakPtr<Buffer> Buffer::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 SolidColorBuffer::SolidColorBuffer(const SkColor4f& color,
                                    const gfx::Size& size)
     : Buffer(nullptr), color_(color), size_(size) {}
@@ -875,6 +890,10 @@ SkColor4f SolidColorBuffer::GetColor() const {
 
 gfx::Size SolidColorBuffer::GetSize() const {
   return size_;
+}
+
+base::WeakPtr<Buffer> SolidColorBuffer::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace exo

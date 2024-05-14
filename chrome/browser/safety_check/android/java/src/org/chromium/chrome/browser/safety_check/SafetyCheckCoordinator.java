@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.safety_check;
 
+import static org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge.usesSplitStoresAndUPMForLocal;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.DefaultLifecycleObserver;
@@ -11,19 +13,26 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.SyncService;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** Coordinator for the Safety check settings page. */
-public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
+public class SafetyCheckCoordinator implements DefaultLifecycleObserver, SafetyCheckComponentUi {
     private SafetyCheckSettingsFragment mSettingsFragment;
     private SafetyCheckUpdatesDelegate mUpdatesClient;
     private SyncConsentActivityLauncher mSigninLauncher;
     private SafetyCheckMediator mMediator;
+    private SyncService mSyncService;
+    private PrefService mPrefService;
+    private PropertyModel mPasswordCheckLocalModel;
+    private PropertyModel mPasswordCheckAccountModel;
 
     /**
      * Creates a new instance given a settings fragment, an updates client, and a settings launcher.
@@ -32,6 +41,7 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
      *
      * @param settingsFragment An instance of {SafetyCheckSettingsFragment} to observe.
      * @param updatesClient An instance implementing the {@SafetyCheckUpdatesDelegate} interface.
+     * @param bridge An instances of {@link SafetyCheckBridge} to access C++ APIs.
      * @param settingsLauncher An instance implementing the {@SettingsLauncher} interface.
      * @param signinLauncher An instance implementing {@SigninActivityLauncher}.
      * @param modalDialogManagerSupplier An supplier for the {@ModalDialogManager}.
@@ -39,28 +49,37 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
     public static void create(
             SafetyCheckSettingsFragment settingsFragment,
             SafetyCheckUpdatesDelegate updatesClient,
+            SafetyCheckBridge bridge,
             SettingsLauncher settingsLauncher,
             SyncConsentActivityLauncher signinLauncher,
             ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier,
-            @Nullable SyncService syncService) {
+            @Nullable SyncService syncService,
+            PrefService prefService) {
         new SafetyCheckCoordinator(
                 settingsFragment,
                 updatesClient,
+                bridge,
                 settingsLauncher,
                 signinLauncher,
                 modalDialogManagerSupplier,
-                syncService);
+                syncService,
+                prefService);
     }
 
     private SafetyCheckCoordinator(
             SafetyCheckSettingsFragment settingsFragment,
             SafetyCheckUpdatesDelegate updatesClient,
+            SafetyCheckBridge bridge,
             SettingsLauncher settingsLauncher,
             SyncConsentActivityLauncher signinLauncher,
             ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier,
-            @Nullable SyncService syncService) {
+            @Nullable SyncService syncService,
+            PrefService prefService) {
         mSettingsFragment = settingsFragment;
         mUpdatesClient = updatesClient;
+        mSyncService = syncService;
+        mPrefService = prefService;
+        mSettingsFragment.setComponentDelegate(this);
         // Create the model and the mediator once the view is created.
         // The view's lifecycle is not available at this point, so observe the {@link LiveData} for
         // it to get notified when {@link onCreateView} is called.
@@ -85,14 +104,20 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
                                             .addObserver(SafetyCheckCoordinator.this);
                                     // The View is available, so now we can create the Model, MCP,
                                     // and Mediator.
-                                    PropertyModel model = createModelAndMcp(mSettingsFragment);
+                                    PropertyModel safetyCheckModel =
+                                            createSafetyCheckModelAndBind(mSettingsFragment);
+                                    createPasswordCheckModels(mSettingsFragment, safetyCheckModel);
                                     mMediator =
                                             new SafetyCheckMediator(
-                                                    model,
+                                                    safetyCheckModel,
+                                                    mPasswordCheckAccountModel,
+                                                    mPasswordCheckLocalModel,
                                                     mUpdatesClient,
+                                                    bridge,
                                                     settingsLauncher,
                                                     signinLauncher,
                                                     syncService,
+                                                    prefService,
                                                     modalDialogManagerSupplier);
                                 }
                             }
@@ -115,10 +140,53 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
     }
 
     @VisibleForTesting
-    static PropertyModel createModelAndMcp(SafetyCheckSettingsFragment settingsFragment) {
+    static PropertyModel createSafetyCheckModelAndBind(
+            SafetyCheckSettingsFragment settingsFragment) {
         PropertyModel model = SafetyCheckProperties.createSafetyCheckModel();
         PropertyModelChangeProcessor.create(model, settingsFragment, SafetyCheckViewBinder::bind);
         return model;
+    }
+
+    private void createPasswordCheckModels(
+            SafetyCheckSettingsFragment settingsFragment, PropertyModel safetyCheckModel) {
+        if (isAccountPasswordStorageUsed()) {
+            String title =
+                    usesSplitStoresAndUPMForLocal(mPrefService)
+                            ? mSettingsFragment.getString(
+                                    R.string.safety_check_passwords_account_title,
+                                    CoreAccountInfo.getEmailFrom(mSyncService.getAccountInfo()))
+                            : mSettingsFragment.getString(R.string.safety_check_passwords_title);
+            mPasswordCheckAccountModel =
+                    createPasswordCheckPreferenceModelAndBind(
+                            settingsFragment,
+                            safetyCheckModel,
+                            SafetyCheckViewBinder.PASSWORDS_KEY_ACCOUNT,
+                            title);
+        }
+        if (isLocalPasswordStorageUsed()) {
+            mPasswordCheckLocalModel =
+                    createPasswordCheckPreferenceModelAndBind(
+                            settingsFragment,
+                            safetyCheckModel,
+                            SafetyCheckViewBinder.PASSWORDS_KEY_LOCAL,
+                            mSettingsFragment.getString(R.string.safety_check_passwords_title));
+        }
+    }
+
+    static PropertyModel createPasswordCheckPreferenceModelAndBind(
+            SafetyCheckSettingsFragment settingsFragment,
+            PropertyModel safetyCheckModel,
+            String preferenceViewId,
+            String preferenceTitle) {
+        PropertyModel passwordSafetyCheckModel =
+                PasswordsCheckPreferenceProperties.createPasswordSafetyCheckModel(preferenceTitle);
+        PropertyModelChangeProcessor.create(
+                passwordSafetyCheckModel,
+                settingsFragment,
+                (model, fragment, key) ->
+                        SafetyCheckViewBinder.bindPasswordCheckPreferenceModel(
+                                safetyCheckModel, model, fragment, key, preferenceViewId));
+        return passwordSafetyCheckModel;
     }
 
     /** Gets invoked when the Fragment detaches (the View is destroyed ). */
@@ -132,5 +200,18 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
         mSettingsFragment = null;
         mUpdatesClient = null;
         mMediator = null;
+    }
+
+    @Override
+    public boolean isLocalPasswordStorageUsed() {
+        if (!PasswordManagerHelper.hasChosenToSyncPasswords(mSyncService)) return true;
+        if (usesSplitStoresAndUPMForLocal(mPrefService)) return true;
+        return false;
+    }
+
+    @Override
+    public boolean isAccountPasswordStorageUsed() {
+        if (PasswordManagerHelper.hasChosenToSyncPasswords(mSyncService)) return true;
+        return false;
     }
 }

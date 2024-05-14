@@ -11,8 +11,8 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/notification_center/notification_center_tray.h"
-#include "ash/system/notification_center/notification_center_view.h"
-#include "ash/system/notification_center/notification_list_view.h"
+#include "ash/system/notification_center/views/notification_center_view.h"
+#include "ash/system/notification_center/views/notification_list_view.h"
 #include "ash/system/status_area_widget.h"
 #include "base/command_line.h"
 #include "base/scoped_observation.h"
@@ -95,7 +95,8 @@ message_center::Notification* FindVisibleNotificationById(
 std::vector<message_center::Notification*> FindVisibleNotificationsByPrefixedId(
     const std::string& prefix) {
   std::vector<message_center::Notification*> notifications;
-  for (auto* notification : MessageCenter::Get()->GetVisibleNotifications()) {
+  for (message_center::Notification* notification :
+       MessageCenter::Get()->GetVisibleNotifications()) {
     if (base::StartsWith(notification->id(), prefix,
                          base::CompareCase::SENSITIVE)) {
       notifications.push_back(notification);

@@ -46,6 +46,12 @@ class ContentCaptureBrowserTest : public content::ContentBrowserTest {
                          base::UTF8ToUTF16(fenced_frame_url.spec()));
   }
 
+  void TearDownOnMainThread() override {
+    main_frame_ = nullptr;
+    fenced_frame_ = nullptr;
+    content::ContentBrowserTest::TearDownOnMainThread();
+  }
+
   int64_t GetFrameId(bool main_frame) {
     return ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_.get()
                                                         : fenced_frame_.get());
@@ -71,8 +77,8 @@ class ContentCaptureBrowserTest : public content::ContentBrowserTest {
  protected:
   ContentCaptureTestHelper helper_;
 
-  raw_ptr<content::RenderFrameHost, DanglingUntriaged> main_frame_ = nullptr;
-  raw_ptr<content::RenderFrameHost, DanglingUntriaged> fenced_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> main_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> fenced_frame_ = nullptr;
 
   FakeContentCaptureSender main_frame_sender_;
   FakeContentCaptureSender fenced_frame_sender_;
@@ -142,13 +148,13 @@ IN_PROC_BROWSER_TEST_F(ContentCaptureBrowserTest,
           "type":"favicon",
           "url":"https://example.com/favicon.ico"
       }])JSON";
-  absl::optional<base::Value> expected = base::JSONReader::Read(expected_json);
+  std::optional<base::Value> expected = base::JSONReader::Read(expected_json);
 
   // Verify that the captured data's favicon url from the primary main frame is
   // valid.
   auto* main_frame_receiver =
       provider()->ContentCaptureReceiverForFrameForTesting(main_frame_);
-  absl::optional<base::Value> main_frame_actual = base::JSONReader::Read(
+  std::optional<base::Value> main_frame_actual = base::JSONReader::Read(
       main_frame_receiver->GetContentCaptureFrame().favicon);
   EXPECT_TRUE(main_frame_actual);
   EXPECT_EQ(expected, main_frame_actual);

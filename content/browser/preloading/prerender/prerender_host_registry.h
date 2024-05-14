@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "base/types/pass_key.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
@@ -297,7 +296,7 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // Currently, this is only used under kPrerender2NewLimitAndScheduler.
   PrerenderLimitGroup GetPrerenderLimitGroup(
       PreloadingTriggerType trigger_type,
-      absl::optional<blink::mojom::SpeculationEagerness> eagerness);
+      std::optional<blink::mojom::SpeculationEagerness> eagerness);
 
   // Returns the number of hosts that prerender_host_by_frame_tree_node_id_
   // holds by trigger type / limit group.
@@ -312,7 +311,7 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // PrerenderLimitGroup.
   bool IsAllowedToStartPrerenderingForTrigger(
       PreloadingTriggerType trigger_type,
-      absl::optional<blink::mojom::SpeculationEagerness> eagerness);
+      std::optional<blink::mojom::SpeculationEagerness> eagerness);
 
   // Destroys a host when the current memory usage is higher than a certain
   // threshold.
@@ -390,9 +389,6 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   base::MemoryPressureListener memory_pressure_listener_;
 
   base::ObserverList<Observer> observers_;
-
-  // Ensures this instance lives on the UI thread.
-  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<PrerenderHostRegistry> weak_factory_{this};
 };

@@ -136,6 +136,8 @@ std::unique_ptr<SystemDialogDelegateView> CreateDialogView() {
   auto dialog = std::make_unique<SystemDialogDelegateView>();
   dialog->SetTitleText(l10n_util::GetStringUTF16(
       IDS_ASH_SCREEN_CAPTURE_EDUCATION_TUTORIAL_TITLE));
+  dialog->SetAccessibleTitle(l10n_util::GetStringUTF16(
+      IDS_ASH_SCREEN_CAPTURE_EDUCATION_TUTORIAL_ACCESSIBLE_TITLE));
   dialog->SetMiddleContentView(CreateContentView());
   dialog->SetMiddleContentAlignment(views::LayoutAlignment::kStretch);
   // Override the title margins to be zero, as the space between the title and
@@ -182,14 +184,20 @@ bool CaptureModeEducationController::IsArm3QuickSettingsNudgeEnabled() {
 }
 
 void CaptureModeEducationController::MaybeShowEducation() {
-  auto* pref_service = GetPrefService();
-  CHECK(pref_service);
-
   // We don't want to show the nudge if the user is not signed in yet or is on
   // the lock screen.
   if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
     return;
   }
+
+  // Check the feature here so we only record data for users that could have hit
+  // the education nudge.
+  if (!features::IsCaptureModeEducationEnabled()) {
+    return;
+  }
+
+  auto* pref_service = GetPrefService();
+  CHECK(pref_service);
 
   if (!(features::IsCaptureModeEducationBypassLimitsEnabled() ||
         skip_prefs_for_test_)) {
@@ -285,6 +293,7 @@ void CaptureModeEducationController::CreateAndShowTutorialDialog() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.delegate = CreateDialogView().release();
   params.name = "CaptureModeEducationTutorialWidget";
+  params.activatable = views::Widget::InitParams::Activatable::kYes;
   tutorial_widget_ = std::make_unique<views::Widget>();
   tutorial_widget_->Init(std::move(params));
   tutorial_widget_->Show();

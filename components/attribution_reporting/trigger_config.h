@@ -14,14 +14,12 @@
 
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/memory/raw_ref.h"
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
-#include "components/attribution_reporting/summary_window_operator.mojom-forward.h"
 #include "components/attribution_reporting/trigger_data_matching.mojom-forward.h"
 
 namespace base {
@@ -29,44 +27,6 @@ class TimeDelta;
 }  // namespace base
 
 namespace attribution_reporting {
-
-class MaxEventLevelReports;
-
-// Controls the bucketization of event-level triggers.
-// Corresponds to
-// https://wicg.github.io/attribution-reporting-api/#summary-bucket-list
-class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) SummaryBuckets {
- public:
-  static base::expected<SummaryBuckets, mojom::SourceRegistrationError> Parse(
-      const base::Value::Dict&,
-      MaxEventLevelReports);
-
-  // Represents `[1, 2, ... max_event_level_reports]`.
-  // `CHECK()`s that `max_event_level_reports` is positive.
-  explicit SummaryBuckets(MaxEventLevelReports max_event_level_reports);
-
-  // `CHECK()`s that `starts` is valid: Must be non-empty, all values > 0, and
-  // length <= `MaxEventLevelReports::Max()`.
-  explicit SummaryBuckets(base::flat_set<uint32_t> starts);
-
-  ~SummaryBuckets();
-
-  SummaryBuckets(const SummaryBuckets&);
-  SummaryBuckets& operator=(const SummaryBuckets&);
-
-  SummaryBuckets(SummaryBuckets&&);
-  SummaryBuckets& operator=(SummaryBuckets&&);
-
-  const base::flat_set<uint32_t>& starts() const { return starts_; }
-
-  void Serialize(base::Value::Dict&) const;
-
-  friend bool operator==(const SummaryBuckets&,
-                         const SummaryBuckets&) = default;
-
- private:
-  base::flat_set<uint32_t> starts_;
-};
 
 class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpec {
  public:
@@ -100,25 +60,32 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpecs {
   using TriggerDataIndices = base::flat_map<uint32_t, uint8_t>;
   using value_type = std::pair<uint32_t, const TriggerSpec&>;
 
-  static base::expected<TriggerSpecs, mojom::SourceRegistrationError> Parse(
-      const base::Value::Dict&,
-      mojom::SourceType,
-      base::TimeDelta expiry,
-      EventReportWindows default_report_windows,
-      mojom::TriggerDataMatching);
+  // TODO: Merge `ParseTopLevelTriggerData()` into this function and rename it
+  // to `Parse()`.
+  static base::expected<TriggerSpecs, mojom::SourceRegistrationError>
+  ParseFullFlexForTesting(const base::Value::Dict&,
+                          mojom::SourceType,
+                          base::TimeDelta expiry,
+                          EventReportWindows default_report_windows,
+                          mojom::TriggerDataMatching);
 
-  // Creates specs with the default trigger data cardinality for the given
-  // source type.
-  static TriggerSpecs Default(mojom::SourceType, EventReportWindows);
+  // Parses the top-level `trigger_data` field. The resulting value is either
+  // `empty()` or `SingleSharedSpec()`.
+  static base::expected<TriggerSpecs, mojom::SourceRegistrationError>
+  ParseTopLevelTriggerData(const base::Value::Dict&,
+                           mojom::SourceType,
+                           EventReportWindows default_report_windows,
+                           mojom::TriggerDataMatching);
 
-  static absl::optional<TriggerSpecs> Create(TriggerDataIndices,
-                                             std::vector<TriggerSpec>);
-
-  static TriggerSpecs CreateForTesting(TriggerDataIndices,
-                                       std::vector<TriggerSpec>);
+  static std::optional<TriggerSpecs> Create(TriggerDataIndices,
+                                            std::vector<TriggerSpec>);
 
   // Creates specs matching no trigger data.
   TriggerSpecs();
+
+  // Creates specs with the default trigger data cardinality for the given
+  // source type.
+  TriggerSpecs(mojom::SourceType, EventReportWindows);
 
   ~TriggerSpecs();
 
@@ -244,10 +211,6 @@ ParseTriggerDataMatching(const base::Value::Dict&);
 
 COMPONENT_EXPORT(ATTRIBUTION_REPORTING)
 void Serialize(base::Value::Dict&, mojom::TriggerDataMatching);
-
-COMPONENT_EXPORT(ATTRIBUTION_REPORTING)
-base::expected<mojom::SummaryWindowOperator, mojom::SourceRegistrationError>
-ParseSummaryWindowOperator(const base::Value::Dict&);
 
 }  // namespace attribution_reporting
 

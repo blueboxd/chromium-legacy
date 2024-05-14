@@ -14,16 +14,32 @@ namespace bookmarks {
 // Used to compare BookmarkNode instances by UUID.
 class NodeUuidEquality {
  public:
+  using is_transparent = void;
+
   bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) const {
     return n1->uuid() == n2->uuid();
+  }
+
+  bool operator()(const BookmarkNode* n1, const base::Uuid& uuid2) const {
+    return n1->uuid() == uuid2;
+  }
+
+  bool operator()(const base::Uuid& uuid1, const BookmarkNode* n2) const {
+    return uuid1 == n2->uuid();
   }
 };
 
 // Used to hash BookmarkNode instances by UUID.
 class NodeUuidHash {
  public:
+  using is_transparent = void;
+
   size_t operator()(const BookmarkNode* n) const {
     return base::UuidHash()(n->uuid());
+  }
+
+  size_t operator()(const base::Uuid& uuid) const {
+    return base::UuidHash()(uuid);
   }
 };
 

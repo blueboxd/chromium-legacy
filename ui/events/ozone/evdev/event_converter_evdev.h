@@ -90,6 +90,11 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
 
   bool IsSuspectedKeyboardImposter() const;
 
+  // Flag this device as being suspected for falsely identifying as a mouse.
+  void SetSuspectedMouseImposter(bool is_suspected);
+
+  bool IsSuspectedMouseImposter() const;
+
   // Cleanup after we stop reading events (release buttons, etc).
   virtual void OnStopped();
 
@@ -174,6 +179,10 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
   // false, all keys are allowed and |allowed_keys| is ignored.
   virtual void SetKeyFilter(bool enable_filter,
                             std::vector<DomCode> allowed_keys);
+
+  // Set that modifier keys should not be allowed to be produced from this
+  // converter.
+  virtual void SetBlockModifiers(bool block_modifiers);
 
   // Update caps lock LED state.
   virtual void SetCapsLockLed(bool enabled);

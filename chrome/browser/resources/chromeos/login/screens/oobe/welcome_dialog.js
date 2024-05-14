@@ -4,7 +4,7 @@
 
 import '//resources/polymer/v3_0/paper-styles/color.js';
 import '//resources/js/action_link.js';
-import '//resources/cr_elements/cr_shared_style.css.js';
+import '//resources/ash/common/cr_elements/cr_shared_style.css.js';
 import '../../components/oobe_icons.html.js';
 import '../../components/oobe_illo_icons.html.js';
 import '../../components/common_styles/oobe_dialog_host_styles.css.js';
@@ -36,8 +36,6 @@ const OobeWelcomeDialogBase =
  * @typedef {{
  *   title:  HTMLAnchorElement,
  *   chromeVoxHint:  OobeModalDialog,
- *   quickStartWelcomeEntryPoint:  QuickStartEntryPoint,
- *   welcomeAnimation:  OobeCrLottie,
  * }}
  */
 OobeWelcomeDialogBase.$;
@@ -122,9 +120,6 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
     this.currentLanguage = '';
     this.timezoneButtonVisible = false;
 
-    /**
-     * @private {LongTouchDetector}
-     */
     this.titleLongTouchDetector_ = null;
     /**
      * This is stored ID of currently focused element to restore id on returns
@@ -216,7 +211,8 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
   /**
    * @suppress {missingProperties}
    */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
     // Allow opening advanced options only if it is a meet device or device
     // requisition is configurable.
     if (this.isMeet_ || this.isDeviceRequisitionConfigurable_) {
@@ -335,10 +331,6 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
    */
   showAnimationSlot() {
     return !this.isBootAnimation_;
-  }
-
-  onShowQuickStartBluetoothDialog_() {
-    this.$.quickStartWelcomeEntryPoint.showQuickStartBluetoothDialog();
   }
 }
 

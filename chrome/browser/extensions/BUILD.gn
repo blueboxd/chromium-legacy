@@ -966,7 +966,6 @@ static_library("extensions") {
     "//third_party/leveldatabase",
     "//third_party/libaddressinput:util",
     "//third_party/re2",
-    "//third_party/sqlite",
     "//third_party/zlib/google:compression_utils",
     "//third_party/zlib/google:zip",
     "//ui/accessibility:ax_enums_mojo",
@@ -988,10 +987,7 @@ static_library("extensions") {
   ]
 
   if (enable_supervised_users) {
-    deps += [
-      "//components/supervised_user/core/browser",
-      "//components/supervised_user/core/browser:supervised_user_preferences",
-    ]
+    deps += [ "//components/supervised_user/core/browser" ]
   }
 
   if (is_linux || is_mac || is_win) {
@@ -1019,6 +1015,8 @@ static_library("extensions") {
       "api/document_scan/document_scan_type_converters.h",
       "api/document_scan/scanner_discovery_runner.cc",
       "api/document_scan/scanner_discovery_runner.h",
+      "api/document_scan/start_scan_runner.cc",
+      "api/document_scan/start_scan_runner.h",
       "api/enterprise_device_attributes/enterprise_device_attributes_api.cc",
       "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.cc",
@@ -1343,6 +1341,7 @@ static_library("extensions") {
       "system_display/display_info_provider_win.h",
     ]
     deps += [
+      "//components/app_launch_prefetch",
       "//components/device_signals/core/common/win",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",

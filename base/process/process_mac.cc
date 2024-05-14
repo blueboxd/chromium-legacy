@@ -28,7 +28,7 @@ namespace {
 // TASK_DEFAULT_APPLICATION.
 BASE_FEATURE(kMacSetDefaultTaskRole,
              "MacSetDefaultTaskRole",
-             FEATURE_DISABLED_BY_DEFAULT);
+             FEATURE_ENABLED_BY_DEFAULT);
 
 // Returns the `task_role_t` of the process whose task port is `task_port`.
 absl::optional<task_role_t> GetTaskCategoryPolicyRole(mach_port_t task_port) {
@@ -176,7 +176,7 @@ Process::Priority Process::GetPriority(PortProvider* port_provider) const {
   CHECK(IsValid());
   CHECK(port_provider);
 
-  mach_port_t task_port = port_provider->TaskForPid(Pid());
+  mach_port_t task_port = port_provider->TaskForHandle(Handle());
   if (task_port == TASK_NULL) {
     // Upon failure, return the default value.
     return Priority::kUserBlocking;
@@ -213,7 +213,7 @@ bool Process::SetPriority(PortProvider* port_provider, Priority priority) {
     return false;
   }
 
-  mach_port_t task_port = port_provider->TaskForPid(Pid());
+  mach_port_t task_port = port_provider->TaskForHandle(Handle());
   if (task_port == TASK_NULL) {
     return false;
   }

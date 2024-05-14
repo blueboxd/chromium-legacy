@@ -38,6 +38,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -202,7 +203,7 @@ using OverviewControllerTest = AshTestBase;
 // in clamshell mode should not toggle overview.
 TEST_F(OverviewControllerTest,
        PressOverviewKeyDuringWindowDragInClamshellMode) {
-  ASSERT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
+  ASSERT_FALSE(display::Screen::GetScreen()->InTabletMode());
   std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
   std::unique_ptr<WindowResizer> resizer =
       CreateWindowResizer(dragged_window.get(), gfx::PointF(), HTCAPTION,
@@ -214,13 +215,12 @@ TEST_F(OverviewControllerTest,
   resizer->CompleteDrag();
 }
 
-// TODO(https://crbug.com/1472403): Investigate test flakiness and reenable.
-TEST_F(OverviewControllerTest, DISABLED_OcclusionTest) {
+TEST_F(OverviewControllerTest, OcclusionTest) {
   using OcclusionState = aura::Window::OcclusionState;
 
   Shell::Get()
       ->overview_controller()
-      ->set_occlusion_pause_duration_for_end_for_test(base::Milliseconds(100));
+      ->set_occlusion_pause_duration_for_end_for_test(base::Milliseconds(500));
   TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);

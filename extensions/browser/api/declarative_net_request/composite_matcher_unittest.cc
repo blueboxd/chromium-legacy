@@ -25,8 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace extensions {
-namespace declarative_net_request {
+namespace extensions::declarative_net_request {
 namespace {
 
 using PageAccess = PermissionsData::PageAccess;
@@ -430,40 +429,31 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
   GURL https_example_url = GURL("https://example.com");
 
   struct {
-    const raw_ref<GURL, ExperimentalAsh> request_url;
+    const raw_ref<GURL> request_url;
     PageAccess access;
     std::optional<GURL> expected_final_url;
     bool should_notify_withheld;
   } test_cases[] = {
       // If access to the request is allowed, we should not notify that
       // the request is withheld.
-      {ToRawRef<ExperimentalAsh>(google_url), PageAccess::kAllowed,
-       ruleset1_url, false},
-      {ToRawRef<ExperimentalAsh>(example_url), PageAccess::kAllowed,
-       https_example_url, false},
-      {ToRawRef<ExperimentalAsh>(yahoo_url), PageAccess::kAllowed, std::nullopt,
-       false},
+      {ToRawRef(google_url), PageAccess::kAllowed, ruleset1_url, false},
+      {ToRawRef(example_url), PageAccess::kAllowed, https_example_url, false},
+      {ToRawRef(yahoo_url), PageAccess::kAllowed, std::nullopt, false},
 
       // Notify the request is withheld if it matches with a redirect rule.
-      {ToRawRef<ExperimentalAsh>(google_url), PageAccess::kWithheld,
-       std::nullopt, true},
+      {ToRawRef(google_url), PageAccess::kWithheld, std::nullopt, true},
       // If the page access to the request is withheld but it matches with
       // an upgrade rule, or no rule, then we should not notify.
-      {ToRawRef<ExperimentalAsh>(example_url), PageAccess::kWithheld,
-       https_example_url, false},
-      {ToRawRef<ExperimentalAsh>(yahoo_url), PageAccess::kWithheld,
-       std::nullopt, false},
+      {ToRawRef(example_url), PageAccess::kWithheld, https_example_url, false},
+      {ToRawRef(yahoo_url), PageAccess::kWithheld, std::nullopt, false},
 
       // If access to the request is denied instead of withheld, the extension
       // should not be notified.
-      {ToRawRef<ExperimentalAsh>(google_url), PageAccess::kDenied, std::nullopt,
-       false},
+      {ToRawRef(google_url), PageAccess::kDenied, std::nullopt, false},
       // If the page access to the request is denied but it matches with
       // an upgrade rule, or no rule, then we should not notify.
-      {ToRawRef<ExperimentalAsh>(example_url), PageAccess::kDenied,
-       https_example_url, false},
-      {ToRawRef<ExperimentalAsh>(yahoo_url), PageAccess::kDenied, std::nullopt,
-       false},
+      {ToRawRef(example_url), PageAccess::kDenied, https_example_url, false},
+      {ToRawRef(yahoo_url), PageAccess::kDenied, std::nullopt, false},
   };
 
   for (const auto& test_case : test_cases) {
@@ -711,5 +701,4 @@ TEST_F(CompositeMatcherTest, RulePlacement) {
 }
 
 }  // namespace
-}  // namespace declarative_net_request
-}  // namespace extensions
+}  // namespace extensions::declarative_net_request

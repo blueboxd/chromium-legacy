@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "base/check_is_test.h"
+#include "base/feature_list.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/ownership/ownership_histograms.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -17,14 +17,37 @@
 #include "chrome/browser/net/nss_service.h"
 #include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/nss_cert_database.h"
 
 namespace ash {
+
+// Enable storing a newly created owner key in the private slot.
+BASE_FEATURE(kStoreOwnerKeyInPrivateSlot,
+             "StoreOwnerKeyInPrivateSlot",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable migration of the owner key from the public to the private slot. This
+// experiment represents the second stage of `kStoreOwnerKeyInPrivateSlot` and
+// is only respected if kStoreOwnerKeyInPrivateSlot is enabled.
+BASE_FEATURE(kMigrateOwnerKeyToPrivateSlot,
+             "MigrateOwnerKeyToPrivateSlot",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsStoreOwnerKeyInPrivateSlotEnabled() {
+  return base::FeatureList::IsEnabled(kStoreOwnerKeyInPrivateSlot);
+}
+
+bool ShouldMigrateOwnerKeyToPrivateSlot() {
+  return IsStoreOwnerKeyInPrivateSlotEnabled() &&
+         base::FeatureList::IsEnabled(kMigrateOwnerKeyToPrivateSlot);
+}
 
 namespace {
 
@@ -85,7 +108,7 @@ void GenerateNewOwnerKeyOnWorkerThread(
     crypto::ScopedPK11Slot public_slot,
     crypto::ScopedPK11Slot private_slot) {
   crypto::ScopedSECKEYPrivateKey sec_priv_key;
-  if (private_slot && features::IsStoreOwnerKeyInPrivateSlotEnabled()) {
+  if (private_slot && IsStoreOwnerKeyInPrivateSlotEnabled()) {
     sec_priv_key = owner_key_util->GenerateKeyPair(private_slot.get());
     RecordOwnerKeyEvent(OwnerKeyEvent::kPrivateSlotKeyGeneration,
                         bool(sec_priv_key));
@@ -191,15 +214,14 @@ bool UserCanBecomeOwner(const user_manager::User* user) {
     return false;
   }
   switch (user->GetType()) {
-    case user_manager::USER_TYPE_REGULAR:
-    case user_manager::USER_TYPE_CHILD:
+    case user_manager::UserType::kRegular:
+    case user_manager::UserType::kChild:
       return true;
-    case user_manager::USER_TYPE_GUEST:
-    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-    case user_manager::USER_TYPE_KIOSK_APP:
-    case user_manager::USER_TYPE_ARC_KIOSK_APP:
-    case user_manager::USER_TYPE_WEB_KIOSK_APP:
-    case user_manager::NUM_USER_TYPES:
+    case user_manager::UserType::kGuest:
+    case user_manager::UserType::kPublicAccount:
+    case user_manager::UserType::kKioskApp:
+    case user_manager::UserType::kArcKioskApp:
+    case user_manager::UserType::kWebKioskApp:
       return false;
   }
 }
@@ -299,8 +321,7 @@ void OwnerKeyLoader::OnPrivateKeyLoaded(
     RecordOwnerKeyEvent(OwnerKeyEvent::kOwnerKeyInPublicSlot,
                         /*success=*/found_in_public_slot);
 
-    if (features::ShouldMigrateOwnerKeyToPrivateSlot() &&
-        found_in_public_slot) {
+    if (ShouldMigrateOwnerKeyToPrivateSlot() && found_in_public_slot) {
       // If the key was found in the public slot and the migration is enabled,
       // then replace it by generating a new one in the private slot. The old
       // key will be deleted by OwnerSettingsServiceAsh when the new key is
@@ -314,9 +335,8 @@ void OwnerKeyLoader::OnPrivateKeyLoaded(
       return;
     }
 
-    if (!features::ShouldMigrateOwnerKeyToPrivateSlot() &&
-        !features::IsStoreOwnerKeyInPrivateSlotEnabled() &&
-        !found_in_public_slot) {
+    if (!ShouldMigrateOwnerKeyToPrivateSlot() &&
+        !IsStoreOwnerKeyInPrivateSlotEnabled() && !found_in_public_slot) {
       // If all experiments are disabled but the key is in the private slot, it
       // means they were reverted and it's probably better to migrate the owner
       // key back to the public slot.
@@ -383,7 +403,7 @@ void OwnerKeyLoader::MaybeGenerateNewKey() {
   }
 
   // If the policies are empty, check the local state PrefService.
-  absl::optional<std::string> owner_email =
+  std::optional<std::string> owner_email =
       user_manager::UserManager::Get()->GetOwnerEmail();
 
   if (owner_email.has_value() &&

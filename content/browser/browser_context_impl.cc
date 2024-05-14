@@ -93,7 +93,8 @@ BrowserContextImpl::~BrowserContextImpl() {
   if (!rph_crash_key_value.empty()) {
     SCOPED_CRASH_KEY_STRING256("BrowserContext", "dangling_rph",
                                rph_crash_key_value);
-    NOTREACHED() << "rph_with_bc_reference : " << rph_crash_key_value;
+    DUMP_WILL_BE_NOTREACHED_NORETURN()
+        << "rph_with_bc_reference : " << rph_crash_key_value;
   }
 
   // Clean up any isolated origins and other security state associated with this
@@ -104,6 +105,11 @@ BrowserContextImpl::~BrowserContextImpl() {
     download_manager_->Shutdown();
 
   TtsControllerImpl::GetInstance()->OnBrowserContextDestroyed(self_);
+
+  if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
+    GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                          std::move(resource_context_));
+  }
 
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       "shutdown", "BrowserContextImpl::NotifyWillBeDestroyed() called.", this,

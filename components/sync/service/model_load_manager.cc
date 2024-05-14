@@ -54,8 +54,11 @@ void ModelLoadManager::Configure(ModelTypeSet preferred_types_without_errors,
       // Controllers in a FAILED state or with preconditions not met should have
       // been filtered out by the DataTypeManager.
       CHECK_NE(dtc->state(), DataTypeController::FAILED);
-      CHECK_EQ(dtc->GetPreconditionState(),
-               DataTypeController::PreconditionState::kPreconditionsMet);
+      // TODO(crbug.com/1514430): consider removing the following CHECK because
+      // data types can change their state and notify DataTypeManager later.
+      DUMP_WILL_BE_CHECK_EQ(
+          dtc->GetPreconditionState(),
+          DataTypeController::PreconditionState::kPreconditionsMet);
       preferred_types_without_errors_.Put(type);
     }
   }
@@ -283,11 +286,14 @@ void ModelLoadManager::LoadModelsForType(DataTypeController* dtc) {
     return;
   }
 
-  CHECK_EQ(dtc->state(), DataTypeController::NOT_RUNNING);
   CHECK(!loaded_types_.Has(dtc->type()));
-  dtc->LoadModels(*configure_context_,
-                  base::BindRepeating(&ModelLoadManager::ModelLoadCallback,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  // TODO(crbug.com/1519487): Avoid calling LoadModelsForType() multiple times
+  // upon stop, and re-introduce a CHECK for state to be NOT_RUNNING only.
+  if (dtc->state() == DataTypeController::NOT_RUNNING) {
+    dtc->LoadModels(*configure_context_,
+                    base::BindRepeating(&ModelLoadManager::ModelLoadCallback,
+                                        weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 }  // namespace syncer

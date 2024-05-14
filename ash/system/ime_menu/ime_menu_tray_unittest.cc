@@ -6,7 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/a11y_feature_type.h"
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/public/cpp/ash_view_ids.h"
@@ -20,7 +20,6 @@
 #include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -69,12 +68,6 @@ class ImeMenuTrayTest : public AshTestBase {
   ~ImeMenuTrayTest() override = default;
 
  protected:
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatureStates(
-        {{features::kImeTrayHideVoiceButton, true}});
-    AshTestBase::SetUp();
-  }
-
   // Returns true if the IME menu tray is visible.
   bool IsVisible() { return GetTray()->GetVisible(); }
 
@@ -155,9 +148,6 @@ class ImeMenuTrayTest : public AshTestBase {
     }
     return ImeListViewTestApi(GetTray()->ime_list_view_).GetToggleView();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that visibility of IME menu tray should be consistent with the

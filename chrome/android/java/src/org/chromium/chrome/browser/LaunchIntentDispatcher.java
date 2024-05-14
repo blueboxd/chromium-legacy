@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
-import org.chromium.components.browser_ui.media.MediaNotificationUma;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.widget.Toast;
 
@@ -128,8 +127,6 @@ public class LaunchIntentDispatcher {
         if (mIntent != null && BrowserIntentUtils.getStartupRealtimeMillis(mIntent) == -1) {
             BrowserIntentUtils.addStartupTimestampsToIntent(mIntent);
         }
-
-        recordIntentMetrics();
     }
 
     /**
@@ -347,7 +344,7 @@ public class LaunchIntentDispatcher {
                         CustomTabsSessionToken.getSessionTokenFromIntent(mIntent), mIntent);
 
         boolean isCustomTab = true;
-        if (IntentHandler.shouldIgnoreIntent(mIntent, isCustomTab)) {
+        if (IntentHandler.shouldIgnoreIntent(mIntent, mActivity, isCustomTab)) {
             return false;
         }
 
@@ -509,11 +506,6 @@ public class LaunchIntentDispatcher {
         }
         return !TextUtils.isEmpty(packageName)
                 || !TextUtils.isEmpty(getClientPackageNameFromIdentitySharing());
-    }
-
-    /** Records metrics gleaned from the Intent. */
-    private void recordIntentMetrics() {
-        MediaNotificationUma.recordClickSource(mIntent);
     }
 
     private static boolean clearTopIntentsForCustomTabsEnabled(Intent intent) {

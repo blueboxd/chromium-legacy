@@ -48,6 +48,7 @@ base::span<CSSSelector> CSSParser::ParseSelector(
     const CSSParserContext* context,
     CSSNestingType nesting_type,
     StyleRule* parent_rule_for_nesting,
+    bool is_within_scope,
     StyleSheetContents* style_sheet_contents,
     const String& selector,
     HeapVector<CSSSelector>& arena) {
@@ -55,7 +56,7 @@ base::span<CSSSelector> CSSParser::ParseSelector(
   const auto tokens = tokenizer.TokenizeToEOF();
   return CSSSelectorParser::ParseSelector(
       CSSParserTokenRange(tokens), context, nesting_type,
-      parent_rule_for_nesting,
+      parent_rule_for_nesting, is_within_scope,
       /* semicolon_aborts_nested_selector */ false, style_sheet_contents,
       arena);
 }
@@ -356,13 +357,14 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
 
 bool CSSParser::ParseSystemColor(Color& color,
                                  const String& color_string,
-                                 mojom::blink::ColorScheme color_scheme) {
+                                 mojom::blink::ColorScheme color_scheme,
+                                 const ui::ColorProvider* color_provider) {
   CSSValueID id = CssValueKeywordID(color_string);
   if (!StyleColor::IsSystemColorIncludingDeprecated(id)) {
     return false;
   }
 
-  color = LayoutTheme::GetTheme().SystemColor(id, color_scheme);
+  color = LayoutTheme::GetTheme().SystemColor(id, color_scheme, color_provider);
   return true;
 }
 

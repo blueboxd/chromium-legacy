@@ -13,7 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/indexed_db/indexed_db_bucket_context.h"
+#include "content/browser/indexed_db/indexed_db_bucket_context_handle.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -23,17 +23,18 @@ namespace content {
 class IndexedDBDatabaseCallbacks;
 class IndexedDBDatabaseError;
 class IndexedDBTransaction;
-class IndexedDBBucketContextHandle;
+class IndexedDBBucketContext;
 
 class CONTENT_EXPORT IndexedDBConnection {
  public:
-  IndexedDBConnection(
-      IndexedDBBucketContext& bucket_context,
-      base::WeakPtr<IndexedDBDatabase> database,
-      base::RepeatingClosure on_version_change_ignored,
-      base::OnceCallback<void(IndexedDBConnection*)> on_close,
-      std::unique_ptr<IndexedDBDatabaseCallbacks> callbacks,
-      scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker);
+  IndexedDBConnection(IndexedDBBucketContext& bucket_context,
+                      base::WeakPtr<IndexedDBDatabase> database,
+                      base::RepeatingClosure on_version_change_ignored,
+                      base::OnceCallback<void(IndexedDBConnection*)> on_close,
+                      std::unique_ptr<IndexedDBDatabaseCallbacks> callbacks,
+                      mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
+                          client_state_checker,
+                      base::UnguessableToken client_token);
 
   IndexedDBConnection(const IndexedDBConnection&) = delete;
   IndexedDBConnection& operator=(const IndexedDBConnection&) = delete;
@@ -101,6 +102,8 @@ class CONTENT_EXPORT IndexedDBConnection {
       storage::mojom::DisallowInactiveClientReason reason,
       base::OnceCallback<void(bool)> callback);
 
+  const base::UnguessableToken& client_token() const { return client_token_; }
+
   const std::map<int64_t, std::unique_ptr<IndexedDBTransaction>>& transactions()
       const {
     return transactions_;
@@ -130,9 +133,16 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker_;
+  mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
+      client_state_checker_;
   mojo::RemoteSet<storage::mojom::IndexedDBClientKeepActive>
       client_keep_active_remotes_;
+  // Uniquely identifies the RFH that owns the other side of this connection,
+  // i.e. the "client" of `client_state_checker_`. Since multiple
+  // transactions/connections associated with a single client should never cause
+  // that client to be ineligible for BFCache, this token is used to avoid
+  // unnecessary calls to `DisallowInactiveClient()`.
+  base::UnguessableToken client_token_;
 
   base::WeakPtrFactory<IndexedDBConnection> weak_factory_{this};
 };

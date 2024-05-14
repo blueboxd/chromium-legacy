@@ -24,9 +24,10 @@
 #include "ui/base/page_transition_types.h"
 
 #if BUILDFLAG(IS_MAC)
+#include <optional>
+
 #include "base/apple/scoped_nsautorelease_pool.h"
 #include "base/memory/stack_allocated.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
 #endif
 
@@ -79,9 +80,9 @@ class ScopedBundleSwizzlerMac;
 // . Your test method is invoked on the ui thread. If you need to block until
 //   state changes you'll need to run the message loop from your test method.
 //   For example, if you need to wait till a find bar has completely been shown
-//   you'll need to invoke content::RunMessageLoop(). When the message bar is
-//   shown, invoke RunLoop::QuitCurrentWhenIdleDeprecated() to return control
-//   back to your test method.
+//   you'll need to create a base::RunLoop and call it's Run() method. When the
+//   message bar is shown, invoke loop.QuitWhenIdle()/loop.QuitWhenIdleClosure()
+//   to return control back to your test method.
 // . If you subclass and override SetUp(), be sure and invoke
 //   InProcessBrowserTest::SetUp(). (But see also BrowserTestBase's
 //   SetUpOnMainThread(), SetUpInProcessBrowserTestFixture(), and other related
@@ -354,6 +355,42 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // Returns the test data path used by the embedded test server.
   base::FilePath GetChromeTestDataDir() const;
 
+  // Returns the HTTPS embedded test server.
+  // By default, the HTTPS test server is configured to have a valid
+  // certificate for the set of hostnames:
+  //   - [*.]example.com
+  //   - [*.]foo.com
+  //   - [*.]bar.com
+  //   - [*.]a.com
+  //   - [*.]b.com
+  //   - [*.]c.com
+  //
+  // After starting the server, you can get a working HTTPS URL for any of
+  // those hostnames. For example:
+  //
+  //   ```
+  //   ASSERT_TRUE(embedded_https_test_server().Start());
+  //   embedded_https_test_server().GetURL("foo.com", "/simple.html");
+  //   ```
+  //
+  // Tests can override the set of valid hostnames by calling
+  // `net::EmbeddedTestServer::SetCertHostnames()` before starting the test
+  // server, and a valid test certificate will be automatically generated for
+  // the hostnames passed in. For example:
+  //
+  //   ```
+  //   embedded_https_test_server().SetCertHostnames(
+  //       {"example.com", "example.org"});
+  //   ASSERT_TRUE(embedded_https_test_server().Start());
+  //   embedded_https_test_server().GetURL("example.org", "/simple.html");
+  //   ```
+  const net::EmbeddedTestServer& embedded_https_test_server() const {
+    return *embedded_https_test_server_;
+  }
+  net::EmbeddedTestServer& embedded_https_test_server() {
+    return *embedded_https_test_server_;
+  }
+
   void set_exit_when_last_browser_closes(bool value) {
     exit_when_last_browser_closes_ = value;
   }
@@ -450,7 +487,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
 #if BUILDFLAG(IS_MAC)
   STACK_ALLOCATED_IGNORE("https://crbug.com/1424190")
-  absl::optional<base::apple::ScopedNSAutoreleasePool> autorelease_pool_;
+  std::optional<base::apple::ScopedNSAutoreleasePool> autorelease_pool_;
   std::unique_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
 
   // Enable fake full keyboard access by default, so that tests don't depend on
@@ -472,6 +509,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // Used to set up test factories for each browser context.
   base::CallbackListSubscription create_services_subscription_;
+
+  // Embedded HTTPS test server, cheap to create, started on demand.
+  std::unique_ptr<net::EmbeddedTestServer> embedded_https_test_server_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // ChromeOS does not create a browser by default when the full restore feature

@@ -232,8 +232,7 @@ class FakeFastPairAdvertiserFactory : public FastPairAdvertiser::Factory {
   bool StopAdvertisingCalled() { return stop_advertising_called_; }
 
  private:
-  raw_ptr<FakeFastPairAdvertiser, ExperimentalAsh>
-      last_fake_fast_pair_advertiser_ = nullptr;
+  raw_ptr<FakeFastPairAdvertiser> last_fake_fast_pair_advertiser_ = nullptr;
   bool should_succeed_on_start_ = false;
   bool stop_advertising_called_ = false;
   bool fast_pair_advertiser_destroyed_ = false;
@@ -312,12 +311,15 @@ class TargetDeviceConnectionBrokerImplTest : public testing::Test {
   void CreateConnectionBroker(bool is_resume_after_update = false) {
     auto connection_factory = std::make_unique<FakeConnection::Factory>();
     connection_factory_ = connection_factory.get();
-    advertising_id_ = AdvertisingId();
-    auto session_context =
-        SessionContext(kSessionId, advertising_id_, kSharedSecret,
-                       kSecondarySharedSecret, is_resume_after_update);
+
+    if (is_resume_after_update) {
+      session_context_ =
+          SessionContext(kSessionId, advertising_id_, kSharedSecret,
+                         kSecondarySharedSecret, is_resume_after_update);
+    }
+
     connection_broker_ = std::make_unique<TargetDeviceConnectionBrokerImpl>(
-        session_context, fake_quick_start_connectivity_service_.get(),
+        &session_context_, fake_quick_start_connectivity_service_.get(),
         std::move(connection_factory));
   }
 
@@ -373,6 +375,10 @@ class TargetDeviceConnectionBrokerImplTest : public testing::Test {
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_bluetooth_adapter_;
   std::unique_ptr<FakeQuickStartConnectivityService>
       fake_quick_start_connectivity_service_;
+  SessionContext session_context_ = SessionContext(kSessionId,
+                                                   advertising_id_,
+                                                   kSharedSecret,
+                                                   kSecondarySharedSecret);
   raw_ptr<FakeNearbyConnectionsManager> fake_nearby_connections_manager_;
   FakeNearbyConnection fake_nearby_connection_;
   std::unique_ptr<TargetDeviceConnectionBroker> connection_broker_;
@@ -381,8 +387,7 @@ class TargetDeviceConnectionBrokerImplTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   FakeConnectionLifecycleListener connection_lifecycle_listener_;
-  raw_ptr<FakeConnection::Factory, ExperimentalAsh> connection_factory_ =
-      nullptr;
+  raw_ptr<FakeConnection::Factory> connection_factory_ = nullptr;
   base::HistogramTester histogram_tester_;
 
   std::unique_ptr<FakeQuickStartDecoder> fake_quick_start_decoder_ =

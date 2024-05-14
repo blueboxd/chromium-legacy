@@ -596,6 +596,17 @@ bool OmniboxFieldTrial::ShouldEncodeLeadingSpaceForOnDeviceTailSuggest() {
                                                  /*default_value=*/false);
 }
 
+bool OmniboxFieldTrial::ShouldApplyOnDeviceHeadModelSelectionFix() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+             omnibox::kOnDeviceHeadProviderNonIncognito,
+             OmniboxFieldTrial::kOnDeviceHeadModelSelectionFix,
+             /*default_value=*/false) ||
+         base::GetFieldTrialParamByFeatureAsBool(
+             omnibox::kOnDeviceHeadProviderIncognito,
+             OmniboxFieldTrial::kOnDeviceHeadModelSelectionFix,
+             /*default_value=*/false);
+}
+
 bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForLocale(
     const std::string& locale) {
   if (IsKoreanLocale(locale) &&
@@ -785,6 +796,7 @@ const char OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam[] =
 
 const char OmniboxFieldTrial::kOnDeviceHeadModelLocaleConstraint[] =
     "ForceModelLocaleConstraint";
+const char OmniboxFieldTrial::kOnDeviceHeadModelSelectionFix[] = "SelectionFix";
 
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
 
@@ -966,7 +978,7 @@ const base::FeatureParam<omnibox::CompanyEntityIconAdjustmentGroup>
     kCompanyEntityIconAdjustmentGroup{
         &omnibox::kCompanyEntityIconAdjustment,
         "OmniboxCompanyEntityAdjustmentGroup",
-        omnibox::CompanyEntityIconAdjustmentGroup::kLeastAggressive,
+        omnibox::CompanyEntityIconAdjustmentGroup::kModerate,
         &kCompanyEntityIconAdjustmentGroupOptions};
 
 const base::FeatureParam<bool> kCompanyEntityIconAdjustmentCounterfactual(
@@ -988,7 +1000,7 @@ const base::FeatureParam<bool> kEnableScoringSignalsAnnotatorsForLogging(
 const base::FeatureParam<bool> kEnableScoringSignalsAnnotatorsForMlScoring(
     &omnibox::kMlUrlScoring,
     "enable_scoring_signals_annotators_for_ml_scoring",
-    false);
+    true);
 
 // If true, runs the ML scoring model but does not assign new relevance scores
 // to the URL suggestions and does not rerank them.
@@ -1002,24 +1014,6 @@ const base::FeatureParam<bool> kMlUrlScoringCounterfactual(
 const base::FeatureParam<bool> kMlUrlScoringUnlimitedNumCandidates(
     &omnibox::kMlUrlScoring,
     "MlUrlScoringUnlimitedNumCandidates",
-    false);
-
-// If true, the ML model only re-scores and re-ranks the final set of matches
-// that would be shown in the legacy scoring system. The full legacy system
-// including the final call to `SortAndCull()` is completed before the ML model
-// is invoked.
-const base::FeatureParam<bool> kMlUrlscoringRerankFinalMatchesOnly(
-    &omnibox::kMlUrlScoring,
-    "MlUrlScoringRerankFinalMatchesOnly",
-    false);
-
-// If true, the would-be default match from the legacy system is determined
-// before ML scoring is invoked, and preserved even after re-scoring and
-// re-ranking with the new scores. This also means only the final set of matches
-// from the legacy system will be re-scored and re-ranked.
-const base::FeatureParam<bool> kMlUrlScoringPreserveDefault(
-    &omnibox::kMlUrlScoring,
-    "MlUrlScoringPreserveDefault",
     false);
 
 const base::FeatureParam<std::string> kMlUrlScoringMaxMatchesByProvider(
@@ -1038,18 +1032,44 @@ MLConfig::MLConfig() {
                                "MlUrlScoringShortcutDocumentSignals", false)
           .Get() ||
       base::FeatureParam<bool>(&omnibox::kMlUrlScoring,
-                               "MlUrlScoringShortcutDocumentSignals", false)
+                               "MlUrlScoringShortcutDocumentSignals", true)
           .Get();
 
   ml_url_scoring = base::FeatureList::IsEnabled(omnibox::kMlUrlScoring);
   ml_url_scoring_counterfactual = kMlUrlScoringCounterfactual.Get();
   ml_url_scoring_unlimited_num_candidates =
       kMlUrlScoringUnlimitedNumCandidates.Get();
-  ml_url_scoring_preserve_default = kMlUrlScoringPreserveDefault.Get();
-  ml_url_scoring_rerank_final_matches_only =
-      kMlUrlscoringRerankFinalMatchesOnly.Get();
   ml_url_scoring_max_matches_by_provider =
       kMlUrlScoringMaxMatchesByProvider.Get();
+
+  // `kMlUrlSearchBlending` parameters.
+  stable_search_blending =
+      base::FeatureParam<bool>(&omnibox::kMlUrlSearchBlending,
+                               "MlUrlSearchBlending_StableSearchBlending",
+                               stable_search_blending)
+          .Get();
+  mapped_search_blending =
+      base::FeatureParam<bool>(&omnibox::kMlUrlSearchBlending,
+                               "MlUrlSearchBlending_MappedSearchBlending",
+                               mapped_search_blending)
+          .Get();
+  mapped_search_blending_min =
+      base::FeatureParam<int>(&omnibox::kMlUrlSearchBlending,
+                              "MlUrlSearchBlending_MappedSearchBlendingMin",
+                              mapped_search_blending_min)
+          .Get();
+  mapped_search_blending_max =
+      base::FeatureParam<int>(&omnibox::kMlUrlSearchBlending,
+                              "MlUrlSearchBlending_MappedSearchBlendingMax",
+                              mapped_search_blending_max)
+          .Get();
+  mapped_search_blending_grouping_threshold =
+      base::FeatureParam<int>(
+          &omnibox::kMlUrlSearchBlending,
+          "MlUrlSearchBlending_MappedSearchBlendingGroupingThreshold",
+          mapped_search_blending_grouping_threshold)
+          .Get();
+
   url_scoring_model = base::FeatureList::IsEnabled(omnibox::kUrlScoringModel);
 }
 
@@ -1105,20 +1125,6 @@ bool IsUrlScoringModelEnabled() {
 
 // <- ML Relevance Scoring
 // ---------------------------------------------------------
-// Two-column realbox ->
-
-const base::FeatureParam<int> kRealboxMaxPreviousSearchRelatedSuggestions(
-    &omnibox::kRealboxSecondaryZeroSuggest,
-    "RealboxMaxPreviousSearchRelatedSuggestions",
-    3);
-
-const base::FeatureParam<bool> kRealboxSecondaryZeroSuggestCounterfactual(
-    &omnibox::kRealboxSecondaryZeroSuggest,
-    "RealboxSecondaryZeroSuggestCounterfactual",
-    false);
-
-// <- Two-column realbox
-// ---------------------------------------------------------
 // Android UI Revamp ->
 const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(
     &omnibox::kOmniboxModernizeVisualUpdate,
@@ -1133,6 +1139,12 @@ const base::FeatureParam<int>
         "max_prefetches_per_omnibox_session",
         5);
 // <- Touch Down Trigger For Prefetch
+// ---------------------------------------------------------
+// Site Search Starter Pack ->
+bool IsStarterPackExpansionEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kStarterPackExpansion);
+}
+// <- Site Search Starter Pack
 // ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial

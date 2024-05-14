@@ -9,6 +9,7 @@
 
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_service.h"
 
 namespace enterprise_idle {
 
@@ -42,11 +43,14 @@ enum class ActionType {
 };
 
 // Returns the idle timeout action type for an action string.
-absl::optional<ActionType> NameToActionType(const std::string& name);
+std::optional<ActionType> NameToActionType(const std::string& name);
 
 // Returns the name of the browsing data type that should be cleared given
 // `clear_*` action name.
 std::string GetActionBrowsingDataTypeName(const std::string& action);
+
+// Returns the ActionTypes based on the IdleTimeoutActions pref value.
+std::vector<ActionType> GetActionTypesFromPrefs(PrefService* prefs);
 
 }  // namespace enterprise_idle
 

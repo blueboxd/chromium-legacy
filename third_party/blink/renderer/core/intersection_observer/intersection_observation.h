@@ -5,8 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVATION_H_
 
+#include <optional>
+
 #include "base/functional/function_ref.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_geometry.h"
@@ -55,8 +56,6 @@ class CORE_EXPORT IntersectionObservation final
     // If this bit is set, we only process intersection observations that
     // require post-layout delivery.
     kPostLayoutDeliveryOnly = 1 << 6,
-    // If this is set, the overflow clip edge is used.
-    kUseOverflowClipEdge = 1 << 7,
   };
 
   IntersectionObservation(IntersectionObserver&, Element&);
@@ -68,14 +67,12 @@ class CORE_EXPORT IntersectionObservation final
   int64_t ComputeIntersection(
       unsigned flags,
       gfx::Vector2dF accumulated_scroll_delta_since_last_update,
-      absl::optional<base::TimeTicks>& monotonic_time,
-      absl::optional<IntersectionGeometry::RootGeometry>& root_geometry);
+      std::optional<base::TimeTicks>& monotonic_time,
+      std::optional<IntersectionGeometry::RootGeometry>& root_geometry);
   gfx::Vector2dF MinScrollDeltaToUpdate() const;
   void TakeRecords(HeapVector<Member<IntersectionObserverEntry>>&);
   void Disconnect();
   void InvalidateCachedRects() { cached_rects_.valid = false; }
-  // Returns true if cached rects have been invalidated since the last update.
-  bool InvalidateCachedRectsIfNeeded();
 
   void Trace(Visitor*) const;
 
@@ -89,7 +86,6 @@ class CORE_EXPORT IntersectionObservation final
   // generate a notification and schedule it for delivery.
   void ProcessIntersectionGeometry(const IntersectionGeometry& geometry,
                                    DOMHighResTimeStamp timestamp);
-  bool NeedsInvalidateCachedRects() const;
 
   Member<IntersectionObserver> observer_;
   WeakMember<Element> target_;

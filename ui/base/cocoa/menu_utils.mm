@@ -4,13 +4,14 @@
 
 #include "ui/base/cocoa/menu_utils.h"
 
-#include <optional>
-
 #import <AppKit/AppKit.h>
+
+#include <optional>
 
 #import "base/mac/scoped_sending_event.h"
 #import "base/message_loop/message_pump_apple.h"
 #include "base/task/current_thread.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/interaction/element_tracker_mac.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -19,7 +20,7 @@ namespace ui {
 NSEvent* EventForPositioningContextMenu(const gfx::Point& anchor,
                                         NSWindow* window) {
   NSPoint location_in_window =
-      [window convertPointFromScreen:gfx::ScreenPointToNSPoint(anchor)];
+      ui::ConvertPointFromScreenToWindow(window, gfx::ScreenPointToNSPoint(anchor));
   return EventForPositioningContextMenuRelativeToWindow(location_in_window,
                                                         window);
 }
